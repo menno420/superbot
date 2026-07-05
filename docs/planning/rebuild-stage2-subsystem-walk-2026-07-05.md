@@ -1594,4 +1594,82 @@ current-bot bugs queued for a dedicated fix session. 2 Stage-1-vintage open deci
 (G-22 staging lanes; the auto-mod-tier consolidation). 1 self-correction caught and fixed (Q-0119).
 6 stale-doc findings fixed on sight. Next: L1c (visual card engine, welcome, ux_lab).
 
+---
+
+## 7. Handoff for the next session — bug fixes + current-bot implementation
+
+**Session paused here at the owner's request (2026-07-05), after L1a+L1b (19 rows) fully decided.**
+The next session is directed to (a) fix the 7 queued current-bot bugs and (b) start implementing
+some of the committed "Add" scope items into the *current* bot now — not wait for the separate
+rebuild repo — so the codebase gets more structured incrementally. Every item below is
+independently shippable as its own small PR; none require re-reading this whole document, but each
+links back to its row's full record (§6) for context if needed.
+
+### 7.1 Bug fixes (7 items — each a small, contained, root-cause fix)
+
+| # | Row | Bug | Exact fix |
+|---|---|---|---|
+| 1 | 1 (settings) | AI-scalar → typed-policy projection is non-transactional (silent drift: audit says "changed," runtime policy silently didn't) | `services/settings_mutation.py:364-380` — make the AI-projection write part of the same transaction as the settings write, or add a compensating re-check/retry so a failed projection is never silently swallowed |
+| 2 | 4 (admin) | `bot_spam`/`bot-spam` typo — dead `on_ready` startup greeting | `admin_cog.py:412` — change `"bot_spam"` → `"bot-spam"` (one line) |
+| 3 | 4 (admin) | Zero audit trail on 5 high-privilege mutations | Wrap `cog_manager.py:96,105,114` (load/unload/reload), `admin_cog.py:365` (restart), `admin_cog.py:393` + `_LogLevelModal` (`admin_cog.py:763-790`, log-level) with `services.audit_events.emit_audit_action(subsystem="admin", mutation_type=...)` — one call per action |
+| 4 | 6 (moderation) | `/moderation` slash command ignores the configured `moderator_role` (only checks raw Discord permission or platform-owner) | `moderation_cog.py:96-97` — route the authority check through `can_execute`/`can_execute_ctx`, the same governance path `_require_mod` (`:29-52`) and the panel's `interaction_check` (`main_panel.py:45-61`) already use |
+| 5 | 9 (security) | Raid-lockdown slowmode edit bypasses the audit trail entirely (`channel.edit()` direct call) | `security_service.py:186-193,196-213` (`_apply_slowmode`/`_lift_lockdown`) — route through `ChannelLifecycleService().apply(operation="set_slowmode", ...)`, the same seam `!slowmode` already uses |
+| 6 | 10 (cleanup) | Two unaudited mutation paths: word/strict-list toggles (zero audit calls); `!cleanuphistory`'s bulk delete (unaudited when cleanup calls it directly, audited when moderation calls the *same* function) | Route `cleanup_cog.py:505,524,705` (word/strict writes) and `cleanup_cog.py:447`'s call into `history_cleanup.apply_history_cleanup_plan` through the same `_record_action`-style audited wrapper `moderation_service.py:292-350` already uses for the identical function. **Note:** fixing the `!cleanuphistory` `wait_for` confirm-UX (G-24) does NOT by itself fix this audit gap — they are two separate fixes. |
+| 7 | 13 (role) | 3-of-8-table guild-teardown gap (`role_thresholds`, `role_automation_exemptions`, `reaction_roles` never cleaned up on guild-leave) + a false "self-cleans" code comment | Add teardown calls for all 3 tables to `guild_lifecycle.py` (alongside the existing 5-table pattern at `:661-768`); correct the false comment at `guild_lifecycle.py:70-72,664-666` |
+| 8 | 16 (proof_channel) | Restart/reload leaves a channel locked to a prize winner indefinitely (unlock deadline is pure in-memory state, no boot recovery) | Persist the unlock deadline (a small table or a `guild_settings` row keyed by guild+channel) and add a boot-time reconcile sweep in `on_ready` that unlocks any channel whose deadline has already passed |
+
+(8 individual fixes across 7 rows — row 4 and row 10 each bundle two.)
+
+### 7.2 Committed "implement now" scope — owner-decided to build, not deferred
+
+These were explicitly committed as scope during the walk (not accepted-but-unscheduled
+known-options). Each links to its row's full §6 capability-triage section for the complete
+rationale; the next session should triage which land in the current bot now vs. wait for the
+separate rebuild repo, per the owner's stated intent to "start implementing some of the planned
+things... into our current bot."
+
+| Row | Item | What it needs |
+|---|---|---|
+| 6 (moderation) | Case/appeal system (persisted case ID + reopen flow) + bulk moderation actions (mass-ban/mass-timeout) | New design — no persistence model or bulk-batching exists today; see §6 row 6 |
+| 9 (security) | Quarantine (role-isolation) action for the account-age tier | New design — zero role-management code exists in this subsystem today; likely reuses `role_automation`'s audited system-actor seam (the same one `welcome_service` uses for entry-role grants) |
+| 12 (channel) | Wire up voice-channel creation as a real feature | The `kind="voice"` branch already exists in `ChannelLifecycleService` (`:489-494`) — needs a real command/panel entry point that actually passes it |
+| 12 (channel) | Delete 5 orphaned capability strings | `utils/subsystem_registry.py:484-489` — never checked by any command, safe to remove |
+| 13 (role) | Collapse 7 hidden legacy-duplicate commands into pure panel actions | `role_cog.py:414-587` — each is already self-tagged `legacy_duplicate`/`panel_action` in its own `extras` |
+| 13 (role) | Add slash mirrors for the highest-traffic commands | Role is the only Lane A subsystem with zero slash commands |
+| 13 (role) | Delete dead `views/roles/main_panel.py` (`RoleHubView`) | Zero callers, confirmed by exhaustive grep |
+| 13 (role) | Delete 3 orphaned capability strings | Only `role.settings.configure` of 4 declared strings is ever checked |
+| 13 (role) | De-duplicate reconciliation logic | `role_check` (daily sweep, `role_cog.py:284`) and `on_member_join` (`:731`) independently rebuild the identical threshold-filtering tuple |
+| 14 (ticket) | Expose `category_id` + `ping_staff_on_open` on the config panel | Both are read by logic today but never settable — add a category-picker dropdown + an on/off toggle to `TicketConfigPanelView` |
+| 14 (ticket) | Finish wiring `panel_channel_id`/`panel_message_id` | Currently inert columns — finish the "bot tracks and can refresh/relocate its one canonical ticket-launcher panel" feature they were clearly meant for |
+| 14 (ticket) | Add slash command mirrors | Ticket has zero slash commands today |
+| 14 (ticket) | Add auto-close-on-inactivity | Needs its own design pass: what counts as "inactive," warn-before-close, configurable timeout |
+| 8, 10, 15 (automod/cleanup/image_moderation) | Auto-mod-tier operator-surface consolidation | Give automod and image_moderation each a minimal single-page panel wrapping their existing status embed (zero buttons in v1); add two new buttons to cleanup's existing `CleanupPanelView` ("🛡️ Automod Status", "🖼️ Image Moderation") reusing its existing `_attach_back_to_cleanup_button` wiring. No new hub primitive. |
+
+### 7.3 Resolved cross-cutting decisions to apply wherever relevant
+
+- **G-22 (StagedBuilderSpec):** bless `RoleMenuBuilder`'s view-local staging pattern as the sole
+  instance — do not build a shared staging primitive (the second-consumer rule no longer applies
+  after row 5a retired the setup-wizard's competing draft lane)
+- **Q-0119:** `moderator_role`/`trusted_role` bindings belong to a reserved `governance`
+  `SubsystemSchema`, not moderation's own — already decided 2026-06-13, just needs executing
+  whenever the binding model is touched
+
+### 7.4 Verification gaps found (not bugs, but worth new tests wherever touched)
+
+- Ticket: `close`/`add_participant`/`remove_participant`/`update_config`/`set_blacklist` have zero
+  direct unit tests; the entire cog + 4 of 5 views are untested
+- Security: the raid-slowmode code path (containing bug #5 above) has zero test coverage — every
+  existing test uses alert-only mode
+- Automod: the detector-fault fail-open path (as opposed to the config-read fault) is implemented
+  but not forced-fault-tested
+
+### 7.5 What's NOT in this handoff (still open, needs a live owner walk, not implementation)
+
+L1c (visual card engine, welcome, ux_lab) and everything after it (L2 economy/social — 9 rows, L3
+games/world — 14 rows, L4 knowledge/AI — 6 rows, L5 control plane — 4 rows, plus the non-cog
+platform queue) have **not been walked yet**. Do not infer a disposition for any of them from
+this session — they are `not-started`/`mapped` only, per the progress index in §3. Continuing the
+walk itself (as opposed to fixing bugs and implementing committed scope) needs the owner live,
+the same way this session did it.
+
 
