@@ -26,6 +26,13 @@
 *(offline-fit tags — `[offline]` self-mergeable now · `[needs-live-bot]` needs a running bot / runtime
 creds · `[owner]` needs an owner decision/action; see [`../repo-sector-map.md`](../repo-sector-map.md)
 § "the offline-fit startability tag". S5 is the executor outlier — most items are owner/Hermes-run.)*
+- **📍 OWNER-DIRECTED NEXT SESSION — the "best-possible CI setup" redesign:**
+  [`../planning/ci-setup-redesign-brief-2026-07-05.md`](../planning/ci-setup-redesign-brief-2026-07-05.md).
+  Scoped end-to-end (17 Actions workflows + 40 `check_*.py` + hooks); optimize for **reliability +
+  cost**; consolidate where it kills flakiness/minutes, add genuine gaps (Q-0238, the two checker
+  ideas). The brief carries the full inventory + method; the session produces the target-state design
+  + a phased, **owner-gated** migration (CI/hooks/branch-protection are executable config — propose
+  before ripping out). `[offline]` to *design + propose*; `[owner]` to *apply* destructive changes.
 - `[owner]` **Website two-site split rollout** — v1 is code-complete + reviewed; what remains is the
   owner-paced rollout (provision `botsite/` + submissions DB, domain cutover)
   ([handoff](../operations/website-split-next-steps-2026-06-19.md)).
