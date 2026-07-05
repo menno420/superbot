@@ -53,10 +53,10 @@ State vocabulary: `not-mapped` → `mapped` → `ready-for-owner` → `owner-dis
 | # | Layer | BUILD-PLAN row | Lane | Current cog(s) | Research | Owner discussion | Verdict | Notes |
 |---|---|---|---|---|---|---|---|---|
 | 1 | L1a | settings | D | `settings_cog.py` + `settings/` pkg | mapped | decided | **improve** | first row walked this session; full record above |
-| 2 | L1a | diagnostic | D | `diagnostic_cog.py` + `diagnostic/` pkg + `health_maintenance_cog.py` | mapped (deep dossier done) | **owner-discussing** | — | 52 commands (51 prefix+1 slash), pure admin/owner surface. Found: `!diagnostics` and `!platform` are two overlapping hubs (fragmentation); 4 real mutation surfaces (findings/flags/automation/backfill) live in a nominally read-only subsystem; `docs/ownership.md` had stale "`logs` table" drift, fixed on sight this session. |
-| 3 | L1a | help | D | `help_cog.py` + `help/` pkg | mapped | not-started | — | |
+| 2 | L1a | diagnostic | D | `diagnostic_cog.py` + `diagnostic/` pkg + `health_maintenance_cog.py` | mapped (deep dossier done) | decided | **improve** | hub merge (`!diagnostics`→`/platform`) + unified `DiagnosticProviderSpec` catalogue decided; mutation-surface ownership deferred to row 5. Full record above. |
+| 3 | L1a | help | D | `help_cog.py` + `help/` pkg | mapped | **owner-discussing (next)** | — | |
 | 4 | L1b | admin | A | `admin_cog.py` + `admin/` pkg | mapped | not-started | — | Lane A full ledger exists (5034-line audit) |
-| 5 | L1b | server_management | A | `server_management_cog.py` + `setup_cog.py` + `quicksetup_cog.py` | mapped | not-started | — | confirmed structural gap: `setup` has **no `SUBSYSTEMS` registry key at all** today (not just "folded into" server_management — genuinely unregistered); `quicksetup_cog`=primary guided `!setup`, `setup_cog`=advanced `!setupadvanced` wizard + on-join launcher. BUILD-PLAN's own note calls for registering it as a real subsystem — decide the split at this row's walk |
+| 5 | L1b | server_management | A | `server_management_cog.py` + `setup_cog.py` + `quicksetup_cog.py` | mapped | not-started | — | confirmed structural gap: `setup` has **no `SUBSYSTEMS` registry key at all** today (not just "folded into" server_management — genuinely unregistered); `quicksetup_cog`=primary guided `!setup`, `setup_cog`=advanced `!setupadvanced` wizard + on-join launcher. BUILD-PLAN's own note calls for registering it as a real subsystem — decide the split at this row's walk. **Also inherits from row 2 (diagnostic):** decide whether diagnostic's 4 mutation surfaces (findings/flags/automation/backfill) should move here. |
 | 6 | L1b | moderation | A | `moderation_cog.py` | mapped | not-started | — | 64.2% fit floor; `ModerationActionSpec` envelope decided (Q-0226) |
 | 7 | L1b | logging | D | `logging_cog.py` + `logging/` pkg | mapped | not-started | — | spike exemplar, 97% fit |
 | 8 | L1b | automod | A | `automod_cog.py` + `automod/` pkg | mapped | not-started | — | |
@@ -173,10 +173,12 @@ and **`hermes_cog.py` fits none of the 43+10 rows** (non-cog queue) — both fla
   0 rows currently missing from this index. 5 rows carry a capstone-accuracy contradiction (§3.6).
 - **Coverage C (commands/hidden functions):** not yet started at the per-command level — begins
   per-row during each walk. Ground truth for this work is now pinned (§3.5): 479 live commands.
-- **Coverage D (dependency rechecks):** 1 triggered — `hermes_cog.py` decided `drop` (owner,
-  2026-07-05, out of walk-order sequence). Rechecked: zero dependents found, no fallout. Its
-  underlying goal (easy bug/feedback reporting) was redirected onto row 50 (boards family) as a
-  named requirement rather than left to evaporate.
+- **Coverage D (dependency rechecks):** 2 forward links open, both by design (not blocking):
+  row 6 (moderation) inherits Q-0119 from row 1 (settings); row 5 (server_management) inherits the
+  mutation-surface ownership question from row 2 (diagnostic). 1 drop verdict processed —
+  `hermes_cog.py` (owner, 2026-07-05, out of walk-order sequence): rechecked, zero dependents
+  found, no fallout; its underlying goal (easy bug/feedback reporting) redirected onto row 50
+  (boards family) rather than left to evaporate.
 
 ---
 
@@ -292,4 +294,103 @@ answer — not yet a durable decision.
 - Gate-0 delta: none beyond the already-ratified R-10 rider — no new amendment needed
 - Dependencies to recheck: row 6 (moderation) inherits Q-0119; row 50 (boards family) inherits the hermes_cog-replacement feedback requirement (already recorded there)
 - Owner ratification needed: none outstanding — verdict, bug-fix priority, and Q-0119 routing were all decided live this session
+
+### Row 2 — diagnostic
+
+**Status: decided (2026-07-05).**
+
+#### 0. Row identity
+- BUILD-PLAN row: `diagnostic` · Layer: L1a · Existing disposition: `IMPROVE`
+- **Stage-2 verdict: `improve`** (confirmed, scoped concretely by 3 owner decisions)
+- Dependents to recheck: mutation-surface ownership boundary deferred to row 5 (server_management)
+- Source confidence: `source-confirmed`
+
+#### 1. User/job summary
+- Primary user: administrators / the platform owner only — no member-facing surface exists
+- Job-to-be-done: "is the bot healthy, and can I see/fix operational state without SSH or raw logs"
+- Embarrassing-to-launch-without: DB/migration integrity check, a health snapshot, log visibility
+- Prior art: itself
+- Competitor benchmark: "ops consoles of hobby bots" — no public comparator found; likely a genuine differentiator
+
+#### 2. Command surface (52 total: 51 prefix + 1 slash — grouped; full per-command detail in the research transcript)
+| Group | Commands | Verdict |
+|---|---|---|
+| Legacy hub | `!diagnostics`/`!diag` (8-button hub: status/latency/sysinfo/db/json/commands/errors/notify) | **merge** — becomes a hidden alias into `/platform` |
+| `!lifecycle`/`!lc` | mirrors `!platform lifecycle` | **merge** — drop the duplicate, keep one implementation |
+| `/platform` + 39 subcommands (runtime/status ×14, catalogues ×6, resources/rollout ×5, validation ×4, ops ×9) | the deep operator surface | **keep**, becomes the sole entry point |
+| Unique-to-legacy-hub (4): `!list_commands_detailed`, `!find_command`, `!validate_json_files`, `!query_logs`/`!recent_errors`, `!test_notification` | not duplicated in `!platform` today | **keep**, fold into the unified `/platform` catalogue as new categories |
+| Mutation surfaces (4): `!platform finding …`, `!platform flag`, `!platform backfill apply`, `!platform automation` | real audited writes inside a nominally read-only subsystem | **keep for now** — ownership boundary vs. server_management decided after row 5 |
+
+#### 3. Invocation and routing
+- Single entry point after merge: `/platform` (+ `!platform`); `!diagnostics`/`!diag`/`!lc` retained only as hidden legacy aliases resolving to the same panel
+- Fuzzy typo eligibility: `auto-run safe` for every read-only view; the 4 mutation subcommands need the destructive/ambiguous confirm treatment already partially present (findings/flags/backfill/automation all route through audited pipelines today)
+- Authority: single admin-or-owner floor today, matches Q-0227 as-is
+- NL eligibility: plausible for read views ("is the bot healthy?" → health snapshot) — not yet built, not urgent
+
+#### 4. Namespace/collision review
+- `platform` stays the flat reserved verb; `diagnostics`/`diag`/`lc`/`lifecycle` become K1-reserved tombstone aliases pointing at the same panel, never a second implementation
+
+#### 5. Hub, navigation, presets
+- Top-level bucket: Admin (hidden node)
+- One "Platform / Diagnostics" hub replaces the current two; 4 category selects (Runtime, Catalogues, Resources, Validation) plus the new unique-capability categories (Commands, Logs, Data-integrity, Notify-test)
+- Direct-open: `/platform` already satisfies the navigation contract
+
+#### 6. Capability triage and exact scope
+- **Keep:** the `!platform` group's full 39-subcommand surface, all 4 mutation surfaces (ownership TBD), health_maintenance_cog's daily retention loop
+- **Merge:** `!diagnostics`/`!diag` hub → into `/platform`; `!lifecycle` → drop duplicate, keep one
+- **Improve:** adopt `DiagnosticProviderSpec` as one unified catalogue (owner-confirmed **required for done**), collapsing the two separate registries (`diagnostics_service`'s untyped sync callables + `health_snapshot_service`'s typed async adapters) and the ~20 hand-written command bodies
+- **Defer:** mutation-surface ownership (findings/flags/automation/backfill vs. server_management) → decided after row 5
+- One-line reason: functionality is complete and well-tested; the fit gap is pure registration-shape debt (two registries, hand-wired commands), not missing capability — collapsing to one hub + one catalogue is the entire "improve."
+
+#### 7. Concrete outperform targets
+| Target type | Target |
+|---|---|
+| Parity target | none found — likely a genuine differentiator vs. hobby-bot ops consoles |
+| Beat | self-diagnosis breadth (11-adapter health snapshot, audience-redacted), in-Discord (no separate ops dashboard needed), fully audited mutation surfaces |
+
+#### 8. Required engines/specs/seams
+| Engine/spec/seam | Tier | In plan? | New/reused | Owner decision needed? |
+|---|---|---|---|---|
+| `DiagnosticProviderSpec` (name, provider HandlerRef, lane, audience, timeout, redaction, ownership) | T2 | proposed (sketched in `tools/grammar_spike/spec.py`) | **new — this row's core deliverable** | no — confirmed required this session |
+| PanelSpec/SelectorSpec (the merged hub) | T1 | yes | reused | no |
+| ManagedTaskSpec (health_maintenance's daily retention loop) | T1 | yes | reused | no |
+| Audited mutation seam (findings/flags/automation/backfill) | T1/T3 | yes | reused | ownership deferred to row 5 |
+
+#### 9. Data, import, lifecycle
+- Stores: `operational_health_findings` + `operational_health_finding_aggregates` (migration 057); log ring buffer is in-memory only, not persisted
+- Import mapping: `fresh-start` — this is process-generated operational telemetry, not user/guild data; nothing to import from the old bot
+- Guild join/leave, member erasure: n/a — this data is process-scoped, not guild- or member-scoped
+
+#### 10. Verification oracle
+- Oracle type: parity golden
+- Existing goldens: 30 dedicated test files already cover functional/reachability/authority/mutation-seam behavior (per the completion cert)
+- New goldens required: merged-hub behavior (legacy aliases still resolve correctly); the unified `DiagnosticProviderSpec` catalogue's registration completeness (every command has exactly one provider entry)
+- Known outstanding gap (pre-existing, not new): owner-led live Discord walkthrough has never happened (no sandbox AI-provider key) — carried forward, not blocking this row's verdict
+
+#### 11. Rubric pass — 10 probes
+| # | Class | Result |
+|---|---|---|
+| 1 | Dependency-order inversion | None — L1a position 2, after settings, before help |
+| 2 | Forgotten capability | None |
+| 3 | Thin/underspecified step | N/A |
+| 4 | Stale/unanchored claim | **Found+fixed**: `docs/ownership.md` claimed diagnostic reads a `logs` table; actually an in-memory ring buffer — fixed this session. Also found, not yet fixed: a doc says "9 health-snapshot adapters," source shows 11 — flagged for someone to reconcile, not blindly edited (unverified by this pass) |
+| 5 | Fragmentation/reinvention | **Found+decided**: `!diagnostics` vs `!platform` — owner decided merge |
+| 6 | Under/wrong-generalization | **Found**: diagnostic (observability) has absorbed 4 real mutation surfaces — ownership boundary deferred to row 5, not resolved yet |
+| 7 | Missing cross-cutting standard | **Found**: exactly the `DiagnosticProviderSpec` gap — owner confirmed required |
+| 8 | Verification hole | None — strong existing oracle (30 test files) |
+| 9 | UX/lifecycle-contract gap | None beyond the general Back/Home stack-awareness gap already flagged at row 1 (applies bot-wide, not diagnostic-specific) |
+| 10 | Naming/collision risk | **Found+decided**: `!lifecycle` duplicates `!platform lifecycle` — owner decided merge to one implementation |
+
+#### 12. Blockers and decisions
+| Blocker type | Details | Resolution |
+|---|---|---|
+| Cross-row dependency | Mutation-surface ownership (findings/flags/automation/backfill: keep under diagnostic vs. move to server_management) | **Deferred to row 5's walk** — owner-decided 2026-07-05 |
+| Doc drift (unverified) | "9 adapters" vs. 11 found in source for `health_snapshot_service` | Flagged for verification/fix by a future pass — not corrected here since only one source (the sub-agent) reported it |
+| Known gap (pre-existing) | No owner-led live Discord walkthrough yet | Carried forward, not new, not blocking |
+
+#### 13. Stage-3 consolidation notes
+- BUILD-PLAN row delta: `IMPROVE` confirmed, scoped to 3 concrete deliverables (hub merge, unified catalogue, mutation-boundary TBD)
+- Gate-0 delta: `DiagnosticProviderSpec` needs to be minted as a new amendment when Gate-0's grammar work resumes (it is currently only sketched in the grammar-spike prototype, not in the ratified G-1…G-24 list) — **flag for Gate-0**, not a Stage-2 owner call
+- Dependencies to recheck: row 5 (server_management) inherits the mutation-boundary decision
+- Owner ratification needed: none outstanding for this row
 
