@@ -62,8 +62,8 @@ State vocabulary: `not-mapped` → `mapped` → `ready-for-owner` → `owner-dis
 | 7 | L1b | logging | D | `logging_cog.py` + `logging/` pkg | mapped (deep dossier done) | decided | **keep** | Near-rubber-stamp exemplar confirmed (97% fit reproduced exactly). Admin-only surface confirmed intentional. Completion cert fixed (stale punch #2). Full record above. |
 | 8 | L1b | automod | A | `automod_cog.py` + `automod/` pkg | mapped (deep dossier done) | decided | **improve** | 4-rule filter, fail-open discipline confirmed (detector-fault path untested). Auto-mod-tier consolidation with cleanup/image_mod punted to after rows 10/15. Full record above. |
 | 9 | L1b | security | A | `security_cog.py` + `security/` pkg | mapped (deep dossier done) | decided | **improve** | Confirmed live unaudited slowmode bug, fix-now decided. Quarantine action committed as Phase-B scope (was approved at Q-0111, never built). Full record above. |
-| 10 | L1b | cleanup | A | `cleanup_cog.py` + `cleanup/` pkg | mapped | **owner-discussing (next)** | — | 2 unaudited mutation paths — live bug, jumps queue per collaboration-model |
-| 11 | L1b | counters | B | `counters_cog.py` + `counters/` pkg | mapped | not-started | — | re-binned operator band, not economy |
+| 10 | L1b | cleanup | A | `cleanup_cog.py` + `cleanup/` pkg | mapped (deep dossier done) | decided | **improve** | Both unaudited paths confirmed live, fix-now decided. Auto-mod-tier consolidation still pending row 15. Full record above. |
+| 11 | L1b | counters | B | `counters_cog.py` + `counters/` pkg | mapped | **owner-discussing (next)** | — | re-binned operator band, not economy |
 | 12 | L1b | channel | A | `channel_cog.py` | mapped | not-started | — | 17 prefix verbs → small slash set |
 | 13 | L1b | role | A | `role_cog.py` + `role/` pkg + `role_grants_cog.py` | mapped | not-started | — | 3-of-8-table teardown gap — live bug |
 | 14 | L1b | ticket | A | `ticket_cog.py` | mapped | not-started | — | cleanest audited seam in Lane A |
@@ -216,11 +216,11 @@ and **`hermes_cog.py` fits none of the 43+10 rows** (non-cog queue) — both fla
   sequence): rechecked, zero dependents found, no fallout; its underlying goal redirected onto row
   50 (boards family). **1 new row created mid-walk** — row 5a (`setup`), split from row 5
   (`server_management`) per the BUILD-PLAN's own note + Lane A's explicit recommendation; carried
-  into Coverage B below. **4 current-bot bug fixes queued (not implemented this session — scope
+  into Coverage B below. **5 current-bot bug fixes queued (not implemented this session — scope
   boundary):** the settings AI-projection drift (row 1), admin's bot_spam typo + missing audit
-  trail (row 4), moderation's slash-command authority bug (row 6), and security's unaudited
-  raid-lockdown slowmode edit (row 9) — all owner-decided "fix now," all left as ready-to-execute
-  specs for a dedicated bug-fix session.
+  trail (row 4), moderation's slash-command authority bug (row 6), security's unaudited
+  raid-lockdown slowmode edit (row 9), and cleanup's two unaudited mutation paths (row 10) — all
+  owner-decided "fix now," all left as ready-to-execute specs for a dedicated bug-fix session.
 
 ---
 
@@ -1105,6 +1105,76 @@ configuration via `!settings → Automod` (11 `SettingSpec`s, borrowing moderati
 - BUILD-PLAN row delta: `IMPROVE` confirmed; quarantine promoted from "approved-but-unbuilt" to "committed Phase-B deliverable"
 - Gate-0 delta: none — G-9 already ratified
 - Dependencies to recheck: none new
+- Owner ratification needed: none outstanding
+
+### Row 10 — cleanup
+
+**Status: decided (2026-07-05).**
+
+#### 0. Row identity
+- BUILD-PLAN row: `cleanup` · Layer: L1b · Existing disposition: `KEEP domain, IMPROVE impl`
+- **Stage-2 verdict: `improve`** (confirmed, matches capstone)
+- Dependents to recheck: inherits row 6 (moderation)'s flagged note — confirmed cleanup's
+  per-message deletions route through `moderation_service.auto_delete`; inherits row 8 (automod)'s
+  punted auto-mod-tier consolidation question — **still not decided**, awaiting row 15
+  (image_moderation)
+- Source confidence: `source-confirmed`
+
+#### 1. User/job summary
+- Primary user: administrators wanting message-hygiene automation + on-demand bulk cleanup
+- Job-to-be-done: auto-delete prohibited content; let a mod bulk-clean a channel by criteria
+- Competitor benchmark: Carl/MEE6/Dyno purge parity — outperform via scope-chain policies beyond it
+
+#### 2. Command surface
+6 commands, all prefix-only (confirmed zero slash commands): `!cleanuphistory` (7 scan modes:
+keyword/commands/prohibited/spam/embeds/links/attachments), `!word` (+add/remove/list),
+`!wordmenu`, `!cleanup` (policy hub).
+
+#### 3. Invocation and routing
+- The last true interactive `bot.wait_for` in the entire runtime is here (`!cleanuphistory`'s
+  ✅/❌ reaction-confirm, `cleanup_cog.py:438-443`) — confirmed still live
+- G-24 (or a simpler composition of existing `MutationPreview`/`ConfirmationSpec` primitives, per
+  its own spec-pass instruction) replaces this interaction pattern — already a settled design
+  answer, no new owner decision needed
+
+#### 4-5. Namespace / hub
+- No collisions; reached via Admin → Moderation → Cleanup (unchanged)
+
+#### 6. Capability triage and exact scope
+- **Keep:** the message-pipeline stage (order 10), the 7 scan modes, the policy panel's genuinely
+  exemplary preview→confirm→audited-apply flow (this half is already correct)
+- **Improve, owner-decided fix now:** both confirmed unaudited mutation paths — word/strict-list
+  toggles (zero audit calls) and `!cleanuphistory`'s bulk delete (unaudited when cleanup calls it
+  directly, audited when the identical function is called from moderation). **Important
+  distinction the research surfaced**: fixing the `wait_for` confirm-UX (G-24) does **not** by
+  itself fix the audit gap — these are two separate fixes, both needed.
+- **Improve, accepted scope (no controversy, folded in without a separate question):** add a slash
+  surface, matching every sibling L1b subsystem
+- Adopt G-11 (`MessagePipelineStageSpec`) — cleanup is one of 3 named exemplars alongside automod/image_moderation
+- One-line reason: the policy-panel half is already the exemplar; the command half has two real,
+  confirmed audit gaps plus the one remaining legacy interaction pattern
+
+#### 7-11. (Outperform / engines / data / oracle / rubric)
+- Outperform: Carl/MEE6/Dyno purge parity (explicit target) + scope-chain policies beyond it
+- Engines: G-24 (composition-first, ratified), G-11 (ratified, 3rd exemplar)
+- Data: `prohibited_words`, `wordfilter_config`, `cleanup_policies` — confirmed accurately owned
+- Oracle: parity golden; strong coverage on the 7 scan modes and the `wait_for` paths, but **no
+  test asserts audit-trail emission for either unaudited path** — the same verification-hole
+  pattern that let rows 4/6/9's bugs ship unnoticed
+- Rubric findings: orphaned capability string `cleanup.settings.configure` (declared, not
+  registered) — pure registry drift, zero functional impact, not fixed (in-scope-boundary `disbot/` file)
+
+#### 12. Blockers and decisions
+| Blocker type | Details | Resolution |
+|---|---|---|
+| Live bug (2 paths) | Word/strict toggles + `!cleanuphistory` bulk delete, both unaudited | **Owner-decided 2026-07-05: fix now, both paths.** Ready-to-execute spec: route `cleanup_cog.py:505,524,705` (word/strict writes) and `cleanup_cog.py:447`'s call into `history_cleanup.apply_history_cleanup_plan` through the same `_record_action`-style audited wrapper `moderation_service.py:292-350` already uses for the identical function. Not implemented this session — scope boundary, same as the other queued bug fixes. |
+| Cross-row (not resolved) | Auto-mod-tier consolidation with automod/image_moderation | Still punted from row 8 — awaiting row 15 |
+| Doc/registry drift | Orphaned `cleanup.settings.configure` capability string | Flagged, not fixed (in-scope-boundary `disbot/` file) |
+
+#### 13. Stage-3 consolidation notes
+- BUILD-PLAN row delta: none — verdict matches capstone exactly
+- Gate-0 delta: none — G-11/G-24 already ratified
+- Dependencies to recheck: row 15 (image_moderation) still owes the auto-mod-tier consolidation answer
 - Owner ratification needed: none outstanding
 
 
