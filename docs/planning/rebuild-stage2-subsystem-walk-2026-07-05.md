@@ -101,7 +101,7 @@ State vocabulary: `not-mapped` → `mapped` → `ready-for-owner` → `owner-dis
 | 47 | L4 | utility | D | `utility_cog.py` | mapped | not-started | — | MERGE pack; also hosts `/myprofile` — see row 28 |
 | 48 | L4 | general | D | `general_cog.py` | mapped | not-started | — | MERGE pack |
 | 49 | L5 | web dashboard + live editor (ADD/REDESIGN) | — | `botsite/app.py` + `dashboard/app.py` (both read-only FastAPI, not a cog) | mapped | not-started | — | ⚠ **PARTIAL CAPSTONE CONTRADICTION** — two read-only dashboards already ship; genuinely new is only the write-capable live editor. See §3.6. |
-| 50 | L5 | boards family (ADD) | — | none (new) | mapped | not-started | — | one tagged-board primitive; likely P-1 2nd instance |
+| 50 | L5 | boards family (ADD) | — | none (new; `hermes_cog.py`'s admin-only dispatch bridge is a **dropped** near-neighbor, not a current implementation of this row) | mapped | not-started | — | one tagged-board primitive; likely P-1 2nd instance. **Owner-decided requirement (2026-07-05, replacing the dropped hermes_cog):** must include an AI-assisted, user-facing (not admin-gated) way for any member to report a bug or suggest an improvement about the bot, landing in this board. Shape (NL-only vs. NL+command) pending — see settings-row question panel. |
 | 51 | L5 | bot-migration assistant (ADD) | — | none (new) | mapped | not-started | — | the anti-MEE6/Carl/Dyno wedge |
 | 52 | L5 | Railway / ops control-plane (ADD, owner-gated) | — | none — `hermes_cog.py` does **not** map here (confirmed) | mapped | not-started | — | Railway/ops control-plane means drift-checker/deploy-alerts/shadow-clone/backups for the bot's *own hosting*; `hermes_cog.py` is a distinct thing (see non-cog queue) — no current cog implements this row |
 
@@ -112,7 +112,7 @@ These must also receive a Stage-2 disposition but are not walked as ordinary pro
 | Item | What it is | Disposition state | Notes |
 |---|---|---|---|
 | L0 runtime skeleton | bootstrap, loader, config, bus, lifecycle, tasks, health, DB seam, namespace registry | `handled-via-gate-0` | Lane G already GO-verdicted (preserve 6 primitives field-for-field + build K1 namespace registry). `bootstrap_access_cog.py` is its one cog-visible slice (command-access gate installer) — pure platform wiring, not a product surface; carried here for coverage, no triage verdict needed. |
-| `hermes_cog.py` | **confirmed**: the Discord-side entry point of the Hermes→Claude-Code dispatch bridge (`/bugreport`, `/dispatch` — both admin-gated slash commands that POST a work order to the Claude Code Routine `/fire` endpoint, spinning up an autonomous coding session). Not a guild/player-facing feature at all. | confirmed out-of-corpus | Does **not** map to the Railway/ops control-plane ADD row (that row is about the bot's own hosting/deploy ops — drift checker, deploy alerts, shadow clone, backups — a different concern). `NEW-BOT-BUILD-PLAN.md` §1.3 explicitly carves this class out ("a workflow/substrate concern, not a bot capability"). **Owner question queued**: should this even ship as a Discord cog in the new bot, given the collaboration-model's autonomy-boundary rules about executable-config changes? Flagged for discussion when the non-cog queue is walked. |
+| `hermes_cog.py` | **confirmed**: the Discord-side entry point of the Hermes→Claude-Code dispatch bridge (`/bugreport`, `/dispatch` — both admin-gated slash commands that POST a work order to the Claude Code Routine `/fire` endpoint, spinning up an autonomous coding session). Not a guild/player-facing feature at all. | **decided — `drop`** (owner, 2026-07-05) | Does **not** map to the Railway/ops control-plane ADD row (that row is about the bot's own hosting/deploy ops, a different concern) — confirmed out of the bot-capability corpus per `NEW-BOT-BUILD-PLAN.md` §1.3's workflow/substrate carve-out. **Owner ruling:** not needed in the new bot's user-facing surface. Dependency recheck (S-2): zero dependents found (`hermes_cog.py`/`fire_work_order`/`HermesCog` referenced only by itself + the `disbot/config.py` extension list) — no dependent-row fallout. **The underlying goal survives, redirected**: an easy, AI-assisted way for *any* member (not admin-only) to report a bug or suggest an improvement about the bot — this becomes a concrete owner-endorsed requirement on the **boards family** ADD row (row 50), not a standalone row. Removing `hermes_cog.py` from the *current* repo (vs. just excluding it from the new-bot corpus) is a separate implementation action, out of this docs-only session's scope — flagged, not executed. |
 | `setup_cog.py` / `quicksetup_cog.py` | **confirmed**: functioning today (`quicksetup_cog`=primary guided `!setup`/`/setup`, `setup_cog`=advanced `!setupadvanced`/`/setup-advanced` wizard + on-join launcher), reachable only via server_management's hub button | pending server_management walk (row 5) | **Confirmed structural gap** (not just "currently under"): `setup` has no `SUBSYSTEMS` registry key at all today. BUILD-PLAN's own note flags "register `setup` as real subsystem" — decide the split at row 5's walk. |
 
 ## 3.5 Command-surface ground truth (verified 2026-07-05 — supersedes the frozen 271-row JSON)
@@ -173,8 +173,10 @@ and **`hermes_cog.py` fits none of the 43+10 rows** (non-cog queue) — both fla
   0 rows currently missing from this index. 5 rows carry a capstone-accuracy contradiction (§3.6).
 - **Coverage C (commands/hidden functions):** not yet started at the per-command level — begins
   per-row during each walk. Ground truth for this work is now pinned (§3.5): 479 live commands.
-- **Coverage D (dependency rechecks):** none triggered yet (no `drop`/`defer`/`merge`/`re-place`
-  verdicts recorded yet).
+- **Coverage D (dependency rechecks):** 1 triggered — `hermes_cog.py` decided `drop` (owner,
+  2026-07-05, out of walk-order sequence). Rechecked: zero dependents found, no fallout. Its
+  underlying goal (easy bug/feedback reporting) was redirected onto row 50 (boards family) as a
+  named requirement rather than left to evaporate.
 
 ---
 
