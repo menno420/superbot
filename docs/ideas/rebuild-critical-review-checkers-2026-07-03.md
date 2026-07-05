@@ -19,6 +19,21 @@ finding-classes; several are mechanizable into checkers so the review isn't pure
   UX/lifecycle-contract (the navigation-completeness golden — see
   [`rebuild-navigation-completeness-check-2026-07-03.md`](./rebuild-navigation-completeness-check-2026-07-03.md)).
 
+### Audit-coverage AST checker — the complement to the `audit_completeness` fence (added 2026-07-05)
+
+The rebuild's `audit_completeness` compile fence (spec `01` P6) forces every *declared*-mutating ref
+onto the audited K7 engine, but is explicitly **"never an AST" — it trusts the developer-declared
+`effect` field**. That leaves two holes verified against the plan (two agents, save-fixes session):
+a leaf that **mis-declares** `effect="read"` yet writes through the still-legal `db.transaction()`
+port, and a raw Discord **state** mutation (`channel.edit`/`member.ban`/`add_roles`) — there's a
+named egress fence for `channel.send` but none for state mutations, and even that one is `PENDING`
+(RC-21/Q-D26). Doc-`11` concedes it ("none reads a live row against a rule"; the "unaudited
+`set_coins` mint" corruption). **The missing checker:** an AST verifier that (a) confirms a handler's
+declared `effect` matches what it actually writes, and (b) fences raw Discord state-mutations the way
+the egress fence fences sends. Full spec + the current-bot twin:
+[`audit-seam-coverage-checker-2026-07-05.md`](./audit-seam-coverage-checker-2026-07-05.md) (it maps
+onto the current bot's `check_architecture.py` now, and onto the rebuild's compile-fence stack later).
+
 ## Why it's worth having
 
 The rubric turns instinct into a checklist; checkers turn the checklist into something CI proves.
