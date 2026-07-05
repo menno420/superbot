@@ -1,8 +1,13 @@
 {
-  "skipWorkflowUsageWarning": true,
   "permissions": {
     "allow": [
-      "Bash(sed -n '/ingest_A/,$p' /root/.claude/projects/-home-user-superbot/d894a4ec-5f0a-504a-beee-7fe424fedebc/tool-results/b86ii38j0.txt | head -90)"
+      "Bash(sed -n '/ingest_A/,$p' /root/.claude/projects/-home-user-superbot/d894a4ec-5f0a-504a-beee-7fe424fedebc/tool-results/b86ii38j0.txt | head -90)",
+      "Bash(python3.10 --version)",
+      "Bash(python3.10 -c \"import discord; print\\(discord.__version__\\)\")",
+      "Bash(env)",
+      "Bash(pg_isready)",
+      "mcp__Claude_Code_Remote__send_later"
     ]
-  }
+  },
+  "skipWorkflowUsageWarning": true
 }
