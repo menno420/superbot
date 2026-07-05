@@ -52,8 +52,8 @@ State vocabulary: `not-mapped` → `mapped` → `ready-for-owner` → `owner-dis
 
 | # | Layer | BUILD-PLAN row | Lane | Current cog(s) | Research | Owner discussion | Verdict | Notes |
 |---|---|---|---|---|---|---|---|---|
-| 1 | L1a | settings | D | `settings_cog.py` + `settings/` pkg | mapped | **owner-discussing** | — | first row walked this session |
-| 2 | L1a | diagnostic | D | `diagnostic_cog.py` + `diagnostic/` pkg + `health_maintenance_cog.py` | mapped | not-started | — | confirmed: health_maintenance_cog is a zero-command daily-retention sweep over `operational_health_findings`, the diagnostic row's retention-plumbing complement (no separate row needed) |
+| 1 | L1a | settings | D | `settings_cog.py` + `settings/` pkg | mapped | decided | **improve** | first row walked this session; full record above |
+| 2 | L1a | diagnostic | D | `diagnostic_cog.py` + `diagnostic/` pkg + `health_maintenance_cog.py` | mapped | **owner-discussing (next)** | — | confirmed: health_maintenance_cog is a zero-command daily-retention sweep over `operational_health_findings`, the diagnostic row's retention-plumbing complement (no separate row needed) |
 | 3 | L1a | help | D | `help_cog.py` + `help/` pkg | mapped | not-started | — | |
 | 4 | L1b | admin | A | `admin_cog.py` + `admin/` pkg | mapped | not-started | — | Lane A full ledger exists (5034-line audit) |
 | 5 | L1b | server_management | A | `server_management_cog.py` + `setup_cog.py` + `quicksetup_cog.py` | mapped | not-started | — | confirmed structural gap: `setup` has **no `SUBSYSTEMS` registry key at all** today (not just "folded into" server_management — genuinely unregistered); `quicksetup_cog`=primary guided `!setup`, `setup_cog`=advanced `!setupadvanced` wizard + on-join launcher. BUILD-PLAN's own note calls for registering it as a real subsystem — decide the split at this row's walk |
@@ -188,6 +188,108 @@ answer — not yet a durable decision.
 
 ### Row 1 — settings
 
-**Status: owner-discussing.** Dossier + questions presented in-session 2026-07-05; awaiting owner
-answers before the durable Stage-2 record (full 13-section template) is written.
+**Status: decided (2026-07-05).**
+
+#### 0. Row identity
+- BUILD-PLAN row: `settings` · Layer: L1a · Existing disposition: `KEEP`
+- **Stage-2 verdict: `improve`** (owner-decided — tightens the bare capstone `keep`)
+- Dependents to recheck: none dropped/merged/re-placed; Q-0119 creates a forward link to row 6
+  (moderation)
+- Source confidence: `source-confirmed` (live source read + 26 test files + design spec §4)
+
+#### 1. User/job summary
+- Primary user: guild administrators / the platform owner (operator-only surface)
+- Job-to-be-done: "see and change how this bot behaves in my server without reading docs"
+- Embarrassing-to-launch-without: one place to find every setting; a visible audit trail
+- Prior art: itself — this is a port, not a new feature
+- Competitor benchmark: Dyno/MEE6 web-config dashboards (target: parity, in-Discord, free)
+
+#### 2. Command surface
+| Command | Slash | Prefix | Aliases | Shared verb? | Kind | Effect | No-arg default? | Notes |
+|---|---|---|---|---|---|---|---|---|
+| Settings hub | `/settings` | `!settings` | none | no (unique verb) | both | read/safe-write (opens UI) | yes — opens hub | admin/owner-gated |
+| Access explorer | — | `!settings access` | none | no | prefix-only | read | yes | independent of the manager kill-switch |
+| Help direct-nav | — | — | — | — | panel-only | read | — | `build_help_menu_view` hook, becomes a declared `PanelRef` |
+
+#### 3. Invocation and routing
+- Fuzzy typo eligibility: `auto-run safe` (opening a hub is a safe read)
+- NL intent eligibility: yes, candidate ("turn off welcome messages" → jump to that page) — not yet built
+- NL orchestration eligibility: yes for compound requests, but rides the general C-2 draft/preview lane, not settings-specific; flag that scalar writes reached via any AI rung still need the Q-0225 confirm-before-act rule applied consistently
+- Authority: one `settings.mutate`-class capability per setting (existing `capability_required`, empty = administrator floor) + platform-owner global override (already matches Q-0227 verbatim — no change needed)
+- Cooldown: 2/10s/user today — folds into the future C-6 cooldown engine, no change needed now
+
+#### 4. Namespace/collision review
+- `settings` is a unique flat verb — stays flat top-level per Q-0224, no collision, K1 reserves it as-is
+
+#### 5. Hub, navigation, presets
+- Top-level bucket: Admin (hidden node per Q-0237(c))
+- Direct-open: `!settings`/`/settings` already satisfies the navigation contract's direct-open rule (Q-0231)
+- Gap found: today's "Back to Hub" is a single fixed jump, not the framework's contextual-stack-aware Back — flagged for the Phase-B nav-engine plan, not owner-blocking
+- Preset membership: the Settings hub itself is not excludable by any preset (it's the config surface); per-subsystem page visibility follows that subsystem's own preset membership — flagged as an open point for Stage-3 consolidation
+
+#### 6. Capability triage and exact scope
+- **Keep:** three-lane split (scalar/binding/resource), one audited mutation pipeline, generated subsystem pages, 4 diagnostic sub-panels, Command Access panel, Access-policy explorer, tri-state resolve chain
+- **Improve:** R-10 (`allowed_values` kernel enforcement at the mutation seam, not just a validator/widget hint); page-actionability (mutate bindings/resources in-place, not view+link-out only); Back/Home stack-awareness
+- **Defer:** Q-0119 governance-binding schema home → **routed to row 6 (moderation)**, owner-decided this session; binding-mutation kill-switch parity → rebuild-scoped design note, no current urgency (owner-decided)
+- **Add:** none new for settings itself (the feedback-capability idea sits on row 50, not here)
+- One-line reason: already the rebuild's best-fit subsystem (93%→96%) — `improve`, not bare `keep`, because 6 concrete named gaps are worth closing rather than silently porting forward unfixed.
+
+#### 7. Concrete outperform targets
+| Target type | Target |
+|---|---|
+| Parity target | Dyno/MEE6 web-config dashboards |
+| Match | per-feature toggle, channel/role binding pickers, bounded numeric/enum editing, audit history |
+| Beat | in-Discord (no separate site/login), free (no paywalled settings), full visible audit trail, tri-state per-guild/global default resolution |
+| Self-explanatory edge | "Needs setup"/"Invalid settings"/"Missing bindings" self-diagnosis panels — no mainstream competitor bot ships this |
+
+#### 8. Required engines/specs/seams
+| Engine/spec/seam | Tier | In plan? | New/reused | Owner decision needed? |
+|---|---|---|---|---|
+| SettingSpec/BindingSpec/ResourceRequirement | T1 | yes (§2.5) | reused | no |
+| SettingsMutationPipeline → kernel/workflow scalar lane | T1/T2 | yes (§4.1) | reused | no |
+| R-10 `allowed_values` enforcement | T1 rider | yes (ratified) | reused | no |
+| PanelSpec/NavigationSpec | T1 | yes (§2.3/§2.4) | reused | no |
+| G-10 ModalFormSpec (number/text edit modals) | T2 | yes (ratified) | reused | no |
+| C-3 preset/template primitive | T2 | proposed, unbuilt | reused-when-built | no — timing deferred this session |
+| C-1 command resolver | T1 engine | proposed (endorsed) | reused-when-built | no |
+
+#### 9. Data, import, lifecycle
+- Stores: `guild_settings` (KV), `subsystem_bindings`, resource-requirement tables, `settings_mutation_audit`
+- Import mapping: `imported` — verbatim tri-state import (design spec §4.4/§5.2): stored `false`/`true` import as explicit and keep winning forever; only *absent* rows arrive `unset` (the sole population any new `activation` default touches)
+- Guild join/leave: no dedicated bootstrap/teardown beyond the `unset` terminus; each declaring subsystem owns its own binding/resource teardown
+- Member erasure: n/a — guild-scoped, not member-scoped
+
+#### 10. Verification oracle
+- Oracle type: parity golden (a port+improve, not a new feature)
+- Existing goldens: ~8,300 lines / 26 test files already cover round-trip edit/reset, every authority path, kill-switch behavior, audit-CHECK alignment — strong oracle to carry forward
+- New goldens required: R-10 enforcement (reject an out-of-`allowed_values` write at the pipeline, not just the UI); the AI-projection atomicity fix (once built, see §12)
+
+#### 11. Rubric pass — 10 probes
+| # | Class | Result |
+|---|---|---|
+| 1 | Dependency-order inversion | None — settings correctly sits at L1a, before every consumer |
+| 2 | Forgotten capability | None for settings itself (the adjacent forgotten item — hermes_cog's feedback-reporting goal — is resolved onto row 50) |
+| 3 | Thin/underspecified step | N/A — unusually well-documented (93-96% fit, deep tests) |
+| 4 | Stale/unanchored claim | **Found+fixed**: the 2026-06-12 production-readiness doc's 36/13/11 setting/binding/resource counts are stale vs. today's live 100/17/15 — recorded in-line so no later reader trusts the old figures |
+| 5 | Fragmentation/reinvention | **Found**: presets reimplemented ≥7× bot-wide, settings' numeric-presets widget is one instance — tracked as C-3, timing deferred |
+| 6 | Under/wrong-generalization | None found |
+| 7 | Missing cross-cutting standard | **Found**: R-10 is exactly this class — already ratified as a rider |
+| 8 | Verification hole | None — oracle is strong; the 2 live bugs found are correctness gaps, not verification holes (new goldens tracked in §10) |
+| 9 | UX/lifecycle-contract gap | **Found**: Back is single-level, not stack-aware — flagged for Phase-B nav engine |
+| 10 | Naming/collision risk | None — `settings` is a unique flat verb |
+
+#### 12. Blockers and decisions
+| Blocker type | Details | Resolution |
+|---|---|---|
+| Owner decision | Q-0119 governance-binding schema home | **Deferred to row 6 (moderation)** — owner-decided 2026-07-05 |
+| Live bug | AI-scalar → typed-policy projection is non-transactional (silent drift risk) | **Owner-decided 2026-07-05: queue a contained current-bot bug-fix PR.** Not implemented in this session — this Stage-2 walk is explicitly docs/planning-only and must not edit `disbot/` runtime code; recording it here is the durable "don't lose this" home until a bug-fix session picks it up. |
+| Live bug | No operator kill-switch on binding mutation (asymmetric with settings/provisioning) | **Owner-decided 2026-07-05: defer to the rebuild's binding-lane design** — no evidence of live harm |
+| Dependency not settled | Preset-widget migration timing to C-3 | Deferred — revisit when C-3 itself is scheduled, no artifact needed now |
+| Source uncertainty | Restart-safety of the current `SettingsHubView` not confirmed either way this pass | Flagged for Phase-B verification, not owner-blocking |
+
+#### 13. Stage-3 consolidation notes
+- BUILD-PLAN row delta: verdict tightens from bare `KEEP` to `KEEP+IMPROVE` with 6 named closure items (R-10, page-actionability, Back/Home stack-awareness, preset-C3-candidacy, AI-projection atomicity, binding kill-switch parity)
+- Gate-0 delta: none beyond the already-ratified R-10 rider — no new amendment needed
+- Dependencies to recheck: row 6 (moderation) inherits Q-0119; row 50 (boards family) inherits the hermes_cog-replacement feedback requirement (already recorded there)
+- Owner ratification needed: none outstanding — verdict, bug-fix priority, and Q-0119 routing were all decided live this session
 
