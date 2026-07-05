@@ -60,8 +60,8 @@ State vocabulary: `not-mapped` → `mapped` → `ready-for-owner` → `owner-dis
 | 5a | L1b (new row — split from row 5) | setup (BUILD-PLAN's own "register as real subsystem" note, now acted on) | A | `setup_cog.py` + `quicksetup_cog.py` + `views/setup/**` | mapped (deep dossier done) | decided | **redesign** | Advanced wizard's draft/Final-Review lane retired, folded into Essential Setup's direct-lane model; registered as one `SUBSYSTEMS` entry with two entry surfaces. Exact per-section fold mapping is Phase-B work. Full record above. |
 | 6 | L1b | moderation | A | `moderation_cog.py` | mapped (deep dossier done) | decided | **improve** | 64.2% fit floor; confirmed live bug (`/moderation` ignores `moderator_role`) decided fix-now; case/appeal + bulk actions committed as scope, not deferred. Q-0119 corrected (was never this row's decision). Full record above. |
 | 7 | L1b | logging | D | `logging_cog.py` + `logging/` pkg | mapped (deep dossier done) | decided | **keep** | Near-rubber-stamp exemplar confirmed (97% fit reproduced exactly). Admin-only surface confirmed intentional. Completion cert fixed (stale punch #2). Full record above. |
-| 8 | L1b | automod | A | `automod_cog.py` + `automod/` pkg | mapped | **owner-discussing (next)** | — | |
-| 9 | L1b | security | A | `security_cog.py` + `security/` pkg | mapped | not-started | — | |
+| 8 | L1b | automod | A | `automod_cog.py` + `automod/` pkg | mapped (deep dossier done) | decided | **improve** | 4-rule filter, fail-open discipline confirmed (detector-fault path untested). Auto-mod-tier consolidation with cleanup/image_mod punted to after rows 10/15. Full record above. |
+| 9 | L1b | security | A | `security_cog.py` + `security/` pkg | mapped | **owner-discussing (next)** | — | |
 | 10 | L1b | cleanup | A | `cleanup_cog.py` + `cleanup/` pkg | mapped | not-started | — | 2 unaudited mutation paths — live bug, jumps queue per collaboration-model |
 | 11 | L1b | counters | B | `counters_cog.py` + `counters/` pkg | mapped | not-started | — | re-binned operator band, not economy |
 | 12 | L1b | channel | A | `channel_cog.py` | mapped | not-started | — | 17 prefix verbs → small slash set |
@@ -980,6 +980,70 @@ slash commands exist — confirmed, not a gap (no owner ask for one).
 - BUILD-PLAN row delta: none — `KEEP` confirmed exactly as capstone stated
 - Gate-0 delta: none — G-1/G-3 already ratified
 - Dependencies to recheck: none new
+- Owner ratification needed: none outstanding
+
+### Row 8 — automod
+
+**Status: decided (2026-07-05).**
+
+#### 0. Row identity
+- BUILD-PLAN row: `automod` · Layer: L1b · Existing disposition: `KEEP+IMPROVE`
+- **Stage-2 verdict: `improve`** (confirmed, matches capstone)
+- Dependents to recheck: inherits row 6 (moderation)'s flagged note — automod is one of the seam's
+  current callers (`auto_delete`/`warn`), so its own Phase-B conversion tracks onto whatever shape
+  the Q-0226 mod-action envelope takes
+- Source confidence: `source-confirmed`
+
+#### 1. User/job summary
+- Primary user: administrators wanting baseline spam/abuse filtering without manual moderation effort
+- Job-to-be-done: catch obvious spam/invite/caps/mention abuse automatically, defaulting OFF
+- Competitor benchmark: MEE6/Carl/Dyno baseline — matched; ordered fail-open audited pipeline is the edge
+
+#### 2. Command surface
+`!automod` (read-only status embed) + the help-menu hook. No slash command, no panel — all
+configuration via `!settings → Automod` (11 `SettingSpec`s, borrowing moderation's
+`moderation.settings.configure` capability — "automod *is* moderation's automated layer").
+
+#### 3-5. Invocation / namespace / hub
+- No collisions; reached via Admin → Moderation → Automod (unchanged)
+
+#### 6. Capability triage and exact scope
+- **Keep:** all 4 rule detectors, the exempt list, the fail-open discipline at two independent
+  fault classes, the pipeline order (5, before cleanup/counting/chain/image_mod)
+- **Improve:** adopt G-11 (`MessagePipelineStageSpec` — collapses the hand-written `AutomodStage`
+  shell + its load/unload registration boilerplate into one declared row, leaving only the
+  `HandlerRef` to `process_message` as real code)
+- **Decided (owner, 2026-07-05):** the "one auto-mod tier operator surface with cleanup/image_mod"
+  aspiration (named in both capstone docs, never designed) is **punted, not committed either way**
+  — revisit once rows 10 (cleanup) and 15 (image_moderation) are also walked, since the shape needs
+  all three subsystems in view
+- One-line reason: functionality and safety discipline are already correct; the fit gap is pure
+  registration-shape debt, identical pattern to logging's G-1/G-3 conversion
+
+#### 7-11. (Outperform / engines / data / oracle / rubric)
+- Outperform: MEE6/Carl/Dyno baseline matched; ordered fail-open pipeline is the differentiator
+- Engines: G-11 (ratified, reused)
+- Data: owns no table (confirmed) — pure scalar settings
+- Oracle: parity golden; 432-line test suite (matches BUILD-PLAN's own citation exactly) — but the
+  **detector-fault fail-open path is implemented, not forced-fault-tested** (only the config-read
+  fault has a forced-raise test) — new golden needed
+- Rubric findings: stale/orphaned capability string `automod.settings.configure` found (declared,
+  nothing checks it — the real enforced one is `moderation.settings.configure`) — pure registry
+  drift, zero functional impact, **not fixed** (it's in `disbot/utils/subsystem_registry.py`, out
+  of this session's scope even as a one-line correction)
+
+#### 12. Blockers and decisions
+| Blocker type | Details | Resolution |
+|---|---|---|
+| Owner decision | Auto-mod-tier consolidation with cleanup/image_mod | **Decided 2026-07-05: punt — revisit after rows 10/15** |
+| Verification gap | Detector-fault fail-open path untested by forced-raise | Flagged for a future goldens pass, not blocking |
+| Doc/registry drift | Orphaned `automod.settings.configure` capability string | Flagged, not fixed (in-scope-boundary `disbot/` file) |
+
+#### 13. Stage-3 consolidation notes
+- BUILD-PLAN row delta: none — `IMPROVE` confirmed exactly as capstone stated
+- Gate-0 delta: none — G-11 already ratified
+- Dependencies to recheck: rows 10 (cleanup), 15 (image_moderation) inherit the auto-mod-tier
+  consolidation question, to be revisited once both are walked
 - Owner ratification needed: none outstanding
 
 
