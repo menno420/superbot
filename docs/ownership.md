@@ -85,7 +85,7 @@ writes must come from the owning cog or a shared service.
 | `rps_tournament` | `rps_players`, `rps_matches`                 | direct via `utils/db/games/rps.py`; balance mutations via economy_service |
 | `blackjack`    | (uses `xp.coins`; tournament state in `guild_settings`) | balance via economy_service |
 | `channel`      | (uses Discord API; visibility via governance)  | rename/move/delete/reorder/overwrite/clone **and ad-hoc operator creation** via `services/channel_lifecycle_service.py` (P0-4, Q-0100); visibility via governance pipeline; subsystem-*bound* creation via `ResourceProvisioningPipeline` |
-| `proof_channel`| (uses Discord API; balance via economy)        | economy_service |
+| `proof_channel`| (owns no table — Discord channel-permission overwrites only; the "economy" mention was stale, no economy_service call exists) | n/a |
 | `utility`      | (no DB tables of its own)                      | n/a |
 | `leaderboard`  | (reads every owner's tables; no writes)        | n/a |
 | `media` (YouTube) | `youtube_video_cache` (migration 049 — provider metadata/transcript cache) | **Shared platform** subsystem (ADR-007), not AI/BTD6-owned; AI is one consumer. Reads/writes via `services/video_reference_cache_service.py` (raw SQL isolated in `utils/db/youtube_video_cache.py`). **Data-minimisation (Q-0099):** only the bounded projection is stored — never the raw provider payload (`services/youtube_context_service._project_metadata`). **Retention:** physical purge of expired rows is owned by `cogs/media_maintenance_cog.py` (scheduled `tasks.loop` → `video_reference_cache_service.purge_expired`) |

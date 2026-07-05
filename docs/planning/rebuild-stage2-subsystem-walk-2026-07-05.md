@@ -68,7 +68,7 @@ State vocabulary: `not-mapped` → `mapped` → `ready-for-owner` → `owner-dis
 | 13 | L1b | role | A | `role_cog.py` + `role/` pkg + `role_grants_cog.py` | mapped (deep dossier done) | decided | **improve** | Teardown-gap bug confirmed + fix-now decided. **Resolved the Stage-1-open G-22 staging-lanes question** (bless RoleMenuBuilder as sole instance). Full record above. |
 | 14 | L1b | ticket | A | `ticket_cog.py` | mapped (deep dossier done) | decided | **improve** | Cleanest audited seam confirmed. No live bug, but real gaps: dormant fields (2 exposed, 1 feature finished), slash+auto-close committed, untested mutation paths flagged. Full record above. |
 | 15 | L1b | image_moderation | A | `image_moderation_cog.py` + `image_moderation/` pkg | mapped (deep dossier done) | decided | **improve** | No live bug, best fail-open coverage of the auto-mod trio. **Resolved rows 8/10's consolidation question**: minimal panels + 2 new buttons on cleanup's hub. Full record above. |
-| 16 | L1b | proof_channel | D | `proof_channel_cog.py` + `proof_channel/` pkg | mapped | **owner-discussing (next)** | — | last row of L1b — completes the entire operator spine |
+| 16 | L1b | proof_channel | D | `proof_channel_cog.py` + `proof_channel/` pkg | mapped (deep dossier done) | decided | **improve** | Restart-survivability gap confirmed live, fix-now decided. Ownership.md stale claim fixed. **L1b fully decided — all 16 rows.** Full record above. |
 | 17 | L1c | visual card engine (ADD) | — | none (new) | mapped | not-started | — | 5+ consumers (welcome/rank/leaderboard/profile cards) — D-1 |
 | 18 | L1c | welcome | A | `welcome_cog.py` | mapped | not-started | — | **re-homed here from L1b per D-1** (card-engine consumer) |
 | 19 | L1c | ux_lab | D | `ux_lab_cog.py` | mapped | not-started | — | zero-write gallery |
@@ -216,14 +216,15 @@ and **`hermes_cog.py` fits none of the 43+10 rows** (non-cog queue) — both fla
   sequence): rechecked, zero dependents found, no fallout; its underlying goal redirected onto row
   50 (boards family). **1 new row created mid-walk** — row 5a (`setup`), split from row 5
   (`server_management`) per the BUILD-PLAN's own note + Lane A's explicit recommendation; carried
-  into Coverage B below. **6 current-bot bug fixes queued (not implemented this session — scope
+  into Coverage B below. **7 current-bot bug fixes queued (not implemented this session — scope
   boundary):** the settings AI-projection drift (row 1), admin's bot_spam typo + missing audit
   trail (row 4), moderation's slash-command authority bug (row 6), security's unaudited
-  raid-lockdown slowmode edit (row 9), cleanup's two unaudited mutation paths (row 10), and role's
-  3-of-8-table guild-teardown gap (row 13) — all owner-decided "fix now," all left as
-  ready-to-execute specs for a dedicated bug-fix session. **1 long-standing Stage-1 decision
-  resolved**: G-22 staging-lanes (open since 2026-07-03), closed at row 13 as a side effect of
-  row 5a's earlier decision.
+  raid-lockdown slowmode edit (row 9), cleanup's two unaudited mutation paths (row 10), role's
+  3-of-8-table guild-teardown gap (row 13), and proof_channel's restart-survivability gap (row 16)
+  — all owner-decided "fix now," all left as ready-to-execute specs for a dedicated bug-fix
+  session. **2 long-standing decisions resolved**: G-22 staging-lanes (open since Stage 1,
+  2026-07-03, closed at row 13) and the auto-mod-tier consolidation (punted at rows 8/10, closed
+  at row 15). **L1b (the entire operator spine, 16 rows) is now fully decided.**
 
 ---
 
@@ -1523,5 +1524,74 @@ give a concrete answer.
 - Dependencies to recheck: **rows 8 (automod) and 10 (cleanup) both inherit this resolved
   decision** — their own records should be read alongside this one for the full consolidated shape
 - Owner ratification needed: none outstanding
+
+### Row 16 — proof_channel
+
+**Status: decided (2026-07-05). L1b (the entire operator spine, all 16 rows) is now fully decided.**
+
+#### 0. Row identity
+- BUILD-PLAN row: `proof_channel` · Layer: L1b · Existing disposition: `IMPROVE`
+- **Stage-2 verdict: `improve`** (confirmed, matches capstone)
+- Dependents to recheck: none
+- Source confidence: `source-confirmed`
+
+#### 1. User/job summary
+- Primary user: administrators running prize/reward events
+- Job-to-be-done: temporarily lock a channel to one winner for proof-of-win posting, then restore
+  it — **not** a verification/screenshot-proof gate as the name might suggest; zero economy/currency involvement
+- Competitor benchmark: niche — parity is enough (deliberate, per BUILD-PLAN)
+
+#### 2-5. Surface / invocation / hub
+- 5 prefix commands (`+prize`/`-prize`/`prizestatus`/`prizemenu`/`timedprize`), zero slash, all
+  gated identically on `manage_channels`-or-owner. Panel re-checks authority at every callback
+  (confirmed — panel-open does not authorize later action)
+
+#### 6. Capability triage and exact scope
+- **Keep:** the lock/unlock mechanism, the audited seam for grant/revoke/timed actions (each a
+  hand-written command body with an explicit `emit_audit_action` call — "prize actions stay
+  audited handlers" confirmed, reasonable since there's no DB row to write), the channel-binding
+  declaration
+- **Improve, owner-decided fix now:** the restart-survivability gap — `cog_unload` cancels the
+  unlock timer without unlocking the channel, and the deadline is pure in-memory state, so a
+  restart/reload mid-session leaves a channel locked to the winner indefinitely with no recovery.
+  Ready-to-execute spec: persist the unlock deadline (e.g. a small table or `guild_settings` row)
+  and add a boot-time reconcile sweep, giving G-9's `DeferredActionSpec` boot-reconcile semantics
+  something real to act on. Not implemented this session — scope boundary, same as the other
+  queued bug fixes.
+- **Improve, accepted scope:** delete the 3 orphaned capability strings (same pattern already
+  decided at row 12); expose the binding-write UI (a cross-cutting Settings-Phase-3 gap, not
+  specific to this row)
+- One-line reason: a deliberately niche feature whose authority/audit core is already hardened;
+  the one real gap is exactly the "timed-unlock recovery" the capstone's own done-definition names
+
+#### 7-11. (Outperform / engines / data / oracle / rubric)
+- Outperform: niche — parity is enough (deliberate, BUILD-PLAN's own framing)
+- Engines: G-9 (ratified, confirmed 3rd consumer alongside security and utility — set at Gate-0,
+  reconfirmed by this row's source read)
+- Data: owns no table (confirmed) — one `BindingSpec` + one optional `ResourceRequirement`
+- Oracle: parity golden; 18 tests (both files added 2026-06-29) cover binding/authority/audit well,
+  but **no test exercises the command bodies directly, the timer actually firing, or the
+  restart-leaves-locked gap** — new goldens needed once the persistence fix lands
+- Rubric findings: **stale claim found+fixed** — `docs/ownership.md` claimed proof_channel writes
+  balance "via economy_service"; false, zero economy code exists — fixed this session (pure docs)
+
+#### 12. Blockers and decisions
+| Blocker type | Details | Resolution |
+|---|---|---|
+| Live bug | Restart/reload leaves a channel locked to the winner indefinitely (no persisted deadline, no boot recovery) | **Owner-decided 2026-07-05: fix now.** Ready-to-execute spec above. Not implemented this session — scope boundary. |
+| Doc drift | `docs/ownership.md` stale "balance via economy" claim | **Fixed this session** (pure docs, no scope conflict) |
+
+#### 13. Stage-3 consolidation notes
+- BUILD-PLAN row delta: "timed-unlock recovery" now has a concrete fix spec instead of being an open done-definition item
+- Gate-0 delta: none — G-9 already ratified; this row gives its boot-reconcile semantics a real use case
+- Dependencies to recheck: none new
+- Owner ratification needed: none outstanding
+
+**L1b summary: all 16 rows decided** (admin, server_management, setup, moderation, logging,
+automod, security, cleanup, counters, channel, role, ticket, image_moderation, proof_channel — plus
+the row 5→5a split). Verdicts: 2 `keep` (logging, counters), 1 `redesign` (setup), 13 `improve`. 7
+current-bot bugs queued for a dedicated fix session. 2 Stage-1-vintage open decisions resolved
+(G-22 staging lanes; the auto-mod-tier consolidation). 1 self-correction caught and fixed (Q-0119).
+6 stale-doc findings fixed on sight. Next: L1c (visual card engine, welcome, ux_lab).
 
 
