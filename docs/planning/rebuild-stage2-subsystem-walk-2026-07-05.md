@@ -59,8 +59,8 @@ State vocabulary: `not-mapped` → `mapped` → `ready-for-owner` → `owner-dis
 | 5 | L1b | server_management | A | `server_management_cog.py` only (`setup_cog.py`/`quicksetup_cog.py` **split out to row 5a**, 2026-07-05) | mapped (deep dossier done) | decided | **improve** | Confirmed a pure zero-write router (5 nav buttons + fail-safe health badges); its own fit gap (58.8%→88.2%) is the exact same R-11/G-A3 dispatch pattern already decided at rows 3-4. Resolved row 2's deferred question: diagnostic's mutation surfaces stay put (no move). Full record above. |
 | 5a | L1b (new row — split from row 5) | setup (BUILD-PLAN's own "register as real subsystem" note, now acted on) | A | `setup_cog.py` + `quicksetup_cog.py` + `views/setup/**` | mapped (deep dossier done) | decided | **redesign** | Advanced wizard's draft/Final-Review lane retired, folded into Essential Setup's direct-lane model; registered as one `SUBSYSTEMS` entry with two entry surfaces. Exact per-section fold mapping is Phase-B work. Full record above. |
 | 6 | L1b | moderation | A | `moderation_cog.py` | mapped (deep dossier done) | decided | **improve** | 64.2% fit floor; confirmed live bug (`/moderation` ignores `moderator_role`) decided fix-now; case/appeal + bulk actions committed as scope, not deferred. Q-0119 corrected (was never this row's decision). Full record above. |
-| 7 | L1b | logging | D | `logging_cog.py` + `logging/` pkg | mapped | not-started | — | spike exemplar, 97% fit |
-| 8 | L1b | automod | A | `automod_cog.py` + `automod/` pkg | mapped | not-started | — | |
+| 7 | L1b | logging | D | `logging_cog.py` + `logging/` pkg | mapped (deep dossier done) | decided | **keep** | Near-rubber-stamp exemplar confirmed (97% fit reproduced exactly). Admin-only surface confirmed intentional. Completion cert fixed (stale punch #2). Full record above. |
+| 8 | L1b | automod | A | `automod_cog.py` + `automod/` pkg | mapped | **owner-discussing (next)** | — | |
 | 9 | L1b | security | A | `security_cog.py` + `security/` pkg | mapped | not-started | — | |
 | 10 | L1b | cleanup | A | `cleanup_cog.py` + `cleanup/` pkg | mapped | not-started | — | 2 unaudited mutation paths — live bug, jumps queue per collaboration-model |
 | 11 | L1b | counters | B | `counters_cog.py` + `counters/` pkg | mapped | not-started | — | re-binned operator band, not economy |
@@ -915,6 +915,71 @@ and Lane A's explicit recommendation (`lane-A-governance.md:908,916`).
 - Dependencies to recheck: rows 8 (automod), 9 (security), 10 (cleanup) all reuse moderation's
   action seam (`auto_delete`/`warn`/`kick`) — the envelope conversion here affects their own
   Phase-B plans; flag when those rows are walked
+- Owner ratification needed: none outstanding
+
+### Row 7 — logging
+
+**Status: decided (2026-07-05).**
+
+#### 0. Row identity
+- BUILD-PLAN row: `logging` · Layer: L1b · Existing disposition: `KEEP`
+- **Stage-2 verdict: `keep`** (confirmed, not tightened — genuinely different from every other L1b
+  row so far: no subsystem-specific gap found, only generic grammar-conversion work every
+  subsystem gets)
+- Dependents to recheck: none
+- Source confidence: `source-confirmed` — the 97% fit figure independently reproduced from source
+
+#### 1. User/job summary
+- Primary user: administrators wanting audit visibility
+- Job-to-be-done: route mod actions, generic audit events, and passive Discord activity to
+  configured channels
+- Competitor benchmark: ProBot/Carl — target: reach DM-log + webhook-route depth on the
+  route/panel spine already present
+
+#### 2. Command surface
+6 commands under `!logging` (status/set/create/routes/test + bare), all `admin_or_owner()`. No
+slash commands exist — confirmed, not a gap (no owner ask for one).
+
+#### 3. Invocation and routing
+- **Confirmed intentional, not a bug (owner-decided 2026-07-05):** `!logging`'s own surface stays
+  admin-only even though the bindings/settings underneath independently honor finer delegated
+  capability via `!settings`. Not aligned to match — a deliberate stricter default for this
+  subsystem's native command surface, left as-is.
+
+#### 4-5. Namespace / hub
+- No collisions; reached via Admin → Moderation → Logging (unchanged)
+
+#### 6. Capability triage and exact scope
+- **Keep:** all 8 gateway listeners, the 11-route binding table, the fail-safe send paths (every
+  path counts + swallows, never crashes the bus), the v2 audit-log integration
+- **Grammar conversion only (not a subsystem-specific improvement):** G-1×8 (each listener as a
+  declared `GatewayListenerSpec`), G-3 (the 11 routes as one `AnnouncementRouteSpec` family), the
+  route-truth alias declaration (already true in runtime behavior — `resolve_log_channel` already
+  tries the binding first — just needs to become declared data instead of hand-written branches)
+- **Confirmed, not this row's decision:** the `on_when_bound` safe-default-ON flip is already
+  ratified at the design-spec level as logging's reference case; it ships as part of that
+  cross-cutting rollout-review gate, not a fresh triage call here
+- One-line reason: the highest-fit subsystem in the whole corpus for a reason — behavior is
+  already correct; only its *representation* (code vs. declared data) changes
+
+#### 7-11. (Outperform / engines / data / oracle / rubric)
+- Outperform: ProBot/Carl DM-log + webhook-route depth (already-declared target, no new decision)
+- Engines: G-1, G-3 (both already ratified, reused)
+- Data: owns no table (confirmed)
+- Oracle: parity golden; 259 test functions + 7 golden fixtures — one of the strongest oracles in L1b
+- Rubric findings: **stale claim found+fixed** — the completion cert (`docs/planning/feature-completion/units/logging.md`) predated the v2 work and listed punch #2 as open; fixed this session. Two stale in-source docstring comments found (zero functional impact) — not fixed (editing `disbot/` files is out of this session's scope even for comment-only changes); flagged for the next bug-fix session alongside the queued live-bug fixes.
+
+#### 12. Blockers and decisions
+| Blocker type | Details | Resolution |
+|---|---|---|
+| Owner decision | `!logging` admin-only vs. delegated-capability-aware | **Decided 2026-07-05: leave as admin-only, intentional** |
+| Doc drift | Two stale docstring comments (`schemas.py`, `routes_panel.py`) — zero functional impact | Flagged for the next bug-fix/cleanup session, not fixed this session (comment-only edits to `disbot/` files are still out of this docs-only session's scope) |
+| Doc drift | Completion cert stale re: punch #2 | **Fixed this session** (pure docs, no scope conflict) |
+
+#### 13. Stage-3 consolidation notes
+- BUILD-PLAN row delta: none — `KEEP` confirmed exactly as capstone stated
+- Gate-0 delta: none — G-1/G-3 already ratified
+- Dependencies to recheck: none new
 - Owner ratification needed: none outstanding
 
 
