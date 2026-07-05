@@ -56,7 +56,8 @@ State vocabulary: `not-mapped` → `mapped` → `ready-for-owner` → `owner-dis
 | 2 | L1a | diagnostic | D | `diagnostic_cog.py` + `diagnostic/` pkg + `health_maintenance_cog.py` | mapped (deep dossier done) | decided | **improve** | hub merge (`!diagnostics`→`/platform`) + unified `DiagnosticProviderSpec` catalogue decided; mutation-surface ownership deferred to row 5. Full record above. |
 | 3 | L1a | help | D | `help_cog.py` + `help/` pkg | mapped (deep dossier done) | decided | **improve** | R-11 + G-10 adoption + editor-stack persistence fix decided. **L1a complete** (settings→diagnostic→help all decided). Full record above. |
 | 4 | L1b | admin | A | `admin_cog.py` + `admin/` pkg | mapped (verified zero drift vs. Lane A audit) | decided | **improve** | R-11 adoption + 9→8 nav collapse (row 2 fallout) + 2 live bugs (bot_spam typo, missing audit trail) decided fix-now, full scope — execution deferred to a bug-fix session. Full record above. |
-| 5 | L1b | server_management | A | `server_management_cog.py` + `setup_cog.py` + `quicksetup_cog.py` | mapped | not-started | — | confirmed structural gap: `setup` has **no `SUBSYSTEMS` registry key at all** today (not just "folded into" server_management — genuinely unregistered); `quicksetup_cog`=primary guided `!setup`, `setup_cog`=advanced `!setupadvanced` wizard + on-join launcher. BUILD-PLAN's own note calls for registering it as a real subsystem — decide the split at this row's walk. **Also inherits from row 2 (diagnostic):** decide whether diagnostic's 4 mutation surfaces (findings/flags/automation/backfill) should move here. |
+| 5 | L1b | server_management | A | `server_management_cog.py` only (`setup_cog.py`/`quicksetup_cog.py` **split out to row 5a**, 2026-07-05) | mapped (deep dossier done) | decided | **improve** | Confirmed a pure zero-write router (5 nav buttons + fail-safe health badges); its own fit gap (58.8%→88.2%) is the exact same R-11/G-A3 dispatch pattern already decided at rows 3-4. Resolved row 2's deferred question: diagnostic's mutation surfaces stay put (no move). Full record above. |
+| 5a | L1b (new row — split from row 5) | setup (BUILD-PLAN's own "register as real subsystem" note, now acted on) | A | `setup_cog.py` + `quicksetup_cog.py` + `views/setup/**` | mapped (deep dossier done) | **owner-discussing (next)** | — | **Genuinely a separate, much larger subsystem**: 2 DB tables, delegated authority (`setup_delegate`), a dedicated private channel, ~15,000 lines of tests, and — critically — **two incompatible mutation lanes under one nominal cog**: Essential Setup (`!setup`, direct-lane, immediate writes) vs. the Advanced wizard (`!setupadvanced`, draft-lane, stage→Final-Review). The owner has previously flagged the Advanced draft→Final-Review bulk editor as **largely non-functional** ("most of it does not do anything") — an unresolved, queued-but-unbuilt fix (PR 3b). This is the row's central open question. |
 | 6 | L1b | moderation | A | `moderation_cog.py` | mapped | not-started | — | 64.2% fit floor; `ModerationActionSpec` envelope decided (Q-0226) |
 | 7 | L1b | logging | D | `logging_cog.py` + `logging/` pkg | mapped | not-started | — | spike exemplar, 97% fit |
 | 8 | L1b | automod | A | `automod_cog.py` + `automod/` pkg | mapped | not-started | — | |
@@ -205,14 +206,15 @@ and **`hermes_cog.py` fits none of the 43+10 rows** (non-cog queue) — both fla
   0 rows currently missing from this index. 5 rows carry a capstone-accuracy contradiction (§3.6).
 - **Coverage C (commands/hidden functions):** not yet started at the per-command level — begins
   per-row during each walk. Ground truth for this work is now pinned (§3.5): 479 live commands.
-- **Coverage D (dependency rechecks):** 1 recheck completed — row 4 (admin) was the flagged
-  dependent of row 2 (diagnostic)'s hub-merge decision; rechecked, action recorded (9→8 nav-button
-  collapse). 2 forward links still open, both by design (not blocking): row 6 (moderation)
-  inherits Q-0119 from row 1 (settings); row 5 (server_management) inherits the mutation-surface
-  ownership question from row 2 (diagnostic). 1 drop verdict processed — `hermes_cog.py` (owner,
-  2026-07-05, out of walk-order sequence): rechecked, zero dependents found, no fallout; its
-  underlying goal (easy bug/feedback reporting) redirected onto row 50 (boards family) rather than
-  left to evaporate. **2 current-bot bug fixes queued (not implemented this session — scope
+- **Coverage D (dependency rechecks):** 2 rechecks completed — row 4 (admin) was the flagged
+  dependent of row 2 (diagnostic)'s hub-merge decision (action recorded: 9→8 nav-button collapse);
+  row 5 (server_management) resolved row 2's deferred mutation-surface-ownership question (no
+  move — closed). 1 forward link still open: row 6 (moderation) inherits Q-0119 from row 1
+  (settings). 1 drop verdict processed — `hermes_cog.py` (owner, 2026-07-05, out of walk-order
+  sequence): rechecked, zero dependents found, no fallout; its underlying goal redirected onto row
+  50 (boards family). **1 new row created mid-walk** — row 5a (`setup`), split from row 5
+  (`server_management`) per the BUILD-PLAN's own note + Lane A's explicit recommendation; carried
+  into Coverage B below. **2 current-bot bug fixes queued (not implemented this session — scope
   boundary):** the settings AI-projection drift (row 1) and admin's bot_spam typo + missing audit
   trail (row 4), both owner-decided "fix now," both left as ready-to-execute specs for a dedicated
   bug-fix session.
@@ -637,4 +639,152 @@ zero source drift found; all 11 commands and both known live bugs confirmed unch
   hub-merge decision (S-2 recheck), action recorded above
 - Owner ratification needed: bug-fix priority is decided (fix now, full scope); execution itself
   is deferred to a dedicated current-bot bug-fix session, flagged clearly to the owner
+
+### Row 5 — server_management
+
+**Status: decided (2026-07-05).** Research confirmed `server_management` and `setup`/`quicksetup`
+are operationally two subsystems today, joined only by one hub button — **`setup` is split out to
+its own row (5a)** below, matching the BUILD-PLAN's own "register `setup` as real subsystem" note
+and Lane A's explicit recommendation (`lane-A-governance.md:908,916`).
+
+#### 0. Row identity
+- BUILD-PLAN row: `server_management` (now scoped to just the hub+badges) · Layer: L1b · Existing disposition: `KEEP+IMPROVE`
+- **Stage-2 verdict: `improve`**
+- Dependents to recheck: **this row resolves row 2's deferred question** (see §6)
+- Source confidence: `source-confirmed`
+
+#### 1. User/job summary
+- Primary user: administrators — a launch pad + at-a-glance health badges for 4 operator domains
+- Job-to-be-done: "is my server basically healthy, and let me jump into moderation/channels/roles/cleanup from one place"
+- Prior art: itself
+
+#### 2. Command surface
+| Command | Effect | Access |
+|---|---|---|
+| `!servermanagement`/`/server-management` (+2 aliases) | opens the hub | `admin_or_owner()` |
+
+#### 3. Invocation and routing
+- Administrator-or-owner floor throughout; R-11 (already decided at row 3) fixes this row's dispatch too — no new decision needed
+
+#### 4. Namespace/collision review
+- No collisions found
+
+#### 5. Hub, navigation, presets
+- Nested under Admin in Help; 5 buttons: 4 routed managers (Moderation/Channels/Roles/Cleanup) + Setup handoff (now points at row 5a) + Access Map/Help Preview/Help-editor/Refresh
+
+#### 6. Capability triage and exact scope
+- **Keep:** all 5 badges (each individually fail-safe, never blanks the hub), the routed-manager dispatch, Access Map/Help Preview projections
+- **Improve:** adopt R-11 for the dispatch (2 distinct shapes today — 4 routed-manager buttons + a differently-built Help-editor button — both collapse to one declared `PanelRef` pattern)
+- **Decided (Lane 0, not re-asked — strong, one-sided evidence):** diagnostic's 4 mutation surfaces (findings/flags/automation/backfill) do **NOT** move here. Reasoning: (1) server_management's entire `KEEP` verdict rests on being a zero-write, zero-capability, pure router — Lane A explicitly scores this as by-design; adding any mutation surface breaks the invariant its fit score depends on. (2) All 4 are platform/process-ops concerns (bot-wide operational health, feature-flag rollout, scheduled-automation rules, one-time legacy-pointer migration), categorically different from server_management's guild-facing moderation/channel/role/cleanup domain. (3) They're already correctly owned and documented under diagnostic/platform services. **This closes row 2's deferred question — no dependent fallout.**
+- One-line reason: already the correct shape (a pure router); the only debt is the dispatch-pattern shape R-11 already fixes elsewhere.
+
+#### 7-11. (Outperform / engines / data / oracle / rubric)
+- Outperform: no new specific target beyond the platform-wide "in-Discord, free, live-health" framing already captured for the L1b band
+- Engines: R-11 (reused, decided elsewhere); the `HubStatus` badge composer stays a justified, permanent tier-3 escape hatch (real branching diagnostic logic — no primitive should absorb it)
+- Data: owns no table (confirmed)
+- Oracle: parity golden; existing tests strong (664 lines covering routing, fallback, badge fail-safety)
+- Rubric findings: **stale claim found** — `docs/subsystems/server-management.md` still lists `setup_cog.py`/`views/setup/` as part of server management without reflecting the 2026-06-24 Essential-Setup front-door cutover; **not fixed this session** (the split just happened — correcting the doc now would need to reflect the new row 5a boundary, deferred to row 5a's Stage-3 consolidation to avoid a second edit)
+
+#### 12. Blockers and decisions
+| Blocker type | Details | Resolution |
+|---|---|---|
+| Doc drift | `docs/subsystems/server-management.md` stale re: setup's cutover + the new row 5a split | Flagged; fix deferred to row 5a's Stage-3 consolidation |
+
+#### 13. Stage-3 consolidation notes
+- BUILD-PLAN row delta: row now scoped to hub+badges only; `setup` moves to its own row (5a)
+- Dependencies to recheck: row 2's forward link **closed this row** (no move)
+- Owner ratification needed: none outstanding
+
+### Row 5a — setup (new row, split from server_management)
+
+**Status: owner-discussing.** Dossier + questions presented in-session 2026-07-05.
+
+#### 0. Row identity
+- BUILD-PLAN row: **new** — created this session per the BUILD-PLAN's own "register `setup` as real subsystem" note (`NEW-BOT-BUILD-PLAN.md:59`) and Lane A's explicit recommendation (`lane-A-governance.md:908,916`: setup should get its own registered `SUBSYSTEMS` entry + `SubsystemManifest`, not a sub-component nested in server_management's — it owns 2 tables, a delegated-authority model, a dedicated private channel, and ~15,000 lines of tests, none of which server_management's manifest has a field for)
+- Layer: L1b (inherited from its former home)
+- Stage-2 verdict: `improve` at minimum (the subsystem clearly returns — Essential Setup works and is heavily tested); exact scope pending the owner's directional call below
+- Source confidence: `source-confirmed`
+
+#### 1. User/job summary
+- Primary user: guild owners / delegated setup-admins, first-run and ongoing configuration
+- Job-to-be-done: "get my server usably configured, guided, without needing to understand every setting"
+- Prior art: itself (Essential Setup)
+- Competitor benchmark: typical bot onboarding wizards — outperform via delegated authority, an AI "describe my server" advisor, and resumable multi-session setup (none of which are common)
+
+#### 2. Command surface (14 entries — see the research dossier for full file:line detail; condensed here)
+| Entry point | Lane | Effect | Access |
+|---|---|---|---|
+| `!setup`/`/setup` (quicksetup) | **direct** | opens Essential Setup's 8-step guided spine, each step writes immediately | `admin_or_owner()` |
+| `!setupadvanced`/`/setup-advanced` | **draft** | opens the section-list → stage → Final Review wizard in a dedicated `#superbot-setup` channel | owner/delegate for write; plain admin gets read-only readiness |
+| `!setupdescribe`/`/setup-describe` | draft (propose-only) | NL description → AI-proposed plan → review panel, no writes until accepted | `admin_or_owner()` |
+| `/setup-delegate`/`/setup-undelegate` | — | grant/revoke delegated setup-admin | **owner-only** |
+| `/setup-depth`, `/setup-skip`/`/setup-unskip`, `/setup-reset`, `/setup-status` | draft | wizard configuration/state commands | owner/delegate |
+| `/setup-hub` | — | legacy section-list hub, **self-flagged `legacy_duplicate`** already | owner/delegate/admin ladder |
+| `on_guild_join`/`on_ready` | — | launcher post/resume + Essential-Setup revive sweep | system |
+
+#### 3. Invocation and routing
+- Two genuinely different mutation lanes under one nominal subsystem (see §6) — this is the row's central architectural finding
+- Delegated authority (`setup_delegate`) is a bounded, live-re-verified, auditable-as-distinct actor type — a real differentiator vs. typical bots
+- On-join launcher deliberately opens Essential Setup only, never Advanced (existing source comment) — confirmed correct as the onboarding default, not a new decision
+
+#### 4. Namespace/collision review
+- `/setup-hub` already self-flagged `legacy_duplicate` — good existing hygiene, no action needed
+
+#### 5. Hub, navigation, presets
+- Reached via server_management's Setup button (row 5) **and** directly via its own commands (already satisfies Q-0231's direct-open rule)
+- A dedicated private `#superbot-setup` channel backs the Advanced wizard — a genuinely different navigation shape than every other subsystem's panel-based UI
+
+#### 6. Capability triage and exact scope
+- **Keep:** Essential Setup's entire 8-step direct-lane spine (works, heavily tested — ~40 test functions per step); the on-join launcher + resume sweep; the delegated-authority model; the AI advisor (propose-only, never auto-applies)
+- **THE open decision:** the Advanced wizard's draft→Final-Review bulk editor. The owner has **previously flagged this as largely non-functional** ("most of it does not do anything" — `setup-wizard-restructure-plan-2026-06-24.md:312-315`), with a fix (PR 3b) already queued but unbuilt. This is a real architectural fork: Essential Setup (direct-lane, works) and Advanced (draft-lane, owner-disputed) are **two incompatible mutation models under one nominal cog** — not a cosmetic issue, a genuine under-generalization (rubric class 6).
+- **Add:** register `setup` as its own `SUBSYSTEMS` entry + `SubsystemManifest` (decided, Lane 0 — matches BUILD-PLAN's own note + Lane A's unanimous recommendation, no controversy found)
+- One-line reason: the guided/direct-lane half is real, tested, working product; the draft-lane half is the one genuinely broken piece needing a directional call before Phase-B can plan around it.
+
+#### 7. Concrete outperform targets
+| Target type | Target |
+|---|---|
+| Beat | delegated setup authority (most bots don't have this); an AI "describe my server" advisor (no comparator found); resumable multi-session setup surviving restarts |
+
+#### 8. Required engines/specs/seams
+| Engine/spec/seam | Tier | In plan? | New/reused | Owner decision needed? |
+|---|---|---|---|---|
+| `SetupOperation` draft lane (stage → Final Review) | T2 | exists | reused — pending the Q1 directional call | yes — see below |
+| A proposed `WizardSpec`-class primitive for stateful, multi-step lifecycle (Lane A's own suggestion, `lane-A-governance.md:916`) | T2 | proposed, not in the ratified G-1…G-24 list | new | **owner-gated design work, flagged for Gate-0/Phase-B — not a Stage-2 call** |
+
+#### 9. Data, import, lifecycle
+- Stores: `setup_session` (one row/guild), `setup_draft_operations` (append-only staging)
+- Import mapping: `fresh-start`, with a carried "already onboarded" completion signal — guilds that finished setup under the old bot should not be re-prompted to onboard under the new one; in-progress/draft state does not need to survive the cutover
+- Guild join: the on-join launcher/channel-creation flow is itself the bootstrap — no separate bootstrap step needed
+
+#### 10. Verification oracle
+- Oracle type: parity golden
+- Existing goldens: exceptionally strong on Essential Setup (~15,000 lines across 35+ files, per-step apply/skip/create-vs-reuse coverage) — this half needs little new verification work
+- New goldens required: entirely dependent on the Q1 answer below — whichever path the Advanced wizard takes needs its own golden suite built fresh, since its current functional state is disputed
+
+#### 11. Rubric pass — 10 probes
+| # | Class | Result |
+|---|---|---|
+| 1 | Dependency-order inversion | **Found**: setup consumes nearly every other L1b subsystem's mutation seam (channel, role, ticket, cleanup, automation) — structurally it should port **near the end** of L1b, not adjacent to server_management (2nd position). Flagged for Stage-3 re-sequencing, not fixed in the live walk order this session. |
+| 2 | Forgotten capability | None |
+| 3 | Thin/underspecified step | N/A — very well documented |
+| 4 | Stale/unanchored claim | Same `docs/subsystems/server-management.md` drift noted at row 5 — ties directly to this row's Stage-3 consolidation now that the split is real |
+| 5 | Fragmentation/reinvention | None new beyond the already-tracked cross-cutting items |
+| 6 | Under/wrong-generalization | **Found — the central finding**: "setup" conflates two incompatible mutation-lane models (direct vs. draft) under one nominal cog/name pairing |
+| 7 | Missing cross-cutting standard | **Found**: the proposed `WizardSpec` primitive — flagged for Gate-0, not decided here |
+| 8 | Verification hole | Tied to the Advanced wizard's disputed functional state — see §10 |
+| 9 | UX/lifecycle-contract gap | Cross-cutting Back/Home applies (§3.7); otherwise none new |
+| 10 | Naming/collision risk | None — `/setup-hub` already self-flagged |
+
+#### 12. Blockers and decisions
+| Blocker type | Details | Owner question |
+|---|---|---|
+| Owner decision | Advanced wizard's fate (rework / retire-fold-into-Essential / fix-critical-paths-only / defer to Phase-B) | **Asked this session — see question panel** |
+| Owner decision | Registration model: one `SUBSYSTEMS` entry covering both entry surfaces, or two | **Asked this session — see question panel** |
+| Gate-0 item | `WizardSpec` primitive design | Not a Stage-2 call — flagged for Gate-0/Phase-B |
+
+#### 13. Stage-3 consolidation notes
+- BUILD-PLAN delta: new row created (`setup`, split from `server_management`) — must be carried into the consolidated Stage-3 surface record
+- Gate-0 delta: `WizardSpec`-class primitive needs consideration
+- Dependencies to recheck: **build-order position** — likely needs to move later within/after L1b given its consumer relationship to channel/role/ticket/cleanup/automation; Stage-3 should re-sequence
+- Owner ratification needed: pending this session's question-panel answers
 
