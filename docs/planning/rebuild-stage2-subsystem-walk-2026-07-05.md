@@ -209,8 +209,10 @@ and **`hermes_cog.py` fits none of the 43+10 rows** (non-cog queue) — both fla
 - **Coverage D (dependency rechecks):** 2 rechecks completed — row 4 (admin) was the flagged
   dependent of row 2 (diagnostic)'s hub-merge decision (action recorded: 9→8 nav-button collapse);
   row 5 (server_management) resolved row 2's deferred mutation-surface-ownership question (no
-  move — closed). 1 forward link still open: row 6 (moderation) inherits Q-0119 from row 1
-  (settings). 1 drop verdict processed — `hermes_cog.py` (owner, 2026-07-05, out of walk-order
+  move — closed). No forward links open (the Q-0119 "open link" to row 6 was itself a
+  documentation error, corrected this session — Q-0119 was already answered 2026-06-13, not a new
+  decision to defer; row 6 ratifies execution only). 1 drop verdict processed — `hermes_cog.py`
+  (owner, 2026-07-05, out of walk-order
   sequence): rechecked, zero dependents found, no fallout; its underlying goal redirected onto row
   50 (boards family). **1 new row created mid-walk** — row 5a (`setup`), split from row 5
   (`server_management`) per the BUILD-PLAN's own note + Lane A's explicit recommendation; carried
@@ -234,7 +236,14 @@ answer — not yet a durable decision.
 #### 0. Row identity
 - BUILD-PLAN row: `settings` · Layer: L1a · Existing disposition: `KEEP`
 - **Stage-2 verdict: `improve`** (owner-decided — tightens the bare capstone `keep`)
-- Dependents to recheck: none dropped/merged/re-placed; Q-0119 creates a forward link to row 6
+- Dependents to recheck: none — **correction (2026-07-05, caught verifying row 6):** Q-0119 was
+  *not* an open decision to defer; it was already answered by the owner on 2026-06-13
+  (`docs/planning/settings-pointer-lane-convergence-plan-2026-06-13.md` §5, "give authority its own
+  home" — a reserved `governance` `SubsystemSchema` owns `moderator_role`/`trusted_role` as its own
+  `BindingSpec`s, explicitly *not* re-homed under moderation). This session's earlier framing of it
+  as "deferred to row 6" was itself a stale/unanchored-claim error (rubric class 4) — fixed here.
+  The only real forward work is *executing* the already-decided answer in the rebuild's manifest
+  grammar, ratified at row 6, not re-deciding it.
   (moderation)
 - Source confidence: `source-confirmed` (live source read + 26 test files + design spec §4)
 
@@ -271,7 +280,7 @@ answer — not yet a durable decision.
 #### 6. Capability triage and exact scope
 - **Keep:** three-lane split (scalar/binding/resource), one audited mutation pipeline, generated subsystem pages, 4 diagnostic sub-panels, Command Access panel, Access-policy explorer, tri-state resolve chain
 - **Improve:** R-10 (`allowed_values` kernel enforcement at the mutation seam, not just a validator/widget hint); page-actionability (mutate bindings/resources in-place, not view+link-out only); Back/Home stack-awareness
-- **Defer:** Q-0119 governance-binding schema home → **routed to row 6 (moderation)**, owner-decided this session; binding-mutation kill-switch parity → rebuild-scoped design note, no current urgency (owner-decided)
+- **Defer:** binding-mutation kill-switch parity → rebuild-scoped design note, no current urgency (owner-decided). Q-0119 is **not deferred — already answered 2026-06-13** (see corrected §0 above); ratified for execution at row 6.
 - **Add:** none new for settings itself (the feedback-capability idea sits on row 50, not here)
 - One-line reason: already the rebuild's best-fit subsystem (93%→96%) — `improve`, not bare `keep`, because 6 concrete named gaps are worth closing rather than silently porting forward unfixed.
 
@@ -322,7 +331,7 @@ answer — not yet a durable decision.
 #### 12. Blockers and decisions
 | Blocker type | Details | Resolution |
 |---|---|---|
-| Owner decision | Q-0119 governance-binding schema home | **Deferred to row 6 (moderation)** — owner-decided 2026-07-05 |
+| Corrected finding | Q-0119 governance-binding schema home | **Already answered 2026-06-13** ("give authority its own home" — a reserved `governance` `SubsystemSchema`); this session's original "deferred to row 6" framing was a stale-claim error, corrected here. Row 6 ratifies execution, does not re-decide. |
 | Live bug | AI-scalar → typed-policy projection is non-transactional (silent drift risk) | **Owner-decided 2026-07-05: queue a contained current-bot bug-fix PR.** Not implemented in this session — this Stage-2 walk is explicitly docs/planning-only and must not edit `disbot/` runtime code; recording it here is the durable "don't lose this" home until a bug-fix session picks it up. |
 | Live bug | No operator kill-switch on binding mutation (asymmetric with settings/provisioning) | **Owner-decided 2026-07-05: defer to the rebuild's binding-lane design** — no evidence of live harm |
 | Dependency not settled | Preset-widget migration timing to C-3 | Deferred — revisit when C-3 itself is scheduled, no artifact needed now |
@@ -331,8 +340,8 @@ answer — not yet a durable decision.
 #### 13. Stage-3 consolidation notes
 - BUILD-PLAN row delta: verdict tightens from bare `KEEP` to `KEEP+IMPROVE` with 6 named closure items (R-10, page-actionability, Back/Home stack-awareness, preset-C3-candidacy, AI-projection atomicity, binding kill-switch parity)
 - Gate-0 delta: none beyond the already-ratified R-10 rider — no new amendment needed
-- Dependencies to recheck: row 6 (moderation) inherits Q-0119; row 50 (boards family) inherits the hermes_cog-replacement feedback requirement (already recorded there)
-- Owner ratification needed: none outstanding — verdict, bug-fix priority, and Q-0119 routing were all decided live this session
+- Dependencies to recheck: row 50 (boards family) inherits the hermes_cog-replacement feedback requirement (already recorded there). Q-0119 is ratified for execution at row 6, not a dependency recheck (it was never an open question this walk introduced).
+- Owner ratification needed: none outstanding — verdict and bug-fix priority were decided live this session; Q-0119 required no new decision, only correcting this record's mischaracterization of it
 
 ### Row 2 — diagnostic
 
