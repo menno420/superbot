@@ -60,15 +60,15 @@ State vocabulary: `not-mapped` → `mapped` → `ready-for-owner` → `owner-dis
 | 5a | L1b (new row — split from row 5) | setup (BUILD-PLAN's own "register as real subsystem" note, now acted on) | A | `setup_cog.py` + `quicksetup_cog.py` + `views/setup/**` | mapped (deep dossier done) | decided | **redesign** | Advanced wizard's draft/Final-Review lane retired, folded into Essential Setup's direct-lane model; registered as one `SUBSYSTEMS` entry with two entry surfaces. Exact per-section fold mapping is Phase-B work. Full record above. |
 | 6 | L1b | moderation | A | `moderation_cog.py` | mapped (deep dossier done) | decided | **improve** | 64.2% fit floor; confirmed live bug (`/moderation` ignores `moderator_role`) decided fix-now; case/appeal + bulk actions committed as scope, not deferred. Q-0119 corrected (was never this row's decision). Full record above. |
 | 7 | L1b | logging | D | `logging_cog.py` + `logging/` pkg | mapped (deep dossier done) | decided | **keep** | Near-rubber-stamp exemplar confirmed (97% fit reproduced exactly). Admin-only surface confirmed intentional. Completion cert fixed (stale punch #2). Full record above. |
-| 8 | L1b | automod | A | `automod_cog.py` + `automod/` pkg | mapped (deep dossier done) | decided | **improve** | 4-rule filter, fail-open discipline confirmed (detector-fault path untested). Auto-mod-tier consolidation with cleanup/image_mod punted to after rows 10/15. Full record above. |
+| 8 | L1b | automod | A | `automod_cog.py` + `automod/` pkg | mapped (deep dossier done) | decided | **improve** | 4-rule filter, fail-open discipline confirmed (detector-fault path untested). Auto-mod-tier consolidation **resolved at row 15**: gets its own minimal panel, linked from cleanup's hub. Full record above. |
 | 9 | L1b | security | A | `security_cog.py` + `security/` pkg | mapped (deep dossier done) | decided | **improve** | Confirmed live unaudited slowmode bug, fix-now decided. Quarantine action committed as Phase-B scope (was approved at Q-0111, never built). Full record above. |
-| 10 | L1b | cleanup | A | `cleanup_cog.py` + `cleanup/` pkg | mapped (deep dossier done) | decided | **improve** | Both unaudited paths confirmed live, fix-now decided. Auto-mod-tier consolidation still pending row 15. Full record above. |
+| 10 | L1b | cleanup | A | `cleanup_cog.py` + `cleanup/` pkg | mapped (deep dossier done) | decided | **improve** | Both unaudited paths confirmed live, fix-now decided. Auto-mod-tier consolidation **resolved at row 15**: cleanup's existing hub becomes the shared launcher (2 new buttons). Full record above. |
 | 11 | L1b | counters | B | `counters_cog.py` + `counters/` pkg | mapped (deep dossier done) | decided | **keep** | Rubber-stamp row — zero live bugs, zero unaudited paths. Completion cert stale-verdict fixed. Full record above. |
 | 12 | L1b | channel | A | `channel_cog.py` | mapped (deep dossier done) | decided | **improve** | No live bug found. Dead voice-create branch: owner decided to wire it up (new committed feature), not delete. 5 orphaned capability strings: deleted. Full record above. |
 | 13 | L1b | role | A | `role_cog.py` + `role/` pkg + `role_grants_cog.py` | mapped (deep dossier done) | decided | **improve** | Teardown-gap bug confirmed + fix-now decided. **Resolved the Stage-1-open G-22 staging-lanes question** (bless RoleMenuBuilder as sole instance). Full record above. |
 | 14 | L1b | ticket | A | `ticket_cog.py` | mapped (deep dossier done) | decided | **improve** | Cleanest audited seam confirmed. No live bug, but real gaps: dormant fields (2 exposed, 1 feature finished), slash+auto-close committed, untested mutation paths flagged. Full record above. |
-| 15 | L1b | image_moderation | A | `image_moderation_cog.py` + `image_moderation/` pkg | mapped | **owner-discussing (next)** | — | off-by-default, fail-open, URL-only privacy posture |
-| 16 | L1b | proof_channel | D | `proof_channel_cog.py` + `proof_channel/` pkg | mapped | not-started | — | |
+| 15 | L1b | image_moderation | A | `image_moderation_cog.py` + `image_moderation/` pkg | mapped (deep dossier done) | decided | **improve** | No live bug, best fail-open coverage of the auto-mod trio. **Resolved rows 8/10's consolidation question**: minimal panels + 2 new buttons on cleanup's hub. Full record above. |
+| 16 | L1b | proof_channel | D | `proof_channel_cog.py` + `proof_channel/` pkg | mapped | **owner-discussing (next)** | — | last row of L1b — completes the entire operator spine |
 | 17 | L1c | visual card engine (ADD) | — | none (new) | mapped | not-started | — | 5+ consumers (welcome/rank/leaderboard/profile cards) — D-1 |
 | 18 | L1c | welcome | A | `welcome_cog.py` | mapped | not-started | — | **re-homed here from L1b per D-1** (card-engine consumer) |
 | 19 | L1c | ux_lab | D | `ux_lab_cog.py` | mapped | not-started | — | zero-write gallery |
@@ -1044,10 +1044,11 @@ configuration via `!settings → Automod` (11 `SettingSpec`s, borrowing moderati
 | Doc/registry drift | Orphaned `automod.settings.configure` capability string | Flagged, not fixed (in-scope-boundary `disbot/` file) |
 
 #### 13. Stage-3 consolidation notes
-- BUILD-PLAN row delta: none — `IMPROVE` confirmed exactly as capstone stated
+- BUILD-PLAN row delta: **auto-mod-tier consolidation resolved at row 15** (2026-07-05) — automod
+  gets a minimal single-page panel wrapping its existing status embed, linked from a new button on
+  cleanup's hub; no new shared primitive built
 - Gate-0 delta: none — G-11 already ratified
-- Dependencies to recheck: rows 10 (cleanup), 15 (image_moderation) inherit the auto-mod-tier
-  consolidation question, to be revisited once both are walked
+- Dependencies to recheck: none — resolved
 - Owner ratification needed: none outstanding
 
 ### Row 9 — security
@@ -1171,13 +1172,13 @@ keyword/commands/prohibited/spam/embeds/links/attachments), `!word` (+add/remove
 | Blocker type | Details | Resolution |
 |---|---|---|
 | Live bug (2 paths) | Word/strict toggles + `!cleanuphistory` bulk delete, both unaudited | **Owner-decided 2026-07-05: fix now, both paths.** Ready-to-execute spec: route `cleanup_cog.py:505,524,705` (word/strict writes) and `cleanup_cog.py:447`'s call into `history_cleanup.apply_history_cleanup_plan` through the same `_record_action`-style audited wrapper `moderation_service.py:292-350` already uses for the identical function. Not implemented this session — scope boundary, same as the other queued bug fixes. |
-| Cross-row (not resolved) | Auto-mod-tier consolidation with automod/image_moderation | Still punted from row 8 — awaiting row 15 |
+| Cross-row | Auto-mod-tier consolidation with automod/image_moderation | **Resolved at row 15**: cleanup's existing hub gains 2 new buttons linking to automod's/image_moderation's new minimal panels |
 | Doc/registry drift | Orphaned `cleanup.settings.configure` capability string | Flagged, not fixed (in-scope-boundary `disbot/` file) |
 
 #### 13. Stage-3 consolidation notes
 - BUILD-PLAN row delta: none — verdict matches capstone exactly
 - Gate-0 delta: none — G-11/G-24 already ratified
-- Dependencies to recheck: row 15 (image_moderation) still owes the auto-mod-tier consolidation answer
+- Dependencies to recheck: none — resolved at row 15
 - Owner ratification needed: none outstanding
 
 ### Row 11 — counters
@@ -1457,6 +1458,70 @@ one eligibility gate and one mutation seam, 7 distinct audited call sites, every
   not "expose dormant fields" vaguely); auto-close promoted from named-scope to committed
 - Gate-0 delta: none — G-20/R-4 already ratified
 - Dependencies to recheck: none new
+- Owner ratification needed: none outstanding
+
+### Row 15 — image_moderation
+
+**Status: decided (2026-07-05).** No live bug. This row also **resolves the auto-mod-tier
+consolidation question punted at rows 8 and 10** — the last of the three subsystems needed to
+give a concrete answer.
+
+#### 0. Row identity
+- BUILD-PLAN row: `image_moderation` · Layer: L1b · Existing disposition: `KEEP+IMPROVE`
+- **Stage-2 verdict: `improve`** (confirmed, matches capstone)
+- Dependents to recheck: **resolves** rows 8 (automod) and 10 (cleanup)'s punted consolidation question
+- Source confidence: `source-confirmed`
+
+#### 1. User/job summary
+- Primary user: administrators wanting automated image-content filtering
+- Job-to-be-done: scan posted images for sexual/violence/harassment/hate content, off by default
+- Competitor benchmark: mainstream bots ship none — likely a genuine differentiator
+
+#### 2-5. Surface / invocation / hub
+- `!imagemod` (read-only status embed) + help hook — no panel, no slash. Confirmed `off_until_opt_in`
+  correctly implemented: every setting defaults OFF, zero API spend for an unconfigured guild.
+  Fail-open coverage is **broader than automod's** — 3 independently forced-fault-tested paths
+  (config-read, provider-unavailable, classify-error), closing the gap automod's own row (8)
+  flagged for itself.
+
+#### 6. Capability triage and exact scope — including the resolved cross-row question
+- **Keep:** the verdict/scoring logic, the strict `moderation_service` seam reuse (identical
+  pattern to automod, no second audit ladder), the `off_until_opt_in` privacy posture
+- **Improve:** adopt G-2 (list-valued settings — exempt roles/channels are currently CSV strings)
+  and G-5 (declarative bounds — the threshold percent is a hand-written validator)
+- **Add, owner-decided (2026-07-05) — resolves the rows 8/10 auto-mod-tier question with a
+  concrete, reuse-first shape:** give automod and image_moderation each a minimal single-page
+  panel wrapping their existing status embed (zero buttons in v1, matching the capstone's own
+  manifest sketch), then add two new buttons to **cleanup's existing `CleanupPanelView`** — "🛡️
+  Automod Status" and "🖼️ Image Moderation" — reusing its existing back-navigation wiring
+  (`_attach_back_to_cleanup_button`). **No new hub primitive is built.** All three subsystems are
+  already registry siblings under the same parent hub with adjacent priority ordering, so this is
+  an extension of tested, working code, not new infrastructure.
+- One-line reason: functionality and safety discipline are already correct (best fail-open
+  coverage of the auto-mod-tier trio); the fit gap is standard grammar conversion, plus the
+  now-resolved cross-row panel/consolidation question
+
+#### 7-11. (Outperform / engines / data / oracle / rubric)
+- Outperform: mainstream bots ship none — likely a genuine differentiator (per BUILD-PLAN)
+- Engines: G-2, G-5 (both ratified, reused)
+- Data: owns no table (confirmed) — pure scalar settings
+- Oracle: parity golden; **no verification hole found** — the strongest fail-open test coverage of
+  any auto-mod-tier subsystem so far
+- Rubric findings: orphaned capability string `image_moderation.settings.configure` (declared,
+  nothing checks it — same pattern as automod/cleanup) — flagged, not fixed (in-scope-boundary `disbot/` file)
+
+#### 12. Blockers and decisions
+| Blocker type | Details | Resolution |
+|---|---|---|
+| Cross-row decision (rows 8, 10, 15) | Auto-mod-tier consolidation | **Resolved 2026-07-05**: minimal panels for automod + image_moderation, linked from 2 new buttons on cleanup's existing hub — no new shared primitive |
+| Doc/registry drift | Orphaned `image_moderation.settings.configure` capability string | Flagged, not fixed |
+
+#### 13. Stage-3 consolidation notes
+- BUILD-PLAN row delta: "give it a real panel" now has a concrete shape (minimal `PanelSpec`,
+  linked from cleanup's hub) instead of an open aspiration
+- Gate-0 delta: none — G-2/G-5 already ratified
+- Dependencies to recheck: **rows 8 (automod) and 10 (cleanup) both inherit this resolved
+  decision** — their own records should be read alongside this one for the full consolidated shape
 - Owner ratification needed: none outstanding
 
 
