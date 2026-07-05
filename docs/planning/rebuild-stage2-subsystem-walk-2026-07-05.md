@@ -64,8 +64,8 @@ State vocabulary: `not-mapped` → `mapped` → `ready-for-owner` → `owner-dis
 | 9 | L1b | security | A | `security_cog.py` + `security/` pkg | mapped (deep dossier done) | decided | **improve** | Confirmed live unaudited slowmode bug, fix-now decided. Quarantine action committed as Phase-B scope (was approved at Q-0111, never built). Full record above. |
 | 10 | L1b | cleanup | A | `cleanup_cog.py` + `cleanup/` pkg | mapped (deep dossier done) | decided | **improve** | Both unaudited paths confirmed live, fix-now decided. Auto-mod-tier consolidation still pending row 15. Full record above. |
 | 11 | L1b | counters | B | `counters_cog.py` + `counters/` pkg | mapped (deep dossier done) | decided | **keep** | Rubber-stamp row — zero live bugs, zero unaudited paths. Completion cert stale-verdict fixed. Full record above. |
-| 12 | L1b | channel | A | `channel_cog.py` | mapped | **owner-discussing (next)** | — | 17 prefix verbs → small slash set |
-| 13 | L1b | role | A | `role_cog.py` + `role/` pkg + `role_grants_cog.py` | mapped | not-started | — | 3-of-8-table teardown gap — live bug |
+| 12 | L1b | channel | A | `channel_cog.py` | mapped (deep dossier done) | decided | **improve** | No live bug found. Dead voice-create branch: owner decided to wire it up (new committed feature), not delete. 5 orphaned capability strings: deleted. Full record above. |
+| 13 | L1b | role | A | `role_cog.py` + `role/` pkg + `role_grants_cog.py` | mapped | **owner-discussing (next)** | — | 3-of-8-table teardown gap — live bug |
 | 14 | L1b | ticket | A | `ticket_cog.py` | mapped | not-started | — | cleanest audited seam in Lane A |
 | 15 | L1b | image_moderation | A | `image_moderation_cog.py` + `image_moderation/` pkg | mapped | not-started | — | off-by-default, fail-open, URL-only privacy posture |
 | 16 | L1b | proof_channel | D | `proof_channel_cog.py` + `proof_channel/` pkg | mapped | not-started | — | |
@@ -1222,6 +1222,80 @@ None outstanding — no live bugs, no unaudited paths, no owner-sensitive open i
 - BUILD-PLAN row delta: none — `KEEP (re-bin)` confirmed exactly as capstone stated
 - Gate-0 delta: none — R-7/G-15 already ratified
 - Dependencies to recheck: build after row 7 (logging) for the `BindingSpec` pattern to exist first (already true in the frozen L1b build order)
+- Owner ratification needed: none outstanding
+
+### Row 12 — channel
+
+**Status: decided (2026-07-05).** No live bug found — a first among the L1b rows so far; the gap
+here is pure surface-shape debt, not correctness.
+
+#### 0. Row identity
+- BUILD-PLAN row: `channel` · Layer: L1b · Existing disposition: `IMPROVE`
+- **Stage-2 verdict: `improve`** (confirmed, matches capstone)
+- Dependents to recheck: none
+- Source confidence: `source-confirmed`
+
+#### 1. User/job summary
+- Primary user: administrators managing server channel structure
+- Job-to-be-done: create/delete/rename/move/configure channels without the Discord UI
+- Competitor benchmark: web-dashboard bots — batch ops + in-Discord audit trail is structural (already an edge)
+
+#### 2. Command surface (17 prefix verbs, 0 slash — confirmed 2nd-lowest as-written fit in the whole
+43-row corpus, 31.7%, beaten only by casino)
+All 17 route through the sole audited seam, `ChannelLifecycleService` — confirmed no bypass.
+Verbs: `!channelmenu`, `!set`, `!evt`, `!create`, `!bulkdelete`, `!del`, `!list`, `!clone`, `!move`,
+`!lock`, `!unlock`, `!channelinfo`, `!rename`, `!slowmode`, `!topic`, `!permissions`, `!bulkcreate`.
+
+#### 3. Invocation and routing
+- The exact verb→slash mapping is confirmed **Phase-B design work**, not this row's job — Stage 2
+  scopes the amendments and dead-code decisions, matching the pattern already set at rows 4/5a
+- Each verb re-derives its own channel/category text resolver instead of using native
+  `ChannelSelect`/`RoleSelect` widgets already used elsewhere in the codebase — G-23 fixes this
+
+#### 4-5. Namespace / hub
+- No collisions; reached via Admin → Server Management → Channels (unchanged)
+
+#### 6. Capability triage and exact scope
+- **Keep:** the audited `ChannelLifecycleService` seam (typed request → per-target result →
+  reversibility → audit+event → confirm gate — already the exemplar shape), the 5 panel views,
+  the list pagination (already covered by the existing Table/List+BrowserView primitives, no new
+  amendment needed — G-A8 was proposed but is redundant)
+- **Improve:** adopt G-18 (`ResourceLifecycleSpec` — covers 12 of 17 commands + 5 panels, the
+  "channel + role 2-for-1" confirmed via `RoleLifecycleService`'s identical shape) and G-23
+  (`EntityResolverRef`/argument schema — same 12 commands, replaces the hand-written resolver)
+- **Add, owner-decided (2026-07-05, against my recommendation — recorded as a genuine decision,
+  not a rubber stamp):** wire up voice-channel creation as a real feature. The `kind="voice"` code
+  path already exists in `ChannelLifecycleService` but no live caller ever reaches it (all 6 call
+  sites create text channels) — this becomes committed scope to add a real command/panel entry
+  point, not delete the branch.
+- **Drop, owner-decided (2026-07-05):** the 5 orphaned capability strings
+  (`channel.create.text`/`.create.voice`/`channel.delete.any`/`channel.restrict.apply`/
+  `channel.visibility.configure`) — never actually checked by any command (the real gate is
+  `audience_tier`-based `administrator-or-owner`); remove rather than carry forward
+- One-line reason: the seam is already the exemplar; the fit gap is pure grammar/registration
+  debt, plus two small dead-code decisions now resolved
+
+#### 7-11. (Outperform / engines / data / oracle / rubric)
+- Outperform: web-dashboard bots — batch ops + in-Discord audit trail (already structural)
+- Engines: G-18, G-23 (both ratified, reused); G-A8/`PaginatedBlockSpec` confirmed **not needed** —
+  already covered by the merged spec's existing Table/List + BrowserView primitives
+- Data: owns no table (confirmed)
+- Oracle: parity golden; strong existing coverage (557+193+306+119-line test files) — new goldens
+  needed for the voice-creation feature once designed
+- Rubric findings: **fragmentation found** — 17 independent resolver implementations where native
+  Discord select widgets already solve this elsewhere in the codebase; fixed by G-23
+
+#### 12. Blockers and decisions
+| Blocker type | Details | Resolution |
+|---|---|---|
+| Owner decision | Dead voice-create branch | **Decided 2026-07-05: wire it up** (add a real command/panel entry point) — against Lane-0's delete recommendation, recorded as a genuine owner call |
+| Owner decision | 5 orphaned capability strings | **Decided 2026-07-05: delete** (matches Lane-0's recommendation) |
+
+#### 13. Stage-3 consolidation notes
+- BUILD-PLAN row delta: voice-channel creation promoted from "dead code, wire-or-delete" to
+  "committed new feature" — Phase-B needs a concrete design (command/panel shape) for it
+- Gate-0 delta: none — G-18/G-23 already ratified; G-A8 confirmed redundant
+- Dependencies to recheck: none new
 - Owner ratification needed: none outstanding
 
 
