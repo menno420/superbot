@@ -1,9 +1,14 @@
 # CI-setup redesign — session brief (2026-07-05)
 
-> **Status:** `plan` — a scoping brief for a **dedicated next session** (owner-directed). It
-> inventories the current CI landscape and frames the redesign so that session starts on the design,
-> not the discovery. **Not the redesign itself** — the target-state design + migration is the
-> session's deliverable.
+> **Status:** `historical` — **EXECUTED.** This scoping brief primed the dedicated session; the
+> deliverable it framed shipped in PR #1737:
+> [`ci-setup-redesign-2026-07-05.md`](ci-setup-redesign-2026-07-05.md) (target-state design + phased
+> migration + fresh-repo divergence) and [`../operations/ci-what-runs-where.md`](../operations/ci-what-runs-where.md)
+> (the authoritative map). **Read the design doc, not this brief, for the answer** — this remains only
+> as the framing record. Two of its assumptions were corrected by the session (kept below for the
+> record): "cost = Actions minutes" is moot (the repo is **public** → minutes free); and "~8 unfiltered
+> workflows per push" is stale (all app-CI is already `paths`-filtered, and there is no push+PR
+> double-fire).
 
 ## Mission (owner-set)
 

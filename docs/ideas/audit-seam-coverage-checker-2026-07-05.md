@@ -86,3 +86,27 @@ backlog). Findings, cited so a later session can trust them:
 `check_architecture.py` + `architecture_rules/`); (2) add it to the **rebuild's checker backlog** as
 the AST verifier of `audit_completeness`'s declared `effect` + a Discord-state-mutation egress fence.
 Cross-referenced from that backlog idea's §"Audit-coverage AST checker".
+
+## Calibration (2026-07-05, CI-setup redesign PR #1737 — for the session that builds this)
+
+Before writing the checker, this session measured two candidate scopings against source so the build
+starts calibrated (Q-0105 "confirm against ground truth"):
+
+- **A module-level `*_mutation.py` heuristic is too broad AND misses the bug class.** Of the 12
+  `disbot/services/*_mutation.py` modules, **5 have no `emit_audit_action` reference at all**
+  (`ai_instruction_mutation`, `ai_orchestration_mutation`, `ai_policy_mutation`, `btd6_source_mutation`,
+  `btd6_strategy_mutation`) — several legitimately (AI-config / BTD6-data writes that aren't
+  user-facing auditable actions), so "module lacks audit" is a ~42% false-positive signal. Worse, the
+  **actual #1728 bugs lived *outside* `*_mutation.py` entirely** (admin-cog runtime mutations, a
+  `security_service` direct `channel.edit`, `!cleanuphistory` calling the plan fn directly) — a code
+  path that *never reaches the mutation seam* is invisible to a per-module scope.
+- **Therefore the checker must be per-*function* reachability, repo-wide** (cogs/views/services, not
+  just `*_mutation.py`): a function whose success path performs a write signal
+  (`utils.db.*` write helper, `pool/conn.execute`, or a Discord state mutation
+  `.edit/.delete/.set_permissions/.ban/.kick/.add_roles/.remove_roles`) but never reaches
+  `emit_audit_action` — directly or through a registered `*_mutation`/lifecycle seam — is the finding.
+  This is genuinely FP-prone (reachability through indirection) → **build it warn-only with an
+  `architecture_rules/` allowlist, validate over several sessions before any G promotion.** Not shipped
+  in #1737 (a naive stub would be noise); shipped instead: the ground-truth measurement above + the
+  precise spec in [`../planning/ci-setup-redesign-2026-07-05.md`](../planning/ci-setup-redesign-2026-07-05.md)
+  §C.5.
