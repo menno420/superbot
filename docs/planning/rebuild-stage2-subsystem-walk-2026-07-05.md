@@ -57,7 +57,7 @@ State vocabulary: `not-mapped` → `mapped` → `ready-for-owner` → `owner-dis
 | 3 | L1a | help | D | `help_cog.py` + `help/` pkg | mapped (deep dossier done) | decided | **improve** | R-11 + G-10 adoption + editor-stack persistence fix decided. **L1a complete** (settings→diagnostic→help all decided). Full record above. |
 | 4 | L1b | admin | A | `admin_cog.py` + `admin/` pkg | mapped (verified zero drift vs. Lane A audit) | decided | **improve** | R-11 adoption + 9→8 nav collapse (row 2 fallout) + 2 live bugs (bot_spam typo, missing audit trail) decided fix-now, full scope — execution deferred to a bug-fix session. Full record above. |
 | 5 | L1b | server_management | A | `server_management_cog.py` only (`setup_cog.py`/`quicksetup_cog.py` **split out to row 5a**, 2026-07-05) | mapped (deep dossier done) | decided | **improve** | Confirmed a pure zero-write router (5 nav buttons + fail-safe health badges); its own fit gap (58.8%→88.2%) is the exact same R-11/G-A3 dispatch pattern already decided at rows 3-4. Resolved row 2's deferred question: diagnostic's mutation surfaces stay put (no move). Full record above. |
-| 5a | L1b (new row — split from row 5) | setup (BUILD-PLAN's own "register as real subsystem" note, now acted on) | A | `setup_cog.py` + `quicksetup_cog.py` + `views/setup/**` | mapped (deep dossier done) | **owner-discussing (next)** | — | **Genuinely a separate, much larger subsystem**: 2 DB tables, delegated authority (`setup_delegate`), a dedicated private channel, ~15,000 lines of tests, and — critically — **two incompatible mutation lanes under one nominal cog**: Essential Setup (`!setup`, direct-lane, immediate writes) vs. the Advanced wizard (`!setupadvanced`, draft-lane, stage→Final-Review). The owner has previously flagged the Advanced draft→Final-Review bulk editor as **largely non-functional** ("most of it does not do anything") — an unresolved, queued-but-unbuilt fix (PR 3b). This is the row's central open question. |
+| 5a | L1b (new row — split from row 5) | setup (BUILD-PLAN's own "register as real subsystem" note, now acted on) | A | `setup_cog.py` + `quicksetup_cog.py` + `views/setup/**` | mapped (deep dossier done) | decided | **redesign** | Advanced wizard's draft/Final-Review lane retired, folded into Essential Setup's direct-lane model; registered as one `SUBSYSTEMS` entry with two entry surfaces. Exact per-section fold mapping is Phase-B work. Full record above. |
 | 6 | L1b | moderation | A | `moderation_cog.py` | mapped | not-started | — | 64.2% fit floor; `ModerationActionSpec` envelope decided (Q-0226) |
 | 7 | L1b | logging | D | `logging_cog.py` + `logging/` pkg | mapped | not-started | — | spike exemplar, 97% fit |
 | 8 | L1b | automod | A | `automod_cog.py` + `automod/` pkg | mapped | not-started | — | |
@@ -697,12 +697,19 @@ and Lane A's explicit recommendation (`lane-A-governance.md:908,916`).
 
 ### Row 5a — setup (new row, split from server_management)
 
-**Status: owner-discussing.** Dossier + questions presented in-session 2026-07-05.
+**Status: decided (2026-07-05).**
 
 #### 0. Row identity
 - BUILD-PLAN row: **new** — created this session per the BUILD-PLAN's own "register `setup` as real subsystem" note (`NEW-BOT-BUILD-PLAN.md:59`) and Lane A's explicit recommendation (`lane-A-governance.md:908,916`: setup should get its own registered `SUBSYSTEMS` entry + `SubsystemManifest`, not a sub-component nested in server_management's — it owns 2 tables, a delegated-authority model, a dedicated private channel, and ~15,000 lines of tests, none of which server_management's manifest has a field for)
 - Layer: L1b (inherited from its former home)
-- Stage-2 verdict: `improve` at minimum (the subsystem clearly returns — Essential Setup works and is heavily tested); exact scope pending the owner's directional call below
+- **Stage-2 verdict: `redesign`** — the user job (guided server configuration) stays, but the
+  mechanism changes materially: the draft/Final-Review lane is retired, folded into Essential
+  Setup's direct-lane model
+- Dependents to recheck: **`setup_diagnostics.staged_repair_ops` currently stages its repair
+  proposals through the same `SetupOperation`/Final-Review draft lane** being retired here — its
+  replacement mechanism (direct-lane apply, or its own confirm step) is Phase-B design work, not
+  decided this session, but flagged now so it isn't discovered late. No change to row 2's
+  (diagnostic) own verdict — this is additive scope for whoever designs the fold.
 - Source confidence: `source-confirmed`
 
 #### 1. User/job summary
@@ -736,9 +743,9 @@ and Lane A's explicit recommendation (`lane-A-governance.md:908,916`).
 
 #### 6. Capability triage and exact scope
 - **Keep:** Essential Setup's entire 8-step direct-lane spine (works, heavily tested — ~40 test functions per step); the on-join launcher + resume sweep; the delegated-authority model; the AI advisor (propose-only, never auto-applies)
-- **THE open decision:** the Advanced wizard's draft→Final-Review bulk editor. The owner has **previously flagged this as largely non-functional** ("most of it does not do anything" — `setup-wizard-restructure-plan-2026-06-24.md:312-315`), with a fix (PR 3b) already queued but unbuilt. This is a real architectural fork: Essential Setup (direct-lane, works) and Advanced (draft-lane, owner-disputed) are **two incompatible mutation models under one nominal cog** — not a cosmetic issue, a genuine under-generalization (rubric class 6).
-- **Add:** register `setup` as its own `SUBSYSTEMS` entry + `SubsystemManifest` (decided, Lane 0 — matches BUILD-PLAN's own note + Lane A's unanimous recommendation, no controversy found)
-- One-line reason: the guided/direct-lane half is real, tested, working product; the draft-lane half is the one genuinely broken piece needing a directional call before Phase-B can plan around it.
+- **Redesign (owner-decided 2026-07-05): retire the Advanced wizard's draft→Final-Review lane, fold into Essential Setup.** The unique sections only the Advanced wizard reaches today (`role_templates`, `cog_routing`, `ticket`, `preset_select`, and whatever of `channels`/`roles`/`moderation`/`cleanup`/`logging_presets` isn't already covered by Essential's 8 steps) become new Essential Setup steps or get folded into existing ones — **the exact per-section mapping is Phase-B design work**, not decided here; Stage 2 records the directional decision and target shape only. Once nothing consumes the draft lane, the `SetupOperation`/`FinalReviewView`/`PartialApplyRecoveryView` machinery itself is retired (with the noted diagnostic dependent, §0, needing its own new home).
+- **Add:** register `setup` as **one** `SUBSYSTEMS` entry covering both entry surfaces (owner-decided 2026-07-05) — the direct-vs-draft split was an internal implementation detail, not a product-facing boundary, and this decision retires that split anyway.
+- One-line reason: the guided/direct-lane half is real, tested, working product; the draft-lane half was the one genuinely broken piece, and folding it into the working model is more honest than maintaining two mutation lanes for one setup experience.
 
 #### 7. Concrete outperform targets
 | Target type | Target |
@@ -776,15 +783,16 @@ and Lane A's explicit recommendation (`lane-A-governance.md:908,916`).
 | 10 | Naming/collision risk | None — `/setup-hub` already self-flagged |
 
 #### 12. Blockers and decisions
-| Blocker type | Details | Owner question |
+| Blocker type | Details | Resolution |
 |---|---|---|
-| Owner decision | Advanced wizard's fate (rework / retire-fold-into-Essential / fix-critical-paths-only / defer to Phase-B) | **Asked this session — see question panel** |
-| Owner decision | Registration model: one `SUBSYSTEMS` entry covering both entry surfaces, or two | **Asked this session — see question panel** |
+| Owner decision | Advanced wizard's fate | **Decided 2026-07-05: retire, fold into Essential Setup** |
+| Owner decision | Registration model | **Decided 2026-07-05: one `SUBSYSTEMS` entry, two entry surfaces** |
+| Dependency fallout | `setup_diagnostics.staged_repair_ops` depends on the draft lane being retired | Flagged for whoever designs the fold (Phase-B) — not resolved this session |
 | Gate-0 item | `WizardSpec` primitive design | Not a Stage-2 call — flagged for Gate-0/Phase-B |
 
 #### 13. Stage-3 consolidation notes
-- BUILD-PLAN delta: new row created (`setup`, split from `server_management`) — must be carried into the consolidated Stage-3 surface record
+- BUILD-PLAN delta: new row created (`setup`, split from `server_management`), verdict `redesign` — must be carried into the consolidated Stage-3 surface record
 - Gate-0 delta: `WizardSpec`-class primitive needs consideration
-- Dependencies to recheck: **build-order position** — likely needs to move later within/after L1b given its consumer relationship to channel/role/ticket/cleanup/automation; Stage-3 should re-sequence
-- Owner ratification needed: pending this session's question-panel answers
+- Dependencies to recheck: **build-order position** — likely needs to move later within/after L1b given its consumer relationship to channel/role/ticket/cleanup/automation; **`setup_diagnostics`'s repair-op mechanism** needs a new home once the draft lane retires; Stage-3 should re-sequence and re-check both
+- Owner ratification needed: none outstanding — both decisions made live this session
 
