@@ -65,8 +65,8 @@ State vocabulary: `not-mapped` → `mapped` → `ready-for-owner` → `owner-dis
 | 10 | L1b | cleanup | A | `cleanup_cog.py` + `cleanup/` pkg | mapped (deep dossier done) | decided | **improve** | Both unaudited paths confirmed live, fix-now decided. Auto-mod-tier consolidation still pending row 15. Full record above. |
 | 11 | L1b | counters | B | `counters_cog.py` + `counters/` pkg | mapped (deep dossier done) | decided | **keep** | Rubber-stamp row — zero live bugs, zero unaudited paths. Completion cert stale-verdict fixed. Full record above. |
 | 12 | L1b | channel | A | `channel_cog.py` | mapped (deep dossier done) | decided | **improve** | No live bug found. Dead voice-create branch: owner decided to wire it up (new committed feature), not delete. 5 orphaned capability strings: deleted. Full record above. |
-| 13 | L1b | role | A | `role_cog.py` + `role/` pkg + `role_grants_cog.py` | mapped | **owner-discussing (next)** | — | 3-of-8-table teardown gap — live bug |
-| 14 | L1b | ticket | A | `ticket_cog.py` | mapped | not-started | — | cleanest audited seam in Lane A |
+| 13 | L1b | role | A | `role_cog.py` + `role/` pkg + `role_grants_cog.py` | mapped (deep dossier done) | decided | **improve** | Teardown-gap bug confirmed + fix-now decided. **Resolved the Stage-1-open G-22 staging-lanes question** (bless RoleMenuBuilder as sole instance). Full record above. |
+| 14 | L1b | ticket | A | `ticket_cog.py` | mapped | **owner-discussing (next)** | — | cleanest audited seam in Lane A |
 | 15 | L1b | image_moderation | A | `image_moderation_cog.py` + `image_moderation/` pkg | mapped | not-started | — | off-by-default, fail-open, URL-only privacy posture |
 | 16 | L1b | proof_channel | D | `proof_channel_cog.py` + `proof_channel/` pkg | mapped | not-started | — | |
 | 17 | L1c | visual card engine (ADD) | — | none (new) | mapped | not-started | — | 5+ consumers (welcome/rank/leaderboard/profile cards) — D-1 |
@@ -216,11 +216,14 @@ and **`hermes_cog.py` fits none of the 43+10 rows** (non-cog queue) — both fla
   sequence): rechecked, zero dependents found, no fallout; its underlying goal redirected onto row
   50 (boards family). **1 new row created mid-walk** — row 5a (`setup`), split from row 5
   (`server_management`) per the BUILD-PLAN's own note + Lane A's explicit recommendation; carried
-  into Coverage B below. **5 current-bot bug fixes queued (not implemented this session — scope
+  into Coverage B below. **6 current-bot bug fixes queued (not implemented this session — scope
   boundary):** the settings AI-projection drift (row 1), admin's bot_spam typo + missing audit
   trail (row 4), moderation's slash-command authority bug (row 6), security's unaudited
-  raid-lockdown slowmode edit (row 9), and cleanup's two unaudited mutation paths (row 10) — all
-  owner-decided "fix now," all left as ready-to-execute specs for a dedicated bug-fix session.
+  raid-lockdown slowmode edit (row 9), cleanup's two unaudited mutation paths (row 10), and role's
+  3-of-8-table guild-teardown gap (row 13) — all owner-decided "fix now," all left as
+  ready-to-execute specs for a dedicated bug-fix session. **1 long-standing Stage-1 decision
+  resolved**: G-22 staging-lanes (open since 2026-07-03), closed at row 13 as a side effect of
+  row 5a's earlier decision.
 
 ---
 
@@ -1295,6 +1298,88 @@ Verbs: `!channelmenu`, `!set`, `!evt`, `!create`, `!bulkdelete`, `!del`, `!list`
 - BUILD-PLAN row delta: voice-channel creation promoted from "dead code, wire-or-delete" to
   "committed new feature" — Phase-B needs a concrete design (command/panel shape) for it
 - Gate-0 delta: none — G-18/G-23 already ratified; G-A8 confirmed redundant
+- Dependencies to recheck: none new
+- Owner ratification needed: none outstanding
+
+### Row 13 — role
+
+**Status: decided (2026-07-05).** The largest subsystem in the corpus (108 units, tied with
+mining). This row also **closes the G-22 staging-lanes decision**, open since Stage 1
+(2026-07-03) — a genuine pre-existing owner decision this walk resolved as a side effect of row
+5a's earlier decision.
+
+#### 0. Row identity
+- BUILD-PLAN row: `role` · Layer: L1b · Existing disposition: `IMPROVE`
+- **Stage-2 verdict: `improve`** (confirmed, matches capstone)
+- Dependents to recheck: G-18 confirms the "channel + role 2-for-1" (`RoleLifecycleService`
+  structurally mirrors `ChannelLifecycleService`, already decided at row 12)
+- Source confidence: `source-confirmed`
+
+#### 1. User/job summary
+- Primary user: administrators (role config) and members (self-service role menus)
+- Job-to-be-done: manual role CRUD, automated tenure/XP role progression, self-service reaction
+  roles, temp-role grants
+- Competitor benchmark: Carl-bot — already ahead on batched failure reporting + server-side menu
+  modes + live counters (Carl paywalls these)
+
+#### 2. Command surface
+17 prefix commands, **zero slash commands** — confirmed the only Lane A subsystem with none. 7 of
+the 17 are hidden legacy-duplicate commands, each self-tagged in its own code
+(`legacy_duplicate`/`panel_action`/`internal_admin`) admitting they exist only because panel
+buttons were added after the command surface.
+
+#### 3. Invocation and routing
+- **G-22 resolved this session (owner-decided): bless `RoleMenuBuilder`'s view-local staging
+  pattern as the sole instance, do not build a shared `StagedBuilderSpec` primitive.** Row 5a's
+  earlier decision to retire the setup-wizard's draft lane removed one of the three staging lanes
+  G-22 was weighing (direct-mutation / setup's persisted draft / RoleMenuBuilder's in-memory
+  draft) — leaving RoleMenuBuilder as the only real consumer of this shape. Per S-1's
+  second-consumer rule, this is exactly the "keep it specific, shape behind a clean seam" case,
+  not the "build the engine" case. **This closes a decision that had been open since Stage 1**
+  (`rebuild-stage1-global-review-2026-07-03.md` §6).
+- "Add slash mirrors" — accepted improve-scope, no separate question needed (matches the pattern
+  every other L1b row is getting)
+
+#### 4-5. Namespace / hub
+- No collisions; reached via Admin → Server Management → Roles (unchanged)
+
+#### 6. Capability triage and exact scope
+- **Keep:** the automation engines (tenure/XP threshold reconciliation, `RoleAutomation`), the
+  three reaction-role modes (normal/unique/verify) with server-side enforcement, live sign-up
+  counters, temp-role grants
+- **Improve, owner-decided fix now:** the 3-of-8-table guild-teardown gap
+  (`role_thresholds`/`role_automation_exemptions`/`reaction_roles`) — same bug class as rows
+  4/6/9/10, plus the false "self-cleans" code comment needs correcting
+- **Improve, accepted scope (folded in without separate questions):** collapse the 7 hidden
+  legacy-duplicate commands into pure panel actions; add slash mirrors for the highest-traffic
+  commands; delete the dead `views/roles/main_panel.py` (`RoleHubView`, zero callers); delete the
+  3 orphaned capability strings (only 1 of 4 is ever checked); de-duplicate the reconciliation
+  logic shared between the daily sweep and on-join assignment
+- Adopt G-18 (`ResourceLifecycleSpec`, already ratified, confirmed 2-for-1 with channel) and G-21
+  (`RecordTableSpec`, ratified — role is its sole today-instance: exemptions, per-role config)
+- One-line reason: the engines are sound and already beat Carl-bot on several axes; the gaps are a
+  live teardown bug, command-surface debt from panel-button retrofitting, and one now-resolved
+  cross-cutting design question
+
+#### 7-11. (Outperform / engines / data / oracle / rubric)
+- Outperform: already ahead of Carl-bot on batched failure reporting + server-side menu modes +
+  live counters (paywalled there)
+- Engines: G-18, G-21 (ratified, reused); G-22 **resolved this session** — not generalized
+- Data: 8 tables confirmed; 5 have teardown, 3 don't (the live bug)
+- Oracle: parity golden; extensive existing coverage (41 test files, ~8,965 lines)
+- Rubric findings: **fragmentation found** — `role_check` (daily sweep) and `on_member_join`
+  independently rebuild identical threshold-filtering logic; **dead code found** — 159-line unused
+  view file; **capability mismatch found** — 3 of 4 declared strings never checked
+
+#### 12. Blockers and decisions
+| Blocker type | Details | Resolution |
+|---|---|---|
+| Owner decision (Stage-1 carryover) | G-22 staging-lanes standardization | **Resolved 2026-07-05: bless RoleMenuBuilder as the sole instance, don't generalize** — closes an item open since Stage 1 |
+| Live bug | 3-of-8-table guild-teardown gap + false "self-cleans" comment | **Owner-decided 2026-07-05: fix now.** Ready-to-execute spec: add teardown calls for `role_thresholds`/`role_automation_exemptions`/`reaction_roles` to `guild_lifecycle.py` (alongside the existing 5-table pattern at `:661-768`), and correct the false comment at `guild_lifecycle.py:70-72,664-666`. Not implemented this session — scope boundary, same as the other queued bug fixes. |
+
+#### 13. Stage-3 consolidation notes
+- BUILD-PLAN row delta: none — `IMPROVE` confirmed exactly as capstone stated
+- Gate-0 delta: **G-22 removed from the open-decision list** — resolved, "bless as sole instance"
 - Dependencies to recheck: none new
 - Owner ratification needed: none outstanding
 
