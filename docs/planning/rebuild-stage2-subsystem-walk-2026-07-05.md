@@ -66,8 +66,8 @@ State vocabulary: `not-mapped` → `mapped` → `ready-for-owner` → `owner-dis
 | 11 | L1b | counters | B | `counters_cog.py` + `counters/` pkg | mapped (deep dossier done) | decided | **keep** | Rubber-stamp row — zero live bugs, zero unaudited paths. Completion cert stale-verdict fixed. Full record above. |
 | 12 | L1b | channel | A | `channel_cog.py` | mapped (deep dossier done) | decided | **improve** | No live bug found. Dead voice-create branch: owner decided to wire it up (new committed feature), not delete. 5 orphaned capability strings: deleted. Full record above. |
 | 13 | L1b | role | A | `role_cog.py` + `role/` pkg + `role_grants_cog.py` | mapped (deep dossier done) | decided | **improve** | Teardown-gap bug confirmed + fix-now decided. **Resolved the Stage-1-open G-22 staging-lanes question** (bless RoleMenuBuilder as sole instance). Full record above. |
-| 14 | L1b | ticket | A | `ticket_cog.py` | mapped | **owner-discussing (next)** | — | cleanest audited seam in Lane A |
-| 15 | L1b | image_moderation | A | `image_moderation_cog.py` + `image_moderation/` pkg | mapped | not-started | — | off-by-default, fail-open, URL-only privacy posture |
+| 14 | L1b | ticket | A | `ticket_cog.py` | mapped (deep dossier done) | decided | **improve** | Cleanest audited seam confirmed. No live bug, but real gaps: dormant fields (2 exposed, 1 feature finished), slash+auto-close committed, untested mutation paths flagged. Full record above. |
+| 15 | L1b | image_moderation | A | `image_moderation_cog.py` + `image_moderation/` pkg | mapped | **owner-discussing (next)** | — | off-by-default, fail-open, URL-only privacy posture |
 | 16 | L1b | proof_channel | D | `proof_channel_cog.py` + `proof_channel/` pkg | mapped | not-started | — | |
 | 17 | L1c | visual card engine (ADD) | — | none (new) | mapped | not-started | — | 5+ consumers (welcome/rank/leaderboard/profile cards) — D-1 |
 | 18 | L1c | welcome | A | `welcome_cog.py` | mapped | not-started | — | **re-homed here from L1b per D-1** (card-engine consumer) |
@@ -1380,6 +1380,82 @@ buttons were added after the command surface.
 #### 13. Stage-3 consolidation notes
 - BUILD-PLAN row delta: none — `IMPROVE` confirmed exactly as capstone stated
 - Gate-0 delta: **G-22 removed from the open-decision list** — resolved, "bless as sole instance"
+- Dependencies to recheck: none new
+- Owner ratification needed: none outstanding
+
+### Row 14 — ticket
+
+**Status: decided (2026-07-05).** No live correctness bug — a second row (after channel) where
+the gap is unreachable functionality and verification holes, not broken behavior.
+
+#### 0. Row identity
+- BUILD-PLAN row: `ticket` · Layer: L1b · Existing disposition: `KEEP+IMPROVE`
+- **Stage-2 verdict: `improve`** (confirmed, matches capstone)
+- Dependents to recheck: none
+- Source confidence: `source-confirmed`
+
+#### 1. User/job summary
+- Primary user: members needing support, staff managing tickets
+- Job-to-be-done: open a private support channel, staff claim/manage it, close with a transcript
+- Competitor benchmark: Ticket Tool — free transcripts (they paywall this); add auto-close/SLA,
+  categories, reopen
+
+#### 2. Command surface
+17 prefix commands, **zero slash commands** — confirmed. **Verified "cleanest audited seam in
+Lane A" reputation holds up exactly**: all 3 open entry points (command/panel/AI) funnel through
+one eligibility gate and one mutation seam, 7 distinct audited call sites, every write transactional.
+
+#### 3. Invocation and routing
+- 4-condition authority mechanism confirmed exactly as documented: ticket opener OR staff role OR
+  admin OR platform owner (`views/tickets/_shared.py:21-35` + an inline opener-only override
+  duplicated at 2 sites)
+
+#### 4-5. Namespace / hub
+- No collisions; reached via Admin → Server Management → Tickets (unchanged)
+
+#### 6. Capability triage and exact scope
+- **Keep:** the audited open/claim/close/participant seam (the exemplar), the 3-entry-point
+  eligibility gate, the transcript+DM+teardown close flow
+- **Add, owner-decided (2026-07-05):** expose `category_id` (new category-picker dropdown on the
+  config panel — currently read by ticket-open logic but never settable) and
+  `ping_staff_on_open` (new on/off toggle — currently always-on, no way to disable); **finish
+  wiring `panel_channel_id`/`panel_message_id`** into a real "bot tracks and can refresh/relocate
+  its one canonical ticket-launcher panel" feature, rather than treating the columns as dead
+  (`!ticketpanel` currently just posts a fresh duplicate message every run)
+- **Add, owner-decided committed scope (2026-07-05):** slash command mirrors **and**
+  auto-close-on-inactivity, both committed now (against Lane-0's split recommendation to defer
+  auto-close pending design — recorded as a genuine owner call)
+- Adopt G-20 (`InstanceLifecycleSpec`, ratified — ticket is the sole current consumer of all 4
+  amendments it folds; absorbs ~350 lines of hand-written choreography) and R-4
+  (`storage=typed_column` elaboration, ratified — ticket is the only Lane A subsystem with no
+  `schemas.py`, its bespoke migration-owned table is its dominant tier-3 mass)
+- One-line reason: the audited core is genuinely exemplary; the gaps are unreachable
+  functionality (dormant fields), missing features (slash, auto-close), and an untested surface
+
+#### 7-11. (Outperform / engines / data / oracle / rubric)
+- Outperform: Ticket Tool — free transcripts (paywalled there); auto-close/SLA, categories, reopen
+  (all now committed scope)
+- Engines: G-20 (ratified, ticket is highest-leverage consumer — giveaways flagged as a plausible
+  future 2nd consumer of an adjacent shape); R-4 (ratified)
+- Data: `ticket_config`/`tickets`/`ticket_blacklist` (migration 098) — genuinely typed-column, not
+  KV; confirmed accurate
+- Oracle: parity golden; **but a real verification hole found**: `close`/`add_participant`/
+  `remove_participant`/`update_config`/`set_blacklist` have zero direct unit tests, and the entire
+  cog plus 4 of 5 views are untested — the least-tested row so far despite the audited-seam
+  reputation
+- Rubric findings: **verification hole found** (above) — new goldens needed once features land
+
+#### 12. Blockers and decisions
+| Blocker type | Details | Resolution |
+|---|---|---|
+| Owner decision | Dormant fields (category_id, ping_staff_on_open, panel_channel_id/panel_message_id) | **Decided 2026-07-05: expose the 2 toggles, finish wiring the panel-tracking pair as a real feature** — not dropped |
+| Owner decision | Slash mirrors + auto-close-on-inactivity | **Decided 2026-07-05: commit to both now** (auto-close needs its own design pass for what "inactive" means, warn-before-close, timeout configurability — but is committed Phase-B scope, not deferred) |
+| Verification gap | Untested mutation paths + 4/5 views | Flagged for a future goldens pass, not blocking |
+
+#### 13. Stage-3 consolidation notes
+- BUILD-PLAN row delta: dormant-field exposure scoped concretely (2 toggles + 1 finished feature,
+  not "expose dormant fields" vaguely); auto-close promoted from named-scope to committed
+- Gate-0 delta: none — G-20/R-4 already ratified
 - Dependencies to recheck: none new
 - Owner ratification needed: none outstanding
 
