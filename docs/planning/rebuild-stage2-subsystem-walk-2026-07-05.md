@@ -63,8 +63,8 @@ State vocabulary: `not-mapped` → `mapped` → `ready-for-owner` → `owner-dis
 | 8 | L1b | automod | A | `automod_cog.py` + `automod/` pkg | mapped (deep dossier done) | decided | **improve** | 4-rule filter, fail-open discipline confirmed (detector-fault path untested). Auto-mod-tier consolidation with cleanup/image_mod punted to after rows 10/15. Full record above. |
 | 9 | L1b | security | A | `security_cog.py` + `security/` pkg | mapped (deep dossier done) | decided | **improve** | Confirmed live unaudited slowmode bug, fix-now decided. Quarantine action committed as Phase-B scope (was approved at Q-0111, never built). Full record above. |
 | 10 | L1b | cleanup | A | `cleanup_cog.py` + `cleanup/` pkg | mapped (deep dossier done) | decided | **improve** | Both unaudited paths confirmed live, fix-now decided. Auto-mod-tier consolidation still pending row 15. Full record above. |
-| 11 | L1b | counters | B | `counters_cog.py` + `counters/` pkg | mapped | **owner-discussing (next)** | — | re-binned operator band, not economy |
-| 12 | L1b | channel | A | `channel_cog.py` | mapped | not-started | — | 17 prefix verbs → small slash set |
+| 11 | L1b | counters | B | `counters_cog.py` + `counters/` pkg | mapped (deep dossier done) | decided | **keep** | Rubber-stamp row — zero live bugs, zero unaudited paths. Completion cert stale-verdict fixed. Full record above. |
+| 12 | L1b | channel | A | `channel_cog.py` | mapped | **owner-discussing (next)** | — | 17 prefix verbs → small slash set |
 | 13 | L1b | role | A | `role_cog.py` + `role/` pkg + `role_grants_cog.py` | mapped | not-started | — | 3-of-8-table teardown gap — live bug |
 | 14 | L1b | ticket | A | `ticket_cog.py` | mapped | not-started | — | cleanest audited seam in Lane A |
 | 15 | L1b | image_moderation | A | `image_moderation_cog.py` + `image_moderation/` pkg | mapped | not-started | — | off-by-default, fail-open, URL-only privacy posture |
@@ -1175,6 +1175,53 @@ keyword/commands/prohibited/spam/embeds/links/attachments), `!word` (+add/remove
 - BUILD-PLAN row delta: none — verdict matches capstone exactly
 - Gate-0 delta: none — G-11/G-24 already ratified
 - Dependencies to recheck: row 15 (image_moderation) still owes the auto-mod-tier consolidation answer
+- Owner ratification needed: none outstanding
+
+### Row 11 — counters
+
+**Status: decided (2026-07-05).** A near rubber-stamp row: zero live bugs, zero unaudited paths,
+full test coverage — the first L1b row with no owner-sensitive open item.
+
+#### 0. Row identity
+- BUILD-PLAN row: `counters` · Layer: L1b · Existing disposition: `KEEP (re-bin)`
+- **Stage-2 verdict: `keep`** (confirmed, matches capstone)
+- Dependents to recheck: none
+- Source confidence: `source-confirmed`
+
+#### 1. User/job summary
+- Primary user: administrators wanting a live server-stat "statdock" (member/human/bot counts on
+  channel names)
+- Job-to-be-done: rename up to 3 pre-existing operator-bound channels to show a live count via a
+  `{count}` template — never creates channels
+- Competitor benchmark: Statbot-class — declarative presets + rate-limit-aware sync
+
+#### 2-6. Surface, invocation, hub, triage
+- Commands: `!counters`/`/counters` (status), `!counterpreset [name]` (list/apply-all-3 via the
+  audited `SettingsMutationPipeline`) — confirmed fully audited, no gaps
+- **Confirmed re-bin is sound, not cosmetic**: originally filed under Lane B (economy) purely by
+  file location; it's a pure operator-configuration feature (admin-gated even under its nominal
+  Community hub placement today) with zero economy/game mechanics
+- **Keep:** the rename-on-diff mechanism (rate-limit safety — zero Discord calls on a no-op sync),
+  the per-guild exponential backoff (`GuildSyncBackoff`, shipped PR #1575), the preset catalog
+- **Improve (mechanical, no owner decision needed):** port the 3 channel settings to `BindingSpec`
+  (mirrors logging's already-established pattern — this is the BUILD-PLAN's "depends on: logging"
+  note, a manifest-pattern dependency, not a runtime import); adopt R-7
+  (`ManagedTaskSpec.error_policy += per_target_backoff`) — counters' own backoff is R-7's cited
+  concrete example; fold `!counterpreset` into G-15's kernel workflow (already adversarially settled)
+
+#### 7-11. (Outperform / engines / data / oracle / rubric)
+- Fit: 21 units, 81.0% as-written → 95.2% with amendments (confirmed exact)
+- Rubric findings: **stale claim found+fixed** — the completion cert's closing verdict still
+  listed loop backoff as an open gap after it shipped (PR #1575, 2026-06-30); fixed this session
+  (pure docs, no scope conflict)
+
+#### 12. Blockers and decisions
+None outstanding — no live bugs, no unaudited paths, no owner-sensitive open item.
+
+#### 13. Stage-3 consolidation notes
+- BUILD-PLAN row delta: none — `KEEP (re-bin)` confirmed exactly as capstone stated
+- Gate-0 delta: none — R-7/G-15 already ratified
+- Dependencies to recheck: build after row 7 (logging) for the `BindingSpec` pattern to exist first (already true in the frozen L1b build order)
 - Owner ratification needed: none outstanding
 
 
