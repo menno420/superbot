@@ -1,10 +1,10 @@
 {
   "meta": {
-    "generated_at": "2026-07-04T23:32:38Z",
+    "generated_at": "2026-07-05T01:18:31Z",
     "build": {
-      "commit": "6bb30fdd",
-      "subject": "Merge pull request #1719 from menno420/claude/review-open-prs-1k48kg",
-      "committed_at": "2026-07-04T23:32:38Z"
+      "commit": "d2cf6be3",
+      "subject": "Merge pull request #1723 from menno420/bot/dashboard-refresh",
+      "committed_at": "2026-07-05T01:18:31Z"
     },
     "counts": {
       "functions": 43,
