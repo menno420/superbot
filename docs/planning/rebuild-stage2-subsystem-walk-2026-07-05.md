@@ -61,8 +61,8 @@ State vocabulary: `not-mapped` → `mapped` → `ready-for-owner` → `owner-dis
 | 6 | L1b | moderation | A | `moderation_cog.py` | mapped (deep dossier done) | decided | **improve** | 64.2% fit floor; confirmed live bug (`/moderation` ignores `moderator_role`) decided fix-now; case/appeal + bulk actions committed as scope, not deferred. Q-0119 corrected (was never this row's decision). Full record above. |
 | 7 | L1b | logging | D | `logging_cog.py` + `logging/` pkg | mapped (deep dossier done) | decided | **keep** | Near-rubber-stamp exemplar confirmed (97% fit reproduced exactly). Admin-only surface confirmed intentional. Completion cert fixed (stale punch #2). Full record above. |
 | 8 | L1b | automod | A | `automod_cog.py` + `automod/` pkg | mapped (deep dossier done) | decided | **improve** | 4-rule filter, fail-open discipline confirmed (detector-fault path untested). Auto-mod-tier consolidation with cleanup/image_mod punted to after rows 10/15. Full record above. |
-| 9 | L1b | security | A | `security_cog.py` + `security/` pkg | mapped | **owner-discussing (next)** | — | |
-| 10 | L1b | cleanup | A | `cleanup_cog.py` + `cleanup/` pkg | mapped | not-started | — | 2 unaudited mutation paths — live bug, jumps queue per collaboration-model |
+| 9 | L1b | security | A | `security_cog.py` + `security/` pkg | mapped (deep dossier done) | decided | **improve** | Confirmed live unaudited slowmode bug, fix-now decided. Quarantine action committed as Phase-B scope (was approved at Q-0111, never built). Full record above. |
+| 10 | L1b | cleanup | A | `cleanup_cog.py` + `cleanup/` pkg | mapped | **owner-discussing (next)** | — | 2 unaudited mutation paths — live bug, jumps queue per collaboration-model |
 | 11 | L1b | counters | B | `counters_cog.py` + `counters/` pkg | mapped | not-started | — | re-binned operator band, not economy |
 | 12 | L1b | channel | A | `channel_cog.py` | mapped | not-started | — | 17 prefix verbs → small slash set |
 | 13 | L1b | role | A | `role_cog.py` + `role/` pkg + `role_grants_cog.py` | mapped | not-started | — | 3-of-8-table teardown gap — live bug |
@@ -216,10 +216,11 @@ and **`hermes_cog.py` fits none of the 43+10 rows** (non-cog queue) — both fla
   sequence): rechecked, zero dependents found, no fallout; its underlying goal redirected onto row
   50 (boards family). **1 new row created mid-walk** — row 5a (`setup`), split from row 5
   (`server_management`) per the BUILD-PLAN's own note + Lane A's explicit recommendation; carried
-  into Coverage B below. **3 current-bot bug fixes queued (not implemented this session — scope
+  into Coverage B below. **4 current-bot bug fixes queued (not implemented this session — scope
   boundary):** the settings AI-projection drift (row 1), admin's bot_spam typo + missing audit
-  trail (row 4), and moderation's slash-command authority bug (row 6) — all owner-decided "fix
-  now," all left as ready-to-execute specs for a dedicated bug-fix session.
+  trail (row 4), moderation's slash-command authority bug (row 6), and security's unaudited
+  raid-lockdown slowmode edit (row 9) — all owner-decided "fix now," all left as ready-to-execute
+  specs for a dedicated bug-fix session.
 
 ---
 
@@ -1044,6 +1045,66 @@ configuration via `!settings → Automod` (11 `SettingSpec`s, borrowing moderati
 - Gate-0 delta: none — G-11 already ratified
 - Dependencies to recheck: rows 10 (cleanup), 15 (image_moderation) inherit the auto-mod-tier
   consolidation question, to be revisited once both are walked
+- Owner ratification needed: none outstanding
+
+### Row 9 — security
+
+**Status: decided (2026-07-05).**
+
+#### 0. Row identity
+- BUILD-PLAN row: `security` · Layer: L1b · Existing disposition: `KEEP+IMPROVE`
+- **Stage-2 verdict: `improve`** (confirmed, matches capstone)
+- Dependents to recheck: inherits row 6 (moderation)'s flagged note — confirmed `security_service`
+  calls `moderation_service.kick` directly for account-age auto-kick, zero parallel audit path of
+  its own
+- Source confidence: `source-confirmed`
+
+#### 1. User/job summary
+- Primary user: administrators wanting automated raid/join-abuse protection
+- Job-to-be-done: catch and respond to raids and suspicious new-account joins automatically
+- Competitor benchmark: Wick — close the quarantine/join-viz gaps; beat on no-PII/fail-open/audited-kick
+
+#### 2. Command surface
+`!security` — one read-only status embed. All configuration via `!settings → Security` (11
+`SettingSpec`s). No panel, no slash command — matches automod's minimal-surface pattern.
+
+#### 3-5. Invocation / namespace / hub
+- No collisions; reached via Admin → Moderation → Security (unchanged)
+
+#### 6. Capability triage and exact scope
+- **Keep:** both approved tiers (raid detection, account-age filter), the fail-open join-dispatch
+  discipline, the timed auto-restore mechanism, the deliberate absence of tiers 3/4 (privacy-declined)
+- **Improve, owner-decided fix now:** the unaudited raid-lockdown slowmode edit — same live-bug
+  class as rows 1/4/6, queued as a ready-to-execute current-bot fix
+- **Add, owner-decided committed scope (matches row 6's pattern):** the quarantine (role-isolation)
+  action approved at Q-0111 but never built — genuine new design work (role-isolation mechanism,
+  reversibility decision), committed as a Phase-B deliverable, not deferred
+- Adopt G-9 (`DeferredActionSpec`) for the restore timers — already ratified, this is the 3rd
+  confirmed consumer alongside proof_channel and utility
+- One-line reason: the approved tiers work correctly and safely; the gaps are one audit-trail bug
+  and one never-built approved feature
+
+#### 7-11. (Outperform / engines / data / oracle / rubric)
+- Outperform: Wick — close quarantine/join-viz gaps; beat on no-PII/fail-open/audited-kick
+- Engines: G-9 (ratified, 3rd confirmed consumer); quarantine likely reuses `role_automation`'s
+  already-audited system-actor seam (the same one `welcome_service` uses for entry-role grants)
+- Data: owns no table (confirmed) — pure scalar settings + in-memory detector state
+- Oracle: parity golden; 27 tests confirmed exactly (not the stale cert's "~32") — but **every
+  existing test uses alert-only mode; the actual buggy slowmode code path has zero test coverage**,
+  exactly why the bug shipped unnoticed
+- Rubric findings: **verification hole found** — the untested slowmode path; new goldens required
+  once the fix lands
+
+#### 12. Blockers and decisions
+| Blocker type | Details | Resolution |
+|---|---|---|
+| Live bug | Unaudited raid-lockdown slowmode edit | **Owner-decided 2026-07-05: fix now.** Ready-to-execute spec: route `security_service.py:186-193,196-213` (`_apply_slowmode`/`_lift_lockdown`) through `ChannelLifecycleService().apply(operation="set_slowmode", ...)`, the same seam `!slowmode` already uses. Not implemented this session — scope boundary, same as the other queued bug fixes. |
+| Owner decision | Quarantine action | **Decided 2026-07-05: commit to building now** as a Phase-B deliverable |
+
+#### 13. Stage-3 consolidation notes
+- BUILD-PLAN row delta: `IMPROVE` confirmed; quarantine promoted from "approved-but-unbuilt" to "committed Phase-B deliverable"
+- Gate-0 delta: none — G-9 already ratified
+- Dependencies to recheck: none new
 - Owner ratification needed: none outstanding
 
 
