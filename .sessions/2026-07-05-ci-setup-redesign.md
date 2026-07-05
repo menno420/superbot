@@ -1,7 +1,9 @@
 # 2026-07-05 — CI-setup redesign (best-possible CI: current bot + fresh repo)
 
-> **Status:** `in-progress` — born-red gate (Q-0133). Flip to `complete` as the deliberate final step
-> once the deliverable is committed, rebased onto the auto-updated head, and the CI mirror is green.
+> **Status:** `complete` — deliberate final flip (born-red gate, Q-0133). Deliverable committed +
+> rebased onto the auto-updated head; CI mirror green (14103 passed incl. 8 new tests; the only errors
+> are the pre-existing dev-only `grimp`/`bot1` graph issue CI never runs). Executable-config changes are
+> owner-gated proposals (router Q-0238 (C) + Q-0239 G2–G8).
 
 ## What this session did
 
