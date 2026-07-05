@@ -89,8 +89,13 @@
    (tolerant `parse_id_csv`) + an `is_ignored(channel_id, user_id)` gate wired into the shared
    `_log_event_if_enabled` (counter `event_skipped_ignored`), so a passive event whose channel or
    subject is listed is skipped for every category (e.g. log all deletes except #bot-testing). +8 tests.
-2. **Channel + voice event categories** *(owner, deepening)* — `on_guild_channel_*` + `on_voice_state_update`
-   logging (note voice volume needs tuning).
+2. ~~**Channel + voice event categories**~~ ✅ **DONE 2026-07-01 (#1624, server event logging v2)** —
+   `on_audit_log_entry_create` + `on_voice_state_update` + `on_raw_message_delete` listeners added;
+   channel/server/moderation categories now sourced from the Discord audit log (~50 `AuditLogAction`s
+   mapped), voice is passive. **Narrower gap remains**: the Setup wizard's quick-toggle
+   (`essential_setup.py`) still only exposes the 3 v1 categories — the 4 v2 categories require
+   `!settings`/`!logging status` to configure (`docs/server-logging.md:424-427`). Stage-2 rebuild walk
+   (`rebuild-stage2-subsystem-walk-2026-07-05.md`, row 7) carries this forward, not a fresh gap.
 3. **In-panel presets** *(offline, minor)* — surface the logging presets / a bulk event-toggle in the panel.
 4. **Auto-create collision handling** *(needs-live-bot, minor)* — suffix/guard when an auto-created log
    channel name collides.
@@ -109,6 +114,6 @@
 Logging is a **structurally complete, fail-safe, fully-audited** unit — EventBus-driven mod/audit/passive
 event logging to category channels (combined or per-category, with a fallback chain), config-driven and
 defaults-OFF, bindings through the audited pipeline, with a Setup step and a strong test suite. It is
-**not yet `✔ certified`**: the remaining gaps are **best-in-class breadth** — channel/voice
-events (#2) — in-panel presets (#3), and the live walkthrough/sign-off (#5/#6). Ignored channels/users
-lists (#1) shipped 2026-07-01. No safety/audit/dead-end issues found.
+**not yet `✔ certified`**: the remaining gaps are **best-in-class breadth** — in-panel presets (#3) —
+and the live walkthrough/sign-off (#5/#6). Ignored channels/users lists (#1, 2026-07-01) and channel/voice
+event categories (#2, 2026-07-01 via #1624) have both shipped. No safety/audit/dead-end issues found.
