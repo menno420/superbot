@@ -31,6 +31,12 @@ only the header block is read, so a `**Subsystem:**` *example* in an idea's body
 
 Current broad captures:
 
+- [`deferred-action-restart-recovery-checker-2026-07-05.md`](./deferred-action-restart-recovery-checker-2026-07-05.md) —
+  **session idea (2026-07-05, Q-0089, rebuild Stage-2 walk PR #1725):** a warn-only checker for
+  one-shot deferred actions (`asyncio.sleep`+`tasks.spawn`) with no persisted deadline / boot
+  reconcile — the identical restart-recovery gap was found independently in security's
+  raid-lockdown timer and proof_channel's prize-unlock timer this session, both confirmed G-9
+  `DeferredActionSpec` consumers.
 - [`dependabot-automerge-enabler-2026-07-04.md`](./dependabot-automerge-enabler-2026-07-04.md) —
   **session idea (2026-07-04, Q-0089, open-PR sweep PR #1719):** extend the `auto-merge-enabler`
   workflow to `dependabot/**` PRs — CI (full suite on the bumped deps) is the gate and the

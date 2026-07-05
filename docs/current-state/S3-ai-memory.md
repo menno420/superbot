@@ -10,6 +10,22 @@
 > own; distinct from S4 (the docs content it produces) and S5 (its operation).*
 
 **Recently shipped (this sector):**
+- **Stage-2 subsystem walk: L1a + L1b fully decided (PR #1725, 2026-07-05 — owner-led, live)** —
+  the canonical walk artifact
+  [`rebuild-stage2-subsystem-walk-2026-07-05.md`](../planning/rebuild-stage2-subsystem-walk-2026-07-05.md)
+  (52-row progress index) now carries **19 decided rows**: all of L1a (settings, diagnostic, help)
+  and all of L1b, the operator spine (admin, server_management, setup [split into new row 5a],
+  moderation, logging, automod, security, cleanup, counters, channel, role, ticket,
+  image_moderation, proof_channel) — 2 `keep`, 1 `redesign`, 16 `improve`. Found **7 current-bot
+  bugs, owner-decided "fix now"** (exact file:line specs in the walk doc §7.1 — not implemented
+  this session, docs/planning-only) and a **committed "implement now" scope list spanning 6 rows**
+  (§7.2). Resolved 2 long-standing cross-cutting decisions as a side effect: G-22 staging-lanes
+  standardization and the auto-mod-tier operator-surface consolidation. Also: the owner redirected
+  `hermes_cog`'s dropped bug-report intent onto the future "boards family" row (an AI-assisted
+  "tell us what to improve" surface) rather than dropping the idea outright. **Next session (owner
+  plan): an Opus session that fixes the §7.1 bugs directly in the current bot and starts
+  implementing some of §7.2's committed scope** — a deliberate detour from the walk to structure
+  the *current* bot before the walk itself continues at **L1c** (34+ rows remain).
 - **THE MEMORY SUBSTRATE IS FINALIZED (#1649, 2026-07-02 — the handoff §5.B Fable-5 ultracode
   session; the K0 gate deliverable).** The substrate-kit's full nervous system shipped on the
   declaration layer: mode *behaviors* (observe/guided/active now change quota / orientation /
@@ -61,9 +77,14 @@ creds · `[owner]` needs an owner decision/action; see [`../repo-sector-map.md`]
   ([decisions log](../planning/rebuild-stage1-global-review-2026-07-03.md), #1679, Q-0219…Q-0223) and a
   **conventions freeze** (naming · four-rung invocation ladder · mod-actions-as-data · authority +
   bot-owner override; [decisions log](../planning/rebuild-conventions-invocation-authority-2026-07-03.md),
-  #1680, Q-0224…Q-0228). **▶ next: Stage 2 — the per-subsystem walk** (process:
-  [`planning/rebuild-planning-phase-2026-07-03.md`](../planning/rebuild-planning-phase-2026-07-03.md)).
-  Still behind the Phase-3 owner gate below (no new-repo code until design-spec ratification).
+  #1680, Q-0224…Q-0228). **Stage 2 — the per-subsystem walk is underway** (process:
+  [`planning/rebuild-planning-phase-2026-07-03.md`](../planning/rebuild-planning-phase-2026-07-03.md);
+  progress + full handoff:
+  [`planning/rebuild-stage2-subsystem-walk-2026-07-05.md`](../planning/rebuild-stage2-subsystem-walk-2026-07-05.md)
+  §7) — **L1a + L1b decided (19 rows, PR #1725, 2026-07-05)**; 34+ rows remain. `[owner]` **▶ next:
+  a bug-fix + initial-implementation session against the *current* bot** (walk doc §7.1/§7.2), then
+  the walk continues at **L1c**. Still behind the Phase-3 owner gate below (no new-repo code until
+  design-spec ratification).
 - `[owner]` **🔒 THE REBUILD OWNER GATE — the Phase-2 design spec is DONE and the evidence package
   is IN** (2026-07-02): [`rebuild-design-spec-2026-07-02.md`](../planning/rebuild-design-spec-2026-07-02.md)
   (Fable-5 judge panel + Opus/GPT adversarial review), now backed by

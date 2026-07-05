@@ -117,5 +117,5 @@ Counters is a **structurally complete, fail-safe, fully-audited** stat-channel u
 on a rate-limit-aware change-detection loop, never creating channels (rename-only), config-driven and
 defaults-OFF, with ~35 tests. The 2026-06-30 deepening closed punch #1/#2/#4/#5 (curated preset catalog +
 one-command audited apply, `/counters` slash parity, channel-type coverage, a real end-to-end integration
-test). It is **not yet `✔ certified`**: remaining gaps are loop backoff (#3, stateful) and the owner
-walkthrough/sign-off (#6/#7). No safety/audit/dead-end issues found.
+test). It is **not yet `✔ certified`**: the only remaining gaps are the owner walkthrough/sign-off
+(#6/#7) — loop backoff (#3) shipped 2026-06-30 (PR #1575). No safety/audit/dead-end issues found.
