@@ -54,8 +54,8 @@ State vocabulary: `not-mapped` → `mapped` → `ready-for-owner` → `owner-dis
 |---|---|---|---|---|---|---|---|---|
 | 1 | L1a | settings | D | `settings_cog.py` + `settings/` pkg | mapped | decided | **improve** | first row walked this session; full record above |
 | 2 | L1a | diagnostic | D | `diagnostic_cog.py` + `diagnostic/` pkg + `health_maintenance_cog.py` | mapped (deep dossier done) | decided | **improve** | hub merge (`!diagnostics`→`/platform`) + unified `DiagnosticProviderSpec` catalogue decided; mutation-surface ownership deferred to row 5. Full record above. |
-| 3 | L1a | help | D | `help_cog.py` + `help/` pkg | mapped | **owner-discussing (next)** | — | |
-| 4 | L1b | admin | A | `admin_cog.py` + `admin/` pkg | mapped | not-started | — | Lane A full ledger exists (5034-line audit) |
+| 3 | L1a | help | D | `help_cog.py` + `help/` pkg | mapped (deep dossier done) | decided | **improve** | R-11 + G-10 adoption + editor-stack persistence fix decided. **L1a complete** (settings→diagnostic→help all decided). Full record above. |
+| 4 | L1b | admin | A | `admin_cog.py` + `admin/` pkg | mapped | **owner-discussing (next)** | — | Lane A full ledger exists (5034-line audit) |
 | 5 | L1b | server_management | A | `server_management_cog.py` + `setup_cog.py` + `quicksetup_cog.py` | mapped | not-started | — | confirmed structural gap: `setup` has **no `SUBSYSTEMS` registry key at all** today (not just "folded into" server_management — genuinely unregistered); `quicksetup_cog`=primary guided `!setup`, `setup_cog`=advanced `!setupadvanced` wizard + on-join launcher. BUILD-PLAN's own note calls for registering it as a real subsystem — decide the split at this row's walk. **Also inherits from row 2 (diagnostic):** decide whether diagnostic's 4 mutation surfaces (findings/flags/automation/backfill) should move here. |
 | 6 | L1b | moderation | A | `moderation_cog.py` | mapped | not-started | — | 64.2% fit floor; `ModerationActionSpec` envelope decided (Q-0226) |
 | 7 | L1b | logging | D | `logging_cog.py` + `logging/` pkg | mapped | not-started | — | spike exemplar, 97% fit |
@@ -425,4 +425,98 @@ answer — not yet a durable decision.
 - Gate-0 delta: `DiagnosticProviderSpec` needs to be minted as a new amendment when Gate-0's grammar work resumes (it is currently only sketched in the grammar-spike prototype, not in the ratified G-1…G-24 list) — **flag for Gate-0**, not a Stage-2 owner call
 - Dependencies to recheck: row 5 (server_management) inherits the mutation-boundary decision
 - Owner ratification needed: none outstanding for this row
+
+### Row 3 — help
+
+**Status: decided (2026-07-05).**
+
+#### 0. Row identity
+- BUILD-PLAN row: `help` · Layer: L1a · Existing disposition: `KEEP`
+- **Stage-2 verdict: `improve`**
+- Dependents to recheck: none new this row (R-11's retirement of the dispatch pattern is a
+  Phase-B kernel migration affecting all 43 consumer extensions, not a per-row Stage-2 recheck)
+- Source confidence: `source-confirmed`
+
+#### 1. User/job summary
+- Primary user: everyone (discovery) + administrators (customization)
+- Job-to-be-done: "what can this bot do, and how do I find it" / "let me customize what's shown without touching code"
+- Embarrassing-to-launch-without: one coherent home — already avoided today
+- Prior art: itself — explicitly named as shipped prior art to port in the rebuild's own hub/nav decisions doc (`rebuild-hub-navigation-presets-2026-07-03.md`)
+- Competitor benchmark: Carl/Dyno help UX — target: "ours is generated so it cannot drift"
+
+#### 2. Command surface
+| Entry point | Slash | Prefix | Effect | Access |
+|---|---|---|---|---|
+| Category index / route | `/help [name]` | `!help [category]` (alias `!hilfe`) | read — opens index or routes to a hub panel | everyone (governance-filtered) |
+| Help appearance editor | — | via `!settings` panel or staff-hub button | read/write — hide/rename/re-describe, Home-message builder | administrator/owner |
+| `resolve_help_panel_state()` | — | internal API, not a command | lets other panels' own "📚 Help" buttons reuse Help's render logic | n/a |
+
+#### 3. Invocation and routing
+- Fuzzy: `auto-run safe` (read-only discovery)
+- NL: a natural first target ("what can you do?") — not yet built, low-risk to add later
+- Authority: everyone for discovery; administrator-or-owner for the editor (unchanged)
+- R-11 target: replace the `get_cog`/`getattr(build_help_menu_view)` dispatch with a declared `PanelRef` per subsystem
+
+#### 4. Namespace/collision review
+- `help` is a unique flat verb, no collision, K1 reserves as-is
+
+#### 5. Hub, navigation, presets
+- Help **is** the front door/root, not nested under anything else
+- Admin already lives inside as a hidden, gated node — matches Q-0230/Q-0237(c) with no further change needed
+- **Owner-decided this session:** the overlay-editor view stack (`HelpEditorHomeView`/`EntityPickerView`/`HelpEntityEditorView`/`HomeMessageBuilderView`) upgrades from ephemeral 180s-timeout `BaseView`s to a **no-timeout persistent view**, fully closing the Q-0231 gap rather than accepting it as a scoped exception
+
+#### 6. Capability triage and exact scope
+- **Keep:** category index, the routing resolver, the overlay data model (hide/rename/re-describe), the Home-message builder's mandatory preview, the audit trail
+- **Improve:** adopt **R-11** (`PanelRef` navigation, retiring the dynamic-dispatch pattern — affects all 43 consumer extensions at Phase-B); adopt **G-10** (modal-field schemas for the editor's 4 hand-written modals); **make the editor-stack views persistent/no-timeout** (owner-decided, upgraded from "accept exception")
+- **Defer:** Back/Home stack-awareness and hub-level preset adoption — cross-cutting platform items, tracked once in §3.7, not this row's job
+- One-line reason: already the rebuild's 2nd-best-fit subsystem (92%→96%) — `improve` means adopting the two amendments this subsystem is the poster child for, plus closing its own timeout gap.
+
+#### 7. Concrete outperform targets
+| Target type | Target |
+|---|---|
+| Parity target | Carl/Dyno help UX |
+| Beat | generated-not-hand-written (cannot drift out of sync with the real command surface); audited customization; admin already hidden-not-shown-locked |
+
+#### 8. Required engines/specs/seams
+| Engine/spec/seam | Tier | In plan? | New/reused | Owner decision needed? |
+|---|---|---|---|---|
+| R-11 `HelpEntrySpec.dropdown_target: PanelRef` | T1 rider | yes (ratified) | reused when the kernel panel registry exists | no |
+| G-10 `ModalFormSpec` | T2 | yes (ratified) | reused | no |
+| Persistent/no-timeout view pattern (already exists, just needs applying to the editor stack) | T1 | yes | reused | no — confirmed this session |
+
+#### 9. Data, import, lifecycle
+- Store: `help_overlay` (migration 064, widened by 067)
+- Import mapping: `imported` verbatim — a small deviation-only table, no transform needed
+- Guild join/leave, member erasure: n/a — guild-scoped, absence-is-default
+
+#### 10. Verification oracle
+- Oracle type: parity golden
+- Existing goldens: ~5,800 lines / 20 test files, including a reachability simulation and a doc-pinning test that fails CI on drift
+- New goldens required: R-11 `PanelRef` resolution once the kernel panel registry exists; an editor-stack persistence/restart-recovery test (new, once the timeout fix ships)
+
+#### 11. Rubric pass — 10 probes
+| # | Class | Result |
+|---|---|---|
+| 1 | Dependency-order inversion | None — L1a position 3, correctly last of the foundation trio |
+| 2 | Forgotten capability | None |
+| 3 | Thin/underspecified step | N/A — unusually well documented |
+| 4 | Stale/unanchored claim | **Found, not yet fixed**: `docs/help-command-surface-map.md`'s §1 hub table lists 7 rows but the registry has 8 (`project_moon` missing from that specific table, though present elsewhere in the doc) — flagged for a documentation-hygiene pass; not corrected here since it was reported by only one research pass and wasn't independently re-verified |
+| 5 | Fragmentation/reinvention | Cross-cutting (§3.7) — help's lack of hub-level presets is part of the ≥7-instance preset fragmentation, tracked once, not re-litigated here |
+| 6 | Under/wrong-generalization | None found specific to help |
+| 7 | Missing cross-cutting standard | Cross-cutting (§3.7) — R-11/G-10, both already ratified |
+| 8 | Verification hole | None — strong existing oracle |
+| 9 | UX/lifecycle-contract gap | **Found+decided**: editor-stack timeout — owner decided to fix to no-timeout persistent, not accept as exception |
+| 10 | Naming/collision risk | None |
+
+#### 12. Blockers and decisions
+| Blocker type | Details | Resolution |
+|---|---|---|
+| Doc drift (unverified) | `help-command-surface-map.md` §1 table undercounts hubs by 1 | Flagged for a future docs-hygiene pass — not fixed this session (single-source finding, not independently re-verified) |
+| Owner decision | Editor-stack timeout | **Decided 2026-07-05: fix to no-timeout persistent view** |
+
+#### 13. Stage-3 consolidation notes
+- BUILD-PLAN row delta: `KEEP` → `KEEP+IMPROVE` (R-11, G-10, editor persistence)
+- Gate-0 delta: none new — R-11/G-10 already ratified amendments, just confirmed applicable here
+- Dependencies to recheck: none new
+- Owner ratification needed: none outstanding
 
