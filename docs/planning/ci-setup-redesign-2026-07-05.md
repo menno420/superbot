@@ -334,7 +334,15 @@ agent self-applies a required-context removal, workflow deletion, ruleset/branch
 
 ### Phase A — SAFE-ADDITIVE (ship without owner sign-off; no required-context change, no settings.json, no branch protection)
 
-- **A1.** Flip `codeql.yml` → `cancel-in-progress: false`. *(Mode 3 + §C.2 prerequisite; reversible one-liner.)*
+> **Progress (PR #1739, 2026-07-05 — owner-directed "build the safe parts"):** A1 **shipped**; the
+> merge-gating half of A6/A7 **shipped** — `check_architecture --mode strict`, `check_tool_pins`, and
+> `check_workflow_concurrency` are now **hard steps inside the required `code-quality` context** (so they
+> gate merges with **no** branch-protection change), each verified green on `main` first. Still pending:
+> `check_session_slug_unique` (needs CI-context verification of its `origin/main` dependency), the A7
+> advisory checkers, the ruff migration (A3), and the `ci.yml`/`web-ci.yml`/`pr-freshness.yml` builds
+> (A5/A8/A9) + `check_ci_coverage` fix (A2).
+
+- **A1.** ✅ **SHIPPED (#1739).** Flip `codeql.yml` → `cancel-in-progress: false`. *(Mode 3 + §C.2 prerequisite; reversible one-liner.)*
 - **A2.** Fix `check_ci_coverage.py` (check-run-enumeration + `ROUTINE_PAT` close+reopen + reopen cap →
   owner-alert issue); correct the false `code-quality.yml` header. **Rename coupling:** `REQUIRED_CHECK`
   (line 37) + the dispatch target flip to `ci-gate` in lockstep with **B2**.

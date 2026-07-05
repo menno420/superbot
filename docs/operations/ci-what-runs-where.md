@@ -46,7 +46,7 @@ non-blocking / `continue-on-error`) · **R** = routine (schedule/dispatch, not p
 | # | Workflow | Trigger (today) | Class | Required? | Concurrency | Role / notes |
 |---|---|---|---|---|---|---|
 | 1 | `code-quality.yml` | `push:main`, `pull_request:main`, `workflow_dispatch` | **G** | **YES** (`code-quality`) | `code-quality-${ref}`, **cancel:false** | The merge gate. Bundles ruff/black/isort/mypy/pytest + `check_docs` + `check_consistency` + `check_session_gate` (born-red) + `check_stale_claims`. Docs-only fast path skips heavy steps but still reports green. |
-| 2 | `codeql.yml` | `push:main`, `pull_request:main`, weekly cron | **A** (should be G) | no (the race) | `codeql-${ref}`, **cancel: `ref!=main`** ⚠ | SAST. Advisory → loses the merge-race (Q-0238). Cancels on PR refs — must flip to `false` before it can gate. |
+| 2 | `codeql.yml` | `push:main`, `pull_request:main`, weekly cron | **A** (should be G) | no (the race) | `codeql-${ref}`, **cancel: false** ✓ (flipped #1739) | SAST. Advisory → loses the merge-race (Q-0238); the CodeQL merge-protection ruleset (owner-gated) is the fix. Cancel flipped to `false` so it won't drop the head run once it gates. |
 | 3 | `auto-merge-enabler.yml` | `pull_request:[opened,reopened,ready_for_review]` | **I** | — | — | Arms native auto-merge on non-draft `claude/*` PRs. Needs `ROUTINE_PAT`. Does **not** fire on MCP-created PRs (arm manually, Q-0127). |
 | 4 | `codex-final-review.yml` | `pull_request:[synchronize,ready_for_review]` | **A** | — | — | Posts `@codex review` when the born-red card flips ready, so Codex sees the final head. |
 | 5 | `pr-conflict-guard.yml` | `push:main`, `pull_request:[opened,sync,reopened]`, `*/30` cron, dispatch | **I** | — | cancel:true (idempotent status) | Posts a red `conflict-guard` status on a DIRTY PR (main moved). Visibility, not a required gate. |
@@ -85,16 +85,23 @@ on both heavy workflows.
 Plus, **indirectly gating via the pytest ratchet:** `check_command_reachability`,
 `check_settings_reachability`, `check_setup_copy`, `check_architecture` (run as invariants tests).
 
-### 2b. Enforced only on a hook / routine / ad-hoc — **coverage the merge gate does NOT enforce**
+### 2b. Coverage the merge gate does NOT enforce (was the highest-value finding)
 
-The highest-value finding: several checks whose job arguably *should* block a merge run **only** locally
-or on a routine, so a PR that skips the local hook can merge past them.
+Several checks whose job *should* block a merge ran **only** locally or on a routine. **Three of them
+are now hard steps inside the required `code-quality` context (PR #1739)** — they gate merges with no
+branch-protection change:
+
+| Checker | Was | Now |
+|---|---|---|
+| `check_architecture.py` `--strict` | Stop hook + SessionStart only (the #1 gap) | **✅ GATING** (`code-quality`, deps block) — a new layer violation now blocks merge |
+| `check_tool_pins.py` | own advisory workflow (not required) | **✅ GATING** (`code-quality`, always-run) — a pin desync now blocks (was red-only, #1315) |
+| `check_workflow_concurrency.py` | new, advisory (#1737) | **✅ GATING** (`code-quality`, always-run) — a cancelling merge-relevant workflow now blocks (#1275) |
+
+Still local/routine-only (candidates for a verified follow-up, not yet gating):
 
 | Checker | Runs where today | Should it gate? |
 |---|---|---|
-| `check_architecture.py` `--strict` | **Stop hook + SessionStart only** | **Yes — the #1 local-only gap.** A layer-boundary violation can reach `main` if the hook is skipped. |
-| `check_tool_pins.py` | own advisory workflow (not required) | Yes — a pin desync reaches `main` today (shows red, doesn't block). |
-| `check_session_slug_unique.py` | session-close only | Yes — the slug clobber (BUG-0027) is author-time. |
+| `check_session_slug_unique.py` | session-close only | Yes — the slug clobber (BUG-0027) is author-time; deferred (its `origin/main` compare needs CI-context verification before it can be a hard gate). |
 | `check_governance_files.py` | **UNUSED** (no operational caller) | Fold into `check_docs`. |
 | `check_dashboard_data.py` | routine | Belongs on the dashboard leg (drift shipped to main: #988/#1020/#1023). |
 | dashboard / botsite / design-system `mypy`+`pytest` | advisory app-CI | Yes — promote to gating on their (path-filtered) legs. |

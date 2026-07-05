@@ -15,10 +15,15 @@ on:
   schedule:
     - cron: "23 3 * * 1" # weekly, Monday 03:23 UTC
 
-# Mirror code-quality's cost discipline: cancel superseded PR runs; never cancel main.
+# Never cancel a head run. CodeQL is slated to become a required merge gate (the CodeQL
+# merge-protection ruleset — redesign §C.2 / router Q-0238 option (C)); cancelling on a PR ref would
+# drop the head-commit run the gate depends on (the #1275 cancellation-race class that code-quality.yml
+# already guards against). Public repo => unlimited Actions minutes, so the redundant older runs this
+# leaves are free. Invariant enforced by scripts/check_workflow_concurrency.py (a required step in
+# code-quality.yml). Provenance: CI-setup redesign PR #1737 (A1) / Phase-A PR #1739.
 concurrency:
   group: codeql-${{ github.ref }}
-  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
+  cancel-in-progress: false
 
 jobs:
   analyze:
