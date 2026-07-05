@@ -58,7 +58,7 @@ State vocabulary: `not-mapped` → `mapped` → `ready-for-owner` → `owner-dis
 | 4 | L1b | admin | A | `admin_cog.py` + `admin/` pkg | mapped (verified zero drift vs. Lane A audit) | decided | **improve** | R-11 adoption + 9→8 nav collapse (row 2 fallout) + 2 live bugs (bot_spam typo, missing audit trail) decided fix-now, full scope — execution deferred to a bug-fix session. Full record above. |
 | 5 | L1b | server_management | A | `server_management_cog.py` only (`setup_cog.py`/`quicksetup_cog.py` **split out to row 5a**, 2026-07-05) | mapped (deep dossier done) | decided | **improve** | Confirmed a pure zero-write router (5 nav buttons + fail-safe health badges); its own fit gap (58.8%→88.2%) is the exact same R-11/G-A3 dispatch pattern already decided at rows 3-4. Resolved row 2's deferred question: diagnostic's mutation surfaces stay put (no move). Full record above. |
 | 5a | L1b (new row — split from row 5) | setup (BUILD-PLAN's own "register as real subsystem" note, now acted on) | A | `setup_cog.py` + `quicksetup_cog.py` + `views/setup/**` | mapped (deep dossier done) | decided | **redesign** | Advanced wizard's draft/Final-Review lane retired, folded into Essential Setup's direct-lane model; registered as one `SUBSYSTEMS` entry with two entry surfaces. Exact per-section fold mapping is Phase-B work. Full record above. |
-| 6 | L1b | moderation | A | `moderation_cog.py` | mapped | not-started | — | 64.2% fit floor; `ModerationActionSpec` envelope decided (Q-0226) |
+| 6 | L1b | moderation | A | `moderation_cog.py` | mapped (deep dossier done) | decided | **improve** | 64.2% fit floor; confirmed live bug (`/moderation` ignores `moderator_role`) decided fix-now; case/appeal + bulk actions committed as scope, not deferred. Q-0119 corrected (was never this row's decision). Full record above. |
 | 7 | L1b | logging | D | `logging_cog.py` + `logging/` pkg | mapped | not-started | — | spike exemplar, 97% fit |
 | 8 | L1b | automod | A | `automod_cog.py` + `automod/` pkg | mapped | not-started | — | |
 | 9 | L1b | security | A | `security_cog.py` + `security/` pkg | mapped | not-started | — | |
@@ -216,10 +216,10 @@ and **`hermes_cog.py` fits none of the 43+10 rows** (non-cog queue) — both fla
   sequence): rechecked, zero dependents found, no fallout; its underlying goal redirected onto row
   50 (boards family). **1 new row created mid-walk** — row 5a (`setup`), split from row 5
   (`server_management`) per the BUILD-PLAN's own note + Lane A's explicit recommendation; carried
-  into Coverage B below. **2 current-bot bug fixes queued (not implemented this session — scope
-  boundary):** the settings AI-projection drift (row 1) and admin's bot_spam typo + missing audit
-  trail (row 4), both owner-decided "fix now," both left as ready-to-execute specs for a dedicated
-  bug-fix session.
+  into Coverage B below. **3 current-bot bug fixes queued (not implemented this session — scope
+  boundary):** the settings AI-projection drift (row 1), admin's bot_spam typo + missing audit
+  trail (row 4), and moderation's slash-command authority bug (row 6) — all owner-decided "fix
+  now," all left as ready-to-execute specs for a dedicated bug-fix session.
 
 ---
 
@@ -804,4 +804,117 @@ and Lane A's explicit recommendation (`lane-A-governance.md:908,916`).
 - Gate-0 delta: `WizardSpec`-class primitive needs consideration
 - Dependencies to recheck: **build-order position** — likely needs to move later within/after L1b given its consumer relationship to channel/role/ticket/cleanup/automation; **`setup_diagnostics`'s repair-op mechanism** needs a new home once the draft lane retires; Stage-3 should re-sequence and re-check both
 - Owner ratification needed: none outstanding — both decisions made live this session
+
+### Row 6 — moderation
+
+**Status: decided (2026-07-05).**
+
+#### 0. Row identity
+- BUILD-PLAN row: `moderation` · Layer: L1b · Existing disposition: `IMPROVE`
+- **Stage-2 verdict: `improve`** (confirmed, matches capstone)
+- Dependents to recheck: none — **Q-0119 correction**: this row does not re-decide the
+  `moderator_role`/`trusted_role` binding-schema home; that was already answered 2026-06-13 (a
+  reserved `governance` `SubsystemSchema`, not moderation's own). Row 1's mischaracterization of
+  this as an open deferral is fixed (see row 1 §0). This row just ratifies executing that existing
+  answer in the rebuild's manifest grammar.
+- Source confidence: `source-confirmed` (Lane A audit + fresh zero-drift verification)
+
+#### 1. User/job summary
+- Primary user: moderators/administrators
+- Job-to-be-done: warn/timeout/kick/ban with a consistent audit trail and an escalation ladder
+- Embarrassing-to-launch-without: consistent authority across every surface a mod might use — the
+  one thing currently broken (see §2)
+- Competitor benchmark: Dyno — match configurability, beat on free + audited + privacy-forward
+  public log; add case/appeal + bulk actions
+
+#### 2. Command surface (9 entries) and a confirmed live bug
+| Command/entry | Access mechanism | Verdict |
+|---|---|---|
+| `!warn`/`!timeout`/`!kick`/`!ban`/`!unban`/`!clearwarnings`/`!modlogs`, `!modmenu` (panel, 7 buttons) | dual-floor: raw Discord permission OR governance capability (`can_execute`/`can_execute_ctx`) | keep — this is the correct shape |
+| `/moderation` (slash) | **confirmed bug**: raw Discord permission OR platform-owner only — never checks governance capability, so it ignores a configured `moderator_role` entirely | **improve — fix now** |
+
+#### 3. Invocation and routing
+- Three surfaces (prefix/panel/slash) currently resolve authority via 3 different code paths —
+  R-2 (already ratified) unifies these onto one `authority_ref`, closing the slash bug structurally
+  as a side effect of the redesign (not just the current-bot patch, see §12)
+- The hierarchy check (can this mod act on this target) is implemented twice today (prefix vs.
+  interaction) — R-2/the mod-action envelope collapses this to one declared field
+
+#### 4. Namespace/collision review
+- No collisions found
+
+#### 5. Hub, navigation, presets
+- Reached via Admin → Moderation; no changes needed beyond the bot-wide R-11 dispatch fix (already decided)
+
+#### 6. Capability triage and exact scope
+- **Keep:** the audited mutation seam (`_record_action`'s 3-signal fan-out — mod_logs row, audit
+  event, domain event, all sharing one `mutation_id` — the cleanest part of this subsystem), the
+  escalation ladder, DM-notify, post-action cleanup
+- **Improve:** fix the slash-authority bug now (owner-decided, current-bot PR); convert the
+  already-clean behavior (hierarchy check, DM step, cleanup step, escalation logic — all already
+  isolated, thin functions) into the Q-0226 declarative mod-action envelope + R-2's unified
+  authority — mostly conversion, not redesign, since the hard behavioral calls were made in the
+  Phase-A conventions freeze
+- **Add (owner-decided 2026-07-05, committed scope, not deferred):** a case/appeal system
+  (persisted case ID + reopen flow) and bulk moderation actions (mass-ban/mass-timeout) — both
+  named "outperform adds" in the frozen plan, now committed as required Phase-B deliverables for
+  this row rather than accepted-but-unscoped future options
+- One-line reason: the seam is already excellent; the gap is authority-story fragmentation (already
+  solved by decided conventions) plus one live bug plus two committed new features
+
+#### 7. Concrete outperform targets
+| Target type | Target |
+|---|---|
+| Match | Dyno's automod-adjacent filter configurability |
+| Beat | free + fully audited + a privacy-forward public log; case/appeal (Dyno lacks this); bulk actions |
+
+#### 8. Required engines/specs/seams
+| Engine/spec/seam | Tier | In plan? | New/reused | Owner decision needed? |
+|---|---|---|---|---|
+| Declarative mod-action envelope (Q-0226) | T2 | yes (decided) | reused — conversion target | no |
+| R-2 `legacy_permission_floor`/resource-owner authority rider | T1 rider | yes (ratified) | reused | no |
+| Case/appeal persistence (new) | T1/T2 | not yet designed | **new** | design work owed to Phase-B, scope committed here |
+| Bulk-action batching (new) | T2 | not yet designed | **new** | design work owed to Phase-B, scope committed here |
+
+#### 9. Data, import, lifecycle
+- Stores: `warnings`, `mod_logs` (confirmed accurately owned, no drift)
+- New stores needed: a case/appeal table (case ID, status, reopen history) — Phase-B design
+- Import mapping: `imported` — existing warning counts and mod-log history carry forward verbatim
+
+#### 10. Verification oracle
+- Oracle type: parity golden
+- Existing goldens: solid on the mutation/policy core (1,141-line service test alone); the
+  three-surface authority-consistency gap is **confirmed untested** — `test_slash_privileged.py`
+  only asserts *some* check exists, not *which* one, so it would not have caught the live bug
+- New goldens required: all-three-surfaces-resolve-identically (would have caught the bug); case/appeal; bulk actions
+
+#### 11. Rubric pass — 10 probes
+| # | Class | Result |
+|---|---|---|
+| 1 | Dependency-order inversion | None — L1b position correct |
+| 2 | Forgotten capability | None |
+| 3 | Thin/underspecified step | N/A |
+| 4 | Stale/unanchored claim | **Found+fixed**: row 1's Q-0119 mischaracterization (see row 1 §0) |
+| 5 | Fragmentation/reinvention | **Found**: the hierarchy check duplicated across prefix/interaction — collapses under the envelope |
+| 6 | Under/wrong-generalization | None |
+| 7 | Missing cross-cutting standard | None new — R-2/Q-0226 already ratified |
+| 8 | Verification hole | **Found**: no test proves all 3 surfaces resolve authority identically — exactly why the bug shipped unnoticed |
+| 9 | UX/lifecycle-contract gap | Cross-cutting Back/Home applies (§3.7) |
+| 10 | Naming/collision risk | None |
+
+#### 12. Blockers and decisions
+| Blocker type | Details | Resolution |
+|---|---|---|
+| Live bug | `/moderation` ignores configured `moderator_role` | **Owner-decided 2026-07-05: fix now.** Ready-to-execute spec: route `moderation_slash`'s authority check (`moderation_cog.py:96-97`) through `can_execute`/`can_execute_ctx` the same way the prefix (`_require_mod`, `:29-52`) and panel (`main_panel.py:45-61`) already do. Not implemented this session — scope boundary, same as the row 1/row 4 bug fixes. |
+| Owner decision | Case/appeal + bulk actions scope | **Decided 2026-07-05: commit to building both**, not deferred |
+| Corrected finding | Q-0119 | Not this row's decision — already answered 2026-06-13; ratify execution only |
+
+#### 13. Stage-3 consolidation notes
+- BUILD-PLAN row delta: `IMPROVE` confirmed; case/appeal + bulk actions promoted from "named outperform add" to "committed Phase-B deliverable"
+- Gate-0 delta: none new — R-2/Q-0226 already ratified
+- Dependencies to recheck: rows 8 (automod), 9 (security), 10 (cleanup) all reuse moderation's
+  action seam (`auto_delete`/`warn`/`kick`) — the envelope conversion here affects their own
+  Phase-B plans; flag when those rows are walked
+- Owner ratification needed: none outstanding
+
 
