@@ -53,10 +53,10 @@ State vocabulary: `not-mapped` → `mapped` → `ready-for-owner` → `owner-dis
 | # | Layer | BUILD-PLAN row | Lane | Current cog(s) | Research | Owner discussion | Verdict | Notes |
 |---|---|---|---|---|---|---|---|---|
 | 1 | L1a | settings | D | `settings_cog.py` + `settings/` pkg | mapped | **owner-discussing** | — | first row walked this session |
-| 2 | L1a | diagnostic | D | `diagnostic_cog.py` + `diagnostic/` pkg (+ `health_maintenance_cog.py`? — needs-recheck) | mapped | not-started | — | verify health_maintenance relationship before walking |
+| 2 | L1a | diagnostic | D | `diagnostic_cog.py` + `diagnostic/` pkg + `health_maintenance_cog.py` | mapped | not-started | — | confirmed: health_maintenance_cog is a zero-command daily-retention sweep over `operational_health_findings`, the diagnostic row's retention-plumbing complement (no separate row needed) |
 | 3 | L1a | help | D | `help_cog.py` + `help/` pkg | mapped | not-started | — | |
 | 4 | L1b | admin | A | `admin_cog.py` + `admin/` pkg | mapped | not-started | — | Lane A full ledger exists (5034-line audit) |
-| 5 | L1b | server_management | A | `server_management_cog.py` (+ `setup_cog.py`, `quicksetup_cog.py` — needs-recheck) | mapped | not-started | — | BUILD-PLAN note: "register `setup` as real subsystem" — candidate split, ask owner |
+| 5 | L1b | server_management | A | `server_management_cog.py` + `setup_cog.py` + `quicksetup_cog.py` | mapped | not-started | — | confirmed structural gap: `setup` has **no `SUBSYSTEMS` registry key at all** today (not just "folded into" server_management — genuinely unregistered); `quicksetup_cog`=primary guided `!setup`, `setup_cog`=advanced `!setupadvanced` wizard + on-join launcher. BUILD-PLAN's own note calls for registering it as a real subsystem — decide the split at this row's walk |
 | 6 | L1b | moderation | A | `moderation_cog.py` | mapped | not-started | — | 64.2% fit floor; `ModerationActionSpec` envelope decided (Q-0226) |
 | 7 | L1b | logging | D | `logging_cog.py` + `logging/` pkg | mapped | not-started | — | spike exemplar, 97% fit |
 | 8 | L1b | automod | A | `automod_cog.py` + `automod/` pkg | mapped | not-started | — | |
@@ -79,7 +79,7 @@ State vocabulary: `not-mapped` → `mapped` → `ready-for-owner` → `owner-dis
 | 25 | L2 | community (hub) | C | `community_cog.py` | mapped | not-started | — | 100% tier-1 proof |
 | 26 | L2 | community_spotlight | C | `community_spotlight_cog.py` | mapped | not-started | — | P-1 event-feed candidate |
 | 27 | L2 | leaderboard | C | `leaderboard_cog.py` | mapped | not-started | — | **MERGE into kernel** verdict already frozen |
-| 28 | L2 | profile surface (ADD) | — | none (myprofile PR C decided-but-unbuilt, Q-0147) | mapped | not-started | — | |
+| 28 | L2 | profile surface (ADD) | — | **`utility_cog.py:114-146`** (`!myprofile`/`/myprofile`) + `views/profile/profile_view.py` + `views/profile/editor.py` | mapped | not-started | — | ⚠ **CAPSTONE CONTRADICTION** — BUILD-PLAN row says "PR C decided (Q-0147) but unbuilt"; it is in fact fully built, including a self-service editor. See §3.6. |
 | 29 | L3 | games (hub) | C | `games_cog.py` | mapped | not-started | — | |
 | 30 | L3 | blackjack | C | `blackjack_cog.py` | mapped | not-started | — | spike anchor; free-tournament double-pay live bug |
 | 31 | L3 | rps_tournament | C | `rps_tournament_cog.py` | mapped | not-started | — | |
@@ -91,19 +91,19 @@ State vocabulary: `not-mapped` → `mapped` → `ready-for-owner` → `owner-dis
 | 37 | L3 | counting + chain (merged family) | C | `counting_cog.py` + `chain_cog.py` | mapped | not-started | — | already-merged family per BUILD-PLAN |
 | 38 | L3 | four_twenty | B | `four_twenty_cog.py` | mapped | not-started | — | |
 | 39 | L3 | giveaways (ADD) | — | none (verified zero giveaway code) | mapped | not-started | — | the one genuine ecosystem gap |
-| 40 | L3 | starboard (ADD) | — | `starboard_cog.py` **— needs-reconciliation** | pending workflow | not-started | — | **cog already exists** despite BUILD-PLAN "ADD" label — verify real vs stub |
-| 41 | L3 | explore hub + wild encounters (ADD) | — | none (new) | mapped | not-started | — | Q-0182/Q-0186 order decided |
+| 40 | L3 | starboard (ADD) | — | `starboard_cog.py` (loaded, `disbot/config.py:90`) + `services/starboard_service.py` | mapped | not-started | — | ⚠ **CAPSTONE CONTRADICTION** — fully working (threshold/emoji/self-star/ignore-channels/panel), not a stub. See §3.6. |
+| 41 | L3 | explore hub + wild encounters (ADD) | — | `games_cog.py` + `views/explore/world_hub.py`/`world_card.py` + `services/world_registry.py` (explore-hub half only) | mapped | not-started | — | ⚠ **PARTIAL CAPSTONE CONTRADICTION** — the registry-driven explore-hub router already ships; only "wild encounters" (Pokétwo-style catch loop) is genuinely new. Q-0182/Q-0186 order decided. See §3.6. |
 | 42 | L3 | mining | B | `mining_cog.py` | mapped | not-started | — | **ports LAST** — whole-stack acceptance test |
 | 43 | L4 | ai (platform) | D | `ai_cog.py` + `ai_review_cog.py` | mapped | not-started | — | REDESIGN into specs |
-| 44 | L4 | btd6 | D | `btd6_cog.py`, `btd6_reference_cog.py`, `btd6_events_cog.py`, `btd6_strategy_cog.py`, `btd6_ops_cog.py`, `paragon_cog.py` | pending workflow (split detail) | not-started | — | 6 cogs → 1 BUILD-PLAN row; KnowledgeDomainSpec exemplar |
+| 44 | L4 | btd6 | D | `btd6_cog.py` (mother cog: panel+ingestion lifecycle+unified `/btd6` tree), `btd6_reference_cog.py` (static lookups), `btd6_events_cog.py` (live NK data), `btd6_strategy_cog.py` (strategy memory+AI-denial diag), `btd6_ops_cog.py` (ingestion ops), `paragon_cog.py` (Paragon calculator) | mapped | not-started | — | confirmed 6-cog split is purely file-size hygiene (800-LOC cog ceiling), one KnowledgeDomainSpec-exemplar subsystem; legacy per-group cogs are now hidden prefix aliases behind the unified tree |
 | 45 | L4 | project_moon | D | `project_moon_cog.py` | mapped | not-started | — | Limbus domain partially shipped |
-| 46 | L4 | youtube / shared ingestion (ADD) | — | `media_maintenance_cog.py` **— needs-reconciliation** | pending workflow | not-started | — | **cog already exists** (media retention, #829) despite "ADD" label |
-| 47 | L4 | utility | D | `utility_cog.py` | mapped | not-started | — | MERGE pack |
+| 46 | L4 | youtube / shared ingestion (ADD) | — | `media_maintenance_cog.py` + `services/youtube_fetch_service.py`/`video_reference_cache_service.py`/`youtube_context_service.py`/`youtube_diagnostics.py` | mapped | not-started | — | ⚠ **PARTIAL CAPSTONE CONTRADICTION** — YouTube fetch/cache/retention already ships (bespoke, ADR-007 shared-platform, deliberately not AI/BTD6-owned); the genuinely-new part is only the *shared, reusable* IngestionPipeline for btd6/project_moon to also consume. See §3.6. |
+| 47 | L4 | utility | D | `utility_cog.py` | mapped | not-started | — | MERGE pack; also hosts `/myprofile` — see row 28 |
 | 48 | L4 | general | D | `general_cog.py` | mapped | not-started | — | MERGE pack |
-| 49 | L5 | web dashboard + live editor (ADD/REDESIGN) | — | `botsite/` (not a cog) | mapped | not-started | — | FastAPI/uvicorn, not Flask (corrected) |
+| 49 | L5 | web dashboard + live editor (ADD/REDESIGN) | — | `botsite/app.py` + `dashboard/app.py` (both read-only FastAPI, not a cog) | mapped | not-started | — | ⚠ **PARTIAL CAPSTONE CONTRADICTION** — two read-only dashboards already ship; genuinely new is only the write-capable live editor. See §3.6. |
 | 50 | L5 | boards family (ADD) | — | none (new) | mapped | not-started | — | one tagged-board primitive; likely P-1 2nd instance |
 | 51 | L5 | bot-migration assistant (ADD) | — | none (new) | mapped | not-started | — | the anti-MEE6/Carl/Dyno wedge |
-| 52 | L5 | Railway / ops control-plane (ADD, owner-gated) | — | `hermes_cog.py`? **— needs-reconciliation** | pending workflow | not-started | — | verify hermes_cog is ops surface, not a bot-product capability |
+| 52 | L5 | Railway / ops control-plane (ADD, owner-gated) | — | none — `hermes_cog.py` does **not** map here (confirmed) | mapped | not-started | — | Railway/ops control-plane means drift-checker/deploy-alerts/shadow-clone/backups for the bot's *own hosting*; `hermes_cog.py` is a distinct thing (see non-cog queue) — no current cog implements this row |
 
 ## 4. Non-cog / platform capability queue (preserved separately per task instructions)
 
@@ -112,17 +112,67 @@ These must also receive a Stage-2 disposition but are not walked as ordinary pro
 | Item | What it is | Disposition state | Notes |
 |---|---|---|---|
 | L0 runtime skeleton | bootstrap, loader, config, bus, lifecycle, tasks, health, DB seam, namespace registry | `handled-via-gate-0` | Lane G already GO-verdicted (preserve 6 primitives field-for-field + build K1 namespace registry). `bootstrap_access_cog.py` is its one cog-visible slice (command-access gate installer) — pure platform wiring, not a product surface; carried here for coverage, no triage verdict needed. |
-| `hermes_cog.py` | suspected internal agent-workflow/ops control surface, not a player-facing feature | pending workflow verification | if confirmed ops-only: candidate mapping to the Railway/ops control-plane ADD row, or entirely out of the bot-product corpus (a question for the owner once verified) |
-| `setup_cog.py` / `quicksetup_cog.py` | currently under server_management | pending server_management walk | BUILD-PLAN's own note flags "register `setup` as real subsystem" — an explicit candidate to split into its own row; decide during row #5 |
+| `hermes_cog.py` | **confirmed**: the Discord-side entry point of the Hermes→Claude-Code dispatch bridge (`/bugreport`, `/dispatch` — both admin-gated slash commands that POST a work order to the Claude Code Routine `/fire` endpoint, spinning up an autonomous coding session). Not a guild/player-facing feature at all. | confirmed out-of-corpus | Does **not** map to the Railway/ops control-plane ADD row (that row is about the bot's own hosting/deploy ops — drift checker, deploy alerts, shadow clone, backups — a different concern). `NEW-BOT-BUILD-PLAN.md` §1.3 explicitly carves this class out ("a workflow/substrate concern, not a bot capability"). **Owner question queued**: should this even ship as a Discord cog in the new bot, given the collaboration-model's autonomy-boundary rules about executable-config changes? Flagged for discussion when the non-cog queue is walked. |
+| `setup_cog.py` / `quicksetup_cog.py` | **confirmed**: functioning today (`quicksetup_cog`=primary guided `!setup`/`/setup`, `setup_cog`=advanced `!setupadvanced`/`/setup-advanced` wizard + on-join launcher), reachable only via server_management's hub button | pending server_management walk (row 5) | **Confirmed structural gap** (not just "currently under"): `setup` has no `SUBSYSTEMS` registry key at all today. BUILD-PLAN's own note flags "register `setup` as real subsystem" — decide the split at row 5's walk. |
+
+## 3.5 Command-surface ground truth (verified 2026-07-05 — supersedes the frozen 271-row JSON)
+
+Per the readiness review's own warning, `ground-truth/command-surface.json` (271 rows: 224 prefix +
+30 slash + 17 group) undercounts grouped command verbs — it is a **static AST scan** that stores one
+row per top-level `@commands.group`/`app_commands.command` declaration and never descends into a
+group's `.command()` subcommands. Booting the real bot in-process via the parity harness
+(`parity/harness/boot.py`) and calling `disbot/core/runtime/command_surface_ledger.build_ledger()` —
+the **live, fully-flattened** walk (`bot.walk_commands()` + `bot.tree.walk_commands()`) — gives the
+actual current total:
+
+**479 command entries = 406 prefix + 73 slash** (vs. the JSON's 271), confirmed independently by the
+`parity/coverage.py` denominators (390/406 prefix, 64/73 slash). Example of the gap:
+`btd6_ops_cog.py`'s `!btd6ops` group is **1 row** in the JSON but **7 real entries** live (the group
+leaf + 6 subcommands). The live ledger also flags 13 cross-cutting findings today: 12 orphan
+cog→subsystem mappings (cogs whose class name isn't a registered `SUBSYSTEMS` key — mostly the
+btd6-family sub-cogs, `RoleGrantsCog`, `StarboardCog`, `SetupCog`/`QuickSetupCog`,
+`CreatureBattleCog`) and 1 duplicate alias name (`create`).
+
+**Per the Stage-1/readiness-review instruction, all future shared-verb / naming-collision / command
+surface work in this walk uses `command_surface_ledger.build_ledger()` as ground truth, not the
+frozen JSON.**
+
+## 3.6 Capstone-accuracy contradictions found (rubric class 4 — stale/unanchored claim)
+
+Verified 2026-07-05, source-cited. These are corrections *to the frozen BUILD-PLAN/FINAL-REVIEW
+capstone itself* — not new owner decisions — surfaced here so no later reader trusts the stale label.
+Each is also flagged on its row above (§3) and will get its full owner discussion when that row is
+walked, not now:
+
+1. **`/myprofile` is fully built** (row 28) — `utility_cog.py:114-146` + a read-only card
+   (`views/profile/profile_view.py`) + a self-service editor (`views/profile/editor.py`) — but
+   `NEW-BOT-BUILD-PLAN.md:82` calls it "decided (Q-0147) but unbuilt." Cleanest capstone miss found.
+2. **Starboard ships today** (row 40) — `starboard_cog.py`, fully working (threshold/emoji/
+   self-star/ignore-channels/panel) — but listed as `ADD-from-plans` (`NEW-BOT-BUILD-PLAN.md:94`).
+3. **YouTube ingestion/caching ships today** (row 46) — bespoke fetch/cache/retention — but listed
+   as a from-scratch ADD; the real gap is only the *shared, reusable* ingestion-pipeline
+   abstraction btd6/project_moon would also consume.
+4. **The "explore hub" half of "explore hub + wild encounters" already ships** (row 41) via
+   `games_cog` + `views/explore/world_hub.py` (a registry-driven router into mining/fishing
+   worlds); only "wild encounters" (the Pokétwo-style catch loop) is genuinely new.
+5. **A read-only web dashboard already ships — twice over** (row 49): `botsite/app.py` (public
+   site) and `dashboard/app.py` ("developer dashboard, read-only MVP"). The genuinely-new part of
+   that ADD row is the write-capable live editor, not the dashboard's existence.
+
+None of these change any row's eventual verdict by themselves — they change what "done" means for
+that row (less net-new build, more "wire the existing thing into the unified manifest/hub"). Also
+found, structural (not capstone-accuracy) gaps: **`setup` has no `SUBSYSTEMS` registry key** (row 5)
+and **`hermes_cog.py` fits none of the 43+10 rows** (non-cog queue) — both flagged in place above.
 
 ## 5. Bidirectional coverage tracking
 
-- **Coverage A (current → plan):** 58/58 loaded cogs assigned a row or non-cog-queue entry above
-  (pending 4 `needs-reconciliation` flags to resolve: starboard, media_maintenance, hermes, and the
-  btd6-family split detail). 0 cogs currently unassigned.
-- **Coverage B (plan → current):** all 43 shipped BUILD-PLAN rows + 10 ADD rows + L0 listed above.
-  0 rows currently missing from this index.
-- **Coverage C (commands/hidden functions):** not yet started — begins per-row during each walk.
+- **Coverage A (current → plan):** 58/58 loaded cogs assigned a row or non-cog-queue entry above.
+  0 cogs currently unassigned. All 4 originally-flagged `needs-reconciliation` cogs resolved this
+  round (starboard, media_maintenance, hermes, btd6-family split) — see §3.6.
+- **Coverage B (plan → current):** all 43 shipped BUILD-PLAN rows + 9 ADD rows + L0 listed above.
+  0 rows currently missing from this index. 5 rows carry a capstone-accuracy contradiction (§3.6).
+- **Coverage C (commands/hidden functions):** not yet started at the per-command level — begins
+  per-row during each walk. Ground truth for this work is now pinned (§3.5): 479 live commands.
 - **Coverage D (dependency rechecks):** none triggered yet (no `drop`/`defer`/`merge`/`re-place`
   verdicts recorded yet).
 
