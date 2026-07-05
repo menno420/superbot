@@ -1,14 +1,14 @@
 {
   "meta": {
-    "generated_at": "2026-07-05T11:27:48Z",
+    "generated_at": "2026-07-05T16:02:09Z",
     "build": {
-      "commit": "33bca60e",
-      "subject": "Merge pull request #1726 from menno420/bot/dashboard-refresh",
-      "committed_at": "2026-07-05T11:27:48Z"
+      "commit": "12fb40e7",
+      "subject": "Merge pull request #1728 from menno420/claude/save-fixes-implementation-8v1ziy",
+      "committed_at": "2026-07-05T16:02:09Z"
     },
     "counts": {
       "functions": 43,
-      "ideas": 192,
+      "ideas": 194,
       "bugs": 31,
       "reviews": 0,
       "reviews_open": 0,
@@ -1164,6 +1164,22 @@
     }
   ],
   "ideas": [
+    {
+      "file": "audit-seam-coverage-checker-2026-07-05.md",
+      "title": "Idea — an \"audit-seam coverage\" checker (catch unaudited mutations at authoring time)",
+      "status": "ideas",
+      "date": "2026-07-05",
+      "summary": "Four of the eight Stage-2 \"save fixes\" (#1728) were the **same defect class**: a code path that",
+      "subsystems": null
+    },
+    {
+      "file": "deferred-action-restart-recovery-checker-2026-07-05.md",
+      "title": "A repo-wide checker for un-recoverable one-shot deferred actions",
+      "status": "ideas",
+      "date": "2026-07-05",
+      "summary": "The Stage-2 walk found the **identical bug shape in two unrelated subsystems**, discovered",
+      "subsystems": null
+    },
     {
       "file": "dependabot-automerge-enabler-2026-07-04.md",
       "title": "Extend the auto-merge enabler to dependabot PRs",
@@ -2969,6 +2985,22 @@
   "reviews": [],
   "updates": [
     {
+      "file": "2026-07-05-save-fixes-implementation.md",
+      "date": "2026-07-05",
+      "title": "2026-07-05 — Stage-2 \"save fixes\" implementation (queued current-bot bug fixes)",
+      "status": "complete",
+      "run_type": "manual",
+      "self_initiated": true
+    },
+    {
+      "file": "2026-07-05-rebuild-stage2-subsystem-walk.md",
+      "date": "2026-07-05",
+      "title": "2026-07-05 — Rebuild Phase-A Stage-2 subsystem walk (owner-led)",
+      "status": "complete",
+      "run_type": "manual",
+      "self_initiated": true
+    },
+    {
       "file": "2026-07-04-review-open-prs.md",
       "date": "2026-07-04",
       "title": "2026-07-04 — Open-PR review + merge sweep",
@@ -3431,22 +3463,6 @@
       "status": "complete",
       "run_type": "",
       "self_initiated": false
-    },
-    {
-      "file": "2026-07-01-role-menu-layout-sim.md",
-      "date": "2026-07-01",
-      "title": "2026-07-01 — Role-menu builder button-layout simulation",
-      "status": "complete",
-      "run_type": "manual",
-      "self_initiated": true
-    },
-    {
-      "file": "2026-07-01-role-menu-layout-sim-pin-style.md",
-      "date": "2026-07-01",
-      "title": "2026-07-01 — Layout sim: pin Style first-screen (owner correction)",
-      "status": "complete",
-      "run_type": "manual",
-      "self_initiated": true
     }
   ],
   "bot_changelog": [
