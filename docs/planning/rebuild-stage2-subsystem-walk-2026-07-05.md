@@ -55,7 +55,7 @@ State vocabulary: `not-mapped` → `mapped` → `ready-for-owner` → `owner-dis
 | 1 | L1a | settings | D | `settings_cog.py` + `settings/` pkg | mapped | decided | **improve** | first row walked this session; full record above |
 | 2 | L1a | diagnostic | D | `diagnostic_cog.py` + `diagnostic/` pkg + `health_maintenance_cog.py` | mapped (deep dossier done) | decided | **improve** | hub merge (`!diagnostics`→`/platform`) + unified `DiagnosticProviderSpec` catalogue decided; mutation-surface ownership deferred to row 5. Full record above. |
 | 3 | L1a | help | D | `help_cog.py` + `help/` pkg | mapped (deep dossier done) | decided | **improve** | R-11 + G-10 adoption + editor-stack persistence fix decided. **L1a complete** (settings→diagnostic→help all decided). Full record above. |
-| 4 | L1b | admin | A | `admin_cog.py` + `admin/` pkg | mapped | **owner-discussing (next)** | — | Lane A full ledger exists (5034-line audit) |
+| 4 | L1b | admin | A | `admin_cog.py` + `admin/` pkg | mapped (verified zero drift vs. Lane A audit) | decided | **improve** | R-11 adoption + 9→8 nav collapse (row 2 fallout) + 2 live bugs (bot_spam typo, missing audit trail) decided fix-now, full scope — execution deferred to a bug-fix session. Full record above. |
 | 5 | L1b | server_management | A | `server_management_cog.py` + `setup_cog.py` + `quicksetup_cog.py` | mapped | not-started | — | confirmed structural gap: `setup` has **no `SUBSYSTEMS` registry key at all** today (not just "folded into" server_management — genuinely unregistered); `quicksetup_cog`=primary guided `!setup`, `setup_cog`=advanced `!setupadvanced` wizard + on-join launcher. BUILD-PLAN's own note calls for registering it as a real subsystem — decide the split at this row's walk. **Also inherits from row 2 (diagnostic):** decide whether diagnostic's 4 mutation surfaces (findings/flags/automation/backfill) should move here. |
 | 6 | L1b | moderation | A | `moderation_cog.py` | mapped | not-started | — | 64.2% fit floor; `ModerationActionSpec` envelope decided (Q-0226) |
 | 7 | L1b | logging | D | `logging_cog.py` + `logging/` pkg | mapped | not-started | — | spike exemplar, 97% fit |
@@ -205,12 +205,17 @@ and **`hermes_cog.py` fits none of the 43+10 rows** (non-cog queue) — both fla
   0 rows currently missing from this index. 5 rows carry a capstone-accuracy contradiction (§3.6).
 - **Coverage C (commands/hidden functions):** not yet started at the per-command level — begins
   per-row during each walk. Ground truth for this work is now pinned (§3.5): 479 live commands.
-- **Coverage D (dependency rechecks):** 2 forward links open, both by design (not blocking):
-  row 6 (moderation) inherits Q-0119 from row 1 (settings); row 5 (server_management) inherits the
-  mutation-surface ownership question from row 2 (diagnostic). 1 drop verdict processed —
-  `hermes_cog.py` (owner, 2026-07-05, out of walk-order sequence): rechecked, zero dependents
-  found, no fallout; its underlying goal (easy bug/feedback reporting) redirected onto row 50
-  (boards family) rather than left to evaporate.
+- **Coverage D (dependency rechecks):** 1 recheck completed — row 4 (admin) was the flagged
+  dependent of row 2 (diagnostic)'s hub-merge decision; rechecked, action recorded (9→8 nav-button
+  collapse). 2 forward links still open, both by design (not blocking): row 6 (moderation)
+  inherits Q-0119 from row 1 (settings); row 5 (server_management) inherits the mutation-surface
+  ownership question from row 2 (diagnostic). 1 drop verdict processed — `hermes_cog.py` (owner,
+  2026-07-05, out of walk-order sequence): rechecked, zero dependents found, no fallout; its
+  underlying goal (easy bug/feedback reporting) redirected onto row 50 (boards family) rather than
+  left to evaporate. **2 current-bot bug fixes queued (not implemented this session — scope
+  boundary):** the settings AI-projection drift (row 1) and admin's bot_spam typo + missing audit
+  trail (row 4), both owner-decided "fix now," both left as ready-to-execute specs for a dedicated
+  bug-fix session.
 
 ---
 
@@ -519,4 +524,117 @@ answer — not yet a durable decision.
 - Gate-0 delta: none new — R-11/G-10 already ratified amendments, just confirmed applicable here
 - Dependencies to recheck: none new
 - Owner ratification needed: none outstanding
+
+### Row 4 — admin
+
+**Status: decided (2026-07-05).** Verified against the existing Lane A source-audit (2026-07-02) —
+zero source drift found; all 11 commands and both known live bugs confirmed unchanged.
+
+#### 0. Row identity
+- BUILD-PLAN row: `admin` · Layer: L1b (first row of the operator spine) · Existing disposition: `KEEP+IMPROVE`
+- **Stage-2 verdict: `improve`** (matches capstone as-is, no tightening debate needed)
+- Dependents to recheck: none downstream; **admin is itself a dependent** of row 2's decided
+  hub-merge (see §7 Notes below) — rechecked this row, action recorded
+- Source confidence: `source-confirmed` (existing Lane A ledger + fresh zero-drift verification)
+
+#### 1. User/job summary
+- Primary user: bot owner / administrators (process control)
+- Job-to-be-done: "manage the bot's own process — load code, sync commands, restart, tune logging — and jump to other admin panels from one place"
+- Embarrassing-to-launch-without: cog lifecycle control, restart, slash sync
+- Prior art: itself
+- Competitor benchmark: typical hobby-bot admin cogs — "already ahead; audit trail completes it" (BUILD-PLAN's own words)
+
+#### 2. Command surface (11, zero drift since 2026-07-02)
+| Command | Access tier | Verdict |
+|---|---|---|
+| `!adminmenu`/`/admin`, `!serverstats`, `!coglist`, `!slashes`, `!loglevel` (6, `admin_or_owner()`) | `ADMINISTRATOR` | keep |
+| `!cog`, `!loadall`, `!unloadall`, `!syncslash`, `!restart` (5, `commands.is_owner()`) | `PLATFORM_OWNER` (stricter, already a distinct tier in `governance/permission_tiers.py:29-60`) | keep — deliberate escape hatches, no declarative primitive should model these |
+
+#### 3. Invocation and routing
+- Two authority tiers map cleanly onto the rebuild's already-decided model (Q-0227/Q-0237(d)):
+  `ADMINISTRATOR` for the 6, `PLATFORM_OWNER` for the 5 — no new authority primitive needed, just
+  correct per-command tagging
+- Fuzzy: the 5 `PLATFORM_OWNER` process-control commands must never auto-run from a fuzzy typo
+  match (destructive/ambiguous class); the read-only commands (`serverstats`/`coglist`/`slashes`)
+  qualify as safe auto-run candidates
+
+#### 4. Namespace/collision review
+- No collisions found. Final naming (`!adminmenu` vs. a shorter form, etc.) deferred to Stage-3's
+  broader naming pass rather than decided in isolation here.
+
+#### 5. Hub, navigation, presets
+- Reached as a destination from Help, not itself the front door
+- **Mechanical consequence of row 2 (diagnostic)'s decided hub-merge:** admin's hub currently has
+  9 nav buttons; once diagnostic's `!diagnostics`→`/platform` merge ships, the separate
+  "🩺 Diagnostics" and "🛰 Platform" buttons collapse to one, dropping admin to **8 nav buttons**.
+  The surviving button should route through the standard `_open_via_help_hook` dispatch (calling
+  `DiagnosticCog.build_platform_help_menu_view`, which already exists for exactly this) instead of
+  its current hand-rolled direct `_PlatformHubView` construction — a code-duplication fix, not a
+  new decision.
+
+#### 6. Capability triage and exact scope
+- **Keep:** all 11 commands, the cog manager view (incl. protected-cog denial), slash-sync tooling
+- **Improve:** adopt **R-11** for the nav-button dispatch (already decided at row 3 — fixes admin's
+  single biggest fit-driver automatically, no new work needed here beyond applying it); collapse
+  9→8 nav buttons once row 2 ships; **build the `admin.operator_action` audit trail** (owner-decided
+  full scope — all 5 mutation types: cog load/unload/reload, restart, log-level); **fix the
+  `bot_spam`/`bot-spam` typo** (owner-decided, fix now)
+- One-line reason: functionality is clean; the fit gap is dispatch-shape (already solved by R-11
+  elsewhere) plus one real governance gap (no audit trail) plus one silly typo bug.
+
+#### 7. Concrete outperform targets
+| Target type | Target |
+|---|---|
+| Parity | typical hobby-bot admin cogs — already ahead |
+| Beat | full audit trail on process-level operator actions (few/no hobby bots log "who restarted the bot and when") |
+
+#### 8. Required engines/specs/seams
+| Engine/spec/seam | Tier | In plan? | New/reused | Owner decision needed? |
+|---|---|---|---|---|
+| R-11 `PanelRef` navigation | T1 rider | yes (ratified, decided row 3) | reused | no |
+| `PLATFORM_OWNER` authority tier | T1 | already exists (`governance/permission_tiers.py`) | reused — tagging only | no |
+| Audited mutation seam (`services.audit_events.emit_audit_action`) | T1 | already exists, used bot-wide | reused — needs wiring into 5 new call sites | no — confirmed this session |
+
+#### 9. Data, import, lifecycle
+- No new store needed — the audit trail writes to the same shared audit log every other
+  subsystem's mutations already use
+- Import mapping: n/a — admin owns no persisted table of its own
+
+#### 10. Verification oracle
+- Oracle type: parity golden
+- Existing goldens: strong on panel *shape* (15-component layout, 9 nav destinations by label,
+  dispatch success/missing-cog/exception paths) but several buttons are asserted only for
+  label/shape, not behavior (Stats, Reload All, Log Level)
+- New goldens required once the bug fixes land: `on_ready` channel resolution (post-typo-fix);
+  audit-trail emission for all 5 mutation types; the Platform button's post-merge single-hook
+  dispatch
+
+#### 11. Rubric pass — 10 probes
+| # | Class | Result |
+|---|---|---|
+| 1 | Dependency-order inversion | None — L1b position 1 is correct; admin's hub only *launches into* other subsystems, it doesn't require them built first |
+| 2 | Forgotten capability | None |
+| 3 | Thin/underspecified step | N/A |
+| 4 | Stale/unanchored claim | **Found+corrected before repeating it to the owner**: admin's 45.0% as-written is *not* the lowest in the 43-row corpus (casino 16%, channel 31.7%, moderation 41.5%, blackjack 44.4%, deathmatch 44.9% are all lower) — its real distinction is the largest single as-written→amended swing |
+| 5 | Fragmentation/reinvention | **Found**: the Platform button duplicates `DiagnosticCog`'s own purpose-built sibling hook instead of calling it |
+| 6 | Under/wrong-generalization | None |
+| 7 | Missing cross-cutting standard | None new — R-11 and `PLATFORM_OWNER` already exist, just need applying |
+| 8 | Verification hole | **Found**: `on_ready` untested; several buttons tested for shape only, not behavior — tracked as new-goldens-required |
+| 9 | UX/lifecycle-contract gap | Cross-cutting Back/Home gap applies here too — tracked once in §3.7, not re-described |
+| 10 | Naming/collision risk | None found |
+
+#### 12. Blockers and decisions
+| Blocker type | Details | Resolution |
+|---|---|---|
+| Live bug | `bot_spam`/`bot-spam` typo (dead `on_ready` greeting) | **Owner-decided 2026-07-05: fix now.** Exact fix: `admin_cog.py:412`, `"bot_spam"` → `"bot-spam"`. **Not implemented in this session** — this Stage-2 walk is explicitly docs/planning-only, and mixing a runtime fix into this docs-only born-red PR would also violate the repo's risk-based PR-sizing convention (small focused PRs for `disbot/` changes). Recorded here as a ready-to-execute one-line fix for the next bug-fix session. |
+| Live bug | Zero audit trail on 5 high-privilege mutations | **Owner-decided 2026-07-05: fix now, full scope** (all 5 types, including log-level). **Not implemented in this session**, same reasoning as above. Ready-to-execute spec: wrap `cog_manager.py:96,105,114` (load/unload/reload), `admin_cog.py:365` (restart), and `admin_cog.py:393` + `_LogLevelModal` (`admin_cog.py:763-790`, log-level) with `services.audit_events.emit_audit_action(subsystem="admin", mutation_type=...)` calls, one per action. |
+| Mechanical consequence | Admin's 9→8 nav-button collapse once row 2 ships | Recorded, not yet actionable (row 2's merge itself isn't built) |
+
+#### 13. Stage-3 consolidation notes
+- BUILD-PLAN row delta: none needed — capstone's `KEEP+IMPROVE` already matches exactly
+- Gate-0 delta: none — R-11 and `PLATFORM_OWNER` are already-existing primitives
+- Dependencies to recheck: **done this row** — admin was the flagged dependent of row 2's
+  hub-merge decision (S-2 recheck), action recorded above
+- Owner ratification needed: bug-fix priority is decided (fix now, full scope); execution itself
+  is deferred to a dedicated current-bot bug-fix session, flagged clearly to the owner
 
