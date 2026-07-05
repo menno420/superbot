@@ -68,8 +68,14 @@ async def teardown(guild_id: int) -> None:
                                    guild (reaction-roles overhaul);
                                    ``role_menu_options`` rows cascade via FK.
                                    The legacy ``reaction_roles`` table is
-                                   message-keyed and self-cleans when the
-                                   messages go, so it needs no teardown step.
+                                   handled by its own step (30) — it is
+                                   guild-scoped and does NOT self-clean.
+      28. Role thresholds       — delete every ``role_thresholds`` row for the
+                                   guild (time + XP automation tiers).
+      29. Role-automation exemptions — delete every
+                                   ``role_automation_exemptions`` row.
+      30. Reaction roles        — delete every ``reaction_roles`` row for the
+                                   guild; not message-delete-cleaned.
     """
     logger.info("guild_lifecycle.teardown: beginning cleanup for guild=%d", guild_id)
 
@@ -174,6 +180,20 @@ async def teardown(guild_id: int) -> None:
     # 27. Starboard / Hall-of-Fame (idea B1) — settings + entries for the
     #     departed guild.
     await _teardown_starboard(guild_id)
+
+    # 28. Role thresholds (time + XP automation tiers) — guild-scoped rows
+    #     with no other cleanup anchor.
+    await _teardown_role_thresholds(guild_id)
+
+    # 29. Role-automation exemptions — per-(guild, role) exemption rows.
+    await _teardown_role_exemptions(guild_id)
+
+    # 30. Reaction roles — guild-scoped emoji→role bindings. These do NOT
+    #     self-clean on message delete, so an explicit purge is required.
+    await _teardown_reaction_roles(guild_id)
+
+    # 31. Proof-channel timed locks — persisted unlock deadlines (bug #8).
+    await _teardown_proof_channel_locks(guild_id)
 
     logger.info("guild_lifecycle.teardown: complete for guild=%d", guild_id)
 
@@ -662,8 +682,9 @@ async def _teardown_role_menus(guild_id: int) -> None:
     """Delete every role_menus row for the departed guild (reaction-roles overhaul).
 
     ``role_menu_options`` rows cascade away via the FK. The legacy
-    ``reaction_roles`` table is keyed by ``message_id`` and self-cleans when the
-    host messages are deleted, so it has no teardown step of its own.
+    ``reaction_roles`` table is guild-scoped and is purged by its own teardown
+    step (:func:`_teardown_reaction_roles`); it does NOT self-clean on message
+    delete.
     """
     try:
         from utils.db.role_menus import delete_for_guild as _role_menus_delete
@@ -763,6 +784,90 @@ async def _teardown_role_pickup_stats(guild_id: int) -> None:
     except Exception as exc:
         logger.warning(
             "guild_lifecycle: pickup-stat teardown failed for guild=%d: %s",
+            guild_id,
+            exc,
+        )
+
+
+async def _teardown_role_thresholds(guild_id: int) -> None:
+    """Delete every ``role_thresholds`` row for the departed guild (teardown gap fix)."""
+    try:
+        from utils.db.roles import delete_role_thresholds_for_guild
+
+        count = await delete_role_thresholds_for_guild(guild_id)
+        if count:
+            logger.debug(
+                "guild_lifecycle: deleted %d role-threshold row(s) for guild=%d",
+                count,
+                guild_id,
+            )
+    except Exception as exc:
+        logger.warning(
+            "guild_lifecycle: role-threshold teardown failed for guild=%d: %s",
+            guild_id,
+            exc,
+        )
+
+
+async def _teardown_role_exemptions(guild_id: int) -> None:
+    """Delete every ``role_automation_exemptions`` row for the departed guild."""
+    try:
+        from utils.db.roles import delete_role_exemptions_for_guild
+
+        count = await delete_role_exemptions_for_guild(guild_id)
+        if count:
+            logger.debug(
+                "guild_lifecycle: deleted %d role-exemption row(s) for guild=%d",
+                count,
+                guild_id,
+            )
+    except Exception as exc:
+        logger.warning(
+            "guild_lifecycle: role-exemption teardown failed for guild=%d: %s",
+            guild_id,
+            exc,
+        )
+
+
+async def _teardown_reaction_roles(guild_id: int) -> None:
+    """Delete every ``reaction_roles`` row for the departed guild.
+
+    ``reaction_roles`` is guild-scoped and has no message-delete cleanup path, so
+    without this step its rows persist forever after guild-leave.
+    """
+    try:
+        from utils.db.roles import delete_reaction_roles_for_guild
+
+        count = await delete_reaction_roles_for_guild(guild_id)
+        if count:
+            logger.debug(
+                "guild_lifecycle: deleted %d reaction-role row(s) for guild=%d",
+                count,
+                guild_id,
+            )
+    except Exception as exc:
+        logger.warning(
+            "guild_lifecycle: reaction-role teardown failed for guild=%d: %s",
+            guild_id,
+            exc,
+        )
+
+
+async def _teardown_proof_channel_locks(guild_id: int) -> None:
+    """Delete every persisted proof-channel timed lock for the departed guild."""
+    try:
+        from utils.db.proof_channel_locks import delete_for_guild as _proof_delete
+
+        count = await _proof_delete(guild_id)
+        if count:
+            logger.debug(
+                "guild_lifecycle: deleted %d proof-channel lock(s) for guild=%d",
+                count,
+                guild_id,
+            )
+    except Exception as exc:
+        logger.warning(
+            "guild_lifecycle: proof-channel lock teardown failed for guild=%d: %s",
             guild_id,
             exc,
         )

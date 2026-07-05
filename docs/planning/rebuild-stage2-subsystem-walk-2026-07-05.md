@@ -1598,6 +1598,17 @@ current-bot bugs queued for a dedicated fix session. 2 Stage-1-vintage open deci
 
 ## 7. Handoff for the next session — bug fixes + current-bot implementation
 
+> **§7.1 STATUS — IMPLEMENTED (PR #1728, 2026-07-05).** All 8 queued bug fixes below shipped in
+> the "save fixes" session, each with unit coverage (§7.4 gaps closed where touched) + a
+> friction→guard (the `test_no_direct_channel_mutations` invariant now scans `security_service`).
+> Two verified refinements over the original specs: bug #4 also **drops** `/moderation`'s
+> `@default_permissions` client-side hide (keeping it would leave the bug half-fixed — Discord
+> would hide the slash from exactly the role-only mods the fix admits); bug #6 fixed **two extra**
+> unaudited word-filter surfaces the spec missed (the add/remove modals) and a view→direct-DB
+> write. **§7.2 (committed feature scope) and the remaining Stage-2 walk (L1c onward) are NOT in
+> #1728** — they need their own design/owner-facing UX and stay a follow-up (per the backport
+> discipline: fix + lock-in now, don't grow a second half-built architecture).
+
 **Session paused here at the owner's request (2026-07-05), after L1a+L1b (19 rows) fully decided.**
 The next session is directed to (a) fix the 7 queued current-bot bugs and (b) start implementing
 some of the committed "Add" scope items into the *current* bot now — not wait for the separate

@@ -186,6 +186,7 @@ async def _record_action(
     actor_id: int | None,
     reason: str,
     actor_type: str = "moderator",
+    target_kind: str = "user",
     event_extra: dict[str, Any] | None = None,
 ) -> str:
     """Append the canonical ``mod_logs`` row and fan out both events.
@@ -214,7 +215,7 @@ async def _record_action(
         mutation_id=mutation_id,
         subsystem="moderation",
         mutation_type=action,
-        target=f"user:{target_id}",
+        target=f"{target_kind}:{target_id}",
         scope="guild",
         guild_id=guild_id,
         prev_value=None,
@@ -234,6 +235,46 @@ async def _record_action(
         **(event_extra or {}),
     )
     return mutation_id
+
+
+async def apply_channel_cleanup(
+    plan: Any,
+    *,
+    guild_id: int,
+    channel_id: int,
+    actor_id: int | None,
+    mode: str,
+) -> Any:
+    """Apply a history-cleanup plan for a channel and audit the delete.
+
+    The audited seam behind ``!cleanuphistory``: the cleanup cog used to call
+    :func:`services.history_cleanup.apply_history_cleanup_plan` directly, so its
+    bulk delete went **unaudited** — while moderation's post-action sweep routed
+    the *same* function through :func:`_record_action` (Stage-2 walk bug #6).
+    Routing cleanup through here gives the operator the same audit trail
+    (``mod_logs`` row + ``audit.action_recorded`` + ``EVT_MOD_ACTION``) without
+    the cog re-implementing audit. A zero-delete sweep is a silent no-op (mirror
+    :func:`_run_post_action_cleanup`).
+    """
+    from services import history_cleanup
+
+    result = await history_cleanup.apply_history_cleanup_plan(plan)
+    if result.deleted > 0:
+        await _record_action(
+            guild_id=guild_id,
+            action=f"cleanup_history:{mode}",
+            target_id=channel_id,
+            target_kind="channel",
+            actor_id=actor_id,
+            reason=f"Bulk cleanup ({mode}) deleted {result.deleted} message(s)",
+            event_extra={
+                "deleted": result.deleted,
+                "failed": result.failed,
+                "scanned": getattr(plan, "scanned", None),
+                "mode": mode,
+            },
+        )
+    return result
 
 
 async def _notify_target(

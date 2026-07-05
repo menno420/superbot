@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import asyncio
 import logging
+from datetime import datetime, timedelta, timezone
 
 import discord
 from discord.ext import commands
@@ -21,16 +22,143 @@ class ProofChannelCog(commands.Cog):
         self.bot = bot
         # track timed prize tasks so they can be cancelled if needed
         self._timed_tasks: dict[int, asyncio.Task] = {}
+        # guard so the boot reconcile sweep runs at most once per process
+        # (on_ready can fire repeatedly on gateway reconnects).
+        self._reconciled = False
 
     async def cog_load(self) -> None:
         from cogs.proof_channel.schemas import register_schemas
 
         register_schemas()  # Settings Phase 2 — declares the channel binding.
+        # Hot cog-reload while the bot is already connected: on_ready will not
+        # fire again, so recover persisted timed locks here. On a cold boot
+        # is_ready() is False and the on_ready listener handles it.
+        if self.bot.is_ready():
+            await self._reconcile_locks()
 
     def cog_unload(self):
         """Cancel auto-unlock tasks so a reload doesn't leave winners locked out."""
         tasks.cancel_by_prefix("proof:")
         self._timed_tasks.clear()
+
+    @commands.Cog.listener()
+    async def on_ready(self) -> None:
+        # Recover timed prize locks whose in-memory unlock timer was lost to a
+        # restart (Stage-2 walk bug #8). Guarded to run once per process.
+        if self._reconciled:
+            return
+        self._reconciled = True
+        await self._reconcile_locks()
+
+    async def _persist_timed_lock(
+        self,
+        guild_id: int,
+        channel_id: int,
+        winner_id: int,
+        duration_minutes: int,
+    ) -> None:
+        """Record a timed lock's unlock deadline for restart recovery (bug #8).
+
+        Best-effort: a persistence failure must never block granting the prize,
+        it only forfeits restart recovery for this one lock (the in-memory timer
+        still runs), so it is logged and swallowed.
+        """
+        unlock_at = datetime.now(tz=timezone.utc) + timedelta(minutes=duration_minutes)
+        try:
+            from utils.db import proof_channel_locks
+
+            await proof_channel_locks.upsert_lock(
+                guild_id=guild_id,
+                channel_id=channel_id,
+                winner_id=winner_id,
+                unlock_at=unlock_at,
+            )
+        except Exception:  # noqa: BLE001 — persistence is best-effort
+            logger.exception(
+                "proof: failed to persist timed lock for guild=%s channel=%s",
+                guild_id,
+                channel_id,
+            )
+
+    def _schedule_unlock(
+        self,
+        channel: discord.TextChannel,
+        guild_id: int,
+        delay_seconds: float,
+        *,
+        notify: discord.abc.Messageable | None = None,
+    ) -> asyncio.Task:
+        """Spawn (and register) the timer that auto-unlocks *channel* after
+        *delay_seconds*. Shared by the timed prize commands and the boot
+        reconcile sweep so the auto-unlock body lives in one place.
+        """
+
+        async def _auto_unlock() -> None:
+            try:
+                await asyncio.sleep(delay_seconds)
+                # Timer-driven unlock — system actor (no human at the callback).
+                await self._unlock(channel, actor_id=None, actor_type="system")
+                if notify is not None:
+                    try:
+                        await notify.send(
+                            f"Time is up! {channel.mention} is now read-only again.",
+                            delete_after=10,
+                        )
+                    except Exception:  # noqa: BLE001 — notify is best-effort
+                        pass
+            except asyncio.CancelledError:
+                raise
+            except Exception:  # noqa: BLE001 — never let a timer crash the loop
+                logger.exception(
+                    "proof: timed auto-unlock failed for guild %s",
+                    guild_id,
+                )
+            finally:
+                self._timed_tasks.pop(guild_id, None)
+
+        task = tasks.spawn(f"proof:unlock:{guild_id}", _auto_unlock())
+        self._timed_tasks[guild_id] = task
+        return task
+
+    async def _reconcile_locks(self) -> None:
+        """Boot-time recovery for persisted timed prize locks.
+
+        For each persisted lock: if the channel/guild is gone, drop the stale
+        row; if the deadline already passed, unlock now (which also clears the
+        row); otherwise reschedule the in-memory timer for the remaining time.
+        One bad row must never abort the whole sweep.
+        """
+        from utils.db import proof_channel_locks
+
+        try:
+            rows = await proof_channel_locks.all_locks()
+        except Exception:  # noqa: BLE001 — no persisted locks is not fatal
+            logger.exception("proof: failed to read persisted locks for reconcile")
+            return
+        now = datetime.now(tz=timezone.utc)
+        for row in rows:
+            guild_id = row["guild_id"]
+            channel_id = row["channel_id"]
+            try:
+                guild = self.bot.get_guild(guild_id)
+                channel = guild.get_channel(channel_id) if guild else None
+                if not isinstance(channel, discord.TextChannel):
+                    # Guild/channel gone — the row is stale bookkeeping.
+                    await proof_channel_locks.delete_lock(guild_id, channel_id)
+                    continue
+                if row["unlock_at"] <= now:
+                    # Deadline already passed while we were down — unlock now
+                    # (``_unlock`` clears the persisted row).
+                    await self._unlock(channel, actor_id=None, actor_type="system")
+                else:
+                    remaining = (row["unlock_at"] - now).total_seconds()
+                    self._schedule_unlock(channel, guild_id, remaining)
+            except Exception:  # noqa: BLE001 — isolate one bad row from the sweep
+                logger.exception(
+                    "proof: failed to reconcile lock for guild=%s channel=%s",
+                    guild_id,
+                    channel_id,
+                )
 
     async def get_proof_channel(
         self,
@@ -115,6 +243,22 @@ class ProofChannelCog(commands.Cog):
             actor_id=actor_id,
             actor_type=actor_type,
         )
+        # Clear any persisted timed-lock row now that the channel is unlocked —
+        # the single chokepoint that covers -prize, the panel end button, both
+        # auto-unlocks, and the reconcile sweep. Best-effort: a DB blip must
+        # never block the permission change (mirrors the best-effort audit).
+        try:
+            from utils.db import proof_channel_locks
+
+            await proof_channel_locks.delete_lock(
+                proof_channel.guild.id,
+                proof_channel.id,
+            )
+        except Exception:  # noqa: BLE001 — persistence cleanup is best-effort
+            logger.exception(
+                "proof: failed to clear persisted lock for channel %s",
+                proof_channel.id,
+            )
 
     @commands.command(name="+prize")
     @perms_or_owner(manage_channels=True)
@@ -198,22 +342,9 @@ class ProofChannelCog(commands.Cog):
             delete_after=10,
         )
 
-        async def _auto_unlock():
-            await asyncio.sleep(duration * 60)
-            try:
-                # Timer-driven unlock — system actor (no human at the callback).
-                await self._unlock(ch, actor_id=None, actor_type="system")
-                await ctx.send(
-                    f"Time is up! {ch.mention} is now read-only again.",
-                    delete_after=10,
-                )
-            except Exception:
-                pass
-            finally:
-                self._timed_tasks.pop(ctx.guild.id, None)
-
-        task = tasks.spawn(f"proof:unlock:{ctx.guild.id}", _auto_unlock())
-        self._timed_tasks[ctx.guild.id] = task
+        # Persist the unlock deadline so a restart can recover it (bug #8).
+        await self._persist_timed_lock(ctx.guild.id, ch.id, winner.id, duration)
+        self._schedule_unlock(ch, ctx.guild.id, duration * 60, notify=ctx.channel)
 
 
 class _PrizeWinnerModal(discord.ui.Modal, title="Grant Prize Access"):  # type: ignore[call-arg]
@@ -289,20 +420,14 @@ class _TimedPrizeModal(discord.ui.Modal, title="Timed Prize Access"):  # type: i
 
         await self.cog._lock_for_winner(ch, self.winner, actor_id=interaction.user.id)
 
-        async def _auto_unlock():
-            await asyncio.sleep(duration * 60)
-            try:
-                # Timer-driven unlock — system actor (no human at the callback).
-                await self.cog._unlock(ch, actor_id=None, actor_type="system")
-            except Exception:
-                pass
-            finally:
-                self.cog._timed_tasks.pop(interaction.guild_id, None)
-
-        self.cog._timed_tasks[interaction.guild_id] = tasks.spawn(
-            f"proof:unlock:{interaction.guild_id}",
-            _auto_unlock(),
+        # Persist the unlock deadline so a restart can recover it (bug #8).
+        await self.cog._persist_timed_lock(
+            interaction.guild_id,
+            ch.id,
+            self.winner.id,
+            duration,
         )
+        self.cog._schedule_unlock(ch, interaction.guild_id, duration * 60)
         await interaction.response.send_message(
             f"✅ {self.winner.mention} has access to {ch.mention} for **{duration}** minute(s).",
             ephemeral=True,

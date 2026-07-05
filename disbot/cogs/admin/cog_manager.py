@@ -20,6 +20,7 @@ Extracted from ``cogs/admin_cog.py`` to keep that file under the S4.6
 from __future__ import annotations
 
 import ast
+import logging
 import os
 import re
 from typing import TYPE_CHECKING
@@ -27,12 +28,12 @@ from typing import TYPE_CHECKING
 import discord
 from discord.ext import commands
 
-from utils.ui_constants import INFO_COLOR
+from utils.ui_constants import INFO_COLOR, SUCCESS_COLOR
 from views.base import HubView
 from views.paginated_select import attach_windowed_select
 
 if TYPE_CHECKING:
-    from cogs.admin_cog import AdminCog
+    from cogs.admin_cog import AdminCog, _AdminPanelView
 
 # Absolute path to ``cogs/`` — the parent directory of ``cogs/admin/``.
 COGS_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -93,28 +94,125 @@ _PROTECTED_COGS: frozenset[str] = frozenset(
 )
 
 
-async def _do_load(bot: commands.Bot, module: str) -> str:
+logger = logging.getLogger("bot.cogs.admin.cog_manager")
+
+
+async def _emit_cog_audit(
+    module: str,
+    mutation_type: str,
+    actor_id: int | None,
+) -> None:
+    """Best-effort audit for a cog load/unload/reload (a runtime mutation).
+
+    These are process/runtime mutations with no DB write and no owning
+    ``*_mutation`` service, so — like ``proof_channel_cog._emit_prize_audit`` —
+    the cog-layer emit is the correct seam. Audit is best-effort: a bus/emit
+    failure never blocks the operation.
+    """
+    from datetime import datetime, timezone
+    from uuid import uuid4
+
+    from services.audit_events import emit_audit_action
+
+    try:
+        await emit_audit_action(
+            mutation_id=str(uuid4()),
+            subsystem="admin",
+            mutation_type=mutation_type,
+            target=f"cog:{module}",
+            scope="global",
+            guild_id=None,
+            prev_value=None,
+            new_value=module,
+            actor_id=actor_id,
+            actor_type="admin",
+            occurred_at=datetime.now(tz=timezone.utc),
+        )
+    except Exception:  # noqa: BLE001 — audit is best-effort; never block the op
+        logger.exception("cog audit emit failed for %s (%s)", mutation_type, module)
+
+
+async def _emit_admin_runtime_audit(
+    mutation_type: str,
+    target: str,
+    prev_value: str | None,
+    new_value: str | None,
+    actor_id: int | None,
+) -> None:
+    """Best-effort audit for a high-privilege admin runtime mutation.
+
+    Restart and log-level changes are process/runtime mutations with no DB
+    write and no owning ``*_mutation`` service, so — like
+    ``proof_channel_cog._emit_prize_audit`` — the cog-layer emit is the right
+    seam. Audit is best-effort: a bus/emit failure never blocks the action.
+    """
+    from datetime import datetime, timezone
+    from uuid import uuid4
+
+    from services.audit_events import emit_audit_action
+
+    try:
+        await emit_audit_action(
+            mutation_id=str(uuid4()),
+            subsystem="admin",
+            mutation_type=mutation_type,
+            target=target,
+            scope="global",
+            guild_id=None,
+            prev_value=prev_value,
+            new_value=new_value,
+            actor_id=actor_id,
+            actor_type="admin",
+            occurred_at=datetime.now(tz=timezone.utc),
+        )
+    except Exception:  # noqa: BLE001 — audit is best-effort; never block the op
+        logger.exception(
+            "admin runtime audit emit failed for %s (%s)",
+            mutation_type,
+            target,
+        )
+
+
+async def _do_load(
+    bot: commands.Bot,
+    module: str,
+    *,
+    actor_id: int | None = None,
+) -> str:
     """Load ``module``; return an operator-readable status string."""
     try:
         await bot.load_extension(module)
+        await _emit_cog_audit(module, "cog_load", actor_id)
         return f"✅ `{module}` loaded."
     except Exception as exc:  # noqa: BLE001 — operator-facing surface
         return f"⚠️ Error loading `{module}`: {exc}"
 
 
-async def _do_unload(bot: commands.Bot, module: str) -> str:
+async def _do_unload(
+    bot: commands.Bot,
+    module: str,
+    *,
+    actor_id: int | None = None,
+) -> str:
     """Unload ``module``; return an operator-readable status string."""
     try:
         await bot.unload_extension(module)
+        await _emit_cog_audit(module, "cog_unload", actor_id)
         return f"🔴 `{module}` unloaded."
     except Exception as exc:  # noqa: BLE001 — operator-facing surface
         return f"⚠️ Error unloading `{module}`: {exc}"
 
 
-async def _do_reload(bot: commands.Bot, module: str) -> str:
+async def _do_reload(
+    bot: commands.Bot,
+    module: str,
+    *,
+    actor_id: int | None = None,
+) -> str:
     """Reload ``module``; return an operator-readable status string."""
     try:
         await bot.reload_extension(module)
+        await _emit_cog_audit(module, "cog_reload", actor_id)
         return f"🔄 `{module}` reloaded."
     except Exception as exc:  # noqa: BLE001 — operator-facing surface
         return f"⚠️ Error reloading `{module}`: {exc}"
@@ -334,7 +432,11 @@ class _CogManagerView(HubView):
         if not await self._require_selection_or_deny(interaction):
             return
         assert self.selected_module is not None  # noqa: S101 — guarded above
-        self.last_status = await _do_load(self.cog.bot, self.selected_module)
+        self.last_status = await _do_load(
+            self.cog.bot,
+            self.selected_module,
+            actor_id=interaction.user.id,
+        )
         await interaction.response.edit_message(
             embed=self.build_embed(),
             view=self,
@@ -355,7 +457,11 @@ class _CogManagerView(HubView):
                 ephemeral=True,
             )
             return
-        self.last_status = await _do_unload(self.cog.bot, self.selected_module)
+        self.last_status = await _do_unload(
+            self.cog.bot,
+            self.selected_module,
+            actor_id=interaction.user.id,
+        )
         await interaction.response.edit_message(
             embed=self.build_embed(),
             view=self,
@@ -370,7 +476,11 @@ class _CogManagerView(HubView):
         # Reload is allowed even for protected core cogs — it is
         # reversible and is the operator's hot-path for picking up a
         # code change without restarting the process.
-        self.last_status = await _do_reload(self.cog.bot, self.selected_module)
+        self.last_status = await _do_reload(
+            self.cog.bot,
+            self.selected_module,
+            actor_id=interaction.user.id,
+        )
         await interaction.response.edit_message(
             embed=self.build_embed(),
             view=self,
@@ -386,14 +496,54 @@ class _CogManagerView(HubView):
         )
 
 
+class _LogLevelModal(discord.ui.Modal, title="Set Log Level"):  # type: ignore[call-arg]
+    level = discord.ui.TextInput(  # type: ignore[var-annotated]
+        label="Log level (DEBUG/INFO/WARNING/ERROR/CRITICAL)",
+        placeholder="INFO",
+        max_length=10,
+    )
+
+    def __init__(self, panel: _AdminPanelView):
+        super().__init__()
+        self.panel = panel
+
+    async def on_submit(self, interaction: discord.Interaction):
+        level_int = getattr(logging, self.level.value.upper(), None)
+        if not isinstance(level_int, int):
+            await interaction.response.send_message(
+                f"❌ Unknown level `{self.level.value.upper()}`. "
+                "Choose from: DEBUG, INFO, WARNING, ERROR, CRITICAL",
+                ephemeral=True,
+            )
+            return
+        old_level = logging.getLevelName(logging.getLogger().level)
+        logging.getLogger().setLevel(level_int)
+        embed = discord.Embed(
+            title="📝 Log Level Updated",
+            description=f"Log level set to `{self.level.value.upper()}`.",
+            color=SUCCESS_COLOR,
+        )
+        embed.set_footer(text="Click ↩ Overview to return.")
+        await interaction.response.edit_message(embed=embed, view=self.panel)
+        await _emit_admin_runtime_audit(
+            "set_log_level",
+            "logging:root",
+            old_level,
+            self.level.value.upper(),
+            getattr(interaction.user, "id", None),
+        )
+
+
 __all__ = [
     "COGS_DIR",
     "_CogManagerView",
+    "_LogLevelModal",
     "_PROTECTED_COGS",
     "_all_cog_modules",
     "_do_load",
     "_do_reload",
     "_do_unload",
+    "_emit_admin_runtime_audit",
     "_find_module",
     "_normalize",
     "_syntax_ok",

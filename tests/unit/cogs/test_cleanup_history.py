@@ -12,6 +12,18 @@ from cogs.cleanup_cog import MAX_CLEANUP_HISTORY_LIMIT, Cleanup
 # ruff: noqa: S101
 
 
+@pytest.fixture(autouse=True)
+def _stub_mod_action_log(monkeypatch):
+    """The cleanup confirm path now routes its bulk delete through the audited
+    moderation seam (``moderation_service.apply_channel_cleanup`` — Stage-2 walk
+    bug #6), which writes a ``mod_logs`` row. Stub that DB write so these DB-less
+    unit tests still exercise the delete + audit path (the ``message.delete``
+    assertions are unaffected — the plan still executes)."""
+    from services import moderation_service
+
+    monkeypatch.setattr(moderation_service.db, "log_mod_action", AsyncMock())
+
+
 def _msg(content: str):
     m = MagicMock()
     m.content = content

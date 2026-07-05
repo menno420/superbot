@@ -8,7 +8,12 @@ Pins the contract for ``/admin``, ``/settings``, ``/moderation``, and
   ``@app_commands.checks.has_permissions`` AND the corresponding
   ``@app_commands.default_permissions`` Discord-side visibility hint.
   Both layers must be present so the gate works regardless of
-  whether the guild's Discord client respects the visibility hint.
+  whether the guild's Discord client respects the visibility hint —
+  **except ``/moderation``**, which is runtime-gated *only* (Stage-2 walk
+  bug #4): it drops the client-side hide so configured-moderator-role
+  holders (who lack the raw ``moderate_members`` permission) can still see
+  and invoke it, with the runtime ``_require_mod_slash`` check as the sole
+  authority boundary — mirroring ``!modmenu`` and the Help-reachable panel.
 * Successful callbacks respond ephemerally.
 * Each callback delegates to the existing panel builder — no
   business-logic duplication.
@@ -100,14 +105,20 @@ def test_settings_slash_default_permissions_administrator():
     assert perms.administrator is True
 
 
-def test_moderation_slash_default_permissions_moderate_members():
+def test_moderation_slash_no_default_permissions():
+    """/moderation is runtime-gated ONLY (Stage-2 walk bug #4).
+
+    It deliberately carries no ``@default_permissions`` client-side hide, so a
+    configured moderator-role holder (who lacks the raw ``moderate_members``
+    permission) can still see and invoke it — the runtime ``_require_mod_slash``
+    check is the authority boundary, mirroring ``!modmenu`` and the
+    Help-reachable panel.
+    """
     cmd = _get_app_command(
         ModerationCog(MagicMock(spec=commands.Bot)),
         "moderation",
     )
-    perms = cmd.default_permissions
-    assert perms is not None
-    assert perms.moderate_members is True
+    assert cmd.default_permissions is None
 
 
 def test_platform_slash_default_permissions_administrator():
@@ -133,7 +144,7 @@ def _has_runtime_permission_check(cmd) -> bool:
     """
     for check in cmd.checks:
         qn = getattr(check, "__qualname__", "")
-        if "has_permissions" in qn or "_or_owner" in qn:
+        if "has_permissions" in qn or "_or_owner" in qn or "_require_mod" in qn:
             return True
     return False
 

@@ -35,6 +35,10 @@ from pathlib import Path
 _REPO_ROOT = Path(__file__).resolve().parents[3]
 _CHANNEL_COG = _REPO_ROOT / "disbot" / "cogs" / "channel_cog.py"
 _CHANNEL_VIEWS = _REPO_ROOT / "disbot" / "views" / "channels"
+# security_service's raid-lockdown slowmode used to call ``channel.edit()``
+# directly, bypassing the audited seam (the Stage-2 walk bug #5) — pin it so the
+# bypass class can't recur in the security service.
+_SECURITY_SERVICE = _REPO_ROOT / "disbot" / "services" / "security_service.py"
 
 # Channel mutations routed through ChannelLifecycleService — change operations
 # plus ad-hoc operator creation (P0-4 PR 2).
@@ -117,3 +121,18 @@ def test_channel_cog_imports_the_service():
     """Positive check — the cog actually wires the service it must use."""
     src = _CHANNEL_COG.read_text()
     assert "ChannelLifecycleService" in src
+
+
+def test_security_service_routes_slowmode_through_lifecycle_service():
+    """The raid-lockdown slowmode raise/restore must not call ``channel.edit()``
+    directly — it routes through ``ChannelLifecycleService`` so the mutation is
+    audited (Stage-2 walk bug #5). Guards the security service against a repeat
+    of the direct-``channel.edit()`` bypass."""
+    tree = ast.parse(_SECURITY_SERVICE.read_text(), filename=str(_SECURITY_SERVICE))
+    violations = _forbidden_calls(tree)
+    assert not violations, (
+        "Channel-lifecycle violation: security_service performs a direct channel "
+        "mutation instead of routing through ChannelLifecycleService:\n  "
+        + "\n  ".join(violations)
+    )
+    assert "ChannelLifecycleService" in _SECURITY_SERVICE.read_text()
