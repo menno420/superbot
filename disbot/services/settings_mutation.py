@@ -396,14 +396,17 @@ class SettingsMutationPipeline:
                 )
                 projection_committed = projection_result is not None
                 if not projection_committed:
+                    # Log only non-user-controlled values (guild_id, the
+                    # settings_keys constant, and the generated mutation_id) —
+                    # never the raw setting ``name`` (which is redundant with
+                    # ``settings_key`` here anyway) — to avoid a log-injection
+                    # sink (CodeQL). The subsystem is always "ai" in this branch.
                     logger.error(
                         "settings_mutation: AI typed-policy projection FAILED "
-                        "after retries (guild=%d, subsystem=%r, name=%r, key=%r, "
-                        "mutation_id=%s); the legacy KV write + audit committed "
-                        "but the runtime resolver row is now stale — DRIFT.",
+                        "after retries (guild=%d, key=%s, mutation_id=%s); the "
+                        "legacy KV write + audit committed but the runtime "
+                        "resolver row is now stale — DRIFT.",
                         effective_guild_id,
-                        subsystem,
-                        name,
                         spec.settings_key,
                         mutation_id,
                     )
