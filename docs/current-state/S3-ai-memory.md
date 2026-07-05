@@ -69,6 +69,14 @@
 *(offline-fit tags — `[offline]` self-mergeable now · `[needs-live-bot]` needs a running bot / runtime
 creds · `[owner]` needs an owner decision/action; see [`../repo-sector-map.md`](../repo-sector-map.md)
 § "the offline-fit startability tag".)*
+
+- **📍 READ FIRST — next-session priority assessment (2026-07-05, owner-requested):**
+  [`../planning/next-session-priority-2026-07-05.md`](../planning/next-session-priority-2026-07-05.md).
+  Answers "is finishing the substrate kit the right next priority?" — **the kit is already finalized
+  (#1649); its remaining step is the Phase-2.5 A/B.** Decision tree: **live session → Stage-2 walk
+  L1c** (owner-only); **autonomous → §7.2 current-bot lock-in (owner-directed) or the Phase-2.5
+  cold-start A/B**, with the small restart-recovery checker as a fast win. Phase 3 is behind *two*
+  gates (owner ratification **+** the A/B).
 - `[owner]` **▶ THE REBUILD REVIEW-THEN-PLAN PHASE IS LIVE** (owner-directed 2026-07-03): the pre-build
   **new-bot capability audit** is complete (#1662…#1668/#1674, verdict **GO-with-amendments**, measured
   all-43 fit **85.1%**) and

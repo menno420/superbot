@@ -8581,3 +8581,38 @@ Tier-2/Tier-3 queue items (~47) remain for Gate-0 with their recommended default
 `rebuild-hub-navigation-presets-2026-07-03.md` (a/c), `rebuild-conventions-invocation-authority-2026-07-03.md`
 (d/e/f), `rebuild-stage1-global-review-2026-07-03.md` (Stage-2 §6 g) ·
 `.sessions/2026-07-03-tier1-owner-decisions.md`.
+
+---
+
+### Q-0238 — DISCUSS: wire code-scanning (CodeQL) status into the born-red merge hold, so an open security alert blocks auto-merge (proposed 2026-07-05)
+
+> **Context.** In the save-fixes session the born-red gate worked as designed — but the merge still
+> raced a security alert. #1728 flipped its session card to `complete` (releasing the hold) the
+> moment the *local* CI mirror passed; `code-quality` (the one **required** check) went green ~15s
+> later and native auto-merge merged the PR **before** the server-side **CodeQL** scan had posted a
+> log-injection alert on the same head. CodeQL / code-scanning are **advisory**, not a required
+> check, so auto-merge never waits for them. The fix had to land as a separate follow-up PR (#1730).
+> The behavioral guard is already banked (journal Rule: don't flip the card to `complete` until the
+> pushed head's CodeQL has reported clean) — but that is *exhort*, not *enforce* (Q-0132/Q-0194).
+
+**The proposal (owner decision needed — this touches executable config).** Make an open code-scanning
+alert on the PR head hold the merge, one of:
+- **(A)** add **`code-scanning` (or the CodeQL check-run) as a required status check** on `claude/*`
+  PRs, so native auto-merge simply won't fire while an alert is open (pure branch-protection config,
+  no new code); **or**
+- **(B)** teach `check_session_gate.py` (the born-red gate that already gates `code-quality`) to
+  also fail while the head has an **open, error/warning-severity code-scanning alert** (queried via
+  the GitHub API), so the existing required check absorbs it — no separate required context to
+  maintain.
+
+**Why it needs the owner.** Both change how *every* future `claude/*` PR merges — (A) is
+branch-protection config, (B) is a hook/checker behavior change — both owner-gated per the autonomy
+boundary. Trade-off to weigh: (A) is the cleaner "GitHub-native" lever but CodeQL can be slow/flaky
+and would occasionally stall an otherwise-green PR; (B) keeps it inside the one gate we control but
+adds an API call + a severity threshold to tune. Recommendation: **(A)** if CodeQL runs reliably
+fast on this repo; else **(B)** with a warn-first period.
+
+**Homes (on decision):** `.github/` branch-protection or `scripts/check_session_gate.py` +
+`.claude/CLAUDE.md` § Session workflow (the born-red-gate rule) · the journal Rule that currently
+carries the behavioral half. **Until decided:** the journal Rule stands (wait for CodeQL before the
+card flip). Provenance: `.sessions/2026-07-05-next-session-prep.md`.
