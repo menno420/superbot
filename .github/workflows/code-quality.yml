@@ -6,10 +6,12 @@ on:
   pull_request:
     branches: [ "main" ]
   # Manual/automated re-kick (Q-0195): ci-rerun-watchdog.yml dispatches this on a claude/* branch
-  # when GitHub dropped the pull_request:synchronize event and the head got no run. The
-  # docs-detector below treats a dispatch (no PR base) as "base unavailable -> run full CI", and
-  # the resulting `code-quality` check on the branch head satisfies the required check for a
-  # same-repo PR.
+  # when GitHub dropped the pull_request:synchronize event and the head got no run. The docs-detector
+  # below treats a dispatch (no PR base) as "base unavailable -> run full CI". Whether the resulting
+  # dispatched `code-quality` run *satisfies the required status check* for the PR is UNVERIFIED (it
+  # may differ by trigger event); check_ci_coverage.py no longer assumes it does — a completed
+  # dispatch that produces no pull_request/push run escalates to an owner-alert issue instead of
+  # silently marking the head "covered" (self-silencing fix, PR #1737 §C.3 Mode 2).
   workflow_dispatch:
 
 # Concurrency: do NOT cancel in-progress runs.
