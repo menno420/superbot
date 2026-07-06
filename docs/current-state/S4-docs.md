@@ -9,6 +9,20 @@
 > S3; the docs it produces are S4.*
 
 **Recently shipped (this sector):**
+- **Thirty-sixth Q-0107 reconciliation pass** (band-#1770, issue #1771 —
+  [pass record](../planning/reconciliation-pass-2026-07-06-band1770.md)): reconciled the ledger
+  (band #1741–#1770 — four grouped entries, headlined by the **S3 rebuild foundational consolidation →
+  ONE canonical plan (Fable 5)** #1768/#1769/#1770 (the Q-0240 decide-and-flag decision model +
+  `rebuild-canonical-plan-2026-07-06.md` with the corrected K-layer taxonomy) — plus the **Gate V
+  verification-fleet pass A–D + synthesis** #1750/#1751/#1756/#1757/#1759/#1767 (verdict *Gate V
+  COMPLETE → Phase-B under Sequence C*), the **CI-followups arc** #1743/#1744/#1745/#1747/#1748 (CodeQL
+  watchdog · `check_audit_seam` + `check_deferred_recovery` AST guards · ruff replaces black+isort), and
+  3 dashboard refreshes), trimmed Recently-shipped to 20 (`trim_recently_shipped.py --apply`, moved 4
+  oldest bullets, floor recomputed), disposed **11 open PRs** (none a stale session PR — 6 dependabot
+  bumps runtime-not-docs; 5 codex Gate V evidence reports #1752–#1755/#1758 evidence-complete, flagged
+  for the owner to merge-or-close), confirmed **ROUTINE_PAT set / loop self-fires** (issue #1771 authored
+  by `menno420`), carried the forward queue intact (still deep, no THIN flag — the rebuild Phase-B
+  canonical plan dominates), refreshed the dashboard export (Q-0167), reset the marker #1740 → #1770.
 - **Thirty-fifth Q-0107 reconciliation pass** (band-#1740, issue #1741 —
   [pass record](../planning/reconciliation-pass-2026-07-06-band1740.md)): reconciled the ledger
   (band #1711–#1740 — five grouped entries, headlined by the **S3 rebuild Gate-0 grammar-freeze →

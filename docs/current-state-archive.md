@@ -86,6 +86,43 @@
 
 ## Recently shipped — archived (newest first)
 
+- **#1680 (2026-07-03, S3 rebuild — Phase-A conventions freeze: naming · invocation ladder · mod-actions-as-data · authority, Q-0224…Q-0228)** —
+  the owner-live conventions-freeze continuation of Stage 1, folded into the
+  [conventions decisions log](planning/rebuild-conventions-invocation-authority-2026-07-03.md):
+  command **naming** (namespace only shared verbs, computed from the corpus; safe no-arg defaults);
+  the **four-rung invocation ladder** (exact → fuzzy typo matcher → NL intent → NL orchestration)
+  with **additive** guild/channel/user custom triggers, silent-on-no-match, and the three-tier
+  fuzzy matcher; **mod-actions-as-data** (resolving the ModerationActionSpec uncertainty to the
+  envelope); **one authority layer + a global bot-owner override** (verification test + transparent
+  audit); and **proposed** invocation-stack centralizations C-1…C-7 (Q-0228, pending owner
+  reaction). ▶ next: **Stage 2 — the subsystem walk**.
+- **#1679 (2026-07-03, S3 rebuild — Phase-A Stage-1 global review: standards + order audit + Gate-0 deltas, Q-0219…Q-0223)** —
+  the owner-live **Stage-1 review** of the frozen BUILD-PLAN, folded into the
+  [Stage-1 decisions log](planning/rebuild-stage1-global-review-2026-07-03.md): the **S-1
+  engine/declaration/seam generalization standard** + **S-2 foundation-before-consumer ordering
+  rule**; a full dependency-order audit (3 inversions — welcome re-homed to L1c after the card
+  engine; deathmatch/explore take declared-seam deferrals, mining-last stands); Gate-0 deltas
+  D-1…D-6 incl. a **new media-generation capability** (Q-0221) and the **3-phase container-first
+  cutover model** (Q-0222 — container-only live testing → manifest-driven selective import with
+  full-coverage disposition → token swap); the substrate-kit figure corrected (~90–95%, 422 tests
+  green — completion is the pre-bootstrap gate, Q-0223) and per-subsystem triage made a Stage-2
+  deliverable. ▶ next: **Stage 2 — the subsystem walk**.
+- **#1662 · #1663 · #1664 · #1665 · #1666 · #1667 · #1668 · #1674 · #1677 (2026-07-03, S3 rebuild — new-bot capability audit → frozen BUILD-PLAN)** —
+  the pre-Phase-A **new-bot capability audit**: the BRIEF hardened with prompt-refinement launch
+  preconditions (#1662), then a parallel per-lane grammar-fit sweep of the whole shipped surface —
+  Lane A governance (#1663), Lane B economy & character-sim (#1665), Lane C games & community (#1664),
+  Lane D knowledge/AI/platform (#1667), Lane E plans & ideas forward-capability ledger (#1668), Lane G
+  L0 (#1666) — folded by the **capstone** (#1674) into
+  [`NEW-BOT-BUILD-PLAN.md`](analysis/rebuild-discovery/new-bot-capability-audit/findings/NEW-BOT-BUILD-PLAN.md)
+  (verdict **GO-with-amendments**, measured all-43 fit **85.1%**) plus a `check_plan_staleness.py`
+  guard; the review-then-plan process + next-session goal captured in
+  [`planning/rebuild-planning-phase-2026-07-03.md`](planning/rebuild-planning-phase-2026-07-03.md) (#1677).
+- **#1652 · #1653 · #1657 · #1658 · #1659 · #1661 · #1669 · #1672 · #1673 (2026-07-02/03, workflow — 32nd pass + review/brainstorm routine sessions)** —
+  the **thirty-second Q-0107 reconciliation pass** (band-#1650,
+  [pass record](planning/reconciliation-pass-2026-07-02-band1650.md), #1652); the review of session #1649
+  (substrate-kit finalize) + ledger fix + missed-defect fixes (#1653); the review-then-plan Codex-PR
+  close-out (#1657); daily-review-brainstorm sessions (#1658/#1659); a session-card PR-number fix (#1661);
+  and further Q-0102 review-recent-session passes (#1669/#1672/#1673).
 - **#1656 · #1660 · #1670 · #1671 · #1675 · #1676 · #1678 (2026-07-02/03, docs — dashboard-data refreshes, Q-0167)** —
   seven per-source-merge **dashboard-data refreshes** keeping the committed `dashboard/data/dashboard.json`
   export fresh as parallel sessions landed.

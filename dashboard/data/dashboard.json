@@ -1,14 +1,14 @@
 {
   "meta": {
-    "generated_at": "2026-07-06T23:35:32Z",
+    "generated_at": "2026-07-06T21:47:52Z",
     "build": {
-      "commit": "7f00f3e9",
-      "subject": "Merge pull request #1770 from menno420/claude/superbot-rebuild-phase-2.5-qk07s7",
-      "committed_at": "2026-07-06T23:35:32Z"
+      "commit": "666c802a",
+      "subject": "docs(reconcile): 36th Q-0107 pass — band-#1770",
+      "committed_at": "2026-07-06T21:47:52Z"
     },
     "counts": {
       "functions": 43,
-      "ideas": 199,
+      "ideas": 200,
       "bugs": 31,
       "reviews": 0,
       "reviews_open": 0,
@@ -1164,6 +1164,14 @@
     }
   ],
   "ideas": [
+    {
+      "file": "codex-evidence-pr-disposition-guard-2026-07-06.md",
+      "title": "Idea: codex/evidence-PR disposition guard",
+      "status": "ideas",
+      "date": "2026-07-06",
+      "summary": "The band-#1770 pass had to disposition **5 open Codex Gate V evidence PRs** (#1752–#1755 C2–C5, #1758",
+      "subsystems": null
+    },
     {
       "file": "formatter-tool-set-consistency-checker-2026-07-06.md",
       "title": "Idea — `check_tool_pins` should also assert the formatter tool *set* (not just versions)",
@@ -3033,6 +3041,14 @@
       "self_initiated": true
     },
     {
+      "file": "2026-07-06-reconcile-band1770.md",
+      "date": "2026-07-06",
+      "title": "2026-07-06 — Thirty-sixth Q-0107 reconciliation pass (band-#1770)",
+      "status": "complete",
+      "run_type": "routine",
+      "self_initiated": false
+    },
+    {
       "file": "2026-07-06-reconcile-band1740.md",
       "date": "2026-07-06",
       "title": "2026-07-06 — Thirty-fifth Q-0107 reconciliation pass (band-#1740)",
@@ -3495,14 +3511,6 @@
       "status": "complete",
       "run_type": "manual",
       "self_initiated": true
-    },
-    {
-      "file": "2026-07-02-linchpin-validation-harness-and-grammar-spike.md",
-      "date": "2026-07-02",
-      "title": "2026-07-02 — Rebuild linchpin validation: golden harness + grammar spike + go/no-go",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
     }
   ],
   "bot_changelog": [

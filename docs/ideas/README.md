@@ -494,6 +494,12 @@ Current broad captures:
   entry instead of the fragmentation surviving every pass (this band's #1683–#1688 were six bullets for
   one Phase-A arc). Mechanizes the grouped-entry convention the ledger depends on (Q-0194 friction →
   guard). Sector S4. Disposable (Q-0105).
+- [`codex-evidence-pr-disposition-guard-2026-07-06.md`](./codex-evidence-pr-disposition-guard-2026-07-06.md) —
+  **captured by the band-#1770 reconciliation pass (2026-07-06):** a warn-only checker that flags an open
+  `codex/*`/evidence PR whose added doc has already been consumed into a merged corrections/synthesis doc,
+  so the raw Gate-V evidence PRs (this band's #1752–#1755/#1758) get an explicit merge-or-close decision
+  instead of accumulating unreviewed across passes. Sibling of the open-PR staleness classifier + the
+  reconcile-headline-sector-currency-check. Sector S4. Disposable (Q-0105).
 - [`band-queue-hit-rate-metric-2026-06-22.md`](./band-queue-hit-rate-metric-2026-06-22.md) —
   **captured by the band-#1320 reconciliation pass (2026-06-22):** every pass plans a ~30-slice next band, and
   almost every subsequent pass records "the buffer became the band" in prose only — no number. Extend
