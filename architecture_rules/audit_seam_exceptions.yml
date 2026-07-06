@@ -1,0 +1,65 @@
+# Audit-seam coverage allowlist — consumed by scripts/check_audit_seam.py
+#
+# An entry suppresses a "function performs a write signal but never reaches emit_audit_action"
+# finding. Use it for a *legitimately* non-auditable write (an AI-config / BTD6-data write that is
+# not a user-facing auditable action, a cache/system write, or a checker false positive), NOT to
+# paper over a real unaudited mutation — route those through the domain's audited *_mutation /
+# lifecycle seam instead.
+#
+# Provenance: 2026-07-06 (CI-setup arc, handoff item #5). Warn-first + disposable (Q-0105).
+#
+# Schema:
+#   exceptions:
+#     - file: disbot/services/foo.py        # whole-file exemption (disbot/ prefix optional)
+#       reason: "..."                         # REQUIRED — why this write need not audit
+#     - file: disbot/services/bar.py
+#       function: Bar.do_thing                # narrow to one function (qualname or bare method name)
+#       reason: "..."
+
+exceptions:
+  # Automated cosmetic counter-channel rename on a rate-limited periodic loop (Q-0110): keeps a
+  # channel name showing a live server stat (total/humans/bots). System-driven display update, not a
+  # user-facing operator action — auditing every counter tick would spam the audit log. Off by
+  # default, fail-open, "no DB writes" (docstring). Triaged 2026-07-06 against source.
+  - file: disbot/services/counter_service.py
+    function: _rename_if_changed
+    reason: "automated cosmetic counter-channel rename on a rate-limited loop (Q-0110); not a user-facing auditable action"
+
+  # Idempotent system reconciliation of the bot's OWN private #superbot-setup channel privacy
+  # overwrites (deny @everyone/admin roles, grant bot/owner/delegates). The auditable *decision*
+  # (a delegated-admin grant/revoke) is captured upstream in setup_session.add/remove_delegated_admin
+  # -> _emit_session_audit; this overwrite recompute is the mechanical privacy side-effect on an infra
+  # channel, not the decision itself. Triaged 2026-07-06 against source (cogs/setup/_helpers.toggle_delegate).
+  - file: disbot/services/setup_channel.py
+    function: _apply_overwrites
+    reason: "idempotent privacy reconciliation of the bot's own managed setup channel; the auditable delegated-admin decision is audited upstream in setup_session"
+
+  # Mechanical privacy-lockdown of a ticket channel that ChannelLifecycleService (an audited seam)
+  # just created — a leaf helper inside the audited ticket-open flow (ticket_mutation emits audit for
+  # the ticket operation itself). Not the auditable decision; the channel creation + ticket op are
+  # both audited upstream. Triaged 2026-07-06 against source (ticket_mutation open flow, L128-165).
+  - file: disbot/services/ticket_mutation.py
+    function: _apply_private_overwrites
+    reason: "mechanical overwrite step of an audited ticket-open flow (channel created via the audited ChannelLifecycleService; ticket op audited by ticket_mutation itself)"
+
+  # Reaction-role self-service application: a member clicks a role-menu reaction and the bot toggles
+  # the role ("Role menu" reason). Automated, high-frequency, user-driven — NOT an operator decision;
+  # auditing every reaction-role click would flood the audit log. The role-menu *config* changes ARE
+  # audited (reaction_role_service emits for mutations). Triaged 2026-07-06 against source.
+  - file: disbot/services/reaction_role_service.py
+    function: _apply
+    reason: "self-service reaction-role application (user-driven role toggle), not an operator action; the role-menu config mutations are audited"
+
+  # Automation-engine role application: an automation RULE fires and assigns/removes a role. This is
+  # runtime rule *execution* driven by the scheduler, not a fresh operator decision — the auditable
+  # decision (creating/editing the rule) is audited via automation_mutation. Auditing every rule
+  # firing would flood the log. Triaged 2026-07-06 against source (automation_executor per-action
+  # handlers). NOTE for owner: if you want automation role-changes surfaced in the audit log, this is
+  # the seam to revisit — the checker flagged it honestly.
+  - file: disbot/services/automation_executor.py
+    function: _handle_assign_role
+    reason: "automation-rule execution (scheduler-driven role apply), not an operator action; the rule config is audited via automation_mutation"
+  - file: disbot/services/automation_executor.py
+    function: _handle_remove_role
+    reason: "automation-rule execution (scheduler-driven role apply), not an operator action; the rule config is audited via automation_mutation"
+

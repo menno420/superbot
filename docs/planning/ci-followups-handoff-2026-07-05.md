@@ -71,12 +71,28 @@ deadlock warning in the design §E (B2) — the swap must be one change.
 
 ### 5. The two AST guards — `[offline]`, calibrated specs ready
 Build from the calibrated specs in the idea docs (naive heuristics are too FP-prone — do NOT ship those):
-- **`check_audit_seam.py`** — repo-wide per-function reachability (write signal with no reachable
-  `emit_audit_action`), warn-first + `architecture_rules/` allowlist.
-  [spec](../ideas/audit-seam-coverage-checker-2026-07-05.md).
+- ✅ **`check_audit_seam.py` — SHIPPED advisory (2026-07-06).** Repo-wide per-function reachability: a
+  function with a **direct write signal** (raw SQL outside `utils/db` · Discord state mutation on a
+  non-message receiver · an **auditable-domain** `utils.db` write) whose success path never reaches
+  `emit_audit_action` (transitively). Wired `continue-on-error` in `code-quality.yml` (deps block,
+  code-gated); `architecture_rules/audit_seam_exceptions.yml` allowlist; 19 unit tests incl. the
+  Q-0120 gate-bites meta-test + a real-tree-clean ground-truth test. **Two calibration refinements the
+  build required, for the record** (naive per-function was still too noisy — the calibration was right):
+  (1) **import-qualified db-call detection** — `db.set_x()` where `db` is a `utils.db` alias, NOT a bare
+  name match, so `self.add_item` (the `discord.ui.View` method colliding with the `inventory` helper) is
+  never a false db write; (2) **auditable-domain scoping via DIRECT audit co-occurrence** — a db helper
+  is "auditable-class" only if some function writes it *and* emits in the same body (the audited-wrapper
+  shape), which is collision-proof (the name-merged call graph marks generic verbs like `credit`/`award`
+  audit-reachable off one namesake and would otherwise mark whole game domains auditable → the ~42% FP
+  class). Result: the db-write dimension fires **only** on an unaudited write to a domain that IS audited
+  elsewhere (bug #6), never on economy/games/sessions writes. Baseline: 6 findings, all triaged legit and
+  allowlisted with source-verified reasons (automated/self-service role application · mechanical overwrite
+  steps of audited operations). Would-have-caught bug #5 + bug #6. **Owner-gate for G4 promotion:** confirm
+  it stays quiet across a band; the automation role-apply allowlist entry is the one spot to revisit if you
+  want automation role-changes surfaced in the audit log.
 - **`check_deferred_recovery.py`** — key on the `tasks.spawn`-target (sleep + Discord state mutation lacking
   a persisted-deadline + boot sweep), NOT raw `asyncio.sleep`.
-  [spec](../ideas/deferred-action-restart-recovery-checker-2026-07-05.md).
+  [spec](../ideas/deferred-action-restart-recovery-checker-2026-07-05.md). Still `[offline]` — next.
 Wire as advisory (`continue-on-error`) first; promote after a clean band (Q-0239 **G4**).
 
 ### 6. Smaller / owner-gated tail

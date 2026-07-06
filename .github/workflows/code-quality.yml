@@ -179,6 +179,20 @@ jobs:
         if: steps.changes.outputs.code == 'true'
         run: python scripts/check_architecture.py --mode strict
 
+      # Audit-seam coverage — ADVISORY (continue-on-error, never blocks a merge). Flags a function
+      # that performs a state-mutation write signal (raw SQL / Discord state mutation / an
+      # auditable-domain utils.db write) but never reaches services.audit_events.emit_audit_action —
+      # the #1728 "save-fixes" bug class (bug #5 raid-lockdown channel.edit; bug #6 an unaudited
+      # settings/roles db write). Warn-first + architecture_rules/audit_seam_exceptions.yml allowlist;
+      # would-have-caught 3 of the 8 #1728 bugs. Needs PyYAML (from requirements.txt), so it runs in
+      # the deps-installed block; code-gated (audit-seam only matters when code changed). Promotion to
+      # a hard gate is owner-gated (Q-0239 G4) after a clean band. Disposable (Q-0105): drop this step
+      # + scripts/check_audit_seam.py if it proves noisy across sessions.
+      - name: Audit-seam coverage (check_audit_seam · advisory)
+        if: steps.changes.outputs.code == 'true'
+        continue-on-error: true
+        run: python scripts/check_audit_seam.py --mode strict
+
       - name: Cache mypy incremental cache
         if: steps.changes.outputs.code == 'true'
         uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5
