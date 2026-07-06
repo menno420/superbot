@@ -1,14 +1,14 @@
 {
   "meta": {
-    "generated_at": "2026-07-06T04:47:03Z",
+    "generated_at": "2026-07-06T12:57:43Z",
     "build": {
-      "commit": "3c2b0842",
-      "subject": "docs(reconcile): open born-red session card — 35th Q-0107 pass (band-#1740)",
-      "committed_at": "2026-07-06T04:47:03Z"
+      "commit": "8badac1c",
+      "subject": "Merge pull request #1745 from menno420/claude/pr-1743-verify-h3yyqq",
+      "committed_at": "2026-07-06T12:57:43Z"
     },
     "counts": {
       "functions": 43,
-      "ideas": 194,
+      "ideas": 197,
       "bugs": 31,
       "reviews": 0,
       "reviews_open": 0,
@@ -1164,6 +1164,30 @@
     }
   ],
   "ideas": [
+    {
+      "file": "formatter-tool-set-consistency-checker-2026-07-06.md",
+      "title": "Idea — `check_tool_pins` should also assert the formatter tool *set* (not just versions)",
+      "status": "ideas",
+      "date": "2026-07-06",
+      "summary": "`check_tool_pins.py` verifies that each tool's **version** agrees across the three pin surfaces",
+      "subsystems": null
+    },
+    {
+      "file": "reconcile-band-anchor-guard-2026-07-06.md",
+      "title": "Idea — reconcile-band anchor guard (a checker for the three-restatement band number)",
+      "status": "ideas",
+      "date": "2026-07-06",
+      "summary": "Every reconciliation pass hand-edits the **same band number in three places** in `current-state.md`:",
+      "subsystems": null
+    },
+    {
+      "file": "workflow-gh-permission-coverage-checker-2026-07-06.md",
+      "title": "Idea — `check_workflow_gh_permissions`: a workflow's `permissions:` must cover the `gh` ops it runs",
+      "status": "ideas",
+      "date": "2026-07-06",
+      "summary": "A GitHub Actions step runs a script that performs `gh` API operations (`gh issue create`, `gh workflow run`,",
+      "subsystems": null
+    },
     {
       "file": "audit-seam-coverage-checker-2026-07-05.md",
       "title": "Idea — an \"audit-seam coverage\" checker (catch unaudited mutations at authoring time)",
@@ -2985,12 +3009,28 @@
   "reviews": [],
   "updates": [
     {
+      "file": "2026-07-06-ruff-migration.md",
+      "date": "2026-07-06",
+      "title": "2026-07-06 — Ruff migration (A3): ruff replaces black + isort",
+      "status": "complete",
+      "run_type": "manual",
+      "self_initiated": true
+    },
+    {
       "file": "2026-07-06-reconcile-band1740.md",
       "date": "2026-07-06",
       "title": "2026-07-06 — Thirty-fifth Q-0107 reconciliation pass (band-#1740)",
-      "status": "in-progress",
-      "run_type": "",
+      "status": "complete",
+      "run_type": "routine",
       "self_initiated": false
+    },
+    {
+      "file": "2026-07-06-codeql-stuck-scan-watchdog.md",
+      "date": "2026-07-06",
+      "title": "2026-07-06 — Verify PR #1743 + CodeQL stuck-scan watchdog",
+      "status": "complete",
+      "run_type": "manual",
+      "self_initiated": true
     },
     {
       "file": "2026-07-05-save-fixes-implementation.md",
@@ -3020,6 +3060,14 @@
       "file": "2026-07-05-next-session-prep.md",
       "date": "2026-07-05",
       "title": "2026-07-05 — Next-session prep + docs banking (owner-directed)",
+      "status": "complete",
+      "run_type": "manual",
+      "self_initiated": true
+    },
+    {
+      "file": "2026-07-05-ci-watchdog-fix.md",
+      "date": "2026-07-05",
+      "title": "2026-07-05 — CI watchdog self-silencing fix + next-agent handoff",
       "status": "complete",
       "run_type": "manual",
       "self_initiated": true
@@ -3439,30 +3487,6 @@
       "status": "complete",
       "run_type": "",
       "self_initiated": false
-    },
-    {
-      "file": "2026-07-02-admin-logging-guilds-and-webhook.md",
-      "date": "2026-07-02",
-      "title": "2026-07-02 — Admin/logging guilds idea + Railway alerts webhook restored",
-      "status": "complete",
-      "run_type": "manual",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-07-01-xp-level-migration.md",
-      "date": "2026-07-01",
-      "title": "2026-07-01 — XP/level migration from other bots (Arcane)",
-      "status": "complete",
-      "run_type": "manual",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-07-01-xp-import-button-generic.md",
-      "date": "2026-07-01",
-      "title": "2026-07-01 — XP import: button entry + generic framing (follow-up)",
-      "status": "complete",
-      "run_type": "manual",
-      "self_initiated": false
     }
   ],
   "bot_changelog": [
@@ -3528,7 +3552,7 @@
       "usages": [
         {
           "file": "disbot/services/diagnostic_embeds.py",
-          "line": 1418,
+          "line": 1417,
           "layer": "services",
           "has_default": false
         },
@@ -3628,7 +3652,7 @@
       "usages": [
         {
           "file": "disbot/services/automation_scheduler.py",
-          "line": 397,
+          "line": 396,
           "layer": "services",
           "has_default": true
         }
