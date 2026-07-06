@@ -13,9 +13,15 @@
   CodeQL and blocks on a High+ alert. Prereq shipped: `codeql.yml` → `cancel-in-progress: false` (#1739).
 - ✅ **Merge gate tightened** (#1739) — `check_architecture --mode strict`, `check_tool_pins`,
   `check_workflow_concurrency` are now **hard steps in the required `code-quality` context**.
-- ✅ **Dropped-`synchronize` watchdog de-self-silenced** (this PR) — `check_ci_coverage.py` now classifies
+- ✅ **Dropped-`synchronize` watchdog de-self-silenced** (#1743) — `check_ci_coverage.py` now classifies
   by triggering event (only a `pull_request`/`push` run counts as covered; a completed `workflow_dispatch`
   re-kick that produced no PR-event run escalates to an owner-alert issue). Pure logic unit-tested.
+- ✅ **CodeQL stuck-scan watchdog — SHIPPED alerting-only** (2026-07-06, item #2 below) —
+  `check_codeql_coverage.py` bounds the residual the ruleset leaves open (a scan that *starts then
+  errors/hangs*, keyed on `run_started_at` to tell a hung scan from a normal one), wired as an
+  alerting-only leg on `ci-rerun-watchdog.yml`. It + `check_ci_coverage` now escalate through one shared
+  idempotent **`scripts/lib/owner_alert.py`** helper (the #1743 Q-0089 idea; also fixed the workflow's
+  missing `issues: write` so escalation works under the `GITHUB_TOKEN` fallback).
 
 ## Ranked follow-ups
 
@@ -29,12 +35,15 @@
   is load-bearing and the *real* recovery is close+reopen with `ROUTINE_PAT` — wire that as the re-kick
   action ([FIX-7] in the design §C.3) and add a per-PR reopen cap ([FIX-8]).
 
-### 2. CodeQL stuck-scan watchdog (bounds the one residual the ruleset leaves open) — `[offline]` build, needs live confirm
-The ruleset holds on *in-progress* and blocks on *unconfigured*, but does **not** bound a CodeQL run that
-*starts then errors/hangs* — that can hold a PR indefinitely. Add a leg to `ci-rerun-watchdog.yml`: on the
-`*/12` cadence, find head SHAs with a code-scanning analysis pending/errored past a grace window → re-run
-CodeQL → after K retries, open an owner-alert issue (reuse `check_ci_coverage.open_alert_issue`'s idempotent
-pattern). Design §C.2 `[FIX-1]`.
+### 2. CodeQL stuck-scan watchdog — ✅ SHIPPED alerting-only (2026-07-06); remaining = live-confirm → enable `--rerun`
+The alerting half is built: `check_codeql_coverage.py` (`classify_codeql_head` → HEALTHY/RERUN/ESCALATE/WAIT)
++ the alerting-only leg on `ci-rerun-watchdog.yml` + the shared `lib.owner_alert` (item #2 of the "done" list
+above). **What's left (pairs with the live-verify in item #1):** confirm the codeql `workflow_runs` shape
+against a real errored/dropped scan — specifically (a) that a `pull_request` codeql run's `.path` is
+`.github/workflows/codeql.yml` (adjust `CODEQL_WORKFLOW_PATH` if GitHub reports a managed path), and (b)
+whether a re-run surfaces as a fresh `workflow_runs` row (so the retry-count logic sees it). Once confirmed,
+flip the leg from alerting-only to `check_codeql_coverage.py --rerun` (re-dispatch RERUN heads, escalate only
+after K failed retries). Design §C.2 `[FIX-1]`.
 
 ### 3. Ruff replaces black + isort (the biggest "fewer checks" win) — `[offline]`, its own focused PR
 5 gate tools → 3. Turn-key (all in one atomic commit, per design §C.4):

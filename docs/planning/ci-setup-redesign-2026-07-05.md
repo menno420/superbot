@@ -178,7 +178,11 @@ blocks on not-configured** — which is exactly what the advisory-and-slow statu
   hangs* (autobuild failure, `codeql-action` outage) — a "waits forever" shape on a new axis. Add a
   **stuck-scan leg to `ci-rerun-watchdog.yml`**: on the `*/12` cadence, detect head SHAs with a
   code-scanning analysis pending/errored past a grace window → re-run CodeQL → after K retries, open an
-  owner-alert issue.
+  owner-alert issue. **✅ SHIPPED alerting-only (2026-07-06, A10)** — `check_codeql_coverage.py`
+  (`classify_codeql_head` → HEALTHY/RERUN/ESCALATE/WAIT, keyed on `run_started_at` to tell a hung scan
+  from a normal one) opens one idempotent owner-alert issue per stuck head; the auto **re-run** stays
+  behind `--rerun` until a live errored/dropped scan confirms the run shape (the one thing offline
+  testing can't verify).
 - **Fork-PR wording (corrected).** "Scope off fork PRs" is **not** a ruleset knob — rulesets scope by
   **base** branch (`main`), which fork PRs merge into. Fork risk is *mitigated* by advanced setup (we
   control re-runs) + admin bypass for the documented default-setup deadlock + this repo's near-zero fork
@@ -342,10 +346,13 @@ agent self-applies a required-context removal, workflow deletion, ruleset/branch
 > - **A6/A7 gating half shipped (#1739)** — `check_architecture --mode strict`, `check_tool_pins`,
 >   `check_workflow_concurrency` are now **hard steps in the required `code-quality` context** (gate with
 >   no branch-protection change), each verified green on `main` first.
-> - **A2 shipped (this PR)** — `check_ci_coverage.py` de-self-silenced (event-classification + escalate).
+> - **A2 shipped (#1743)** — `check_ci_coverage.py` de-self-silenced (event-classification + escalate).
+> - **A10 shipped (2026-07-06)** — the CodeQL **stuck-scan alerting leg** on `ci-rerun-watchdog.yml`
+>   (`check_codeql_coverage.py`, alerting-only until the re-dispatch path is live-confirmed) + the shared
+>   idempotent `lib.owner_alert` helper (Q-0089) that both watchdogs now escalate through.
 > - **Still pending → turn-key backlog:** [`ci-followups-handoff-2026-07-05.md`](ci-followups-handoff-2026-07-05.md)
->   (ruff migration A3, the `ci.yml`/`web-ci.yml`/`pr-freshness.yml` builds A5/A8/A9, the CodeQL stuck-scan
->   watchdog A10, the two AST guards, `check_session_slug_unique` gate, and the owner-gated Q-0239 tail).
+>   (ruff migration A3, the `ci.yml`/`web-ci.yml`/`pr-freshness.yml` builds A5/A8/A9, the two AST guards,
+>   `check_session_slug_unique` gate, and the owner-gated Q-0239 tail).
 
 - **A1.** ✅ **SHIPPED (#1739).** Flip `codeql.yml` → `cancel-in-progress: false`. *(Mode 3 + §C.2 prerequisite; reversible one-liner.)*
 - **A2.** Fix `check_ci_coverage.py` (check-run-enumeration + `ROUTINE_PAT` close+reopen + reopen cap →
@@ -369,7 +376,10 @@ agent self-applies a required-context removal, workflow deletion, ruleset/branch
   (code-only + docs-only). Add concurrency groups to `parity-replay.yml` + `ai-evals.yml`; surface
   "CodeGraph: DISABLED" in the SessionStart banner.
 - **A9.** Build `pr-freshness.yml` alongside `pr-auto-update` + `pr-conflict-guard`; observe parity.
-- **A10.** Add the CodeQL **stuck-scan leg** to `ci-rerun-watchdog.yml` (alerting-only first).
+- **A10.** ✅ **SHIPPED (2026-07-06).** CodeQL **stuck-scan leg** added to `ci-rerun-watchdog.yml`,
+  alerting-only (`check_codeql_coverage.py` classifies HEALTHY/RERUN/ESCALATE/WAIT and opens one
+  idempotent owner-alert issue via the shared `lib.owner_alert`; `--rerun` re-dispatch stays gated until
+  a live errored/dropped-scan confirms the run shape). *(Additive leg on a non-required routine workflow.)*
 
 ### Phase B — OWNER-GATED (propose; each is item-by-item ratifiable in §F)
 

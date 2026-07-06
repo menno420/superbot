@@ -46,12 +46,12 @@ non-blocking / `continue-on-error`) · **R** = routine (schedule/dispatch, not p
 | # | Workflow | Trigger (today) | Class | Required? | Concurrency | Role / notes |
 |---|---|---|---|---|---|---|
 | 1 | `code-quality.yml` | `push:main`, `pull_request:main`, `workflow_dispatch` | **G** | **YES** (`code-quality`) | `code-quality-${ref}`, **cancel:false** | The merge gate. Bundles ruff/black/isort/mypy/pytest + `check_docs` + `check_consistency` + `check_session_gate` (born-red) + `check_stale_claims`. Docs-only fast path skips heavy steps but still reports green. |
-| 2 | `codeql.yml` | `push:main`, `pull_request:main`, weekly cron | **G** (via ruleset) | **YES** (ruleset, 2026-07-05) | `codeql-${ref}`, **cancel: false** ✓ (#1739) | SAST. Now a merge gate via the **`codeql-merge-protection` ruleset** (Require code scanning results · CodeQL · High+ · Active) — auto-merge waits for CodeQL and blocks on a High+ alert (closes the Q-0238 race). `cancel:false` so the head run isn't dropped. Residual: a CodeQL run that errors/hangs isn't yet bounded (stuck-scan watchdog is a follow-up). |
+| 2 | `codeql.yml` | `push:main`, `pull_request:main`, weekly cron | **G** (via ruleset) | **YES** (ruleset, 2026-07-05) | `codeql-${ref}`, **cancel: false** ✓ (#1739) | SAST. Now a merge gate via the **`codeql-merge-protection` ruleset** (Require code scanning results · CodeQL · High+ · Active) — auto-merge waits for CodeQL and blocks on a High+ alert (closes the Q-0238 race). `cancel:false` so the head run isn't dropped. Residual (a CodeQL run that errors/hangs) is now bounded alerting-only by the `ci-rerun-watchdog` stuck-scan leg (#7). |
 | 3 | `auto-merge-enabler.yml` | `pull_request:[opened,reopened,ready_for_review]` | **I** | — | — | Arms native auto-merge on non-draft `claude/*` PRs. Needs `ROUTINE_PAT`. Does **not** fire on MCP-created PRs (arm manually, Q-0127). |
 | 4 | `codex-final-review.yml` | `pull_request:[synchronize,ready_for_review]` | **A** | — | — | Posts `@codex review` when the born-red card flips ready, so Codex sees the final head. |
 | 5 | `pr-conflict-guard.yml` | `push:main`, `pull_request:[opened,sync,reopened]`, `*/30` cron, dispatch | **I** | — | cancel:true (idempotent status) | Posts a red `conflict-guard` status on a DIRTY PR (main moved). Visibility, not a required gate. |
 | 6 | `pr-auto-update.yml` | push / PR / schedule | **I** | — | — | Keeps `claude/*` PR branches updated against main. |
-| 7 | `ci-rerun-watchdog.yml` | `schedule */12`, dispatch | **I** | — | — | Re-kicks `code-quality` when GitHub **dropped** the `synchronize` event (the silent stall). Compensator; uses `check_ci_coverage.py` + `ROUTINE_PAT`. |
+| 7 | `ci-rerun-watchdog.yml` | `schedule */12`, dispatch | **I** | — | — | Two "waits-forever" compensators (needs `ROUTINE_PAT`). **Leg 1:** re-kicks `code-quality` when GitHub **dropped** the `synchronize` event (`check_ci_coverage.py`). **Leg 2 (A10, 2026-07-06):** alerts on a **CodeQL scan that started then errored/hung** — the residual the merge-protection ruleset leaves open (`check_codeql_coverage.py`, alerting-only until the re-dispatch path is live-confirmed). |
 | 8 | `dashboard-ci.yml` | `push`/`pull_request` **paths:`dashboard/**`** | **A** | no | — | Dashboard `mypy` + `pytest` (main gate installs only the bot's reqs, so these `importorskip` there). |
 | 9 | `botsite-ci.yml` | `push`/`pull_request` **paths:`botsite/**`** | **A** | no | — | Bot-site `mypy` + `pytest`. Twin of dashboard-ci. |
 | 10 | `design-system-ci.yml` | **paths:`design-system/**`** | **A** | no | — | React/Tailwind typecheck + test + build. |
@@ -118,7 +118,8 @@ Still local/routine-only (candidates for a verified follow-up, not yet gating):
 `check_completion_ledger_parity` · `check_plan_code_drift` · `check_plan_homing` ·
 `check_plan_staleness` · `check_sector_map` · `check_sector_next_freshness` ·
 `check_startability_tags` · `check_bug_book_rootfix_backlog` · `check_plan_backlog` ·
-`check_loop_health` · `check_ci_coverage` (the dropped-`synchronize` watchdog).
+`check_loop_health` · `check_ci_coverage` (the dropped-`synchronize` watchdog) ·
+`check_codeql_coverage` (the CodeQL stuck-scan watchdog, A10 — shares `lib.owner_alert`).
 
 ### 2e. Dev / hook / ad-hoc aids (never a CI step, correctly)
 
