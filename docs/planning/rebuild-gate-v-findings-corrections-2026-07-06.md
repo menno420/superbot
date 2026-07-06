@@ -10,22 +10,23 @@
 > review fan-out; the Agent Mode report's load-bearing repo-facts were spot-checked by hand. Source
 > wins over every sub-report.
 
-## 1. Fleet completion state (2026-07-06)
+## 1. Fleet completion state — **COMPLETE** (updated 2026-07-06, all arms A–D + C1 verified)
 
 | Arm | Status | Artifact | Notes |
 |---|---|---|---|
-| A — Sonnet 5 / Ultracode | **running** | `SONNET-5-ULTRACODE-CORE-READINESS-REVIEW.md` (pending) | left untouched |
-| B — Codex C1 (L0/runtime) | **❌ FAILED TO START** | none | no PR in any state; **must be re-run** (§4) |
+| A — Sonnet 5 / Ultracode | ✅ merged + **verified sound** | `docs/analysis/rebuild-discovery/gate-v/SONNET-5-ULTRACODE-CORE-READINESS-REVIEW.md` | 867-line review; **recommends Sequence C**; see §6 |
+| B — Codex C1 (L0/runtime) | ✅ **re-run succeeded** + verified sound | PR #1758 → `docs/planning/C1-l0-runtime.md` | the earlier failed-to-start scope; see §6 |
 | B — Codex C2 (capability/invocation) | ✅ done | PR #1755 → `C2-capability-invocation.md` | verdict **sound** |
 | B — Codex C3 (tests/parity/oracle) | ✅ done | PR #1754 → `C3-tests-parity-oracle.md` | verdict **sound** |
 | B — Codex C4 (ownership/mutation/event) | ✅ done | PR #1753 → `C4-ownership-mutation-event.md` | verdict **sound** |
 | B — Codex C5 (games-deferral) | ✅ done | PR #1752 → `docs/planning/C5-games-deferral.md` | verdict **sound** |
-| C — Agent Mode (integration/external) | ✅ done | report delivered (this session) | sound **except** one error (§3) |
+| C — Agent Mode (integration/external) | ✅ done | report delivered | sound **except** one error (§3) |
 | D — live-testing | ✅ merged | `LIVE-VERIFIED-EVIDENCE-PACK` (commit `af77f6a`) | empirical pack landed on main |
-| Σ — final synthesis | not started | `GATE-V-SYNTHESIS.md` | consumes this doc |
+| Σ — final synthesis | **UNBLOCKED — ready to run** | `GATE-V-SYNTHESIS.md` | consumes this doc; directives in §7 |
 
-**C1 is the highest-stakes gap:** L0/runtime is the foundation every other layer's readiness depends
-on, and it is the one scope with no evidence. Do not run the synthesis as final until C1 lands.
+**All evidence arms are in and independently verified against live source.** C1 (the earlier
+failed-to-start L0/runtime gap) re-ran successfully and is sound; Arm A is merged and sound. The
+synthesis (Arm Σ) is unblocked — run it with this corrections doc as the authoritative evidence layer.
 
 ## 2. Codex C2–C5 — verification ledger (all four verdict: SOUND)
 
@@ -97,13 +98,65 @@ Beyond verification bookkeeping, these source-confirmed facts are genuine Gate-V
   those primitive proofs are replaced early** (contract tests + a DB-backed concurrency harness). This
   is the source-reality half; Arm A owns the design and Arm D the empirical exercisability.
 
-## 6. Directives for Arm Σ (final synthesis)
+## 6. C1 (L0/runtime) + Arm A (Sonnet/Ultracode) — verification (both SOUND)
+
+Both re-verified against live source by an independent review pass; **neither inherited the Agent
+Mode `ci-gate` error**, and neither fell for the graph-tool dead-code trap.
+
+**C1 — PR #1758 (`docs/planning/C1-l0-runtime.md`) — SOUND, merge-ready.** Every L0 source counterpart
+it names exists and its `PRESERVE`/`REDESIGN` labels are defensible: `config.py` raises on a missing
+token by default (the "hostile to pure manifest/unit import" REDESIGN rationale is real, `config.py:22`);
+`bootstrap_access_cog` must load first (`bot1.py:610`); `/ready` returns 200 only when gateway-ready
+**and** lifecycle admits commands (`healthserver.py:96-127`); `SUBSYSTEMS` deep-frozen after
+`validate_registry()`; interaction router is fail-closed for mutating/admin surfaces. Contract-compliant
+(pinned enum, `path:Lnn` keys, honest `source-read` tags — nothing falsely test-confirmed). Minor only:
+a few §9 "existing tests" cells are hedged guesses ("likely exist"), and two §8 Status cells mix prose
+into the pinned label — cosmetic.
+
+**Arm A — SONNET readiness review — SOUND, synthesis-ready as-is.** Every load-bearing claim re-checked
+against source held:
+- **The headline is TRUE (independently re-confirmed):** no L4/L5 module imports or references any L3
+  game cog — the frozen **L3→L4/L5 build edge is fabricated**; the only cross-layer hits are BTD6
+  in-game content strings and a `project_moon` Help-hook docstring. **Sequence A's core ordering premise
+  is unsupported by source.** → Its **Sequence C** (capability-class, bounded interleave) recommendation
+  is sound and evidence-backed, and it *strengthens* C5.
+- **K7 (workflow engine) Blocker verified — with a sharper nuance:** K7 has **zero code**, AND the two
+  "live money bugs" motivating its urgency are **closeable today without it** — `SettleOnceMixin`
+  already exists (`terminal_guard.py:44`, adopted in 4 places) and was simply never retrofitted to
+  deathmatch `_DuelView` (ad-hoc `is_over`) or the blackjack tournament; the Rule-6 checker is scoped
+  too narrow to catch either. **K7's urgency argument is borrowed, not real.**
+- **Blocker #2 verified real:** `tools/check_amendments.py` is absent and K1 `NamespaceRegistry` has
+  zero code, despite being a hard prerequisite to K2 (the one kernel component with a working spike) —
+  a genuine "Gate-0 docs complete ≠ build prerequisites in place" gap.
+- **L0 correctly treated as unproven** (all new-repo code capped `BLOCKED_BY_GATE`; K-components mostly
+  `NEEDS_*`) — Arm A did its own Lens-A work and did not lean on the then-absent C1 pass, so C1 and Arm A
+  corroborate rather than conflict on L0.
+
+**The one reconciliation Arm Σ MUST perform (important):** Arm A flags **karma**'s un-transacted
+write+audit as a defect (its Important #7) but frames **economy/G-12 as "already richly proved."** That
+is inconsistent with C4 (and re-confirmed in source): `economy_service` credit/debit is
+`add_coins → _audit → bus.emit` as three separate non-transactional awaits, and `xp_service.award`
+emits `EVT_XP_AWARDED`/`EVT_LEVEL_UP` with **no `emit_audit_action` companion at all**. So the
+audited-write **atomicity gap is SYSTEMIC across economy + karma + xp**, not a karma-only anomaly. The
+synthesis must merge these into one systemic finding, or it will under-weight the strongest current-bot
+atomicity risk by reading Arm A as clearing economy.
+
+## 7. Directives for Arm Σ (final synthesis)
 
 1. **Reject** the Agent Mode `ci-gate` migration recommendation; the live gate is `code-quality`.
 2. **Do not** treat any Codex claim as `test-confirmed` — all are `source-read` (no DB/discord in
    sandbox). The escrow/settle-once/XP-audit findings need a live DB-backed run before test-confirmed.
-3. **C1 (L0/runtime) is missing** — the readiness matrix's L0 rows are unproven until it lands. Mark
-   L0 `NEEDS_SOURCE_RECONCILIATION` pending C1, not `READY_FOR_TEST_DESIGN`.
-4. **Relocate** the root-level C2/C3/C4 sub-reports under `docs/planning/` before merging.
-5. Fold §5's contract-freeze findings (economy/XP atomicity, channel ownership) into the Phase-B
-   plan template.
+3. **L0 (C1) is now landed and sound** — adopt Arm A's conservative L0 posture (new-repo code
+   `BLOCKED_BY_GATE`, K-components `NEEDS_*`); do **not** mark L0 `READY_FOR_TEST_DESIGN`.
+4. **Relocate** the root-level C2/C3/C4 sub-reports under `docs/planning/` before merging (C1/C5 already
+   correct; Arm A landed under `docs/analysis/rebuild-discovery/gate-v/`).
+5. Fold the contract-freeze findings into the Phase-B plan template — and treat **audited-write
+   atomicity as ONE systemic finding across economy/karma/xp** (§7), not three isolated notes; do not
+   let Arm A's "economy already proved" framing suppress it.
+6. **Adopt Sequence C** (Arm A §5.3) as the sequencing baseline — the frozen L3→L4/L5 edge is fabricated
+   (verified thrice: C5, Arm A, this pass). Carry Arm A's caveat that `READY_FOR_TEST_DESIGN` means
+   "owner decision firm enough to author test specs," **not** "implemented" — several L1a/L1b rows so
+   classified are explicitly zero-implementation.
+7. **K7 urgency is borrowed** — the money-bug fixes need only `SettleOnceMixin` retrofit + a wider Rule-6
+   checker, not the unbuilt workflow engine; sequence K7's spike on its own merits, not on the bug
+   pressure.
