@@ -115,10 +115,13 @@ jobs:
       # the fetch-depth:0 checkout. Promotion to a hard gate (Q-0239 tail) is a one-line follow-up once a
       # PR shows it resolving origin/main + producing sane output. PR-only (a card is "new vs main" only
       # on a PR). Pure stdlib + git. Disposable (Q-0105).
+      # NOTE: no --strict here — the script takes none (it already exits 1 on a collision);
+      # passing one made argparse exit 2 so the checker never ran (caught on PR #1770).
+      # tests/unit/scripts/test_workflow_script_flags.py enforces workflow↔script flag parity.
       - name: Session-slug collision (check_session_slug_unique · advisory)
         if: github.event_name == 'pull_request'
         continue-on-error: true
-        run: python3 scripts/check_session_slug_unique.py --strict
+        run: python3 scripts/check_session_slug_unique.py
 
       # Born-red session merge-gate (owner directive Q-0133). On a PR, if this
       # session ADDED a `.sessions/` card, the merge is HELD until that card's
