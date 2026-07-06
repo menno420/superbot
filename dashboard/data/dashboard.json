@@ -1,10 +1,10 @@
 {
   "meta": {
-    "generated_at": "2026-07-06T14:59:48Z",
+    "generated_at": "2026-07-06T19:40:36Z",
     "build": {
-      "commit": "080b53a5",
-      "subject": "CI arc completion: 2nd AST guard (check_deferred_recovery) + tail cleanup (#1748)",
-      "committed_at": "2026-07-06T14:59:48Z"
+      "commit": "c4ccf7ba",
+      "subject": "Merge pull request #1757 from menno420/claude/gate-v-arm-a-review-qsn378",
+      "committed_at": "2026-07-06T19:40:36Z"
     },
     "counts": {
       "functions": 43,
@@ -3033,6 +3033,30 @@
       "self_initiated": false
     },
     {
+      "file": "2026-07-06-gate-v-verification-fleet-prompts.md",
+      "date": "2026-07-06",
+      "title": "2026-07-06 — Gate V verification-fleet review prompts (documented launch pad)",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-07-06-gate-v-findings-corrections.md",
+      "date": "2026-07-06",
+      "title": "2026-07-06 — Gate V evidence-findings corrections (Codex C2–C5 + Agent Mode)",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-07-06-gate-v-arm-d-live-testing.md",
+      "date": "2026-07-06",
+      "title": "2026-07-06 — GATE V Arm D: empirical live-testing evidence pack",
+      "status": "complete",
+      "run_type": "manual",
+      "self_initiated": true
+    },
+    {
       "file": "2026-07-06-codeql-stuck-scan-watchdog.md",
       "date": "2026-07-06",
       "title": "2026-07-06 — Verify PR #1743 + CodeQL stuck-scan watchdog",
@@ -3470,30 +3494,6 @@
       "title": "2026-07-02 — Lane A governance capability audit",
       "status": "complete",
       "run_type": "",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-07-02-hq-guild-live.md",
-      "date": "2026-07-02",
-      "title": "2026-07-02 — HQ guild live: Railway feed moved + invite-flow fix + cutover-token confirmation",
-      "status": "complete",
-      "run_type": "manual",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-07-02-grammar-audit-prep.md",
-      "date": "2026-07-02",
-      "title": "2026-07-02 — Prepare the repo for the new-bot capability audit (fleet substrate)",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-07-02-daily-review-brainstorm.md",
-      "date": "2026-07-02",
-      "title": "2026-07-02 — Daily review + architecture brainstorm ahead of the rebuild gate",
-      "status": "complete",
-      "run_type": "manual",
       "self_initiated": false
     }
   ],
