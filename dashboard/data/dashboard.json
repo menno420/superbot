@@ -1,10 +1,10 @@
 {
   "meta": {
-    "generated_at": "2026-07-05T23:48:44Z",
+    "generated_at": "2026-07-06T01:56:13Z",
     "build": {
-      "commit": "d99f5e80",
-      "subject": "Merge pull request #1736 from menno420/claude/save-fixes-implementation-8v1ziy",
-      "committed_at": "2026-07-05T23:48:44Z"
+      "commit": "2ec793ad",
+      "subject": "Merge pull request #1739 from menno420/claude/ci-setup-bot-repos-a3xnsv",
+      "committed_at": "2026-07-06T01:56:13Z"
     },
     "counts": {
       "functions": 43,
@@ -3017,12 +3017,28 @@
       "self_initiated": true
     },
     {
+      "file": "2026-07-05-ci-setup-redesign.md",
+      "date": "2026-07-05",
+      "title": "2026-07-05 — CI-setup redesign (best-possible CI: current bot + fresh repo)",
+      "status": "complete",
+      "run_type": "manual",
+      "self_initiated": true
+    },
+    {
       "file": "2026-07-05-ci-setup-brief.md",
       "date": "2026-07-05",
       "title": "2026-07-05 — CI-setup redesign brief (owner-directed prep)",
       "status": "complete",
       "run_type": "manual",
       "self_initiated": false
+    },
+    {
+      "file": "2026-07-05-ci-phase-a-gating.md",
+      "date": "2026-07-05",
+      "title": "2026-07-05 — CI Phase-A: make the should-gate invariants actually block merges",
+      "status": "complete",
+      "run_type": "manual",
+      "self_initiated": true
     },
     {
       "file": "2026-07-04-review-open-prs.md",
@@ -3446,22 +3462,6 @@
       "title": "2026-07-01 — Visual comparison: out-read Arcane/MEE6 on the rank + leaderboard cards",
       "status": "complete",
       "run_type": "",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-07-01-utility-completion-deepening.md",
-      "date": "2026-07-01",
-      "title": "2026-07-01 — Utility completion-first deepening",
-      "status": "complete",
-      "run_type": "routine",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-07-01-treasury-cog-tests.md",
-      "date": "2026-07-01",
-      "title": "2026-07-01 — Treasury completion tests (cog + modal)",
-      "status": "complete",
-      "run_type": "routine",
       "self_initiated": false
     }
   ],
