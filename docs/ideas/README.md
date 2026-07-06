@@ -36,7 +36,14 @@ Current broad captures:
   fails when the three/four hand-edited band-number anchors in `current-state.md` (the marker, the S4
   sector row, the "next recon at #N+30" / "cross #N+30" lines) disagree — a detector for the
   restatement-drift class every pass currently guards by hand.
-- [`audit-seam-coverage-checker-2026-07-05.md`](./audit-seam-coverage-checker-2026-07-05.md) —
+- [`warn-first-checker-authoring-kit-2026-07-06.md`](./warn-first-checker-authoring-kit-2026-07-06.md) —
+  **session idea (2026-07-06, Q-0089, CI-arc completion PR #1748):** after building two sibling AST
+  guards, factor the copy-pasted AST/reachability primitives (incl. the import-qualified call
+  resolution that defeats the `self.X`-vs-`module.X` collision) into `scripts/lib/astguard.py`, and add
+  a `scripts/new_checker.py` scaffold that stamps out the checker + allowlist + gate-bites/real-tree-clean
+  tests + advisory CI step — turning "write a warn-first checker" from a session-craft into a fill-in.
+- [`audit-seam-coverage-checker-2026-07-05.md`](./audit-seam-coverage-checker-2026-07-05.md) — ✅ **BUILT
+  advisory #1747 (2026-07-06).**
   **session idea (2026-07-05, Q-0089, "save fixes" PR #1728):** a general (AST + `architecture_rules/`
   allowlist) checker that flags any function performing a state mutation (Discord `edit/delete/…`,
   a DB write outside `utils/db/`, a known mutation-table helper) whose success path never reaches
@@ -44,7 +51,7 @@ Current broad captures:
   of this session's eight bug fixes (#3/#5/#6) were exactly this "unaudited mutation" class; it would
   catch them at authoring time instead of at a subsystem walk. Start advisory (Q-0105), graduate on
   proof.
-- [`deferred-action-restart-recovery-checker-2026-07-05.md`](./deferred-action-restart-recovery-checker-2026-07-05.md) —
+- [`deferred-action-restart-recovery-checker-2026-07-05.md`](./deferred-action-restart-recovery-checker-2026-07-05.md) — ✅ **BUILT advisory #1748 (2026-07-06).**
   **session idea (2026-07-05, Q-0089, rebuild Stage-2 walk PR #1725):** a warn-only checker for
   one-shot deferred actions (`asyncio.sleep`+`tasks.spawn`) with no persisted deadline / boot
   reconcile — the identical restart-recovery gap was found independently in security's

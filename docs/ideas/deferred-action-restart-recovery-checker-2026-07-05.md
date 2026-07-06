@@ -1,7 +1,19 @@
 # A repo-wide checker for un-recoverable one-shot deferred actions
 
-> **Status:** `ideas` — captured 2026-07-05 (rebuild Stage-2 subsystem walk session, PR #1725).
+> **Status:** `reference` — ✅ **BUILT advisory 2026-07-06** (PR #1748) as
+> `scripts/check_deferred_recovery.py` (wired `continue-on-error` in `code-quality.yml`;
+> `architecture_rules/deferred_recovery_exceptions.yml` allowlist; 10 unit tests). Captured 2026-07-05
+> (rebuild Stage-2 subsystem walk session, PR #1725). This doc is the spec + calibration; the shipped
+> module's docstring is the current reference. Promotion to a hard gate is owner-gated (Q-0239 G4).
 > **Subsystem:** none (cross-cutting, `scripts/` tooling)
+>
+> **Build note (2026-07-06):** the calibrated signal held — keying on the **spawn-target** (not raw
+> `asyncio.sleep`) + requiring a **persistent Discord state mutation** narrowed 23 raw-sleep files to
+> **1** finding (`security_service._hold_then_lift`), which triaged to the intentional ADR-002
+> process-local case (allowlisted; a mild residual slowmode-restore gap noted for the owner). The state
+> signal also matches **name-based lifecycle-routed verbs** (`_lift_lockdown`/`slowmode`/`unlock`) so a
+> mutation through `ChannelLifecycleService` isn't missed. `proof_channel_cog` (the #1728 fix) is
+> correctly clean (persist `upsert_lock` + `on_ready` reconcile).
 
 ## The problem this session hit — twice, independently
 

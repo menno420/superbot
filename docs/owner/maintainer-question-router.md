@@ -8671,6 +8671,14 @@ card flip). Provenance: `.sessions/2026-07-05-next-session-prep.md`.
   present when the badge flips" G check. **Rec: ACCEPT ADVISORY + document it** — a session legitimately
   editing the ledger is common; a presence gate risks false-blocks. Revisit if #794 recurs.
 
+> **RESOLVED 2026-07-06 (owner-delegated, PR #1748 — "finish everything you can; choose decisions
+> yourself"):** **G7 EXECUTED** — `check_doc_freshness` deleted (dormant/unwired; `check_plan_staleness`
+> kept). **G8 = ACCEPT ADVISORY** (the recommendation; a no-op on enforcement — the content-completeness
+> race stays advisory, no presence gate, revisit if #794 recurs). Both are the safe/recommended options
+> and neither rewires branch protection or executable config. **Still owner-gated, NOT taken this
+> session:** G2 (required-context swap), G3 (6 workflow deletions), G5 (`settings.json` Stop-hook
+> rewires) — these change branch protection / executable config and stay for explicit owner sign-off.
+
 **Why it needs the owner.** Every G2–G8 item changes how future PRs merge or deletes/rewires executable
 config (workflows / branch protection / `settings.json`) — owner-gated per the autonomy boundary
 (Q-0106). **Until decided:** Phase A ships (safe-additive); the current `code-quality` gate stays the

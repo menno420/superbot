@@ -26,6 +26,13 @@
   **3 tools** (ruff, mypy, pytest). `ruff format` owns formatting + `ruff check` (with `I`) owns import
   sorting; the two-thirds of the pin-drift surface (black + isort) is gone. Whole-tree reformat (~95 files),
   magic-trailing-comma parity verified (black agreed on all but the 14 known ruff-vs-black files).
+- ✅ **Both AST guards — SHIPPED advisory** (item #5) — `check_audit_seam` (#1747, 2026-07-06) +
+  `check_deferred_recovery` (#1748, 2026-07-06), both `continue-on-error` in `code-quality.yml`, each with
+  an `architecture_rules/` allowlist + unit tests (incl. gate-bites + real-tree-clean). G4 hard-gate
+  promotion stays owner-gated.
+- ✅ **CI tail** (item #6, #1748, 2026-07-06) — `check_doc_freshness` deleted (**G7**); `check_session_slug_unique`
+  wired advisory + self-verifying (the origin/main-in-CI check); **G8** resolved accept-advisory (owner-delegated).
+  `settings.json` Stop-hook rewires (**G5**) + the branch-protection cutover (**G2/G3**, item #4) stay owner-gated.
 
 ## Ranked follow-ups
 
@@ -61,13 +68,25 @@ Done as one atomic PR. What it took, for the record (a couple of surfaces beyond
    `scripts/check_routine_permission_surface.py`, `scripts/setup_dev_env.sh`, and the two guard tests
    (`test_check_quality_ci_parity`, `test_check_tool_pins`); `check_tool_pins._TOOLS` → `("ruff","mypy")`.
 
-### 4. The aggregate `ci-gate` + reusable-workflow restructure — `[offline]` build alongside, `[owner]` to cut over
+### 4. The aggregate `ci-gate` + reusable-workflow restructure — `[owner]` to cut over — DELIBERATELY NOT built speculatively (2026-07-06, PR #1748)
 Build `ci.yml` (the `detect` + fan-in `ci-gate` job, design §C.1 — use the **proven shell git-diff detector**,
 `fetch-depth:0`, the `needs.detect.result` assertion), `web-ci.yml` (reusable matrix over {dashboard,botsite}),
 and `pr-freshness.yml` (fold `pr-auto-update` + `pr-conflict-guard`) **non-required, alongside** the current
 workflows. Observe green/red parity across a band of PRs (code-only + docs-only). **Then** the owner ratifies
 the atomic required-context swap (Q-0239 **G2**) and the six workflow deletions (**G3**). Note the atomic-swap
 deadlock warning in the design §E (B2) — the swap must be one change.
+
+> **Judgment call (owner-delegated "finish everything you can" session, PR #1748): staged, NOT built.**
+> Reasons: (a) it **cannot reach done without the owner** — the whole payoff is the branch-protection
+> cutover making `ci-gate` the required context (G2) + the 6 workflow deletions (G3), a GitHub
+> ruleset/admin change that can't be done from code; (b) "build alongside" would run a duplicate CI
+> pipeline on **every** PR open-endedly (double Actions cost) while delivering **zero** value until that
+> cutover; (c) it touches the single most load-bearing part of the workflow (the merge gate) — refactoring
+> `code-quality.yml` → the reusable `_python-quality.yml` risks the *current* required context. That is the
+> "cross-cutting / affects how PRs merge" class the autonomy boundary reserves for the owner. **The design
+> is frozen and copy-paste-ready in §C.1** — this is a build-ready artifact awaiting the owner's cutover
+> decision, not unfinished analysis. When the owner wants it: build the three workflows non-required in one
+> PR, observe a parity band, then do the atomic G2 swap + G3 deletions.
 
 ### 5. The two AST guards — `[offline]`, calibrated specs ready
 Build from the calibrated specs in the idea docs (naive heuristics are too FP-prone — do NOT ship those):
@@ -90,19 +109,35 @@ Build from the calibrated specs in the idea docs (naive heuristics are too FP-pr
   steps of audited operations). Would-have-caught bug #5 + bug #6. **Owner-gate for G4 promotion:** confirm
   it stays quiet across a band; the automation role-apply allowlist entry is the one spot to revisit if you
   want automation role-changes surfaced in the audit log.
-- **`check_deferred_recovery.py`** — key on the `tasks.spawn`-target (sleep + Discord state mutation lacking
-  a persisted-deadline + boot sweep), NOT raw `asyncio.sleep`.
-  [spec](../ideas/deferred-action-restart-recovery-checker-2026-07-05.md). Still `[offline]` — next.
-Wire as advisory (`continue-on-error`) first; promote after a clean band (Q-0239 **G4**).
+- ✅ **`check_deferred_recovery.py` — SHIPPED advisory (2026-07-06, PR #1748).** Keys on the **spawn-target**
+  (`tasks.spawn`/`create_task`/`ensure_future`), resolves the callee, flags a spawn-target whose body does
+  `asyncio.sleep` **then** a Discord state mutation (raw attr OR a name-based lifecycle-routed verb like
+  `_lift_lockdown`/`slowmode`) in a module with **no persisted-deadline write + no boot reconcile** — the
+  restart-recovery-gap class the Stage-2 walk found twice. Calibration held: raw `asyncio.sleep` (23 files)
+  narrowed to **1** finding via the spawn + persistent-Discord-state-mutation filter (infra loops / game
+  re-renders / inline non-spawned sleeps all correctly excluded). Wired `continue-on-error` in
+  `code-quality.yml`; `architecture_rules/deferred_recovery_exceptions.yml` allowlist; 10 unit tests incl.
+  the gate-bites meta-test + real-tree-clean ground-truth. Baseline: 1 finding
+  (`security_service._hold_then_lift`) triaged + allowlisted as intentionally process-local (ADR-002,
+  fails open on restart). **⚑ Owner note:** the raid-lockdown *slowmode* it applies is a real Discord-side
+  change that does NOT auto-reset on restart (a mild residual gap recorded in the allowlist reason) — revisit
+  if you want it restart-safe.
+Both guards wired advisory (`continue-on-error`); promote after a clean band (Q-0239 **G4**).
 
 ### 6. Smaller / owner-gated tail
-- **`check_session_slug_unique` as a gate** — needs CI-context verification that it can resolve `origin/main`
-  in the `code-quality` checkout before it can hard-block (else it false-blocks every PR). Verify, then add.
+- 🟡 **`check_session_slug_unique` — WIRED ADVISORY (2026-07-06, PR #1748).** The gate-blocker concern was
+  a false-block risk, but the guard **fails open by design** (a `git cat-file` failure → no finding → never
+  blocks), so it's wired `continue-on-error` PR-only — which *also performs* the CI-context verification the
+  gate needs: this PR's CI run confirms whether `origin/main` resolves in the `fetch-depth:0` checkout.
+  **Promotion to a hard gate is now a one-line follow-up** once a PR shows it resolving + producing sane
+  output (flip `continue-on-error` off / drop the advisory framing).
 - **App-CI legs gating** (dashboard/botsite/design-system `mypy`+`pytest`) — folds into #4's `web-ci.yml`.
-- **`settings.json` Stop-hook rewires** (Q-0239 **G5**, owner-gated): a `check_consistency` Stop mirror; an
-  optional changed-module fast-pytest subset.
-- **Delete `check_doc_freshness`** (dormant/unwired, Q-0239 **G7**); **keep `check_plan_staleness`**.
-- **#794-class content-completeness race** (Q-0239 **G8**): recommended default is accept-advisory + document.
+- **`settings.json` Stop-hook rewires** (Q-0239 **G5**, owner-gated — NOT taken): a `check_consistency` Stop
+  mirror; an optional changed-module fast-pytest subset. Executable config that affects every session → stays
+  for explicit owner sign-off (autonomy boundary Q-0106).
+- ✅ **Deleted `check_doc_freshness`** (dormant/unwired, Q-0239 **G7**, 2026-07-06); **kept `check_plan_staleness`**.
+- ✅ **#794-class content-completeness race** (Q-0239 **G8**): **RESOLVED accept-advisory** (2026-07-06,
+  owner-delegated) — stays advisory, no presence gate, revisit if #794 recurs. Router Q-0239 G8 annotated.
 
 ## The "does the gate actually block?" meta-test (worth doing alongside any new gate)
 Every gate added should have a known-bad fixture proving it *fails* when it should, not just passes when clean

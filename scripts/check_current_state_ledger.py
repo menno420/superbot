@@ -13,7 +13,7 @@ the Q-0089/Q-0102 enders; this does the same for the *living ledger*: it reads t
 PR numbers from git history and warns about recent ones that appear in neither
 `current-state.md` nor `current-state-archive.md`.
 
-Advisory by default (exit 0) like `check_doc_freshness.py` — a brand-new merge legitimately
+Advisory by default (exit 0) — a brand-new merge legitimately
 lags the ledger by a session, so this must never hard-fail CI. Run `--strict` to gate
 explicitly (e.g. from `/session-close`). Pure stdlib, like `check_docs.py`.
 
