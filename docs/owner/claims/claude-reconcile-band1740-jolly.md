@@ -1,0 +1,1 @@
+- `claude/reconcile-band1740-jolly` · docs-only Q-0107 reconciliation (35th pass, band-#1740) · `docs/current-state*.md`, `docs/current-state/S4-docs.md`, `.sessions/`, `docs/ideas/`, `docs/planning/`, `dashboard/data/` · 2026-07-06
