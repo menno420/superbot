@@ -270,7 +270,9 @@ Source code and merged PRs win over anything written here.
   the Phase-A/B bridge after the foundational-design session (#1708). The **Gate-0 grammar-freeze**
   (#1713 prep brief → #1716 consolidation, docs/spec only — the fresh-repo `sb/` package does not
   exist yet): the 14 shipped design specs folded into one authoritative **frozen L0 manifest-grammar**,
-  an **amendment registry** (`rebuild-amendments.yml` + uniqueness checker, G-9…G-24), closed pending
+  an **amendment registry** (`rebuild-amendments.yml`; its named enforcer `tools/check_amendments.py`
+  was NOT shipped — ledger drift caught 2026-07-06 (#1770), the canonical plan's §5 step 3 builds it;
+  G-9…G-24), closed pending
   cross-spec wiring (`ActorRef.member_tier`/RC-12, spec-02 absorbing 04's authority contracts,
   `WorkflowContext.test_mode`, the `ChannelEmitter` egress port), register resolution (19
   RATIFY-DEFAULT rows frozen · 12 OWNER-ONLY + L-21 rendered into an owner-decision packet), the L-24

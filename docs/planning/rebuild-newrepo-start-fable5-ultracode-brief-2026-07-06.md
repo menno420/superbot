@@ -1,6 +1,14 @@
 # Rebuild — Fable 5 Ultracode brief: finalize the new-repo-start method + consolidate the foundational plan (2026-07-06)
 
-> **Status:** `plan` — a **paste-ready launch brief** for one Fable 5 Ultracode session that (a)
+> **✅ EXECUTED (2026-07-06, PR #1770):** the session ran; its output is
+> [`rebuild-canonical-plan-2026-07-06.md`](rebuild-canonical-plan-2026-07-06.md) + companions
+> ([test-guild](rebuild-test-guild-design-2026-07-06.md) ·
+> [Phase-2.5](rebuild-phase-2.5-procedure-2026-07-06.md)). One framing correction found in
+> execution (canonical D-14): the §3 line "the ONE open kit item … is the Phase-2.5 A/B"
+> undercounts Q-0223 — there is also one open *code* item, kit tail ① (re-entrant transaction /
+> atomic `apply_review_verdict`), still unshipped. Do not re-run this brief.
+
+> **Status:** `historical` — a **paste-ready launch brief** for one Fable 5 Ultracode session that (a)
 > **finalizes the *method* of starting the new repo** and (b) **consolidates the scattered rebuild plan
 > into one comprehensive, correctly-layered, internally-consistent plan** — verifying that every
 > *foundational* capability (AI integration, automation, the live verification/command-probing tooling)

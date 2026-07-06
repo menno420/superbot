@@ -1,6 +1,11 @@
 # Next-session priority — is "finish the substrate kit" the right call? (2026-07-05)
 
-> **Status:** `plan` — an owner-requested priority assessment written at the close of the save-fixes
+> **⚠ SUPERSEDED (2026-07-06):** absorbed into
+> [`rebuild-canonical-plan-2026-07-06.md`](rebuild-canonical-plan-2026-07-06.md) §5 steps 1–4
+> (same recommendation, now sequenced: kit tail ① → Phase-2.5 per
+> [companion D](rebuild-phase-2.5-procedure-2026-07-06.md) → check_amendments → walk L1c).
+
+> **Status:** `historical` — an owner-requested priority assessment written at the close of the save-fixes
 > session, to prime the next session. **Not binding** — the live queues in
 > [`../current-state.md`](../current-state.md) + the per-sector files win if they've moved.
 

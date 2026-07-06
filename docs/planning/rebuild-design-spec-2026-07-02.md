@@ -1,6 +1,19 @@
 # SuperBot Rebuild — The Design Spec (Phase 2, owner-gate artifact)
 
-> **Status:** `plan` — **the Phase-2 rebuild design spec, awaiting the owner gate (strategy §3's
+> **Status:** `plan` · **⚠ SUPERSEDED-IN-PART (2026-07-06, canonical plan §9):** where this spec
+> and the Gate-0 corpus differ, **the Gate-0 frozen grammar + the 14 foundational specs win** —
+> specifically: §9.1's K9/K10 definitions (K9 = the strand-2 durability band per
+> [`phase-b-l0-build-order.md`](../analysis/rebuild-discovery/foundations/gate-0/phase-b-l0-build-order.md);
+> the old K9 `kernel/ai` is re-homed as **K10**, the old K10 loops as **layer V**), §9.2's port
+> order (→ Sequence C), and §2's grammar (→
+> [`frozen-l0-grammar.md`](../analysis/rebuild-discovery/foundations/gate-0/frozen-l0-grammar.md)).
+> The consolidated arc + gates:
+> [`rebuild-canonical-plan-2026-07-06.md`](rebuild-canonical-plan-2026-07-06.md). §10.2's
+> ratification list remains the G1 sitting payload, as amended by that plan's F-3. The header's
+> "amendments — now folded in" refers only to the six 07-02 spike amendments; the G-9…G-24 set
+> lives in the Gate-0 registry (`rebuild-amendments.yml`).
+
+> *(original status)* — **the Phase-2 rebuild design spec, awaiting the owner gate (strategy §3's
 > "🔒 OWNER GATE — the big one").** Design only: this document changes no `disbot/` code and
 > approves no new-repo code — the owner ratifies the design + the §5 backward-compat contract + the
 > rebuild go/no-go before any Phase-3 work starts. Written as one picture. **Evidence base:**
