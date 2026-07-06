@@ -1,10 +1,10 @@
 {
   "meta": {
-    "generated_at": "2026-07-06T01:56:13Z",
+    "generated_at": "2026-07-06T04:47:03Z",
     "build": {
-      "commit": "2ec793ad",
-      "subject": "Merge pull request #1739 from menno420/claude/ci-setup-bot-repos-a3xnsv",
-      "committed_at": "2026-07-06T01:56:13Z"
+      "commit": "3c2b0842",
+      "subject": "docs(reconcile): open born-red session card — 35th Q-0107 pass (band-#1740)",
+      "committed_at": "2026-07-06T04:47:03Z"
     },
     "counts": {
       "functions": 43,
@@ -2985,6 +2985,14 @@
   "reviews": [],
   "updates": [
     {
+      "file": "2026-07-06-reconcile-band1740.md",
+      "date": "2026-07-06",
+      "title": "2026-07-06 — Thirty-fifth Q-0107 reconciliation pass (band-#1740)",
+      "status": "in-progress",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
       "file": "2026-07-05-save-fixes-implementation.md",
       "date": "2026-07-05",
       "title": "2026-07-05 — Stage-2 \"save fixes\" implementation (queued current-bot bug fixes)",
@@ -3454,14 +3462,6 @@
       "title": "2026-07-01 — XP import: button entry + generic framing (follow-up)",
       "status": "complete",
       "run_type": "manual",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-07-01-visual-comparison-cards.md",
-      "date": "2026-07-01",
-      "title": "2026-07-01 — Visual comparison: out-read Arcane/MEE6 on the rank + leaderboard cards",
-      "status": "complete",
-      "run_type": "",
       "self_initiated": false
     }
   ],

@@ -9,6 +9,19 @@
 > S3; the docs it produces are S4.*
 
 **Recently shipped (this sector):**
+- **Thirty-fifth Q-0107 reconciliation pass** (band-#1740, issue #1741 —
+  [pass record](../planning/reconciliation-pass-2026-07-06-band1740.md)): reconciled the ledger
+  (band #1711–#1740 — five grouped entries, headlined by the **S3 rebuild Gate-0 grammar-freeze →
+  Phase-B L0 build-order + Stage-2 subsystem walk** #1713/#1716/#1725/#1735 — the frozen L0
+  manifest-grammar + amendment registry + 16-step build-order (S0–S15) and the 52-row owner-disposition
+  subsystem walk — plus the Stage-2 **save-fixes** 8-bug runtime backport + CodeQL hardening #1728/#1730
+  (the band's only `disbot/` change), the **CI-setup redesign → Phase-A hard merge gates**
+  #1736/#1737/#1739, the 34th-pass + open-PR sweep #1712/#1719, and 16 dashboard refreshes), trimmed
+  Recently-shipped to 20 (`trim_recently_shipped.py --apply`, moved 7 oldest bullets, floor recomputed),
+  disposed **0 open PRs** (none open at pass start), confirmed **ROUTINE_PAT set / loop self-fires**
+  (issue #1741 authored by `menno420`), carried the forward queue intact (still deep, no THIN flag —
+  the rebuild Phase-B build phase dominates), refreshed the dashboard export (Q-0167), reset the marker
+  #1710 → #1740.
 - **Thirty-fourth Q-0107 reconciliation pass** (band-#1710, issue #1711 —
   [pass record](../planning/reconciliation-pass-2026-07-04-band1710.md)): reconciled the ledger
   (band #1681–#1710 — three grouped entries, headlined by the **S3 rebuild foundations audit →
@@ -119,7 +132,7 @@
   startable slice. Companion: the still-unexecuted
   [orientation-cost-reduction plan](../planning/orientation-cost-reduction-plan-2026-06-30.md)
   (Q-0210 router archive now 3+ passes overdue — B0–B3 should run soon regardless).
-- **Next reconciliation pass due once merged PRs cross #1740** (every multiple of 30, Q-0134) —
+- **Next reconciliation pass due once merged PRs cross #1770** (every multiple of 30, Q-0134) —
   auto-triggered by `reconciliation-trigger.yml`; run by the docs-reconciliation routine, **not** a
   manual session (Q-0124).
 - Plan-band depth is healthy — **no `PLAN-BACKLOG-THIN` flag** (buildable depth well over cadence).

@@ -86,6 +86,44 @@
 
 ## Recently shipped — archived (newest first)
 
+- **#1656 · #1660 · #1670 · #1671 · #1675 · #1676 · #1678 (2026-07-02/03, docs — dashboard-data refreshes, Q-0167)** —
+  seven per-source-merge **dashboard-data refreshes** keeping the committed `dashboard/data/dashboard.json`
+  export fresh as parallel sessions landed.
+- **#1643 · #1647 · #1648 · #1649 (2026-07-02, S3 rebuild — memory substrate: retention/economy plan → finalized substrate-kit, Q-0214)** —
+  the [memory-retention-and-context-economy plan](planning/memory-retention-and-context-economy-plan-2026-07-02.md):
+  the retention half of the rebuild memory substrate — warn-forever corpus caps + diff-scoped hard gates,
+  per-file harvest evidence, single-writer pruning, a 14-day floor, and a shadow-band + `do-not-automerge`
+  guard on the first prune (folded from an enforcement-critic verdict). **#1649 finalized it** (the
+  [handoff §5.B](planning/rebuild-ultracode-handoff-2026-07-02.md) Fable-5 ultracode session, the K0 gate
+  deliverable): the substrate-kit's full nervous system + context-economy engine + one-step-adopt packaging
+  shipped on the declaration layer (117→407 kit tests, proven end-to-end from the single-file dist) — see
+  [S3-ai-memory](current-state/S3-ai-memory.md). Owner-gated remainder: the Phase-2.5 cold-start A/B (still
+  gates Phase 3) + the extract-to-standalone-repo step.
+- **#1634 · #1635 · #1637 · #1638 · #1640 · #1641 · #1642 · #1644 · #1645 (2026-07-02, S3 rebuild — Fable 5 design spec + strategy + schedule)** —
+  the [fresh-rebuild strategy + verified baseline](planning/fresh-rebuild-strategy-2026-07-02.md) with the four
+  Codex discovery-maps verified against shipped source (Q-0120) and folded into one
+  [preserve-map synthesis](analysis/rebuild-discovery/codex-preserve-map-synthesis-2026-07-02.md) (#1634/#1642);
+  the **Fable 5 Phase-2 design spec** via a 4-design judge panel (#1635/#1637/#1638/#1640); the
+  [parallel-execution schedule](planning/rebuild-parallel-execution-plan-2026-07-02.md) + memory-system-as-K0-gate
+  elevation (#1644/#1645); and five deduped idea captures from the arc (#1641).
+- **#1639 (2026-07-02, S3 rebuild — linchpin validation: golden harness + grammar spike)** — the two
+  unproven rebuild linchpins **built and measured** before the owner gate: the **Phase-0.5 golden
+  behavioral harness** (`parity/` — the real bot driven in-process through the real discord.py state
+  machine over a fake HTTP boundary; 400+ golden fixtures; **replay-deterministic**; coverage
+  measured with the uncovered tail named in `parity/COVERAGE.md`) and the **grammar-expressiveness
+  spike** (`tools/grammar_spike/` — real karma/logging/blackjack manifests in the §2 grammar;
+  tier-1/2 fit **73% as-specced → 85% with six named amendments**, operator band 97%). Owner-gate
+  evidence + GO-with-amendments verdict:
+  [`planning/rebuild-linchpin-validation-2026-07-02.md`](planning/rebuild-linchpin-validation-2026-07-02.md).
+- **#1624 (2026-07-01, S1 — server event logging v2, Discord audit-log / Dyno parity)** — server event
+  logging v2 wiring Discord **audit-log** events into the log pipeline (kick/ban/role/channel actor
+  attribution), closing the Dyno-parity gap on the server-logging arc (#1594/#1618/#1619).
+- **#1626 (2026-07-01, S1 fishing — Fishery structure + Boathouse buildfix)** — a **Fishery** coral
+  structure (rare-material processing) added to the 🏗 Structures sub-hub, plus a Boathouse build fix and
+  market/rewards plumbing; extends the coral-structures arc (#1596…#1605).
+- **#1621 (2026-07-01, S2 BTD6 — Layout B panel category-hub)** — the owner-picked **Layout B** menu
+  restructure from the #1617 layout simulator: the BTD6 panel is now a category-hub, landing the design
+  that was in flight at the thirty-first pass.
 - **#1623 + 7 dashboard refreshes (2026-07-01/02, docs — thirty-first Q-0107 pass + dashboard)** — the
   **thirty-first Q-0107 reconciliation pass** (band-#1620,
   [pass record](planning/reconciliation-pass-2026-07-01-band1620.md), #1623); plus seven per-source-merge
