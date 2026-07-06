@@ -31,6 +31,11 @@ only the header block is read, so a `**Subsystem:**` *example* in an idea's body
 
 Current broad captures:
 
+- [`reconcile-band-anchor-guard-2026-07-06.md`](./reconcile-band-anchor-guard-2026-07-06.md) —
+  **session idea (2026-07-06, Q-0089, 35th reconciliation pass PR #1742):** a warn-only checker that
+  fails when the three/four hand-edited band-number anchors in `current-state.md` (the marker, the S4
+  sector row, the "next recon at #N+30" / "cross #N+30" lines) disagree — a detector for the
+  restatement-drift class every pass currently guards by hand.
 - [`audit-seam-coverage-checker-2026-07-05.md`](./audit-seam-coverage-checker-2026-07-05.md) —
   **session idea (2026-07-05, Q-0089, "save fixes" PR #1728):** a general (AST + `architecture_rules/`
   allowlist) checker that flags any function performing a state mutation (Discord `edit/delete/…`,

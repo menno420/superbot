@@ -1,10 +1,10 @@
 {
   "meta": {
-    "generated_at": "2026-07-04T10:35:51Z",
+    "generated_at": "2026-07-06T04:47:03Z",
     "build": {
-      "commit": "b4dd8f22",
-      "subject": "Session start: born-red card + claim — 34th Q-0107 reconciliation pass (band-#1710, issue #1711)",
-      "committed_at": "2026-07-04T10:35:51Z"
+      "commit": "3c2b0842",
+      "subject": "docs(reconcile): open born-red session card — 35th Q-0107 pass (band-#1740)",
+      "committed_at": "2026-07-06T04:47:03Z"
     }
   },
   "counts": {
