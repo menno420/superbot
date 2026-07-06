@@ -504,6 +504,12 @@ Current broad captures:
   silently no-ops under the `GITHUB_TOKEN` fallback. Would have caught the #1743 `issues: write` gap
   (fixed this session). Distinct from `check_routine_permission_surface` (that guards `.claude/settings.json`,
   a different layer). Sector S5. → relates `scripts/check_ci_coverage.py` · `scripts/check_codeql_coverage.py`.
+- [`formatter-tool-set-consistency-checker-2026-07-06.md`](./formatter-tool-set-consistency-checker-2026-07-06.md) —
+  **surfaced doing the ruff migration (2026-07-06):** extend `check_tool_pins.py` to assert the formatter
+  tool *set* is identical across the three pin surfaces, not just the versions — so a *partial* tool swap
+  (the ruff migration touched 8+ surfaces in lockstep) can't leave a stale `black`/`isort` reference that
+  drifts local vs CI. Plus: `.pre-commit-config.yaml` is not run by any workflow (CI only reads its pins),
+  so a broken hook config is unguarded. Sector S5. → relates `scripts/check_tool_pins.py`.
 - [`project-moon-wiki-knowledge-domain-2026-06-21.md`](./project-moon-wiki-knowledge-domain-2026-06-21.md) —
   **owner-dropped feasibility finding (2026-06-21):** bring the **Project Moon wiki** (Lobotomy Corp /
   Library of Ruina / Limbus Company) into the bot "in one area," the way BTD6 data is available today.
