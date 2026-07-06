@@ -82,6 +82,8 @@ on both heavy workflows.
 | `check_session_gate.py` | The born-red merge hold (PR-only). |
 | `check_stale_claims.py` `--strict` | **Advisory** (`continue-on-error`) — surfaces orphan claim files. |
 | `check_audit_seam.py` `--mode strict` | **Advisory** (`continue-on-error`, deps block, code-gated) — flags a mutation write signal that never reaches `emit_audit_action` (the #1728 bug class). Warn-first; promotion to a hard gate is owner-gated (Q-0239 G4). |
+| `check_deferred_recovery.py` `--mode strict` | **Advisory** (`continue-on-error`, deps block, code-gated) — flags a spawned sleep→Discord-state-mutation timer with no persisted deadline + boot reconcile (the restart-recovery-gap class). Warn-first; G4. |
+| `check_session_slug_unique.py` `--strict` | **Advisory** (`continue-on-error`, PR-only) — surfaces a reused `.sessions/` slug (BUG-0027). Fails open (git failure → no finding); wired to verify `origin/main` resolves in CI before a gate promotion. |
 
 Plus, **indirectly gating via the pytest ratchet:** `check_command_reachability`,
 `check_settings_reachability`, `check_setup_copy`, `check_architecture` (run as invariants tests).
@@ -130,9 +132,9 @@ Still local/routine-only (candidates for a verified follow-up, not yet gating):
 
 ### 2f. Dormant / unwired
 
-`check_doc_freshness.py` — **no operational caller** (only a docstring mention in
-`check_current_state_ledger.py`). Candidate for deletion (Q-0105 disposability) — see the redesign doc.
-*Do not confuse with `check_plan_staleness`, which is live in the reconciliation set (2d).*
+*(none)* — `check_doc_freshness.py` was **deleted 2026-07-06** (Q-0239 **G7**): dormant/unwired, no
+operational caller (Q-0105 disposability). *`check_plan_staleness` stays live in the reconciliation set
+(2d) — it was explicitly kept.*
 
 ---
 

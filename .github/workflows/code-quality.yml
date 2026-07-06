@@ -108,6 +108,18 @@ jobs:
         continue-on-error: true
         run: python3 scripts/check_stale_claims.py --strict
 
+      # Session-slug collision surfacing (BUG-0027 — a reused `.sessions/` slug silently overwrites the
+      # prior session's log). ADVISORY for now (continue-on-error): the guard fails OPEN by design (a git
+      # failure → no finding → never blocks), so wiring it here CANNOT false-block — and this run doubles
+      # as the CI-context verification the handoff (#6) asked for: it confirms `origin/main` resolves in
+      # the fetch-depth:0 checkout. Promotion to a hard gate (Q-0239 tail) is a one-line follow-up once a
+      # PR shows it resolving origin/main + producing sane output. PR-only (a card is "new vs main" only
+      # on a PR). Pure stdlib + git. Disposable (Q-0105).
+      - name: Session-slug collision (check_session_slug_unique · advisory)
+        if: github.event_name == 'pull_request'
+        continue-on-error: true
+        run: python3 scripts/check_session_slug_unique.py --strict
+
       # Born-red session merge-gate (owner directive Q-0133). On a PR, if this
       # session ADDED a `.sessions/` card, the merge is HELD until that card's
       # `> **Status:**` badge is a ready token (`complete`). The card is created
@@ -192,6 +204,18 @@ jobs:
         if: steps.changes.outputs.code == 'true'
         continue-on-error: true
         run: python scripts/check_audit_seam.py --mode strict
+
+      # Deferred-action restart recovery — ADVISORY (continue-on-error, never blocks a merge). Flags a
+      # spawned background task (tasks.spawn / create_task / ensure_future) that sleeps then mutates
+      # Discord state but whose module has no persisted deadline + no boot reconcile sweep — the
+      # restart-recovery-gap class the Stage-2 walk found twice (security raid-lockdown; proof_channel
+      # prize-lock, since fixed #1728). Warn-first + architecture_rules/deferred_recovery_exceptions.yml
+      # allowlist. Needs PyYAML (from requirements.txt), so it runs in the deps-installed block;
+      # code-gated. Disposable (Q-0105): drop this step + scripts/check_deferred_recovery.py if noisy.
+      - name: Deferred-action recovery (check_deferred_recovery · advisory)
+        if: steps.changes.outputs.code == 'true'
+        continue-on-error: true
+        run: python scripts/check_deferred_recovery.py --mode strict
 
       - name: Cache mypy incremental cache
         if: steps.changes.outputs.code == 'true'

@@ -103,9 +103,9 @@ than guess. Pinned by `tests/unit/scripts/test_review_units.py`.
   [production-readiness maps'](planning/production-readiness/README.md) Done/Partial/Not-Done
   cells into a one-glance per-subsystem table; `--write` injects it into that README between
   markers, `--check` gates on staleness. Pinned by `tests/unit/scripts/test_readiness_scoreboard.py`.
-- `scripts/check_doc_freshness.py` — **advisory** (always exits 0): for dated `audit`/`plan`
-  docs, warns when a source path they cite has git-changed since the doc's date ("may be
-  stale; re-verify"). Keeps dated snapshots from silently rotting.
+<!-- check_doc_freshness.py was deleted 2026-07-06 (Q-0239 G7 — dormant/unwired, no operational
+     caller). Dated-snapshot staleness is caught by check_plan_staleness (for plan docs) and the
+     reconciliation pass; there is no standalone doc-freshness checker. -->
 
 ## Dependency
 

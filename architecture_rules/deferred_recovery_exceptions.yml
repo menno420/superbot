@@ -1,0 +1,30 @@
+# Deferred-action restart-recovery allowlist — consumed by scripts/check_deferred_recovery.py
+#
+# Suppresses a "deferred one-shot mutation without restart recovery" finding for a timer whose
+# deferred state is *intentionally* process-local (e.g. ADR-002 runtime state) or a checker false
+# positive — NOT to paper over a real restart-recovery gap (persist the deadline + add a boot
+# reconcile sweep instead, the proof_channel_cog #1728 pattern).
+#
+# Provenance: 2026-07-06 (CI-setup arc, handoff item #5). Warn-first + disposable (Q-0105).
+#
+# Schema:
+#   exceptions:
+#     - file: disbot/services/foo.py
+#       spawn_target: _hold_then_lift   # optional; omit to exempt every spawn-target in the file
+#       reason: "..."                    # REQUIRED
+
+exceptions:
+  # Raid-lockdown auto-restore timer. The module explicitly declares its detector state process-local
+  # and intentionally NOT restart-safe (ADR-002: "a restart resets the windows, the conservative
+  # choice" — security_service.py docstring). A restart mid-lockdown fails OPEN (no lockdown), the safe
+  # direction. Triaged 2026-07-06 against source.
+  #
+  # OWNER-VISIBLE CAVEAT (the checker flagged this honestly): the raised slowmode is a real Discord-side
+  # change that does NOT auto-reset on restart, so a restart mid-lockdown can leave a channel at
+  # raid-slowmode until the next lockdown cycle or a manual clear. Mild (a lingering slowmode, not a
+  # locked-out channel or lost economy state) and the design is documented-intentional — but if you want
+  # it restart-safe, persist the slowmode deadline + reconcile on boot (the proof_channel_cog #1728
+  # pattern). Left allowlisted per the code's ADR-002 declaration.
+  - file: disbot/services/security_service.py
+    spawn_target: _hold_then_lift
+    reason: "raid-lockdown restore is intentionally process-local (ADR-002, fails open on restart); mild residual slowmode-restore gap noted for owner"
