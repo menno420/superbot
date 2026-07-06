@@ -58,6 +58,16 @@ The short version that governs how you work:
   isn't watching **when it improves the workflow** — the project's whole premise is AI running
   its own project with only light guidance. Within the rails above, default to **acting and
   improving**; never hold back a contained, reversible improvement just because no one is watching.
+  **Decide-and-flag over route-up (owner directive Q-0240, 2026-07-06):** when a decision is *reversible
+  until a downstream gate* — which nearly every planning/design call is, since nothing executes until the
+  maintainer's go/no-go — **decide it yourself** (recommendation + one-line rationale + a flag on the run
+  report), don't park it for the owner. This holds even for "too-technical" / architectural design calls:
+  the maintainer *usually takes the recommended decision* and would rather review the set **once, at the
+  gate**, than answer them one at a time. So the "architectural → ask" trigger above means *irreversible*
+  architectural change to a live system, **not** a reversible-on-paper planning decision. Route to the
+  owner only genuine **product/intent** ambiguity; irreversible / production / external work is
+  **decided-and-flagged-for-veto, not blocked** — the sole stop-and-wait is *executing* something
+  irreversible before the gate. Full model: `docs/owner/agent-decision-authority.md`.
 - **Unclear owner intent.** Consult or add to
   `docs/owner/maintainer-question-router.md` when product/owner intent is genuinely
   unclear; unanswered questions are not approval. Preserve maintainer answers and

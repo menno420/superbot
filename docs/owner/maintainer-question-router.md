@@ -8685,3 +8685,24 @@ config (workflows / branch protection / `settings.json`) — owner-gated per the
 required context; nothing is deleted. **Homes (on decision):** `.github/workflows/` + branch-protection +
 `.claude/settings.json` + `.claude/CLAUDE.md` § CI/Session workflow. Provenance:
 `.sessions/2026-07-05-ci-setup-redesign.md`.
+
+---
+
+## Q-0240 — Agent decision authority: decide-and-flag over route-up (owner-directed, 2026-07-06)
+
+**Owner directive (in-session):** *"let fable decide … I'm usually going with the recommended decisions
+and things are usually too technical for me anyways … redesign the repo so fable will make its own
+decisions."* → **Applied directly** (the in-session owner is the live reviewer — the Q-0106 exception —
+so the rule change ships now with this provenance Q, not as a proposal).
+
+**Decision.** Agents **decide reversible-until-a-gate calls themselves** (recommendation + one-line
+rationale + a flag on the run report) and do **not** route them to the owner. This includes
+"too-technical / architectural" *design* calls, because planning/design decisions are reversible by the
+owner's single go/no-go veto at the gate. The safety brake is unchanged but **reframed**: irreversible /
+production / external work is **decided-and-flagged for veto**, not blocked — the only stop-and-wait is
+*executing* something irreversible **before** the gate (creating the new repo, prod write, moving user
+data). The owner's control point is **one review pass at the gate**, not per-decision gatekeeping.
+
+**Home:** [`docs/owner/agent-decision-authority.md`](agent-decision-authority.md) (full model + the
+decide/flag/veto table); binding pointer in `.claude/CLAUDE.md` § Working agreement (Act vs. ask).
+Provenance: `.sessions/2026-07-06-fable-decision-authority-and-foundational-consolidation.md`.
