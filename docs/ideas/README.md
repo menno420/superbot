@@ -497,6 +497,13 @@ Current broad captures:
   empty-commit remedy. The *last* strand of "CI didn't run on my latest commit" (cancellation =
   fixed #1275; dropped delivery = this). Sector S5/S3. → relates `.github/workflows/code-quality.yml` ·
   `scripts/check_loop_health.py` · #1275.
+- [`workflow-gh-permission-coverage-checker-2026-07-06.md`](./workflow-gh-permission-coverage-checker-2026-07-06.md) —
+  **surfaced building the CodeQL stuck-scan watchdog (2026-07-06):** a warn-first checker that maps the
+  `gh` ops a workflow step's script runs (`gh issue create` → `issues: write`, `gh workflow run` →
+  `actions: write`, …) against the job's `permissions:` block, so an escalation path can't ship that
+  silently no-ops under the `GITHUB_TOKEN` fallback. Would have caught the #1743 `issues: write` gap
+  (fixed this session). Distinct from `check_routine_permission_surface` (that guards `.claude/settings.json`,
+  a different layer). Sector S5. → relates `scripts/check_ci_coverage.py` · `scripts/check_codeql_coverage.py`.
 - [`project-moon-wiki-knowledge-domain-2026-06-21.md`](./project-moon-wiki-knowledge-domain-2026-06-21.md) —
   **owner-dropped feasibility finding (2026-06-21):** bring the **Project Moon wiki** (Lobotomy Corp /
   Library of Ruina / Limbus Company) into the bot "in one area," the way BTD6 data is available today.

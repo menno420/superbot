@@ -14,6 +14,13 @@ name: ci-rerun-watchdog
 # window, dispatches code-quality.yml on the branch. The presence check is a natural cap — once a run
 # exists (even queued), the next pass sees it and does not re-dispatch, so there is no loop.
 #
+# Second leg (A10, ci-setup-redesign-2026-07-05.md §C.2 — added 2026-07-06): CodeQL stuck-scan
+# alerting. The owner's codeql-merge-protection ruleset holds the merge while a scan is in-progress and
+# blocks when CodeQL is unconfigured, but does NOT bound a scan that STARTS THEN ERRORS/HANGS — that
+# state stalls an auto-merge PR forever on a new axis. check_codeql_coverage.py detects such heads and
+# opens ONE idempotent owner-alert issue. Runs ALERTING-ONLY (no --rerun) until the re-dispatch path is
+# live-confirmed. Delete the step + script if it misfires (a stuck scan is always re-runnable by hand).
+#
 # Auth: ROUTINE_PAT (not GITHUB_TOKEN) so the dispatched run is attributed to a real user and is not
 # suppressed by the Actions recursion guard — the same token pr-auto-update.yml / auto-merge-enabler.yml
 # already require.
@@ -29,8 +36,9 @@ on:
 
 permissions:
   contents: read
-  actions: write          # gh workflow run (dispatch code-quality)
+  actions: write          # gh workflow run (dispatch code-quality / codeql)
   pull-requests: read
+  issues: write           # owner-alert issues when a watchdog escalates (needed for the GITHUB_TOKEN fallback)
 
 concurrency:
   group: ci-rerun-watchdog
@@ -52,3 +60,9 @@ jobs:
           GH_TOKEN: ${{ secrets.ROUTINE_PAT || secrets.GITHUB_TOKEN }}
           GITHUB_REPOSITORY: ${{ github.repository }}
         run: python3 scripts/check_ci_coverage.py --rekick
+      - name: Alert on a CodeQL scan that started then errored/hung (A10, alerting-only)
+        if: always()   # independent of the code-quality leg's outcome
+        env:
+          GH_TOKEN: ${{ secrets.ROUTINE_PAT || secrets.GITHUB_TOKEN }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+        run: python3 scripts/check_codeql_coverage.py   # no --rerun until the re-dispatch path is live-confirmed

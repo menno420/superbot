@@ -42,8 +42,15 @@ from __future__ import annotations
 import argparse
 import json
 import subprocess
+import sys
 from collections.abc import Callable
 from datetime import datetime, timezone
+from pathlib import Path
+
+# scripts/ is not a package; add it to the path so the shared lib.owner_alert helper imports whether
+# this runs as `python3 scripts/check_ci_coverage.py` (Actions) or is loaded by file path (tests).
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from lib.owner_alert import alert_marker, ensure_issue  # noqa: E402
 
 REQUIRED_CHECK = (
     "code-quality"  # the required status-check name (for messaging / --required)
@@ -251,33 +258,14 @@ def rekick(repo: str, branch: str) -> bool:
         return False
 
 
-def _alert_marker(pr_number: int) -> str:
-    return f"<!-- ci-coverage-alert:{pr_number} -->"
-
-
 def open_alert_issue(repo: str, pr: dict) -> bool:
     """Idempotently open an owner-alert issue for a stuck head (dispatched re-kick didn't help).
 
-    Searches for an existing open issue carrying this PR's hidden marker first, so the 12-min cron
-    never spams duplicate issues. Best-effort: returns False (and the caller just logs) if gh is absent.
+    Delegates the marker-based dedupe + create to the shared ``lib.owner_alert.ensure_issue`` (Q-0089)
+    so every watchdog escalates the same, deduped, tested-in-one-place way — the 12-min cron never
+    spams duplicate issues. Best-effort: returns False (and the caller just logs) if gh is absent.
     """
-    marker = _alert_marker(pr["number"])
-    existing = _gh_json(
-        [
-            "issue",
-            "list",
-            "--repo",
-            repo,
-            "--state",
-            "open",
-            "--search",
-            marker,
-            "--json",
-            "number",
-        ],
-    )
-    if isinstance(existing, list) and existing:
-        return True  # already alerted
+    marker = alert_marker("ci-coverage", pr["number"])
     body = (
         f"The head of PR #{pr['number']} (`{pr['branch']}` @ `{pr['sha'][:8]}`) has **no "
         f"`pull_request`/`push` run** of `{REQUIRED_WORKFLOW_PATH}`, and a `workflow_dispatch` "
@@ -287,26 +275,8 @@ def open_alert_issue(repo: str, pr: dict) -> bool:
         f"close+reopen the PR (re-arms `auto-merge-enabler`), or investigate a real block.\n\n"
         f"{marker}"
     )
-    try:
-        subprocess.run(
-            [
-                "gh",
-                "issue",
-                "create",
-                "--repo",
-                repo,
-                "--title",
-                f"CI watchdog: PR #{pr['number']} head has no PR-event code-quality run",
-                "--body",
-                body,
-            ],
-            capture_output=True,
-            text=True,
-            check=True,
-        )
-        return True
-    except (OSError, subprocess.CalledProcessError):
-        return False
+    title = f"CI watchdog: PR #{pr['number']} head has no PR-event code-quality run"
+    return ensure_issue(repo, marker, title, body)
 
 
 def main() -> int:
