@@ -70,7 +70,7 @@ on both heavy workflows.
 
 ---
 
-## 2. The 40 `scripts/check_*.py` — by run-context
+## 2. The 43 `scripts/check_*.py` — by run-context
 
 ### 2a. Merge-gating today (inside `code-quality.yml`) — the real gate is these 5 + the tool steps
 
@@ -81,6 +81,7 @@ on both heavy workflows.
 | `check_consistency.py` `--mode strict` | UX/interaction linter (graduated rules only) over `disbot/views/`. |
 | `check_session_gate.py` | The born-red merge hold (PR-only). |
 | `check_stale_claims.py` `--strict` | **Advisory** (`continue-on-error`) — surfaces orphan claim files. |
+| `check_audit_seam.py` `--mode strict` | **Advisory** (`continue-on-error`, deps block, code-gated) — flags a mutation write signal that never reaches `emit_audit_action` (the #1728 bug class). Warn-first; promotion to a hard gate is owner-gated (Q-0239 G4). |
 
 Plus, **indirectly gating via the pytest ratchet:** `check_command_reachability`,
 `check_settings_reachability`, `check_setup_copy`, `check_architecture` (run as invariants tests).

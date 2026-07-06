@@ -1,8 +1,20 @@
 # Idea — an "audit-seam coverage" checker (catch unaudited mutations at authoring time)
 
-> **Status:** `ideas` — not approved. Captured 2026-07-05 (Q-0089) from the "save fixes" session
-> (PR #1728).
+> **Status:** `reference` — ✅ **BUILT advisory 2026-07-06** as `scripts/check_audit_seam.py` (wired
+> `continue-on-error` in `code-quality.yml`; `architecture_rules/audit_seam_exceptions.yml` allowlist;
+> 19 unit tests). Captured 2026-07-05 (Q-0089) from the "save fixes" session (PR #1728). This doc is the
+> spec + calibration; the shipped module's docstring is the current reference. **Promotion to a hard
+> gate is owner-gated (Q-0239 G4)** after a clean band.
 > **Subsystem:** none (cross-cutting, `scripts/` tooling)
+>
+> **Build note (2026-07-06):** naive per-function reachability was still too noisy; two refinements made
+> it credible — (1) **import-qualified** db-call detection (`db.set_x` via a `utils.db` alias, not a bare
+> name → the `self.add_item`/`inventory` collision is a non-issue), and (2) **auditable-domain scoping**
+> via *direct* write+emit co-occurrence (a db write only fires when its domain is audited *somewhere*,
+> which is collision-proof — the name-merged graph would otherwise mark whole game domains auditable off
+> a generic verb like `credit`/`award`). The db-write dimension now fires **only** on bug #6 (unaudited
+> write to an audited domain), never on economy/games/session writes. Baseline: 6 findings, all triaged
+> legit + allowlisted with reasons. Full write-up: `docs/planning/ci-followups-handoff-2026-07-05.md` §5.
 
 ## The pattern this would catch
 
