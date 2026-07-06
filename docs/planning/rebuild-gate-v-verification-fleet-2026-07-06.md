@@ -370,6 +370,20 @@ games-deferral question.
 **Safety fencing (Arm D is the fleet's only non-read-only arm — this is owner/operator work):**
 - **Test guild + throwaway Postgres ONLY. Never the production guild, token, or database.** No Railway,
   no production data, no `main` writes.
+
+**Sandbox-methodology fallback (added after the 2026-07-06 run, [`LIVE-VERIFIED-EVIDENCE-PACK.md`](LIVE-VERIFIED-EVIDENCE-PACK.md)
+§0 — read before re-running this arm).** This session was actually run by an **unattended agent**, not
+an operator with a live Discord client — the sandbox provisions the dedicated test-bot token + local
+Postgres (per `.session-journal.md` § Environment Runbook) but **no second, low-privilege human/user
+Discord identity**, so a literal human click-through is not possible there. The methodology that worked:
+boot the real bot for real (gateway + Postgres), then from a **separate process** under the **same**
+test-bot token, fetch real `Guild`/`Member`/`TextChannel` objects and call the **exact same
+service-layer functions** the real command handlers call (real DB, real audit rows), echoing a summary
+as a **real** Discord message for human-visible confirmation. This is one tier below full command-
+pipeline fidelity (no converters/cooldowns/`before_invoke`/error-handler dispatch — that needs either a
+second real Discord account or a same-process synthetic-interaction injection, `parity/`-harness-style
+but with a real, unfaked HTTP boundary) — degrade to it explicitly and label every finding by which tier
+produced it (§3.5 spirit), rather than silently reporting a lower-fidelity check as the real thing.
 - Capture-and-report: it exercises flows and records goldens/telemetry; it does not change plans,
   approve gates, or open PRs. Its output is an evidence pack, reviewed by the final synthesis.
 - Because it needs a token + DB + a running bot, it is **run by the maintainer/operator**, not an
