@@ -1,14 +1,14 @@
 {
   "meta": {
-    "generated_at": "2026-07-06T19:40:36Z",
+    "generated_at": "2026-07-06T23:35:32Z",
     "build": {
-      "commit": "c4ccf7ba",
-      "subject": "Merge pull request #1757 from menno420/claude/gate-v-arm-a-review-qsn378",
-      "committed_at": "2026-07-06T19:40:36Z"
+      "commit": "7f00f3e9",
+      "subject": "Merge pull request #1770 from menno420/claude/superbot-rebuild-phase-2.5-qk07s7",
+      "committed_at": "2026-07-06T23:35:32Z"
     },
     "counts": {
       "functions": 43,
-      "ideas": 198,
+      "ideas": 199,
       "bugs": 31,
       "reviews": 0,
       "reviews_open": 0,
@@ -1178,6 +1178,14 @@
       "status": "ideas",
       "date": "2026-07-06",
       "summary": "Every reconciliation pass hand-edits the **same band number in three places** in `current-state.md`:",
+      "subsystems": null
+    },
+    {
+      "file": "supersede-banner-integrity-checker-2026-07-06.md",
+      "title": "Supersede-banner integrity checker (2026-07-06)",
+      "status": "ideas",
+      "date": "2026-07-06",
+      "summary": "Consolidation passes create **supersede webs by hand**: this session alone stamped six docs with",
       "subsystems": null
     },
     {
@@ -3033,9 +3041,25 @@
       "self_initiated": false
     },
     {
+      "file": "2026-07-06-rebuild-consolidation-fable5.md",
+      "date": "2026-07-06",
+      "title": "2026-07-06 — Rebuild consolidation: one canonical plan + foundational-completeness (Fable 5 Ultracode brief §3)",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": true
+    },
+    {
       "file": "2026-07-06-gate-v-verification-fleet-prompts.md",
       "date": "2026-07-06",
       "title": "2026-07-06 — Gate V verification-fleet review prompts (documented launch pad)",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-07-06-gate-v-synthesis.md",
+      "date": "2026-07-06",
+      "title": "2026-07-06 — Gate V final synthesis (Arm Σ)",
       "status": "complete",
       "run_type": "",
       "self_initiated": false
@@ -3049,12 +3073,36 @@
       "self_initiated": false
     },
     {
+      "file": "2026-07-06-gate-v-c1-and-arm-a-review.md",
+      "date": "2026-07-06",
+      "title": "2026-07-06 — Gate V: verify C1 re-run + Arm A Ultracode review (fleet complete)",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
       "file": "2026-07-06-gate-v-arm-d-live-testing.md",
       "date": "2026-07-06",
       "title": "2026-07-06 — GATE V Arm D: empirical live-testing evidence pack",
       "status": "complete",
       "run_type": "manual",
       "self_initiated": true
+    },
+    {
+      "file": "2026-07-06-fable5-newrepo-start-brief.md",
+      "date": "2026-07-06",
+      "title": "2026-07-06 — Fable 5 Ultracode launch brief: finalize the new-repo-start method",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-07-06-fable-decision-authority-and-foundational-consolidation.md",
+      "date": "2026-07-06",
+      "title": "2026-07-06 — Fable decision authority (Q-0240) + foundational-consolidation brief revision",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
     },
     {
       "file": "2026-07-06-codeql-stuck-scan-watchdog.md",
@@ -3452,46 +3500,6 @@
       "file": "2026-07-02-linchpin-validation-harness-and-grammar-spike.md",
       "date": "2026-07-02",
       "title": "2026-07-02 — Rebuild linchpin validation: golden harness + grammar spike + go/no-go",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-07-02-lane-g-l0-foundations-audit.md",
-      "date": "2026-07-02",
-      "title": "2026-07-02 — Lane G: L0 Foundations & Runtime Skeleton audit",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-07-02-lane-f-ecosystem-benchmark.md",
-      "date": "2026-07-02",
-      "title": "2026-07-02 — Lane F ecosystem benchmark (verify + incorporate owner-provided deep-research)",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-07-02-lane-c-games-audit.md",
-      "date": "2026-07-02",
-      "title": "2026-07-02 — Lane C new-bot capability audit (Games & Community)",
-      "status": "complete",
-      "run_type": "manual",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-07-02-lane-b-economy-audit.md",
-      "date": "2026-07-02",
-      "title": "2026-07-02 — Lane B new-bot capability audit (Economy & Character-sim)",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-07-02-lane-a-governance-audit.md",
-      "date": "2026-07-02",
-      "title": "2026-07-02 — Lane A governance capability audit",
       "status": "complete",
       "run_type": "",
       "self_initiated": false
