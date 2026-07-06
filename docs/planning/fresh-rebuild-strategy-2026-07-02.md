@@ -1,5 +1,11 @@
 # Fresh-rebuild strategy — verified baseline + plan-of-plans (2026-07-02)
 
+> **⚠ SUPERSEDED-IN-PART (2026-07-06):** the §3 phase arc + §3.1 model table are superseded by
+> [`rebuild-canonical-plan-2026-07-06.md`](rebuild-canonical-plan-2026-07-06.md) §3 (Phase 0
+> ✅ #1649 · Phase 0.5 ✅ #1639 `parity/` · Phase 1 ✅ · Phase 2 spec ✅ — stamps this doc never
+> received). §1 verified baseline, §4 design principles, §5 kit notes, §6 external findings stay
+> reference.
+
 > **Status:** `plan` — research-grounded strategy (analysis-grade), **not an approved execution plan.**
 > Every quantitative claim below was verified against **live source / tooling on 2026-07-02** by a
 > 7-agent verification fleet, not carried over from prior docs. Where an earlier figure drifted or was

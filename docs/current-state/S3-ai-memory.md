@@ -84,13 +84,17 @@
 creds · `[owner]` needs an owner decision/action; see [`../repo-sector-map.md`](../repo-sector-map.md)
 § "the offline-fit startability tag".)*
 
-- **📍 READ FIRST — next-session priority assessment (2026-07-05, owner-requested):**
-  [`../planning/next-session-priority-2026-07-05.md`](../planning/next-session-priority-2026-07-05.md).
-  Answers "is finishing the substrate kit the right next priority?" — **the kit is already finalized
-  (#1649); its remaining step is the Phase-2.5 A/B.** Decision tree: **live session → Stage-2 walk
-  L1c** (owner-only); **autonomous → §7.2 current-bot lock-in (owner-directed) or the Phase-2.5
-  cold-start A/B**, with the small restart-recovery checker as a fast win. Phase 3 is behind *two*
-  gates (owner ratification **+** the A/B).
+- **📍 READ FIRST — THE CANONICAL REBUILD PLAN (2026-07-06, PR #1770):**
+  [`../planning/rebuild-canonical-plan-2026-07-06.md`](../planning/rebuild-canonical-plan-2026-07-06.md)
+  — the single source of truth consolidating the whole rebuild corpus: corrected layer taxonomy
+  (AI = K10 · automation = K5+K9+K7 spread · verification = layer V), one phase arc, the canonical
+  gates (**G1** owner go/no-go sitting reading its §1 flag list · **G2** Phase-2.5 A/B), and the
+  17-step start sequence. ▶ next startable per its §5: **step 1 kit tail ①** (Q-0223 re-entrant
+  txn fix, small PR) → **step 2 run Phase-2.5** per
+  [companion D](../planning/rebuild-phase-2.5-procedure-2026-07-06.md) → **step 3
+  `tools/check_amendments.py`**. Companions: [test-guild design
+  (C)](../planning/rebuild-test-guild-design-2026-07-06.md) · Phase-2.5 procedure (D). *(Supersedes
+  the 07-05 next-session-priority assessment — same recommendation, now sequenced.)*
 - `[owner]` **▶ THE REBUILD REVIEW-THEN-PLAN PHASE IS LIVE** (owner-directed 2026-07-03): the pre-build
   **new-bot capability audit** is complete (#1662…#1668/#1674, verdict **GO-with-amendments**, measured
   all-43 fit **85.1%**) and
@@ -99,8 +103,8 @@ creds · `[owner]` needs an owner decision/action; see [`../repo-sector-map.md`]
   ([decisions log](../planning/rebuild-stage1-global-review-2026-07-03.md), #1679, Q-0219…Q-0223) and a
   **conventions freeze** (naming · four-rung invocation ladder · mod-actions-as-data · authority +
   bot-owner override; [decisions log](../planning/rebuild-conventions-invocation-authority-2026-07-03.md),
-  #1680, Q-0224…Q-0228). **Stage 2 — the per-subsystem walk is underway** (process:
-  [`planning/rebuild-planning-phase-2026-07-03.md`](../planning/rebuild-planning-phase-2026-07-03.md);
+  #1680, Q-0224…Q-0228). **Stage 2 — the per-subsystem walk is underway** (process now canonical in
+  [`planning/rebuild-canonical-plan-2026-07-06.md`](../planning/rebuild-canonical-plan-2026-07-06.md) §3;
   progress + full handoff:
   [`planning/rebuild-stage2-subsystem-walk-2026-07-05.md`](../planning/rebuild-stage2-subsystem-walk-2026-07-05.md)
   §7) — **L1a + L1b decided (19 rows, PR #1725, 2026-07-05)**; 34+ rows remain. `[owner]` **▶ next:

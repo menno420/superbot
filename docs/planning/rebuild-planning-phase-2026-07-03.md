@@ -1,6 +1,11 @@
 # Rebuild — the review-then-plan phase (process + next-session goal)
 
-> **Status:** `plan` — the bridge between the merged capability-audit capstone (the **frozen
+> **⚠ SUPERSEDED (2026-07-06):** the phase arc + gates here are absorbed into
+> [`rebuild-canonical-plan-2026-07-06.md`](rebuild-canonical-plan-2026-07-06.md) (§3/§4) — read
+> that instead. The Phase-B plan-template rules (§ PHASE B below) carry forward unchanged and are
+> referenced from there. Kept for provenance; do not act from this doc's arc.
+
+> **Status:** `historical` — the bridge between the merged capability-audit capstone (the **frozen
 > reference**: `NEW-BOT-BUILD-PLAN.md` + `FINAL-REVIEW.md`) and writing the per-step
 > implementation plans. **Read this to know what the next sessions do, in what order, and why.**
 > **Prepared:** 2026-07-03 (owner-directed, following PR #1674). Owner decision this session:

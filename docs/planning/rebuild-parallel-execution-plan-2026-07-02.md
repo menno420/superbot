@@ -1,6 +1,14 @@
 # Rebuild — parallel-execution plan & realistic schedule (2026-07-02)
 
-> **Status:** `plan` — the execution-timing companion to
+> **⚠ SUPERSEDED (2026-07-06):** gates + sequencing live in
+> [`rebuild-canonical-plan-2026-07-06.md`](rebuild-canonical-plan-2026-07-06.md) §4/§5 — this
+> doc's "two gates" (linchpin proof; kit shipped) **both cleared** (#1639/#1649), and its
+> "K4/K5/K6 run concurrently off the K7→K8 spine" claim is **corrected** there (D-19: the
+> edge-verified S0–S15 order shows S8/K7 consumes K4–K6; parallelism is within-band fan-out).
+> §1's measured velocity baseline stays citable data. Note: this doc's "handoff §F" citations are
+> phantom (the handoff ends at §E).
+
+> **Status:** `historical` — the execution-timing companion to
 > [`rebuild-design-spec-2026-07-02.md`](rebuild-design-spec-2026-07-02.md) (which specifies *what* to
 > build and in *what order*, but puts no clock on it). This doc answers **"how long, really?"** by
 > grounding the estimate in **this project's observed agent-fleet velocity**, not a traditional
