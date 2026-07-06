@@ -1,14 +1,14 @@
 {
   "meta": {
-    "generated_at": "2026-07-06T12:57:43Z",
+    "generated_at": "2026-07-06T14:59:48Z",
     "build": {
-      "commit": "8badac1c",
-      "subject": "Merge pull request #1745 from menno420/claude/pr-1743-verify-h3yyqq",
-      "committed_at": "2026-07-06T12:57:43Z"
+      "commit": "080b53a5",
+      "subject": "CI arc completion: 2nd AST guard (check_deferred_recovery) + tail cleanup (#1748)",
+      "committed_at": "2026-07-06T14:59:48Z"
     },
     "counts": {
       "functions": 43,
-      "ideas": 197,
+      "ideas": 198,
       "bugs": 31,
       "reviews": 0,
       "reviews_open": 0,
@@ -1181,6 +1181,14 @@
       "subsystems": null
     },
     {
+      "file": "warn-first-checker-authoring-kit-2026-07-06.md",
+      "title": "Idea — a warn-first-checker authoring kit (scaffold + shared AST/reachability lib)",
+      "status": "ideas",
+      "date": "2026-07-06",
+      "summary": "Building `check_audit_seam` (#1747) then `check_deferred_recovery` (#1748) — sibling warn-first AST",
+      "subsystems": null
+    },
+    {
       "file": "workflow-gh-permission-coverage-checker-2026-07-06.md",
       "title": "Idea — `check_workflow_gh_permissions`: a workflow's `permissions:` must cover the `gh` ops it runs",
       "status": "ideas",
@@ -1191,7 +1199,7 @@
     {
       "file": "audit-seam-coverage-checker-2026-07-05.md",
       "title": "Idea — an \"audit-seam coverage\" checker (catch unaudited mutations at authoring time)",
-      "status": "ideas",
+      "status": "reference",
       "date": "2026-07-05",
       "summary": "Four of the eight Stage-2 \"save fixes\" (#1728) were the **same defect class**: a code path that",
       "subsystems": null
@@ -1199,7 +1207,7 @@
     {
       "file": "deferred-action-restart-recovery-checker-2026-07-05.md",
       "title": "A repo-wide checker for un-recoverable one-shot deferred actions",
-      "status": "ideas",
+      "status": "reference",
       "date": "2026-07-05",
       "summary": "The Stage-2 walk found the **identical bug shape in two unrelated subsystems**, discovered",
       "subsystems": null
@@ -3033,6 +3041,22 @@
       "self_initiated": true
     },
     {
+      "file": "2026-07-06-ci-arc-completion.md",
+      "date": "2026-07-06",
+      "title": "2026-07-06 — CI-arc completion: 2nd AST guard + tail cleanup",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": true
+    },
+    {
+      "file": "2026-07-06-ast-guard-audit-seam.md",
+      "date": "2026-07-06",
+      "title": "2026-07-06 — AST guard: check_audit_seam (audit-seam coverage checker)",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": true
+    },
+    {
       "file": "2026-07-05-save-fixes-implementation.md",
       "date": "2026-07-05",
       "title": "2026-07-05 — Stage-2 \"save fixes\" implementation (queued current-bot bug fixes)",
@@ -3470,22 +3494,6 @@
       "title": "2026-07-02 — Daily review + architecture brainstorm ahead of the rebuild gate",
       "status": "complete",
       "run_type": "manual",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-07-02-capstone-prompt-refresh.md",
-      "date": "2026-07-02",
-      "title": "2026-07-02 — Refresh the Fable 5 capstone prompt for the completed fleet",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-07-02-audit-brief-hardening.md",
-      "date": "2026-07-02",
-      "title": "2026-07-02 — Harden the new-bot capability-audit BRIEF (prompt-refinement pass)",
-      "status": "complete",
-      "run_type": "",
       "self_initiated": false
     }
   ],
