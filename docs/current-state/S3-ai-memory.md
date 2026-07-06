@@ -103,8 +103,8 @@ creds · `[owner]` needs an owner decision/action; see [`../repo-sector-map.md`]
   ([decisions log](../planning/rebuild-stage1-global-review-2026-07-03.md), #1679, Q-0219…Q-0223) and a
   **conventions freeze** (naming · four-rung invocation ladder · mod-actions-as-data · authority +
   bot-owner override; [decisions log](../planning/rebuild-conventions-invocation-authority-2026-07-03.md),
-  #1680, Q-0224…Q-0228). **Stage 2 — the per-subsystem walk is underway** (process:
-  [`planning/rebuild-planning-phase-2026-07-03.md`](../planning/rebuild-planning-phase-2026-07-03.md);
+  #1680, Q-0224…Q-0228). **Stage 2 — the per-subsystem walk is underway** (process now canonical in
+  [`planning/rebuild-canonical-plan-2026-07-06.md`](../planning/rebuild-canonical-plan-2026-07-06.md) §3;
   progress + full handoff:
   [`planning/rebuild-stage2-subsystem-walk-2026-07-05.md`](../planning/rebuild-stage2-subsystem-walk-2026-07-05.md)
   §7) — **L1a + L1b decided (19 rows, PR #1725, 2026-07-05)**; 34+ rows remain. `[owner]` **▶ next:

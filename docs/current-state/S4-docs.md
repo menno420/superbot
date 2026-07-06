@@ -119,9 +119,9 @@
   and [`NEW-BOT-BUILD-PLAN.md`](../analysis/rebuild-discovery/new-bot-capability-audit/findings/NEW-BOT-BUILD-PLAN.md)
   is the **frozen reference**. Next: (A) one more owner-led **content review pass** over the whole
   surface (commands / functions / methods), then (B) **one 100%-complete design plan per step**
-  before any code. Process + next-session goal:
-  [`planning/rebuild-planning-phase-2026-07-03.md`](../planning/rebuild-planning-phase-2026-07-03.md).
-  Still behind the Phase-3 owner gate (design-spec ratification); no new-repo code yet.
+  before any code. Process + gates + start sequence now canonical in
+  [`planning/rebuild-canonical-plan-2026-07-06.md`](../planning/rebuild-canonical-plan-2026-07-06.md)
+  (PR #1770). Still behind the G1 owner gate; no new-repo code yet.
 - **▶ SuperBot retention application — startable (owner-directed brainstorm, PR #1643; Q-0214):** the
   **kit-native** context-economy engine already shipped in **#1649** (`substrate-kit/src/engine/economy/`);
   what remains here is applying retention to SuperBot's *own* docs via a `check_retention.py`
