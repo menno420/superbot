@@ -449,8 +449,7 @@ class AICog(commands.Cog):
         if isinstance(oldest, datetime):
             embed.set_footer(
                 text=(
-                    f"Showing {len(denials)} most recent · "
-                    f"oldest: {oldest.isoformat()}"
+                    f"Showing {len(denials)} most recent · oldest: {oldest.isoformat()}"
                 ),
             )
         else:

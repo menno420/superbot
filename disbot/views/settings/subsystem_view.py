@@ -193,9 +193,7 @@ async def build_subsystem_embed(
     embed = discord.Embed(
         title=f"{title_emoji} {display}",
         description=(
-            f"_{desc}_\n"
-            f"visibility tier: `{tier}`  ·  "
-            f"subsystem key: `{subsystem}`"
+            f"_{desc}_\nvisibility tier: `{tier}`  ·  subsystem key: `{subsystem}`"
         ),
         color=discord.Color.blurple(),
     )

@@ -92,8 +92,7 @@ def parse_folio_map(text: str) -> tuple[dict[str, str], list[str]]:
                 continue
             if folio in mapping:
                 errors.append(
-                    f"folio '{folio}' is double-homed "
-                    f"({mapping[folio]} and {sector}).",
+                    f"folio '{folio}' is double-homed ({mapping[folio]} and {sector}).",
                 )
             mapping[folio] = sector
     return mapping, errors

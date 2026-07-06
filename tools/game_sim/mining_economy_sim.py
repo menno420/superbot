@@ -480,8 +480,7 @@ def _report_config(
         f"dig cooldown = {cfg.dig_cooldown_s:g}s  ·  base roll = 1-{cfg.base_max}",
     )
     print(
-        "    profile                            coins/dig  p95  "
-        "coins/hr   dailies/hr",
+        "    profile                            coins/dig  p95  coins/hr   dailies/hr",
     )
     for r in score.results:
         dailies = r.coins_per_hour / daily

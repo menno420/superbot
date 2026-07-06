@@ -24,8 +24,7 @@ async def get_equipment(
 ) -> dict[str, str]:
     """Return ``{slot: item_name}`` for the user's equipped gear in a guild."""
     rows = await pool.fetchall(
-        "SELECT slot, item_name FROM mining_equipment "
-        "WHERE user_id=$1 AND guild_id=$2",
+        "SELECT slot, item_name FROM mining_equipment WHERE user_id=$1 AND guild_id=$2",
         (user_id, guild_id),
         conn=conn,
     )

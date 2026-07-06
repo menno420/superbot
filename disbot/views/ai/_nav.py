@@ -76,8 +76,7 @@ def add_back_button(
     """
     if len(view.children) >= _MAX_COMPONENTS:
         logger.warning(
-            "ai._nav.add_back_button: %s already has %d children — "
-            "%r button skipped.",
+            "ai._nav.add_back_button: %s already has %d children — %r button skipped.",
             type(view).__name__,
             len(view.children),
             label,

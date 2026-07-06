@@ -337,9 +337,7 @@ class WebhookReporter:
         stalled webhook cannot delay ``bot.close()`` and the finalizer.
         """
         is_restart = pending.kind == "restart"
-        title = (
-            "♻️ Bot Restart Beginning" if is_restart else "🛑 Bot Shutdown Beginning"
-        )
+        title = "♻️ Bot Restart Beginning" if is_restart else "🛑 Bot Shutdown Beginning"
         color = discord.Color.gold() if is_restart else discord.Color.red()
         embed = discord.Embed(
             title=title,

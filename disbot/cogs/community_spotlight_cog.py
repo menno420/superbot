@@ -65,7 +65,7 @@ async def _build_main_embed(guild: discord.Guild) -> discord.Embed:
     if xp_provider is not None:
         top_xp = await xp_provider.top(guild)
         for i, entry in enumerate(top_xp[:3]):
-            medal = MEDALS[i] if i < 3 else f"`#{i+1}`"
+            medal = MEDALS[i] if i < 3 else f"`#{i + 1}`"
             xp_lines.append(f"{medal} {entry.label}")
     embed.add_field(
         name="🏆 XP Leaders",
@@ -79,7 +79,7 @@ async def _build_main_embed(guild: discord.Guild) -> discord.Embed:
     if coins_provider is not None:
         top_coins = await coins_provider.top(guild)
         for i, entry in enumerate(top_coins[:3]):
-            medal = MEDALS[i] if i < 3 else f"`#{i+1}`"
+            medal = MEDALS[i] if i < 3 else f"`#{i + 1}`"
             coins_lines.append(f"{medal} {entry.label}")
     embed.add_field(
         name="💰 Richest Members",
@@ -115,7 +115,7 @@ async def _build_provider_embed(name: str, guild: discord.Guild) -> discord.Embe
         return embed
     lines = []
     for i, entry in enumerate(entries):
-        icon = MEDALS[i] if i < 3 else f"`#{i+1}`"
+        icon = MEDALS[i] if i < 3 else f"`#{i + 1}`"
         lines.append(f"{icon} {entry.label}")
     embed.description = "\n".join(lines)
     return embed

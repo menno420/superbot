@@ -57,8 +57,7 @@ async def build_invalid_embed(
                 resolution = await resolve_setting(guild_id, sub_name, spec.name)
             except Exception as exc:  # noqa: BLE001 — soft-fail per row
                 invalid.append(
-                    f"`{sub_name}.{spec.name}` — resolver raised "
-                    f"{type(exc).__name__}",
+                    f"`{sub_name}.{spec.name}` — resolver raised {type(exc).__name__}",
                 )
                 continue
             if resolution is None or resolution.valid:

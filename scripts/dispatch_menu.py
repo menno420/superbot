@@ -13,8 +13,8 @@ Provenance / reliability header (per CLAUDE.md Q-0105 adopt-with-kill-switch):
   it is a disposable convenience reporter, read-only, not load-bearing.
 
 The parsing helpers here intentionally mirror ``check_sector_map.py`` (each script stays a
-self-contained single file — the repo's standalone-script convention; ``isort src_paths``
-makes cross-script imports brittle). If a third consumer appears, factor a shared module.
+self-contained single file — the repo's standalone-script convention; cross-script
+imports are brittle). If a third consumer appears, factor a shared module.
 
 Usage::
 

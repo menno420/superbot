@@ -8,9 +8,9 @@
 #
 # What it installs into python3.10 (matching CI exactly):
 #   1. Runtime deps (requirements.txt: discord.py, asyncpg, etc.)
-#   2. Dev tools (requirements-dev.txt: pytest, pytest-asyncio, black,
-#      isort, ruff, mypy) — the same set CI installs in
-#      .github/workflows/code-quality.yml.
+#   2. Dev tools (requirements-dev.txt: pytest, pytest-asyncio, ruff,
+#      mypy) — the same set CI installs in
+#      .github/workflows/code-quality.yml. (ruff replaced black + isort, A3.)
 #
 # In environments that use uv-managed tool venvs at
 # /root/.local/share/uv/tools/* (Claude Code on the web's default tool
@@ -58,9 +58,6 @@ if command -v uv >/dev/null 2>&1; then
         uv pip install --quiet --python "$PYTEST_VENV_PY" -r requirements.txt
     else
         echo "[3/3] uv present but no pytest tool venv — skipping mirror."
-    fi
-    if ! command -v isort >/dev/null 2>&1; then
-        uv tool install --quiet isort || true
     fi
 else
     echo "[3/3] uv not present — skipping uv-managed mirror."

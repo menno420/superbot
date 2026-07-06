@@ -12,26 +12,17 @@ repos:
 
   # Formatter / linter versions are PINNED to match the CI workflow
   # (.github/workflows/code-quality.yml) and requirements-dev.txt exactly.
-  # Black/ruff change their output between releases, so a stale pin here
-  # reformats code in a way CI then rejects (and vice versa). When bumping
-  # any tool, bump it in all three places in the same change.
+  # Ruff changes its output between releases, so a stale pin here reformats
+  # code in a way CI then rejects (and vice versa). When bumping ruff, bump it
+  # in all three places in the same change (scripts/check_tool_pins.py guards it).
 
-  # Black - format
-  - repo: https://github.com/psf/black
-    rev: 26.5.1
-    hooks:
-      - id: black
-
-  # isort - import order
-  - repo: https://github.com/pycqa/isort
-    rev: 8.0.1
-    hooks:
-      - id: isort
-
-  # Ruff - lint + autofix, fail commit if it had to fix anything
+  # Ruff — format + lint + import-sort (replaced black + isort, A3 2026-07-06).
+  # ruff-format owns formatting (Black-compatible); ruff (with the `I` rule) owns
+  # import sorting + lint and fails the commit if it had to fix anything.
   - repo: https://github.com/astral-sh/ruff-pre-commit
     rev: v0.15.20
     hooks:
+      - id: ruff-format
       - id: ruff
         args: ["--fix", "--exit-non-zero-on-fix"]
 

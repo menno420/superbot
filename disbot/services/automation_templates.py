@@ -194,8 +194,7 @@ _ONBOARDING_TEMPLATES: tuple[AutomationTemplate, ...] = (
         slug="notify-staff-on-join",
         display_name="Notify staff on join",
         description=(
-            "Post a notice to the configured staff channel whenever a "
-            "new member joins."
+            "Post a notice to the configured staff channel whenever a new member joins."
         ),
         trigger_kind="member_join",
         action_kind="send_message",
@@ -258,8 +257,7 @@ _SERVER_PULSE_TEMPLATES: tuple[AutomationTemplate, ...] = (
         slug="daily-game-prompt",
         display_name="Daily game prompt",
         description=(
-            "Send a message inviting members to play a game in the "
-            "configured channel."
+            "Send a message inviting members to play a game in the configured channel."
         ),
         trigger_kind="scheduled_time",
         action_kind="send_message",
@@ -274,8 +272,7 @@ _SERVER_PULSE_TEMPLATES: tuple[AutomationTemplate, ...] = (
         slug="inactive-channel-nudge",
         display_name="Inactive channel nudge",
         description=(
-            "Post a gentle nudge to a channel that has been quiet for "
-            "more than N days."
+            "Post a gentle nudge to a channel that has been quiet for more than N days."
         ),
         trigger_kind="channel_inactive",
         action_kind="send_message",

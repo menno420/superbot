@@ -1033,8 +1033,7 @@ class SetupCompleteView(BaseView):
             child.disabled = True  # type: ignore[attr-defined]
         await interaction.response.edit_message(view=self)
         await interaction.followup.send(
-            "✅ Setup channel kept.  Re-run `/setup` any time to revisit "
-            "the wizard.",
+            "✅ Setup channel kept.  Re-run `/setup` any time to revisit the wizard.",
             ephemeral=True,
         )
         self.stop()

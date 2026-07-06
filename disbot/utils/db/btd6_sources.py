@@ -91,8 +91,7 @@ async def list_sources(
     args.append(safe_limit)
     args.append(safe_offset)
     sql += (
-        " ORDER BY trust_tier, source_key "
-        f"LIMIT ${len(args) - 1} OFFSET ${len(args)}"
+        f" ORDER BY trust_tier, source_key LIMIT ${len(args) - 1} OFFSET ${len(args)}"
     )
     rows = await pool.get().fetch(sql, *args)
     return [dict(r) for r in rows]
@@ -497,8 +496,7 @@ async def fetch_facts_for_intent(
         if fact_type is None:
             args.extend([entity_kind, entity_key])
             clauses.append(
-                f"(f.entity_kind = ${len(args) - 1} "
-                f"AND f.entity_key = ${len(args)})",
+                f"(f.entity_kind = ${len(args) - 1} AND f.entity_key = ${len(args)})",
             )
         else:
             args.extend([fact_type, entity_kind, entity_key])

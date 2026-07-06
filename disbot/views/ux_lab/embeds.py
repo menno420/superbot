@@ -9,9 +9,8 @@ from __future__ import annotations
 
 import discord
 
-from utils.ux_patterns import PatternCategory, PatternSpec, PatternStatus
+from utils.ux_patterns import PatternCategory, PatternSpec, PatternStatus, register
 from utils.ux_patterns import builders as b
-from utils.ux_patterns import register
 from views.ux_lab.wing import ExhibitRender, ExhibitWingView
 
 _CAT = PatternCategory.EMBEDS

@@ -37,8 +37,7 @@ async def get_position(
 ) -> tuple[int, int]:
     """The player's lateral ``(pos_x, pos_y)`` for a guild (``(0, 0)`` if none)."""
     row = await pool.fetchone(
-        "SELECT pos_x, pos_y FROM mining_player_state "
-        "WHERE user_id=$1 AND guild_id=$2",
+        "SELECT pos_x, pos_y FROM mining_player_state WHERE user_id=$1 AND guild_id=$2",
         (user_id, guild_id),
         conn=conn,
     )

@@ -252,10 +252,7 @@ def _render_restriction_for_grounding(entity_name: str, ctx: Any) -> str:
     elif stance == "banned":
         body = f"{name} is banned in {kind_label} '{event_name}'"
     elif stance == "limited":
-        body = (
-            f"{name} is limited (max {ctx.max_count}) in "
-            f"{kind_label} '{event_name}'"
-        )
+        body = f"{name} is limited (max {ctx.max_count}) in {kind_label} '{event_name}'"
     elif stance == "path_blocked":
         body = f"{name} has path tiers blocked in {kind_label} '{event_name}'"
     else:
@@ -1725,8 +1722,7 @@ def deterministic_roster_reply(message_text: str) -> str | None:
         from utils.btd6 import paragon_math
 
         lines = [
-            f"• **{paragon.name}** — {paragon.tower} "
-            f"(${paragon.base_price_medium:,})"
+            f"• **{paragon.name}** — {paragon.tower} (${paragon.base_price_medium:,})"
             for paragon in paragon_math.PARAGONS
         ]
         return (
@@ -5535,8 +5531,7 @@ async def build(
             )
         except Exception as exc:  # noqa: BLE001 — defensive
             logger.debug(
-                "btd6_context_service: upgrade parent-tower grounding "
-                "unavailable (%s)",
+                "btd6_context_service: upgrade parent-tower grounding unavailable (%s)",
                 exc,
             )
 

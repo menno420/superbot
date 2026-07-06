@@ -141,24 +141,18 @@ jobs:
         if: steps.changes.outputs.code == 'true'
         run: |
           python -m pip install --upgrade pip
-          pip install black==26.5.1 isort==8.0.1 ruff==0.15.20 mypy==2.1.0
+          pip install ruff==0.15.20 mypy==2.1.0
           pip install pytest==9.1.1 pytest-asyncio==1.4.0 pytest-xdist==3.8.0
           pip install -r requirements.txt
 
-      - name: Run Black (check only)
+      # ruff replaced black + isort (A3, 2026-07-06): `ruff format` owns formatting
+      # (Black-compatible) and `ruff check` owns import sorting (the `I` rule) + lint.
+      # 5 python-gate tools → 3. Same --exclude scope as before (mirrored in check_quality.py).
+      - name: Run Ruff format (check only)
         if: steps.changes.outputs.code == 'true'
-        run: black --check . --exclude '(\.github|tests|venv|env|build|dist)'
+        run: ruff format --check . --exclude .github,tests,venv,env,build,dist
 
-      - name: Run isort (check only)
-        if: steps.changes.outputs.code == 'true'
-        # NOTE: isort's --skip-glob takes a GLOB, not a regex — the old
-        # '*/(\.github|tests|...)/*' was regex alternation in a glob, so it
-        # matched nothing and isort silently scanned tests/ (contradicting the
-        # intended exclusion). --skip takes directory names and recurses (verified
-        # 2026-06-15). Mirrors the black --exclude / ruff --exclude scope above.
-        run: isort --check-only . --skip .github --skip tests --skip venv --skip env --skip build --skip dist
-
-      - name: Run Ruff
+      - name: Run Ruff (lint + import sort)
         if: steps.changes.outputs.code == 'true'
         run: ruff check . --exclude .github,tests,venv,env,build,dist
 
@@ -217,4 +211,4 @@ jobs:
 
       - name: Docs-only change — heavy checks skipped
         if: steps.changes.outputs.code != 'true'
-        run: echo "Only docs/markdown changed — black/isort/ruff/mypy/pytest were skipped."
+        run: echo "Only docs/markdown changed — ruff/mypy/pytest were skipped."

@@ -123,7 +123,7 @@ def build_bot_status_embed(bot: commands.Bot) -> discord.Embed:
     embed.add_field(name="Commands", value=str(len(bot.commands)), inline=True)
     embed.add_field(
         name="Latency",
-        value=f"{bot.latency*1000:.1f} ms",
+        value=f"{bot.latency * 1000:.1f} ms",
         inline=True,
     )
     embed.add_field(name="CPU", value=f"{cpu_usage}%", inline=True)
@@ -153,9 +153,9 @@ def build_system_info_embed() -> discord.Embed:
     embed.add_field(
         name="Disk",
         value=(
-            f"Total: {total/2**30:.1f} GB  "
-            f"Used: {used/2**30:.1f} GB  "
-            f"Free: {free/2**30:.1f} GB"
+            f"Total: {total / 2**30:.1f} GB  "
+            f"Used: {used / 2**30:.1f} GB  "
+            f"Free: {free / 2**30:.1f} GB"
         ),
         inline=False,
     )

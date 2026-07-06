@@ -62,8 +62,7 @@ def update_player_stats(player, result: str) -> None:
     guild = getattr(player, "guild", None)
     if guild is None:
         logger.warning(
-            "update_player_stats: player=%s has no guild context; "
-            "skipping stat update",
+            "update_player_stats: player=%s has no guild context; skipping stat update",
             player.id,
         )
         return

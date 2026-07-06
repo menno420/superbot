@@ -2,7 +2,7 @@
 """Guard: the lint/format/type tool pins must match across CI and the dev install.
 
 CLAUDE.md rule #3 (and the header of ``requirements-dev.txt``) requires the
-``black`` / ``isort`` / ``ruff`` / ``mypy`` versions to be **identical** in:
+``ruff`` / ``mypy`` versions to be **identical** in (ruff replaced black + isort, A3):
 
 * ``.github/workflows/code-quality.yml`` — what CI installs (the authority),
 * ``requirements-dev.txt``              — what local / Claude-Code-web sessions install, and
@@ -33,15 +33,14 @@ REQUIREMENTS_DEV = REPO_ROOT / "requirements-dev.txt"
 PRE_COMMIT = REPO_ROOT / ".pre-commit-config.yaml"
 
 # The tools whose output changes between releases, so a drift breaks the mirror.
-_TOOLS = ("black", "isort", "ruff", "mypy")
-_PIN = re.compile(r"\b(black|isort|ruff|mypy)==([0-9][0-9A-Za-z.\-]*)")
+_TOOLS = ("ruff", "mypy")
+_PIN = re.compile(r"\b(ruff|mypy)==([0-9][0-9A-Za-z.\-]*)")
 
-# Pre-commit identifies a tool by its hook repo, and pins via ``rev:`` (with an
-# inconsistent leading ``v`` — ruff/mypy carry it, black/isort don't), so it needs
-# its own parser rather than the ``tool==version`` regex above.
+# Pre-commit identifies a tool by its hook repo, and pins via ``rev:`` (both ruff and
+# mypy carry a leading ``v``), so it needs its own parser rather than the
+# ``tool==version`` regex above. (The single ruff-pre-commit repo hosts both the
+# ruff-format and ruff hooks under one ``rev:`` — one pin for both.)
 _PRECOMMIT_REPO_TO_TOOL = {
-    "psf/black": "black",
-    "pycqa/isort": "isort",
     "ruff-pre-commit": "ruff",
     "mirrors-mypy": "mypy",
 }

@@ -119,8 +119,7 @@ class MiningCog(commands.Cog):
         """Chop wood. If you have an 'axe', you'll collect double."""
         result = await mining_workflow.harvest(ctx.author.id, ctx.guild.id)
         message = (
-            f"{ctx.author.mention} chopped wood and collected "
-            f"{result.amount}x wood!"
+            f"{ctx.author.mention} chopped wood and collected {result.amount}x wood!"
         )
         if result.xp_note:
             message += "\n" + result.xp_note

@@ -559,8 +559,7 @@ def build_consistency_pages(report: ConsistencyReport) -> list[discord.Embed]:
         f"generated {generated}"
     )
     base_footer = (
-        f"{runtime_warnings} runtime warning · "
-        f"{informational_warnings} informational"
+        f"{runtime_warnings} runtime warning · {informational_warnings} informational"
     )
 
     # Pre-format every section value once, then greedily pack into pages.

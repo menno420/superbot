@@ -40,8 +40,7 @@ async def get_vault(
     only what is actually stored.
     """
     rows = await pool.fetchall(
-        "SELECT item_name, quantity FROM mining_vault "
-        "WHERE user_id=$1 AND guild_id=$2",
+        "SELECT item_name, quantity FROM mining_vault WHERE user_id=$1 AND guild_id=$2",
         (user_id, guild_id),
         conn=conn,
     )

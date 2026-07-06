@@ -67,6 +67,5 @@ async def run_global_sync(bot: object, *, force: bool) -> str:
             "Try again shortly."
         )
     return (
-        f"✅ Synced global slash commands ({diff}). "
-        "Propagation may take up to an hour."
+        f"✅ Synced global slash commands ({diff}). Propagation may take up to an hour."
     )

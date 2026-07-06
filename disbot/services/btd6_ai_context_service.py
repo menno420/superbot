@@ -201,8 +201,7 @@ class RestrictionSummary:
             )
         elif self.stance == "path_blocked":
             body = (
-                f"{target} {name} has path tiers blocked in "
-                f"{kind_label} '{event_name}'"
+                f"{target} {name} has path tiers blocked in {kind_label} '{event_name}'"
             )
         else:  # "allowed" should be filtered upstream, but render defensively.
             body = f"{target} {name} is allowed in {kind_label} '{event_name}'"
@@ -361,8 +360,7 @@ async def get_event_details(
         headlines = await btd6_live_query_service.get_active_events((entity_kind,))
     except Exception:
         logger.exception(
-            "btd6_ai_context_service.get_event_details failed; "
-            "returning no AI context",
+            "btd6_ai_context_service.get_event_details failed; returning no AI context",
             extra={
                 "method": "get_event_details",
                 "entity_kind": entity_kind,
@@ -391,8 +389,7 @@ async def get_tower_summary(tower_id: str) -> EntitySummary | None:
         bundle = await btd6_knowledge_api.get_tower(tower_id)
     except Exception:
         logger.exception(
-            "btd6_ai_context_service.get_tower_summary failed; "
-            "returning no AI context",
+            "btd6_ai_context_service.get_tower_summary failed; returning no AI context",
             extra={"method": "get_tower_summary", "tower_id": tower_id},
         )
         return None
@@ -416,8 +413,7 @@ async def get_hero_summary(hero_id: str) -> EntitySummary | None:
         bundle = await btd6_knowledge_api.get_hero(hero_id)
     except Exception:
         logger.exception(
-            "btd6_ai_context_service.get_hero_summary failed; "
-            "returning no AI context",
+            "btd6_ai_context_service.get_hero_summary failed; returning no AI context",
             extra={"method": "get_hero_summary", "hero_id": hero_id},
         )
         return None
@@ -550,8 +546,7 @@ async def get_source_status(
         rows = await btd6_source_registry.list_health(limit=max(1, min(100, limit)))
     except Exception:
         logger.exception(
-            "btd6_ai_context_service.get_source_status failed; "
-            "returning no AI context",
+            "btd6_ai_context_service.get_source_status failed; returning no AI context",
             extra={"method": "get_source_status", "public_safe": public_safe},
         )
         return ()
@@ -586,8 +581,7 @@ async def search_btd6_facts(
         )
     except Exception:
         logger.exception(
-            "btd6_ai_context_service.search_btd6_facts failed; "
-            "returning no AI context",
+            "btd6_ai_context_service.search_btd6_facts failed; returning no AI context",
             extra={
                 "method": "search_btd6_facts",
                 "query": query,

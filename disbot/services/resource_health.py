@@ -264,8 +264,7 @@ def _inspect_channel(
             status=PERMISSION_BLOCKED,
             severity=SEV_ERROR,
             message=(
-                f"channel #{channel.name} is bound but bot lacks: "
-                f"{', '.join(missing)}."
+                f"channel #{channel.name} is bound but bot lacks: {', '.join(missing)}."
             ),
             target_id=target_id,
         )

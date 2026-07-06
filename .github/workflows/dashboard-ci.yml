@@ -6,7 +6,7 @@ name: Dashboard CI
 # Why a separate workflow: the main `code-quality.yml` installs only the BOT's
 # requirements.txt, so the dashboard tests (`tests/unit/dashboard/`) `importorskip`
 # fastapi/httpx and silently SKIP, and dashboard code is never type-checked (CI runs
-# `mypy disbot/` only). Black/isort/ruff already cover `dashboard/` in the main job
+# `mypy disbot/` only). Ruff (format + lint) already covers `dashboard/` in the main job
 # (it is not in their exclude list), so this workflow adds exactly the two missing
 # pieces: real test execution + `mypy dashboard/`.
 #

@@ -249,7 +249,7 @@ def render_scaffold(report: dict[str, Any]) -> str:
             lines.append(f'    question="{q}",')
             lines.append('    expect=("<answer-bearing fact substring>",),')
             lines.append('    rubric="<what a correct live answer must say>",')
-            lines.append(f"    note=\"from review-log ids {it['ids']}\",")
+            lines.append(f'    note="from review-log ids {it["ids"]}",')
             lines.append("),")
         other = [it for it in fixes if it["domain"] != "btd6"]
         if other:

@@ -398,8 +398,7 @@ async def read_config(
         if binding_kind is not None and bv.kind.value != binding_kind:
             kind_mismatch = True
             diagnostics.append(
-                f"binding kind drift: expected={binding_kind} "
-                f"actual={bv.kind.value}",
+                f"binding kind drift: expected={binding_kind} actual={bv.kind.value}",
             )
             logger.warning(
                 "config_arbitration: binding kind drift for "

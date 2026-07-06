@@ -143,8 +143,7 @@ def compute_decision(
             accepted=False,
             delete_message=True,
             reply=(
-                f"{message.author.mention}, please count in "
-                f"multiples of {multiple}."
+                f"{message.author.mention}, please count in multiples of {multiple}."
             ),
         )
 

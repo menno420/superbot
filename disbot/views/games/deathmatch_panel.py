@@ -276,9 +276,7 @@ class _BotDuelView(SettleOnceMixin, discord.ui.View):
                 bot_action += " ⚡ **Critical Hit!**"
         else:
             self.duel.defend(self.bot_user.id)
-            bot_action = (
-                f"🛡️ **{self.bot_user.display_name}** takes a defensive stance!"
-            )
+            bot_action = f"🛡️ **{self.bot_user.display_name}** takes a defensive stance!"
         full_action = f"{player_action}\n{bot_action}"
         if self.duel.player1_hp <= 0 or self.duel.player2_hp <= 0:
             await self._finish(interaction, full_action)

@@ -476,10 +476,7 @@ async def _stage_cleanup_policy(
         pending = 0
 
     await interaction.response.send_message(
-        (
-            f"✅ Staged for Final review: `{label}`.  "
-            f"Pending operations: **{pending}**."
-        ),
+        (f"✅ Staged for Final review: `{label}`.  Pending operations: **{pending}**."),
         ephemeral=True,
     )
 

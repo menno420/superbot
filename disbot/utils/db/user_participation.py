@@ -54,8 +54,7 @@ def _deserialise(raw: Any | None) -> Any | None:
         return json.loads(raw)
     except (TypeError, ValueError):
         logger.warning(
-            "user_participation: failed to JSON-decode preference value; "
-            "returning raw",
+            "user_participation: failed to JSON-decode preference value; returning raw",
         )
         return raw
 

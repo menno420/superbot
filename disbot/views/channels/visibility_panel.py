@@ -221,9 +221,7 @@ class _SubsystemToggleView(BaseView):
             (name, meta)
             for name, meta in all_subsystems_sorted()
             if meta.get("visibility_mode", "normal") not in ("internal",)
-        ][
-            :20
-        ]  # max 20 toggles to stay within Discord's 25-item limit
+        ][:20]  # max 20 toggles to stay within Discord's 25-item limit
 
         for i, (name, meta) in enumerate(visible_subsystems):
             agg = self._aggregate(name)

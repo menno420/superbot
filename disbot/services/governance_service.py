@@ -19,8 +19,8 @@ code.
 
 from __future__ import annotations
 
-from governance import _FEEDBACK_COOLDOWN  # noqa: F401 — legacy test access
 from governance import (
+    _FEEDBACK_COOLDOWN,  # noqa: F401 — legacy test access
     EVT_CACHE_INVALIDATED,
     EVT_CLEANUP_CHANGED,
     EVT_EXECUTION_ALLOWED,

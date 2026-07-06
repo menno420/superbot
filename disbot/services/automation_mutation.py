@@ -406,8 +406,7 @@ class AutomationMutationPipeline:
     def _validate_kinds(trigger_kind: str, action_kind: str) -> None:
         if trigger_kind not in KNOWN_TRIGGER_KINDS:
             raise InvalidAutomationConfigError(
-                f"trigger_kind={trigger_kind!r} not in "
-                f"{sorted(KNOWN_TRIGGER_KINDS)}",
+                f"trigger_kind={trigger_kind!r} not in {sorted(KNOWN_TRIGGER_KINDS)}",
             )
         if action_kind not in KNOWN_ACTION_KINDS:
             raise InvalidAutomationConfigError(

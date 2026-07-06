@@ -113,8 +113,7 @@ async def list_findings(
 async def count_by_status() -> dict[str, int]:
     """Return ``{status: count}`` across all findings."""
     rows = await pool.fetchall(
-        "SELECT status, COUNT(*) AS n FROM operational_health_findings "
-        "GROUP BY status",
+        "SELECT status, COUNT(*) AS n FROM operational_health_findings GROUP BY status",
     )
     return {str(r["status"]): int(r["n"]) for r in rows}
 

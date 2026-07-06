@@ -350,15 +350,22 @@ agent self-applies a required-context removal, workflow deletion, ruleset/branch
 > - **A10 shipped (2026-07-06)** — the CodeQL **stuck-scan alerting leg** on `ci-rerun-watchdog.yml`
 >   (`check_codeql_coverage.py`, alerting-only until the re-dispatch path is live-confirmed) + the shared
 >   idempotent `lib.owner_alert` helper (Q-0089) that both watchdogs now escalate through.
+> - **A3 shipped (2026-07-06)** — **ruff replaced black + isort** (5 python-gate tools → 3). `ruff format`
+>   + `ruff check` (with `I`); black/isort removed from all surfaces (workflow, requirements-dev, pre-commit,
+>   check_quality, both hooks, check_tool_pins) + the two guard tests updated. `COM812`/`COM819`/`ISC001`
+>   yielded to the formatter; `core/runtime/__init__.py` per-file-ignores `I001`.
 > - **Still pending → turn-key backlog:** [`ci-followups-handoff-2026-07-05.md`](ci-followups-handoff-2026-07-05.md)
->   (ruff migration A3, the `ci.yml`/`web-ci.yml`/`pr-freshness.yml` builds A5/A8/A9, the two AST guards,
+>   (the `ci.yml`/`web-ci.yml`/`pr-freshness.yml` builds A5/A8/A9, the two AST guards,
 >   `check_session_slug_unique` gate, and the owner-gated Q-0239 tail).
 
 - **A1.** ✅ **SHIPPED (#1739).** Flip `codeql.yml` → `cancel-in-progress: false`. *(Mode 3 + §C.2 prerequisite; reversible one-liner.)*
 - **A2.** Fix `check_ci_coverage.py` (check-run-enumeration + `ROUTINE_PAT` close+reopen + reopen cap →
   owner-alert issue); correct the false `code-quality.yml` header. **Rename coupling:** `REQUIRED_CHECK`
   (line 37) + the dispatch target flip to `ci-gate` in lockstep with **B2**.
-- **A3.** Ruff migration PR (atomic — its own focused PR; see §C.4 for the 5-file swap).
+- **A3.** ✅ **SHIPPED (2026-07-06).** Ruff replaced black + isort (atomic PR): `ruff format` + `ruff check`
+  (`I` rule); enabled `I` + `[tool.ruff.lint.isort]`, ignored the formatter-conflicting `COM812`/`COM819`/
+  `ISC001`, swapped every surface (the §C.4 five **plus** the Stop hook, routine-permission list,
+  setup_dev_env.sh, and the two guard tests), `check_tool_pins._TOOLS` → `("ruff","mypy")`.
 - **A4.** Audit-pin remaining actions; top-level `permissions: contents: read`; Dependabot `github-actions`;
   composite `setup-py310`; adopt `uv`.
 - **A5.** Build `web-ci.yml` (reusable, explicit `permissions:`) and **dual-run** beside the app-CI

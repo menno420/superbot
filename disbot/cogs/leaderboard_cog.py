@@ -43,7 +43,7 @@ def _embed_from_entries(
         return embed
     lines = []
     for i, entry in enumerate(entries):
-        icon = MEDALS[i] if i < 3 else f"`#{i+1}`"
+        icon = MEDALS[i] if i < 3 else f"`#{i + 1}`"
         lines.append(f"{icon} {entry.label}")
     embed.description = "\n".join(lines)
     return embed

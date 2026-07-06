@@ -33,11 +33,9 @@ from discord.ext import commands
 from cogs.rps_tournament._bot_matches import (
     channel_is_bot_match,
     handle_bot_match_move,
-)
-from cogs.rps_tournament._bot_matches import reset_state as _reset_bot_match_state
-from cogs.rps_tournament._bot_matches import (
     run_rps_bot_command,
 )
+from cogs.rps_tournament._bot_matches import reset_state as _reset_bot_match_state
 from cogs.rps_tournament._helpers import (
     add_player_to_db,
     cleanup_orphaned_channels,

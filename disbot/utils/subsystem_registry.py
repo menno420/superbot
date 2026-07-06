@@ -1158,8 +1158,7 @@ SUBSYSTEMS: dict[str, dict] = {
     "settings": {
         "display_name": "Settings Manager",
         "description": (
-            "Read-only browsing of platform settings, bindings, and audit "
-            "history (S5)"
+            "Read-only browsing of platform settings, bindings, and audit history (S5)"
         ),
         "emoji": "⚙️",
         "color": ADMIN_COLOR.value,

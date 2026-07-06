@@ -9,9 +9,7 @@
 # from CI and produces "passes locally, fails in CI" churn (and vice
 # versa). When bumping a tool here, bump it in code-quality.yml AND
 # .pre-commit-config.yaml in the same change.
-black==26.5.1
-isort==8.0.1
-ruff==0.15.20  # MUST match code-quality.yml + .pre-commit-config.yaml (all three bumped together to 0.15.20 in #1556; lone Dependabot bumps drifted this file in #1074/#1315 — scripts/check_tool_pins.py guards it)
+ruff==0.15.20  # format + lint + import-sort (replaced black + isort, A3 2026-07-06). MUST match code-quality.yml + .pre-commit-config.yaml (bumped together to 0.15.20 in #1556; lone Dependabot bumps drifted this file in #1074/#1315 — scripts/check_tool_pins.py guards it)
 mypy==2.1.0
 pytest==9.1.1
 pytest-asyncio==1.4.0

@@ -8,13 +8,12 @@ Runs check-only verification on Python files changed vs origin/main:
                               origin/main (a conflict silently parks the PR:
                               auto-merge won't run and no webhook warns).
   1. Architecture (strict)  — layer boundaries, SQL location, etc.
-  2. Black --check          — formatting
-  3. isort --check-only     — import ordering
-  4. Ruff check (no --fix)  — lint
-  5. Mypy (changed files)   — types
+  2. Ruff format --check    — formatting (replaced black, A3)
+  3. Ruff check (no --fix)  — lint + import ordering (the `I` rule; replaced isort)
+  4. Mypy (changed files)   — types
 
 All are hard failures — exit 1 surfaces in chat and Claude must fix
-before committing. The post-edit hook auto-fixes black/isort/ruff on
+before committing. The post-edit hook auto-fixes ruff format + ruff check on
 write, so a Stop-time failure here means either (a) a fix could not be
 auto-applied or (b) something was edited outside the hook path.
 
@@ -46,7 +45,7 @@ _EXCLUDED_PREFIXES = (".github/", "tests/", "venv/", "env/", "build/", "dist/")
 def _changed_py_files() -> list[str]:
     """Return Python files changed vs origin/main (plus dirty WC).
 
-    Excludes the same prefixes CI excludes from black/isort/ruff. The
+    Excludes the same prefixes CI excludes from ruff. The
     formatter/lint scope is *not* limited to disbot/ — scripts/ and any
     other top-level .py files are also checked. Mypy is narrowed further
     in main() to match CI's `mypy disbot/` invocation.
@@ -257,13 +256,8 @@ def main() -> int:
             not arch_changed,
         ),
         (
-            "black --check",
-            [PY, "-m", "black", "--check", "--quiet", *changed],
-            False,
-        ),
-        (
-            "isort --check",
-            [PY, "-m", "isort", "--check-only", "--quiet", *changed],
+            "ruff format --check",
+            [PY, "-m", "ruff", "format", "--check", "--quiet", *changed],
             False,
         ),
         (
