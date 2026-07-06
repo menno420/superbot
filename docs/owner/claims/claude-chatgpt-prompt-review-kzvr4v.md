@@ -1,0 +1,1 @@
+- branch `claude/chatgpt-prompt-review-kzvr4v` · scope: verify the **C1 re-run PR (#1758)** + the merged **Arm A Ultracode readiness review** against live source; update the Gate V corrections doc to fleet-complete (all arms A–D + C1 verified, synthesis unblocked) · expected files: `docs/planning/rebuild-gate-v-findings-corrections-2026-07-06.md`, `.sessions/` · 2026-07-06
