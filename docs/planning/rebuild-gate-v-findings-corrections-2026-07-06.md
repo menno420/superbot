@@ -22,7 +22,7 @@
 | B — Codex C5 (games-deferral) | ✅ done | PR #1752 → `docs/planning/C5-games-deferral.md` | verdict **sound** |
 | C — Agent Mode (integration/external) | ✅ done | report delivered | sound **except** one error (§3) |
 | D — live-testing | ✅ merged | `LIVE-VERIFIED-EVIDENCE-PACK` (commit `af77f6a`) | empirical pack landed on main |
-| Σ — final synthesis | **UNBLOCKED — ready to run** | `GATE-V-SYNTHESIS.md` | consumes this doc; directives in §7 |
+| Σ — final synthesis | ✅ **done** | [`../analysis/rebuild-discovery/gate-v/GATE-V-SYNTHESIS.md`](../analysis/rebuild-discovery/gate-v/GATE-V-SYNTHESIS.md) | verdict: **Gate V complete → proceed to Phase-B planning under Sequence C**; two owner gates (Gate-0, Phase-2.5) remain |
 
 **All evidence arms are in and independently verified against live source.** C1 (the earlier
 failed-to-start L0/runtime gap) re-ran successfully and is sound; Arm A is merged and sound. The

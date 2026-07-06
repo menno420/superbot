@@ -249,7 +249,9 @@ say so and use local git, distinguishing local HEAD from live); active claims (d
 active gates; whether recent CI/AST/checker work changed readiness; whether Stage-2 progress moved;
 whether previously queued fixes already shipped.
 
-Output: your scoped sub-report {Ck}-<scope>.md with — confirmed facts (file paths + symbols + line refs);
+Output: your scoped sub-report at **`docs/planning/{Ck}-<scope>.md`** (pin the directory — do NOT drop it
+at the repo root; the 2026-07-06 run scattered C2/C3/C4 at root and they had to be relocated) with —
+confirmed facts (file paths + symbols + line refs);
 searches/commands performed; a §3.3-keyed discrepancy ledger (Plan claim|Source evidence|Test evidence|
 Status|Severity|Required final-session action); readiness rows (§3.1 enum) for systems in your scope;
 contradicted claims; unresolved assumptions; confidence. Do not claim anything ran unless it ran.
