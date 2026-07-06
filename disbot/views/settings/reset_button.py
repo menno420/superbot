@@ -84,8 +84,7 @@ async def reset_setting(
         return
 
     await interaction.response.send_message(
-        f"✅ Reset `{subsystem}.{setting_name}` to default "
-        f"= `{result.new_value!r}`.",
+        f"✅ Reset `{subsystem}.{setting_name}` to default = `{result.new_value!r}`.",
         ephemeral=True,
     )
     await _refresh_parent(interaction, subsystem, parent_message)

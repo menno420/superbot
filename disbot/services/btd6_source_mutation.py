@@ -82,8 +82,7 @@ async def upsert_source(
     actor_id = _check_admin(actor)
     if source_kind not in _VALID_KINDS:
         raise InvalidSourceValueError(
-            f"source_kind must be one of {sorted(_VALID_KINDS)}, "
-            f"got {source_kind!r}",
+            f"source_kind must be one of {sorted(_VALID_KINDS)}, got {source_kind!r}",
         )
     if trust_tier not in _VALID_TIERS:
         raise InvalidSourceValueError(

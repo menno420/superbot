@@ -21,7 +21,7 @@ anything — same discipline as ``scripts/check_docs.py``.
 
 Interpreter: invoke with **``python3``** (version-agnostic, runs under any 3.9+).
 The Hermes VPS has Python 3.11, not 3.10, and this is a stdlib markdown generator —
-NOT one of the CI-parity tools (black/mypy/pytest via ``check_quality``) that
+NOT one of the CI-parity tools (ruff/mypy/pytest via ``check_quality``) that
 ``.claude/CLAUDE.md`` pins to ``python3.10``. Do not "correct" these usage lines back
 to ``python3.10`` — that breaks Hermes, which only has ``python3`` (Q-0142 follow-up).
 
@@ -185,7 +185,9 @@ def _extract_prompt(lines: list[str]) -> str:
             if line.startswith("```"):  # column-0 opener
                 in_fence = True
             continue
-        if line.startswith("```"):  # column-0 closer; indented nested fences pass through
+        if line.startswith(
+            "```"
+        ):  # column-0 closer; indented nested fences pass through
             break
         body.append(line)
     return "\n".join(body).strip()
@@ -296,7 +298,9 @@ def main(argv: list[str] | None = None) -> int:
     for path, content in rendered.items():
         path.parent.mkdir(parents=True, exist_ok=True)
         path.write_text(content, encoding="utf-8")
-    print(f"build_skills: wrote {len(rendered)} skill(s) to {SKILL_OUT_DIR.relative_to(REPO_ROOT)}/")
+    print(
+        f"build_skills: wrote {len(rendered)} skill(s) to {SKILL_OUT_DIR.relative_to(REPO_ROOT)}/"
+    )
     for path in sorted(rendered):
         print(f"  {path.relative_to(REPO_ROOT)}")
     return 0

@@ -201,8 +201,7 @@ def build_registry() -> SettingsRegistry:
     global _CACHED
     _CACHED = registry
     logger.info(
-        "settings_registry: built v%d — %d entries across %d subsystems, "
-        "%d findings",
+        "settings_registry: built v%d — %d entries across %d subsystems, %d findings",
         registry.version,
         len(entries_tuple),
         len({e.subsystem for e in entries_tuple}),

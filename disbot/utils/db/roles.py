@@ -73,8 +73,7 @@ async def clear_role_time_threshold(guild_id: int, role_name: str) -> None:
     silently wipes its XP tier.
     """
     await pool.execute(
-        "UPDATE role_thresholds SET days_required=0 "
-        "WHERE guild_id=$1 AND role_name=$2",
+        "UPDATE role_thresholds SET days_required=0 WHERE guild_id=$1 AND role_name=$2",
         (guild_id, role_name),
     )
     await pool.execute(
@@ -246,8 +245,7 @@ async def get_reaction_roles_for_message(
 ) -> list[dict]:
     """Every emoji → role binding on one message (the unique-mode sibling read)."""
     return await pool.fetchall(
-        "SELECT emoji, role_id FROM reaction_roles "
-        "WHERE guild_id=$1 AND message_id=$2",
+        "SELECT emoji, role_id FROM reaction_roles WHERE guild_id=$1 AND message_id=$2",
         (guild_id, message_id),
     )
 
@@ -286,8 +284,7 @@ async def get_reaction_message_mode(guild_id: int, message_id: int) -> str:
 async def clear_reaction_message_mode(guild_id: int, message_id: int) -> None:
     """Reset a message back to the default ``'normal'`` mode (drop its row)."""
     await pool.execute(
-        "DELETE FROM reaction_role_message_modes "
-        "WHERE guild_id=$1 AND message_id=$2",
+        "DELETE FROM reaction_role_message_modes WHERE guild_id=$1 AND message_id=$2",
         (guild_id, message_id),
     )
 

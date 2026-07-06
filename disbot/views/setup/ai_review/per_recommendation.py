@@ -156,8 +156,7 @@ class PerRecommendationView(BaseView):
         from views.setup.ai_review.main_panel import build_ai_review_embed
 
         self.parent_view.last_status = (
-            f"Per-recommendation review finished; "
-            f"accepted set: {self.accepted.count}."
+            f"Per-recommendation review finished; accepted set: {self.accepted.count}."
         )
         self.parent_view.draft = self.draft
         await interaction.response.edit_message(

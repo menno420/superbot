@@ -2,11 +2,11 @@
 
 `check_quality.py` is only trustworthy if its formatter scope matches
 `.github/workflows/code-quality.yml` exactly (*"green here means green in CI"*).
-They drifted once: CI switched isort from a broken `--skip-glob <regex>` to
-directory-name `--skip` flags (2026-06-15), but the script kept the old glob, so
-the mirror silently scanned `tests/` and threw false-red isort failures CI never
-would. This test pins the black/isort/ruff *exclude scopes* of the two in sync so
-that class can't recur.
+They drifted once (2026-06-15): the mirror kept a stale isort `--skip-glob <regex>`
+after CI moved to directory-name skips, so it silently scanned `tests/` and threw
+false-red failures CI never would. ruff replaced black + isort (A3, 2026-07-06) — the
+gate is now `ruff format` + `ruff check` — so this test pins the *exclude scope* of
+those two invocations in sync between the script and the workflow.
 """
 
 from __future__ import annotations
@@ -21,7 +21,7 @@ _REPO = Path(__file__).resolve().parents[3]
 _SCRIPT = _REPO / "scripts" / "check_quality.py"
 _WORKFLOW = _REPO / ".github" / "workflows" / "code-quality.yml"
 
-#: The directories CI excludes from every formatter (the single canonical set).
+#: The directories CI excludes from ruff (the single canonical set).
 _EXPECTED_DIRS = {".github", "tests", "venv", "env", "build", "dist"}
 
 
@@ -43,52 +43,38 @@ def workflow_text() -> str:
     return _WORKFLOW.read_text(encoding="utf-8")
 
 
-def _dirs_from_regex_alternation(pattern: str) -> set[str]:
-    """``(\\.github|tests|venv)`` → ``{".github", "tests", "venv"}``."""
-    inner = pattern.strip().lstrip("(").rstrip(")")
-    return {part.replace("\\.", ".") for part in inner.split("|")}
-
-
 # --- the script's own declared scope --------------------------------------
 
 
 def test_check_quality_declares_the_canonical_scope(mod):
-    assert _dirs_from_regex_alternation(mod._BLACK_EXCLUDE) == _EXPECTED_DIRS
-    assert set(mod._ISORT_SKIP_DIRS) == _EXPECTED_DIRS
     assert set(mod._RUFF_EXCLUDE.split(",")) == _EXPECTED_DIRS
 
 
 # --- the workflow's actual scope (parsed from the YAML run: lines) ---------
 
 
-def test_workflow_black_scope_matches(workflow_text):
-    m = re.search(r"black --check \. --exclude '([^']*)'", workflow_text)
-    assert m, "could not find the black --exclude line in code-quality.yml"
-    assert _dirs_from_regex_alternation(m.group(1)) == _EXPECTED_DIRS
-
-
-def test_workflow_isort_scope_matches(workflow_text):
-    # isort uses repeated `--skip <dir>` (NOT --skip-glob — that was the bug).
-    m = re.search(r"isort --check-only \. (.+)", workflow_text)
-    assert m, "could not find the isort line in code-quality.yml"
-    skips = set(re.findall(r"--skip (\S+)", m.group(1)))
-    assert skips == _EXPECTED_DIRS
-    assert "--skip-glob" not in m.group(1)  # the regex-in-a-glob trap stays gone
+def test_workflow_ruff_format_scope_matches(workflow_text):
+    m = re.search(r"ruff format --check \. --exclude (\S+)", workflow_text)
+    assert m, "could not find the ruff format --exclude line in code-quality.yml"
+    assert set(m.group(1).split(",")) == _EXPECTED_DIRS
 
 
 def test_workflow_ruff_scope_matches(workflow_text):
     m = re.search(r"ruff check \. --exclude (\S+)", workflow_text)
-    assert m, "could not find the ruff --exclude line in code-quality.yml"
+    assert m, "could not find the ruff check --exclude line in code-quality.yml"
     assert set(m.group(1).split(",")) == _EXPECTED_DIRS
 
 
-def test_mirror_and_workflow_agree_per_tool(mod, workflow_text):
-    """The whole point: the script's scope == the workflow's scope, per tool."""
-    black = re.search(r"black --check \. --exclude '([^']*)'", workflow_text)
-    isort = re.search(r"isort --check-only \. (.+)", workflow_text)
-    ruff = re.search(r"ruff check \. --exclude (\S+)", workflow_text)
-    assert _dirs_from_regex_alternation(mod._BLACK_EXCLUDE) == (
-        _dirs_from_regex_alternation(black.group(1))
-    )
-    assert set(mod._ISORT_SKIP_DIRS) == set(re.findall(r"--skip (\S+)", isort.group(1)))
-    assert set(mod._RUFF_EXCLUDE.split(",")) == set(ruff.group(1).split(","))
+def test_no_black_or_isort_left_in_the_gate(workflow_text):
+    # ruff replaced them (A3); a re-introduced black/isort step would silently
+    # diverge from the mirror, which no longer runs them.
+    assert "black --check" not in workflow_text
+    assert "isort --check-only" not in workflow_text
+
+
+def test_mirror_and_workflow_agree(mod, workflow_text):
+    """The whole point: the script's ruff scope == the workflow's, for both invocations."""
+    fmt = re.search(r"ruff format --check \. --exclude (\S+)", workflow_text)
+    chk = re.search(r"ruff check \. --exclude (\S+)", workflow_text)
+    assert set(mod._RUFF_EXCLUDE.split(",")) == set(fmt.group(1).split(","))
+    assert set(mod._RUFF_EXCLUDE.split(",")) == set(chk.group(1).split(","))

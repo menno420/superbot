@@ -28,9 +28,8 @@ from typing import TYPE_CHECKING, Any
 
 import discord
 
-from services import setup_draft
+from services import setup_draft, setup_session
 from services import setup_role_templates as role_templates
-from services import setup_session
 from services.setup_operations import SetupOperation
 from services.setup_role_templates import RoleSuggestion, RoleTemplate, TemplatePlan
 from services.setup_sections import REGISTRY, SetupSection

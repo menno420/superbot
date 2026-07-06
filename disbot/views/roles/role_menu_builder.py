@@ -1132,7 +1132,9 @@ class _TextModal(discord.ui.Modal, title="Menu text"):  # type: ignore[call-arg]
         self.builder.title = self.title_in.value.strip() or "Pick your roles"
         self.builder.description = self.desc_in.value.strip() or None
         self.builder._panel_interaction = interaction
-        await safe_edit(interaction, embed=self.builder.build_embed(), view=self.builder)
+        await safe_edit(
+            interaction, embed=self.builder.build_embed(), view=self.builder
+        )
 
 
 class _LimitModal(discord.ui.Modal, title="Per-member limit"):  # type: ignore[call-arg]

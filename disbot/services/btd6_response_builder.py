@@ -379,8 +379,7 @@ def for_unresolved(intent: ResolvedIntent) -> BTD6Response:
     return BTD6Response(
         title=UNRESOLVED_TITLE,
         short_answer=(
-            "I couldn't find a tower, hero, map, mode, round, or bloon "
-            "in your message."
+            "I couldn't find a tower, hero, map, mode, round, or bloon in your message."
         ),
         why_it_matters=(
             f"Confidence: {intent.confidence:.2f}. Try mentioning a tower "

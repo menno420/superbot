@@ -296,8 +296,7 @@ class ProbesBenchView(HubView):
                 pid,
                 title,
                 True,
-                "4000 sent OK; 4001 rejected — "
-                f"{type(exc).__name__}: {str(exc)[:120]}",
+                f"4000 sent OK; 4001 rejected — {type(exc).__name__}: {str(exc)[:120]}",
             )
         return ProbeResult(
             pid,

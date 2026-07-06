@@ -95,8 +95,7 @@ _cv2_spec(
     "cv2_mobile_compact",
     "Dense vs compact (the phone check)",
     recommended_for=("checking a layout on desktop AND a phone before approving",),
-    notes="Render it, then open Discord on your phone — same message, "
-    "different feel.",
+    notes="Render it, then open Discord on your phone — same message, different feel.",
 )
 _cv2_spec(
     "cv2_interactive_mix",

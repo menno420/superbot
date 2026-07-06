@@ -274,8 +274,7 @@ async def apply_repair(
         mutation_id = await handler(preview, guild=guild, actor_id=actor_id)
     except Exception as exc:  # noqa: BLE001 — service boundary
         logger.exception(
-            "readiness_repair: apply failed for action=%s "
-            "(subsystem=%s, binding=%s).",
+            "readiness_repair: apply failed for action=%s (subsystem=%s, binding=%s).",
             preview.action,
             preview.finding.subsystem,
             preview.finding.binding_name,

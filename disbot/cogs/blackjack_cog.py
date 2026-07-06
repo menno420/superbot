@@ -293,8 +293,7 @@ class BlackjackCog(commands.Cog):
                 )
         if cleared or refunded:
             logger.info(
-                "blackjack_tournament recovery: cleared %d row(s), "
-                "issued %d refund(s)",
+                "blackjack_tournament recovery: cleared %d row(s), issued %d refund(s)",
                 cleared,
                 refunded,
             )

@@ -546,9 +546,7 @@ class AIGateway:
                 return json.dumps({"error": "tool_not_available", "tool": name})
             try:
                 result = await tool_handlers[name](arguments)
-            except (
-                Exception
-            ) as exc:  # noqa: BLE001 — tool faults must not break the loop
+            except Exception as exc:  # noqa: BLE001 — tool faults must not break the loop
                 logger.warning(
                     "ai gateway: tool %r raised: %s",
                     name,

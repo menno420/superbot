@@ -329,8 +329,7 @@ LOGGING_BINDINGS: tuple[BindingSpec, ...] = (
         kind=BindingKind.CHANNEL,
         required=False,
         hint=(
-            "Channel for info-level events.  Falls back to `mod_channel` "
-            "when unbound."
+            "Channel for info-level events.  Falls back to `mod_channel` when unbound."
         ),
         capability_required="logging.settings.configure",
     ),
@@ -349,8 +348,7 @@ LOGGING_BINDINGS: tuple[BindingSpec, ...] = (
         kind=BindingKind.CHANNEL,
         required=False,
         hint=(
-            "Channel for error-level events.  Falls back to `mod_channel` "
-            "when unbound."
+            "Channel for error-level events.  Falls back to `mod_channel` when unbound."
         ),
         capability_required="logging.settings.configure",
     ),

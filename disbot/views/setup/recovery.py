@@ -99,8 +99,7 @@ def build_recovery_embed(context: RecoveryContext) -> discord.Embed:
     """
     if context.step_index >= 0 and context.total_steps > 0:
         title = (
-            f"⚠️ Setup issue found · Step "
-            f"{context.step_index + 1}/{context.total_steps}"
+            f"⚠️ Setup issue found · Step {context.step_index + 1}/{context.total_steps}"
         )
     else:
         title = "⚠️ Setup issue found"
@@ -435,8 +434,7 @@ class SectionRecoveryView(BaseView):
             ok = False
         if not ok and not interaction.response.is_done():
             await interaction.response.send_message(
-                f"Could not open the detail view for **{section.label}** — "
-                "see logs.",
+                f"Could not open the detail view for **{section.label}** — see logs.",
                 ephemeral=True,
             )
         self.stop()

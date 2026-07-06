@@ -371,9 +371,9 @@ class ChannelCog(commands.Cog):
 
         response = ""
         if deleted:
-            response += f'✅ Deleted: {", ".join(deleted)}.\n'
+            response += f"✅ Deleted: {', '.join(deleted)}.\n"
         if failed:
-            response += f'❌ Failed: {", ".join(failed)}.'
+            response += f"❌ Failed: {', '.join(failed)}."
         await ctx.send(response)
 
     @commands.command(
@@ -739,9 +739,9 @@ class ChannelCog(commands.Cog):
 
         response = ""
         if created:
-            response += f'✅ Created: {", ".join(created)}.\n'
+            response += f"✅ Created: {', '.join(created)}.\n"
         if failed:
-            response += f'❌ Failed: {", ".join(failed)}.'
+            response += f"❌ Failed: {', '.join(failed)}."
         await ctx.send(response)
 
 

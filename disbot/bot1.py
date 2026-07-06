@@ -1299,9 +1299,7 @@ async def main() -> None:
                     await reporter.on_startup_summary(
                         _startup_outcome.all_outcomes(),
                     )
-                except (
-                    Exception
-                ) as report_err:  # noqa: BLE001 — observability never blocks boot
+                except Exception as report_err:  # noqa: BLE001 — observability never blocks boot
                     logger.debug(
                         "Startup summary webhook skipped: %s",
                         report_err,

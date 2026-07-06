@@ -51,9 +51,9 @@ logger = logging.getLogger("bot.views.community")
 _BUTTONS_PER_ROW = 5
 
 
-def discover_community_children() -> (
-    tuple[list[tuple[str, dict]], list[tuple[str, dict]]]
-):
+def discover_community_children() -> tuple[
+    list[tuple[str, dict]], list[tuple[str, dict]]
+]:
     """Return ``(primary, cross_link)`` lists of (subsystem, meta) pairs.
 
     Primary children come from ``SUBSYSTEMS`` filtered by

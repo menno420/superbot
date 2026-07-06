@@ -418,8 +418,7 @@ async def set_purpose(guild_id: int, purpose: str | None) -> None:
     """
     if purpose is not None and purpose not in KNOWN_PURPOSES:
         raise ValueError(
-            f"purpose must be one of {sorted(KNOWN_PURPOSES)} or None, "
-            f"got {purpose!r}",
+            f"purpose must be one of {sorted(KNOWN_PURPOSES)} or None, got {purpose!r}",
         )
     await pool.get().execute(
         """

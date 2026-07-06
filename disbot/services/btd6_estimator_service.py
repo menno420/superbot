@@ -498,8 +498,7 @@ def format_estimate_text(est: KillEstimate) -> str:
         f"**{est.boss_canonical} Tier {est.boss_tier}**",
         f"• Boss HP: **{est.boss_hp:,}** (speed {est.boss_speed})",
         f"• Tower: ~**{est.dps:,.0f} DPS** ({est.damage_type or 'unknown'} damage), "
-        f"cost **${est.cost:,}**"
-        + ("" if est.sees_camo else " — ⚠️ no camo detection"),
+        f"cost **${est.cost:,}**" + ("" if est.sees_camo else " — ⚠️ no camo detection"),
     ]
     if est.blocked_by_immunity:
         lines.append(

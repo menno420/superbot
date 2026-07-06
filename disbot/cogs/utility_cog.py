@@ -305,12 +305,12 @@ class UtilityCog(commands.Cog):
             return
         embed = discord.Embed(
             title=f"Poll: {question}",
-            description="\n".join(f"{i+1}. {opt}" for i, opt in enumerate(options)),
+            description="\n".join(f"{i + 1}. {opt}" for i, opt in enumerate(options)),
             color=INFO_COLOR,
         )
         poll_msg = await ctx.send(embed=embed)
         for i in range(len(options)):
-            await poll_msg.add_reaction(f"{i+1}\N{COMBINING ENCLOSING KEYCAP}")
+            await poll_msg.add_reaction(f"{i + 1}\N{COMBINING ENCLOSING KEYCAP}")
 
     @commands.command(name="ping")
     async def ping(self, ctx):
@@ -669,12 +669,12 @@ class _PollModal(discord.ui.Modal, title="Create Poll"):  # type: ignore[call-ar
             return
         embed = discord.Embed(
             title=f"Poll: {self.question.value}",
-            description="\n".join(f"{i+1}. {opt}" for i, opt in enumerate(opts)),
+            description="\n".join(f"{i + 1}. {opt}" for i, opt in enumerate(opts)),
             color=INFO_COLOR,
         )
         poll_msg = await self.channel.send(embed=embed)
         for i in range(len(opts)):
-            await poll_msg.add_reaction(f"{i+1}\N{COMBINING ENCLOSING KEYCAP}")
+            await poll_msg.add_reaction(f"{i + 1}\N{COMBINING ENCLOSING KEYCAP}")
         await interaction.response.send_message("✅ Poll created!", ephemeral=True)
 
 

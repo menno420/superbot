@@ -1537,7 +1537,9 @@ def build_admin_refresh_summary_embed(
     color = (
         discord.Color.green()
         if all(s == "ok" for s in status_counts)
-        else discord.Color.gold() if status_counts.get("ok", 0) else discord.Color.red()
+        else discord.Color.gold()
+        if status_counts.get("ok", 0)
+        else discord.Color.red()
     )
     embed = discord.Embed(
         title=f"🛠️ BTD6 Admin — Refresh Summary{title_suffix}",

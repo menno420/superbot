@@ -774,8 +774,7 @@ class RoleCog(commands.Cog):
             # member, not a flood) with the classified cause so an operator
             # isn't left guessing why a new member never got their role.
             logger.warning(
-                "on_member_join: role assignment failed for member=%s in "
-                "guild=%s — %s",
+                "on_member_join: role assignment failed for member=%s in guild=%s — %s",
                 member.id,
                 member.guild.id,
                 role_automation.summarize_failures(result),

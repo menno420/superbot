@@ -24,6 +24,7 @@ extend-exclude = [".github", "tests", "venv", "env", "build", "dist"]
 # and §26 (regression prevention). Tightening these is feature work.
 select = [
     "E", "W", "F",      # pycodestyle + pyflakes — basic correctness
+    "I",                # isort — import sorting (replaces the standalone isort tool)
     "B",                # bugbear — real bugs
     "A",                # builtins shadowing — real bugs
     "T20",              # no print() — observability
@@ -47,6 +48,13 @@ select = [
 ignore = [
     # Pydocstyle layout knobs that conflict with the google convention.
     "D203", "D213",
+    # ─── Formatter-owned rules (disabled since ruff format replaced black, A3) ───
+    # `ruff format` owns trailing commas (magic trailing comma) + implicit string
+    # concatenation layout; keeping these lint rules on fights the formatter (ruff
+    # emits a "may cause conflicts" warning). The formatter enforces the same thing.
+    "COM812",  # missing-trailing-comma      — formatter adds it on multiline collections
+    "COM819",  # prohibited-trailing-comma   — formatter removes it on single-line
+    "ISC001",  # single-line implicit concat — formatter normalizes string layout
     # ─── Aspirational rules grandfathered for the current codebase ───
     # Tightening these is its own phase; see plan §26.
     "D100",  # missing module docstring               — ~40 sites
@@ -97,6 +105,12 @@ ignore = [
 "botsite/site_data.py" = ["T201"]
 # Parity-harness CLI (python3.10 -m parity.run): print() is its output.
 "parity/**/*.py" = ["T201"]
+# Re-export aggregator with per-line `# noqa: F401 — re-exported` comments: ruff's
+# isort combines same-module members and stacks their trailing comments into one
+# garbled line. The old standalone isort kept them separate (clean); exempt this one
+# cycle-sensitive file from import-sorting to preserve that layout (import ORDER here
+# is documented as not mattering — the cycle regression is pinned by a test).
+"disbot/core/runtime/__init__.py" = ["I001"]
 
 [tool.ruff.lint.mccabe]
 max-complexity = 8
@@ -109,16 +123,11 @@ inline-quotes = "double"
 multiline-quotes = "double"
 docstring-quotes = "double"
 
-# ---------- BLACK ----------
-[tool.black]
-line-length = 88
-target-version = ["py310"]
-
-# ---------- ISORT ----------
-[tool.isort]
-profile = "black"
-line_length = 88
-src_paths = ["disbot"]
+# isort (import sorting) — the `I` rule above. Replaces the standalone isort tool
+# (removed 2026-07-06, A3). `known-first-party` mirrors the old isort `src_paths=["disbot"]`;
+# ruff's isort defaults are Black-profile-compatible (trailing comma, parenthesized wrapping).
+[tool.ruff.lint.isort]
+known-first-party = ["disbot"]
 
 # ---------- MYPY ----------
 [tool.mypy]

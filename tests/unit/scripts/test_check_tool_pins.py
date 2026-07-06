@@ -35,28 +35,25 @@ def mod():
 
 
 def test_pins_parses_equals_pins(mod):
-    text = "pip install black==26.5.1 isort==8.0.1 ruff==0.15.14 mypy==2.1.0"
+    # black/isort removed (A3) — only ruff + mypy are tracked now.
+    text = "pip install ruff==0.15.14 mypy==2.1.0"
     got = {k: sorted(v) for k, v in mod._pins(text).items()}
     assert got == {
-        "black": ["26.5.1"],
-        "isort": ["8.0.1"],
         "ruff": ["0.15.14"],
         "mypy": ["2.1.0"],
     }
 
 
 def test_precommit_pins_maps_repo_to_tool_and_strips_v_prefix(mod):
+    # The single ruff-pre-commit repo hosts both the ruff-format and ruff hooks
+    # under one rev — one pin covers both (A3).
     text = """
 repos:
-  - repo: https://github.com/psf/black
-    rev: 26.5.1
-    hooks: [{id: black}]
-  - repo: https://github.com/pycqa/isort
-    rev: 8.0.1
-    hooks: [{id: isort}]
   - repo: https://github.com/astral-sh/ruff-pre-commit
     rev: v0.15.14
-    hooks: [{id: ruff}]
+    hooks:
+      - id: ruff-format
+      - id: ruff
   - repo: https://github.com/pre-commit/mirrors-mypy
     rev: v2.1.0
     hooks: [{id: mypy}]
@@ -64,8 +61,6 @@ repos:
     got = {k: sorted(v) for k, v in mod._precommit_pins(text).items()}
     # v-prefix stripped so v0.15.14 compares equal to the requirements 0.15.14.
     assert got == {
-        "black": ["26.5.1"],
-        "isort": ["8.0.1"],
         "ruff": ["0.15.14"],
         "mypy": ["2.1.0"],
     }
@@ -73,19 +68,15 @@ repos:
 
 # --- check() across three synthetic sources -------------------------------
 
-_CI = "pip install black==26.5.1 isort==8.0.1 ruff==0.15.14 mypy==2.1.0"
-_DEV = "black==26.5.1\nisort==8.0.1\nruff==0.15.14\nmypy==2.1.0\n"
+_CI = "pip install ruff==0.15.14 mypy==2.1.0"
+_DEV = "ruff==0.15.14\nmypy==2.1.0\n"
 _PRECOMMIT = """
 repos:
-  - repo: https://github.com/psf/black
-    rev: 26.5.1
-    hooks: [{id: black}]
-  - repo: https://github.com/pycqa/isort
-    rev: 8.0.1
-    hooks: [{id: isort}]
   - repo: https://github.com/astral-sh/ruff-pre-commit
     rev: v0.15.14
-    hooks: [{id: ruff}]
+    hooks:
+      - id: ruff-format
+      - id: ruff
   - repo: https://github.com/pre-commit/mirrors-mypy
     rev: v2.1.0
     hooks: [{id: mypy}]

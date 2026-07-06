@@ -82,8 +82,7 @@ async def _write_role_value(
         )
     else:
         await interaction.response.send_message(
-            f"✅ Cleared `{subsystem}.{setting_name}` "
-            f"(was `{result.old_value!r}`).",
+            f"✅ Cleared `{subsystem}.{setting_name}` (was `{result.old_value!r}`).",
             ephemeral=True,
         )
     await _refresh_parent(interaction, subsystem, parent_message)

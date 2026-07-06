@@ -295,7 +295,7 @@ def _expand_factorials(expr: str) -> str:
             if start == end:
                 raise ValueError("'!' has no numeric operand")
         operand = expr[start:end]
-        expr = f"{expr[:start]}factorial({operand}){expr[idx + 1:]}"
+        expr = f"{expr[:start]}factorial({operand}){expr[idx + 1 :]}"
     return expr
 
 

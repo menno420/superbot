@@ -132,8 +132,7 @@ def build_explorer_overview_embed(
     invoker_name = getattr(invoker, "display_name", None) or str(invoker)
     embed.set_footer(
         text=(
-            f"Invoker: {invoker_name}. "
-            "Only the invoker can interact with this panel."
+            f"Invoker: {invoker_name}. Only the invoker can interact with this panel."
         ),
     )
     embed.add_field(

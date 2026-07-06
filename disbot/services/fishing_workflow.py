@@ -30,6 +30,10 @@ from utils.fishing import (
     MAX_LEVEL,
     PEARL_ITEM,
     Catch,
+    roll_bonus_catch,
+    roll_catch,
+    roll_coral_drop,
+    roll_pearl_drop,
 )
 from utils.fishing import bait as bait_mod
 from utils.fishing import curios as curios_mod
@@ -38,12 +42,6 @@ from utils.fishing import fish as fish_mod
 from utils.fishing import gear as fishing_gear
 from utils.fishing import rewards as rewards_mod
 from utils.fishing import rods as rods_mod
-from utils.fishing import (
-    roll_bonus_catch,
-    roll_catch,
-    roll_coral_drop,
-    roll_pearl_drop,
-)
 from utils.fishing import venue as venue_mod
 from utils.fishing import weather as weather_mod
 from utils.mining import character

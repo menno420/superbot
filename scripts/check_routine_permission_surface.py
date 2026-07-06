@@ -88,8 +88,7 @@ ROUTINE_COMMANDS: tuple[str, ...] = (
     "python3.10 scripts/check_dashboard_data.py --drift",
     # --- formatters / tests via the pinned interpreter ---
     "python3.10 -m pytest tests/unit -q",
-    "python3.10 -m black .",
-    "python3.10 -m isort .",
+    "python3.10 -m ruff format .",
     "python3.10 -m ruff check .",
     "python3.10 -m mypy disbot/",
     # --- a scratch-file cleanup inside a compound command (the Q-0161 stall) ---

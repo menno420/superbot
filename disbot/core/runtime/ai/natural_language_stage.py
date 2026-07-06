@@ -1130,15 +1130,15 @@ async def _gather_bot_knowledge_blocks(
         else:
             accessible = frozenset()
 
-        blocks: tuple[ai_instruction_service.BotKnowledgeBlock, ...] = (
-            await bot_knowledge_service.gather(
-                guild_id=guild_id,
-                channel_id=channel_id,
-                user_id=user_id,
-                user_text=user_text,
-                user_tier=bot_knowledge_service.resolve_user_tier(message.author),
-                accessible_channel_ids=accessible,
-            )
+        blocks: tuple[
+            ai_instruction_service.BotKnowledgeBlock, ...
+        ] = await bot_knowledge_service.gather(
+            guild_id=guild_id,
+            channel_id=channel_id,
+            user_id=user_id,
+            user_text=user_text,
+            user_tier=bot_knowledge_service.resolve_user_tier(message.author),
+            accessible_channel_ids=accessible,
         )
     except Exception:  # noqa: BLE001 — defensive
         logger.warning(

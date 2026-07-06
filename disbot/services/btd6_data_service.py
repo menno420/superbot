@@ -1576,9 +1576,9 @@ def find_geraldo_item(name: str) -> GeraldoItemEntry | None:
     return partial[0] if len(partial) == 1 else None
 
 
-def geraldo_items_by_unlock_level() -> (
-    tuple[tuple[int, tuple[GeraldoItemEntry, ...]], ...]
-):
+def geraldo_items_by_unlock_level() -> tuple[
+    tuple[int, tuple[GeraldoItemEntry, ...]], ...
+]:
     """Geraldo's shop items grouped by the hero level they unlock at — the
     deterministic relation behind the "what does Geraldo unlock per level"
     answer (BUG-0009 slice 2).

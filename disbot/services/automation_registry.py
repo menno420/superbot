@@ -62,8 +62,7 @@ TRIGGERS: tuple[TriggerSpec, ...] = (
         kind="interval",
         display_name="Recurring interval",
         description=(
-            "Fires every N minutes. ``trigger_config['interval_minutes']`` "
-            "is required."
+            "Fires every N minutes. ``trigger_config['interval_minutes']`` is required."
         ),
         required_config_keys=("interval_minutes",),
         optional_config_keys=("quiet_hours",),

@@ -47,12 +47,10 @@ from services import setup_access, setup_session
 from views.setup.essential_setup import EssentialSetupResumeView, revive_essential_flows
 from views.setup.launcher import (
     SetupLauncherView,
-)
-from views.setup.launcher import _build_launcher_embed as _build_launcher_embed
-from views.setup.launcher import (
     pick_launcher_channel,
     post_launcher,
 )
+from views.setup.launcher import _build_launcher_embed as _build_launcher_embed
 
 logger = logging.getLogger("bot.cogs.setup")
 
@@ -668,8 +666,7 @@ class SetupCog(commands.Cog):
             )
         except Exception:
             logger.exception(
-                "setup_cog._post_launcher_in_setup_channel: ensure failed "
-                "(guild=%d)",
+                "setup_cog._post_launcher_in_setup_channel: ensure failed (guild=%d)",
                 guild.id,
             )
             return None, None

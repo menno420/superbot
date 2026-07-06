@@ -19,9 +19,8 @@ import time
 import discord
 
 from services import farm_workflow
-from utils import db
+from utils import db, idle_summary
 from utils import farm as farm_mod
-from utils import idle_summary
 from utils.ui_constants import GAME_COLOR
 from views.base import HubView
 from views.navigation import carry_back

@@ -417,11 +417,14 @@ async def preflight_operations(
                 guild_id,
             )
         elif kind == "clear_binding":
-            current, proposed, would_change, read_error = (
-                await _preflight_clear_binding(
-                    op,
-                    guild_id,
-                )
+            (
+                current,
+                proposed,
+                would_change,
+                read_error,
+            ) = await _preflight_clear_binding(
+                op,
+                guild_id,
             )
         elif kind == "set_setting":
             current, proposed, would_change, read_error = await _preflight_set_setting(
@@ -429,28 +432,37 @@ async def preflight_operations(
                 guild_id,
             )
         elif kind == "set_cog_routing":
-            current, proposed, would_change, read_error = (
-                await _preflight_set_cog_routing(
-                    op,
-                    guild_id,
-                )
+            (
+                current,
+                proposed,
+                would_change,
+                read_error,
+            ) = await _preflight_set_cog_routing(
+                op,
+                guild_id,
             )
         elif kind == "set_role_threshold":
             # Needs the live guild (not just guild_id) for the read-only
             # bot-feasibility note (can the bot actually assign this role?).
-            current, proposed, would_change, read_error = (
-                await _preflight_set_role_threshold(
-                    op,
-                    guild,
-                )
+            (
+                current,
+                proposed,
+                would_change,
+                read_error,
+            ) = await _preflight_set_role_threshold(
+                op,
+                guild,
             )
         elif kind == "create_managed_role":
             # Needs the live guild for the read-only Manage-Roles note.
-            current, proposed, would_change, read_error = (
-                await _preflight_create_managed_role(
-                    op,
-                    guild,
-                )
+            (
+                current,
+                proposed,
+                would_change,
+                read_error,
+            ) = await _preflight_create_managed_role(
+                op,
+                guild,
             )
         else:
             # Known kind without a v1 read adapter (create_*, automation,
@@ -1859,8 +1871,7 @@ def _label(op: SetupOperation) -> str:
         return f"{op.subsystem}.{op.setting_name} = {op.value!r}"
     if op.kind in ("create_channel", "create_role", "create_category"):
         return (
-            f"{op.kind}: {op.resource_name or '?'} "
-            f"({op.subsystem}.{op.binding_name})"
+            f"{op.kind}: {op.resource_name or '?'} ({op.subsystem}.{op.binding_name})"
         )
     if op.kind in (
         "add_automation_rule",

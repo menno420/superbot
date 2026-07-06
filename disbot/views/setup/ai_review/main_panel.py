@@ -107,7 +107,9 @@ def build_ai_review_embed(draft: SetupPlanDraft) -> discord.Embed:
     color = (
         discord.Color.green()
         if high
-        else discord.Color.gold() if medium else discord.Color.dark_grey()
+        else discord.Color.gold()
+        if medium
+        else discord.Color.dark_grey()
     )
     embed = discord.Embed(
         title="🤖 Smart suggestions",

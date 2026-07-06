@@ -70,8 +70,7 @@ async def get_fishing_log(
 ) -> dict[str, int]:
     """The player's catch log: ``{species: count}``."""
     rows = await pool.fetchall(
-        "SELECT species, count FROM fishing_catch_log "
-        "WHERE user_id=$1 AND guild_id=$2",
+        "SELECT species, count FROM fishing_catch_log WHERE user_id=$1 AND guild_id=$2",
         (user_id, guild_id),
         conn=conn,
     )

@@ -130,7 +130,7 @@ class Cleanup(commands.Cog):
 
         self.command_prefixes = ["?", "!"]
         self.command_pattern = re.compile(
-            rf'^\s*({"|".join(map(re.escape, self.command_prefixes))})\S+',
+            rf"^\s*({'|'.join(map(re.escape, self.command_prefixes))})\S+",
             re.IGNORECASE,
         )
 

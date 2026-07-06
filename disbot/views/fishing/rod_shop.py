@@ -76,8 +76,7 @@ def build_rod_embed(
         embed.add_field(
             name=f"Next: {nxt.emoji} {nxt.name} — {nxt.price} 🪙",
             value=(
-                f"_{_knob_summary(nxt)}_\n"
-                f"Your balance: **{balance}** 🪙{craft_line}"
+                f"_{_knob_summary(nxt)}_\nYour balance: **{balance}** 🪙{craft_line}"
             ),
             inline=False,
         )

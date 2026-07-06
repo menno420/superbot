@@ -231,7 +231,7 @@ async def _check_tourn_done(tourn: _BjTournament, bot: commands.Bot):
     lines = []
     medals = ["🥇", "🥈", "🥉"]
     for i, (uid, chips) in enumerate(ranking):
-        icon = medals[i] if i < 3 else f"#{i+1}"
+        icon = medals[i] if i < 3 else f"#{i + 1}"
         name = resources.member_display(guild, uid) if guild else f"<@{uid}>"
         lines.append(f"{icon} **{name}** — {chips} chips")
 

@@ -15,6 +15,7 @@ from typing import Any
 
 import discord
 from discord.ext import commands as dpy_commands
+
 from parity.harness.cases import GoldenCase, Step
 
 __all__ = [

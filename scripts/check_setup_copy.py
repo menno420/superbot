@@ -206,7 +206,7 @@ def _format(findings: list[Finding]) -> str:
     lines: list[str] = []
     for f in findings:
         snippet = f.text if len(f.text) <= 80 else f.text[:77] + "…"
-        lines.append(f"  {f.file}:{f.line} — {', '.join(f.terms)}  in \"{snippet}\"")
+        lines.append(f'  {f.file}:{f.line} — {", ".join(f.terms)}  in "{snippet}"')
     return "\n".join(lines)
 
 

@@ -458,8 +458,7 @@ def _teardown_user_config_cache(guild_id: int) -> None:
         dropped = _user_cache_forget(guild_id)
         if dropped:
             logger.debug(
-                "guild_lifecycle: dropped %d user_config cache entry(s) "
-                "for guild=%d",
+                "guild_lifecycle: dropped %d user_config cache entry(s) for guild=%d",
                 dropped,
                 guild_id,
             )

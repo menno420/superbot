@@ -137,12 +137,12 @@ class AdminCog(commands.Cog):
                 await self.bot.load_extension(module)
                 loaded_now.append(module.split(".")[1])
             except Exception as e:
-                failed.append(f'`{module.split(".")[1]}`: {e}')
+                failed.append(f"`{module.split('.')[1]}`: {e}")
         parts = []
         if loaded_now:
-            parts.append(f'✅ Loaded: {", ".join(f"`{n}`" for n in loaded_now)}')
+            parts.append(f"✅ Loaded: {', '.join(f'`{n}`' for n in loaded_now)}")
         if skipped:
-            parts.append(f'⏭️ Already loaded: {", ".join(f"`{n}`" for n in skipped)}')
+            parts.append(f"⏭️ Already loaded: {', '.join(f'`{n}`' for n in skipped)}")
         if failed:
             parts.append("❌ Failed:\n" + "\n".join(failed))
         await ctx.send("\n".join(parts) or "✅ Nothing to load.")
@@ -163,12 +163,12 @@ class AdminCog(commands.Cog):
                 await self.bot.unload_extension(module)
                 unloaded.append(module.split(".")[1])
             except Exception as e:
-                failed.append(f'`{module.split(".")[1]}`: {e}')
+                failed.append(f"`{module.split('.')[1]}`: {e}")
         parts = []
         if unloaded:
-            parts.append(f'🔴 Unloaded: {", ".join(f"`{n}`" for n in unloaded)}')
+            parts.append(f"🔴 Unloaded: {', '.join(f'`{n}`' for n in unloaded)}")
         if skipped:
-            parts.append(f'⏭️ Skipped: {", ".join(f"`{n}`" for n in skipped)}')
+            parts.append(f"⏭️ Skipped: {', '.join(f'`{n}`' for n in skipped)}")
         if failed:
             parts.append("❌ Failed:\n" + "\n".join(failed))
         await ctx.send("\n".join(parts) or "✅ Nothing to unload.")
@@ -562,10 +562,10 @@ class _AdminPanelView(HubView):
                 await self.cog.bot.reload_extension(module)
                 reloaded.append(module.split(".")[1])
             except Exception as e:
-                failed.append(f'`{module.split(".")[1]}`: {e}')
+                failed.append(f"`{module.split('.')[1]}`: {e}")
         parts = []
         if reloaded:
-            parts.append(f'🔄 Reloaded: {", ".join(f"`{n}`" for n in reloaded)}')
+            parts.append(f"🔄 Reloaded: {', '.join(f'`{n}`' for n in reloaded)}")
         if failed:
             parts.append("❌ Failed:\n" + "\n".join(failed))
         embed = discord.Embed(

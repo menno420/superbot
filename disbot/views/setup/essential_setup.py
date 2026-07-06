@@ -2523,8 +2523,7 @@ async def open_essential_setup(interaction: discord.Interaction) -> None:
     )
     if reason == "ok" and channel is not None and message is not None:
         await interaction.response.send_message(
-            f"✅ Setup is ready in {channel.mention} — "
-            f"[open it]({message.jump_url}).",
+            f"✅ Setup is ready in {channel.mention} — [open it]({message.jump_url}).",
             ephemeral=True,
         )
         return

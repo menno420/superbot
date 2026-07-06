@@ -110,8 +110,7 @@ async def mark_anchors_stale_for_subsystem(subsystem: str) -> int:
 async def get_all_active_panel_anchors() -> list[dict]:
     """All non-stale anchors, ordered by last_updated_at (for restart recovery)."""
     rows = await pool.get().fetch(
-        "SELECT * FROM panel_anchors WHERE NOT is_stale "
-        "ORDER BY last_updated_at DESC",
+        "SELECT * FROM panel_anchors WHERE NOT is_stale ORDER BY last_updated_at DESC",
     )
     return [dict(r) for r in rows]
 

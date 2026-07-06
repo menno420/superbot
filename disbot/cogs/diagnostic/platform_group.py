@@ -300,8 +300,7 @@ class PlatformCommandsMixin(_MixinBase):
         )
         if result.outcome == "not_found":
             await ctx.send(
-                f"⚠️ No finding with fingerprint `{fp}` "
-                "(see `!platform findings all`).",
+                f"⚠️ No finding with fingerprint `{fp}` (see `!platform findings all`).",
             )
         elif result.outcome == "unchanged":
             await ctx.send(f"ℹ️ `{fp}` is already `{target_status}` — no change.")

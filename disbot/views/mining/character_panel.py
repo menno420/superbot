@@ -86,8 +86,7 @@ async def build_character_embed(
     embed.add_field(
         name="🎮 Game Level",
         value=(
-            f"Level **{level}** — "
-            f"{workshop.durability_bar(into, needed)} XP to next"
+            f"Level **{level}** — {workshop.durability_bar(into, needed)} XP to next"
         ),
         inline=False,
     )

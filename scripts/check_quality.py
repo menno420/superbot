@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Quality check runner for SuperBot.
 
-Runs ruff, black, and isort with auto-fix by default.
+Runs ruff format + ruff check (lint + import sort) with auto-fix by default.
 Optionally runs mypy and pytest.
 
 Usage:
@@ -23,7 +23,7 @@ REPO_ROOT = Path(__file__).resolve().parent.parent
 DISBOT_ROOT = REPO_ROOT / "disbot"
 
 # Always invoke tools as `python3.10 -m <tool>`, never as the bare
-# executable. CI runs Python 3.10, and a bare `black` / `pytest` / etc. on
+# executable. CI runs Python 3.10, and a bare `ruff` / `pytest` / etc. on
 # PATH can resolve to a DIFFERENT interpreter (e.g. a uv-installed
 # standalone pytest on its own isolated env that lacks the project's
 # dependencies — which produces thousands of bogus import-error
@@ -38,23 +38,17 @@ def _tool(name: str, *args: str) -> list[str]:
     return [_PY, "-m", name, *args]
 
 
-# CI parity (see .github/workflows/code-quality.yml). These MUST match the
+# CI parity (see .github/workflows/code-quality.yml). This MUST match the
 # workflow's invocations exactly, or this script reports failures CI will
 # never see (or misses ones it will). The canonical traps this prevents:
-#   * CI excludes tests/ from black/isort/ruff — checking tests/ here too
-#     surfaced ~196 pre-existing test-file reformats that CI ignores, which
-#     turned the prescribed pre-push check permanently red for no real
-#     reason and caused wasted back-and-forth.
+#   * CI excludes tests/ from ruff — checking tests/ here too surfaced ~196
+#     pre-existing test-file reformats that CI ignores, which turned the
+#     prescribed pre-push check permanently red for no real reason.
 #   * CI runs mypy only against disbot/.
-# black --exclude / ruff --exclude take a regex / comma-list. isort's
-# --skip-glob takes a GLOB (not a regex): the old "*/(\.github|tests|...)/*" was
-# regex alternation inside a glob, so it matched nothing and isort silently
-# scanned tests/ — diverging from CI, which excludes tests/ via directory-name
-# --skip flags (code-quality.yml, fixed 2026-06-15). We mirror CI exactly: one
-# --skip <dir> per excluded directory (recurses). Kept aligned with the workflow;
+# ruff replaced black + isort (A3, 2026-07-06): `ruff format` owns formatting and
+# `ruff check` (with the `I` rule) owns import sorting + lint. Both take the same
+# comma-list --exclude. Kept aligned with the workflow;
 # tests/unit/scripts/test_check_quality_ci_parity.py guards against re-drift.
-_BLACK_EXCLUDE = r"(\.github|tests|venv|env|build|dist)"
-_ISORT_SKIP_DIRS = (".github", "tests", "venv", "env", "build", "dist")
 _RUFF_EXCLUDE = ".github,tests,venv,env,build,dist"
 
 
@@ -70,44 +64,28 @@ def _run(label: str, cmd: list[str], *, check: bool = False) -> int:
 
 
 def run_formatters(*, check_only: bool) -> list[tuple[str, int]]:
-    """Run black / isort / ruff over CI's exact scope.
+    """Run ``ruff format`` + ``ruff check`` (lint + import sort) over CI's exact scope.
 
-    Scope and exclude flags mirror ``.github/workflows/code-quality.yml``
-    so a pass here means a pass in CI (and vice versa). In ``--check-only``
-    mode the invocations are byte-for-byte the workflow's; in fix mode the
-    only difference is the auto-fix flag.
+    ruff replaced black + isort (A3): ``ruff format`` owns formatting (Black-compatible)
+    and ``ruff check`` (with the ``I`` rule) owns import sorting + lint. Scope and exclude
+    flags mirror ``.github/workflows/code-quality.yml`` so a pass here means a pass in CI
+    (and vice versa). In ``--check-only`` mode the invocations are byte-for-byte the
+    workflow's; in fix mode the only difference is the auto-fix flag.
     """
     results = []
 
     results.append(
         (
-            "black",
+            "ruff format",
             _run(
-                "black" + (" --check" if check_only else " --fix"),
+                "ruff format" + (" --check" if check_only else ""),
                 _tool(
-                    "black",
+                    "ruff",
+                    "format",
                     *(["--check"] if check_only else []),
                     ".",
                     "--exclude",
-                    _BLACK_EXCLUDE,
-                ),
-            ),
-        ),
-    )
-    results.append(
-        (
-            "isort",
-            _run(
-                "isort" + (" --check-only" if check_only else ""),
-                _tool(
-                    "isort",
-                    *(["--check-only"] if check_only else []),
-                    ".",
-                    *(
-                        arg
-                        for directory in _ISORT_SKIP_DIRS
-                        for arg in ("--skip", directory)
-                    ),
+                    _RUFF_EXCLUDE,
                 ),
             ),
         ),
@@ -116,7 +94,7 @@ def run_formatters(*, check_only: bool) -> list[tuple[str, int]]:
         (
             "ruff",
             _run(
-                "ruff" + (" --no-fix" if check_only else " --fix"),
+                "ruff check" + (" --no-fix" if check_only else " --fix"),
                 _tool(
                     "ruff",
                     "check",
@@ -210,7 +188,7 @@ def main() -> int:
     parser.add_argument(
         "--fix-only",
         action="store_true",
-        help="Only run formatters (black + isort + ruff --fix), skip lint/type/test",
+        help="Only run formatters (ruff format + ruff check --fix), skip lint/type/test",
     )
     args = parser.parse_args()
 

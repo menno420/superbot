@@ -50,9 +50,7 @@ class RoleGrantsCog(commands.Cog):
                         resolved,
                         guild.id,
                     )
-        except (
-            Exception
-        ):  # noqa: BLE001 — a transient DB/Discord blip must not kill the loop
+        except Exception:  # noqa: BLE001 — a transient DB/Discord blip must not kill the loop
             logger.exception("role_grants: expiry sweep failed")
 
     @_sweep_loop.before_loop

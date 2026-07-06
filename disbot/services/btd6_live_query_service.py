@@ -155,7 +155,9 @@ def _is_active_window(body: dict[str, Any]) -> bool:
     return end_ms >= now_ms
 
 
-def _stance_from_entry(entry: dict[str, Any]) -> tuple[
+def _stance_from_entry(
+    entry: dict[str, Any],
+) -> tuple[
     Literal["banned", "limited", "path_blocked", "allowed"],
     int | None,
     int,

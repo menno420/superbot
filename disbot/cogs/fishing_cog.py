@@ -105,8 +105,7 @@ class FishingCog(commands.Cog):
         embed = discord.Embed(
             title=f"{w.emoji} Today's fishing forecast: {w.name}",
             description=(
-                f"{w.blurb}\n\n"
-                f"**Effect on every cast:** {weather_mod.effect_text(w)}"
+                f"{w.blurb}\n\n**Effect on every cast:** {weather_mod.effect_text(w)}"
             ),
             color=_FISHING_COLOR,
         )

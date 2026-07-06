@@ -290,7 +290,9 @@ def render_batch_embed(
     label_for = labels or {}
     metadata_for = metadata_by_index or {}
 
-    def _resolve(result: SetupOperationResult) -> tuple[
+    def _resolve(
+        result: SetupOperationResult,
+    ) -> tuple[
         SetupOperation,
         dict[str, Any] | None,
         str | None,

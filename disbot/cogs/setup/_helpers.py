@@ -242,8 +242,7 @@ async def toggle_delegate(
 
     if member.id == guild.owner_id:
         await interaction.response.send_message(
-            "The server owner already has full setup authority — "
-            "no delegation needed.",
+            "The server owner already has full setup authority — no delegation needed.",
             ephemeral=True,
         )
         return

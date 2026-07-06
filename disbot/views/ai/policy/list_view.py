@@ -134,8 +134,7 @@ def build_list_embed(
     embed = discord.Embed(
         title="AI policy overrides",
         description=(
-            f"{total} total override(s) across this guild "
-            f"(channel + category + role)."
+            f"{total} total override(s) across this guild (channel + category + role)."
         ),
         color=_PANEL_COLOR,
     )
@@ -154,8 +153,7 @@ def build_list_embed(
             embed.add_field(
                 name=f"{_scope_emoji(entry.scope)} {entry.scope}",
                 value=(
-                    f"{_format_target(entry.scope, entry.target_id)} · "
-                    f"{entry.summary}"
+                    f"{_format_target(entry.scope, entry.target_id)} · {entry.summary}"
                 ),
                 inline=False,
             )

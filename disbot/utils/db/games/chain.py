@@ -7,8 +7,7 @@ from utils.db import pool
 
 async def get_chain_channel(channel_id: int) -> dict | None:
     return await pool.fetchone(
-        "SELECT word, word_limit, chain_count FROM chain_channels "
-        "WHERE channel_id=$1",
+        "SELECT word, word_limit, chain_count FROM chain_channels WHERE channel_id=$1",
         (channel_id,),
     )
 

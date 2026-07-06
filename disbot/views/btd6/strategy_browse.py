@@ -65,8 +65,7 @@ async def build_browse_embed(*, limit: int = _DEFAULT_PAGE_SIZE) -> discord.Embe
     embed = discord.Embed(
         title="🐵 BTD6 — Published strategies",
         description=(
-            f"Showing {len(rows)} published strategies "
-            f"(max {_MAX_PAGE_SIZE} per page)."
+            f"Showing {len(rows)} published strategies (max {_MAX_PAGE_SIZE} per page)."
         ),
         color=discord.Color.green(),
     )

@@ -22,6 +22,10 @@
   alerting-only leg on `ci-rerun-watchdog.yml`. It + `check_ci_coverage` now escalate through one shared
   idempotent **`scripts/lib/owner_alert.py`** helper (the #1743 Q-0089 idea; also fixed the workflow's
   missing `issues: write` so escalation works under the `GITHUB_TOKEN` fallback).
+- ✅ **Ruff replaced black + isort — SHIPPED** (2026-07-06, item #3 below) — the python merge gate is now
+  **3 tools** (ruff, mypy, pytest). `ruff format` owns formatting + `ruff check` (with `I`) owns import
+  sorting; the two-thirds of the pin-drift surface (black + isort) is gone. Whole-tree reformat (~95 files),
+  magic-trailing-comma parity verified (black agreed on all but the 14 known ruff-vs-black files).
 
 ## Ranked follow-ups
 
@@ -45,16 +49,17 @@ whether a re-run surfaces as a fresh `workflow_runs` row (so the retry-count log
 flip the leg from alerting-only to `check_codeql_coverage.py --rerun` (re-dispatch RERUN heads, escalate only
 after K failed retries). Design §C.2 `[FIX-1]`.
 
-### 3. Ruff replaces black + isort (the biggest "fewer checks" win) — `[offline]`, its own focused PR
-5 gate tools → 3. Turn-key (all in one atomic commit, per design §C.4):
-1. `ruff format .` over the tree (Black-compatible).
-2. Port `[tool.ruff.lint.isort]` into `pyproject.toml`/`ruff.toml` (`known-first-party = ["disbot", ...]`,
-   black-profile equivalents) and enable the `I` rule — or you get a *second* import-reorder churn diff.
-3. Verify magic-trailing-comma parity vs `black 26.5.1` on the reformat.
-4. Swap black/isort → ruff in **all five**: `code-quality.yml`, `requirements-dev.txt`,
-   `.pre-commit-config.yaml`, `scripts/check_quality.py`, **and `scripts/claude_post_edit.py`** (the
-   PostToolUse auto-fixer) — same commit, or local hooks reformat with black and fight CI every edit.
-5. `check_tool_pins.py` tracks black/isort/ruff — update its `_TOOLS`/pins accordingly.
+### 3. Ruff replaces black + isort — ✅ SHIPPED (2026-07-06). 5 python-gate tools → 3.
+Done as one atomic PR. What it took, for the record (a couple of surfaces beyond the design's "five"):
+1. `pyproject.toml`: enabled the `I` rule + `[tool.ruff.lint.isort]` (`known-first-party = ["disbot"]`);
+   removed `[tool.black]` / `[tool.isort]`; **ignored `COM812`/`COM819`/`ISC001`** (the formatter now owns
+   trailing commas + string layout — ruff warns if these lint rules stay on); per-file-ignored `I001` on
+   `disbot/core/runtime/__init__.py` (ruff's combine garbles its per-line `# noqa: F401 — re-exported`).
+2. `ruff format` the tree (~95 files) + `ruff check --fix --select I` (8 import-sort normalizations).
+3. Magic-trailing-comma parity: black agreed on all but the 14 known ruff-vs-black files (expected).
+4. Swapped black/isort → ruff in the five **plus** `scripts/claude_stop_check.py` (Stop hook),
+   `scripts/check_routine_permission_surface.py`, `scripts/setup_dev_env.sh`, and the two guard tests
+   (`test_check_quality_ci_parity`, `test_check_tool_pins`); `check_tool_pins._TOOLS` → `("ruff","mypy")`.
 
 ### 4. The aggregate `ci-gate` + reusable-workflow restructure — `[offline]` build alongside, `[owner]` to cut over
 Build `ci.yml` (the `detect` + fan-in `ci-gate` job, design §C.1 — use the **proven shell git-diff detector**,

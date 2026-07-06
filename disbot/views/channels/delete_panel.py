@@ -134,8 +134,7 @@ class _DeleteSubView(BaseView):
         embed = discord.Embed(
             title="🗑️ Delete Channel",
             description=(
-                "Select one or more channels to delete, then press "
-                "**Delete Selected**."
+                "Select one or more channels to delete, then press **Delete Selected**."
             ),
             color=ERROR_COLOR,
         )

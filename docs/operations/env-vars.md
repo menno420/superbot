@@ -21,7 +21,7 @@ only — never a value**; the values live in Railway service variables
 |---|---|---|
 | `DATABASE_URL` | utils | `disbot/utils/db/pool.py:41` |
 | `DISCORD_BOT_TOKEN_PRODUCTION` | config | `disbot/config.py:19` |
-| `YOUTUBE_API_KEY` | services | `disbot/services/diagnostic_embeds.py:1418`<br>`disbot/services/youtube_fetch_service.py:22` |
+| `YOUTUBE_API_KEY` | services | `disbot/services/diagnostic_embeds.py:1417`<br>`disbot/services/youtube_fetch_service.py:22` |
 
 ## Optional (a default is always supplied)
 
@@ -31,7 +31,7 @@ only — never a value**; the values live in Railway service variables
 | `AI_ENABLED` | config | `disbot/config.py:202` *(default)* |
 | `AI_FALLBACK_PROVIDER` | core | `disbot/core/runtime/ai/routing.py:128` *(default)* |
 | `ANTHROPIC_API_KEY` | config, core | `disbot/config.py:186` *(default)*<br>`disbot/core/runtime/ai/providers/anthropic_provider.py:93` *(default)* |
-| `AUTOMATION_SCHEDULER_ENABLED` | services | `disbot/services/automation_scheduler.py:397` *(default)* |
+| `AUTOMATION_SCHEDULER_ENABLED` | services | `disbot/services/automation_scheduler.py:396` *(default)* |
 | `AUTO_SYNC_COMMANDS` | config | `disbot/config.py:249` *(default)* |
 | `BOT_OWNER_USER_ID` | config | `disbot/config.py:40` *(default)* |
 | `BOT_PREFIX` | config | `disbot/config.py:28` *(default)* |

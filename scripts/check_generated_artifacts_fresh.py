@@ -367,8 +367,7 @@ def main(argv: list[str] | None = None) -> int:
 
     if not findings:
         print(
-            f"check_generated_artifacts_fresh: OK ✓ "
-            f"({len(REGISTRY)} artifacts fresh)",
+            f"check_generated_artifacts_fresh: OK ✓ ({len(REGISTRY)} artifacts fresh)",
         )
         return 0
 

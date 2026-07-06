@@ -261,8 +261,7 @@ async def on_guild_remove_rps(guild_id: int) -> None:
                     )
                 except Exception as exc:
                     logger.warning(
-                        "rps_tournament on_guild_remove refund "
-                        "failed for user=%d: %s",
+                        "rps_tournament on_guild_remove refund failed for user=%d: %s",
                         row.get("user_id"),
                         exc,
                     )

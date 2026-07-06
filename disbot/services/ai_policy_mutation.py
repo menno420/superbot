@@ -217,8 +217,7 @@ async def set_channel_policy(
         )
     if mode not in _VALID_CHANNEL_MODES:
         raise InvalidAIPolicyValueError(
-            f"channel mode must be one of {sorted(_VALID_CHANNEL_MODES)}, "
-            f"got {mode!r}",
+            f"channel mode must be one of {sorted(_VALID_CHANNEL_MODES)}, got {mode!r}",
         )
     min_level_val, min_level_unchanged = _resolve_optional(min_level)
     cooldown_val, cooldown_unchanged = _resolve_optional(cooldown_seconds)

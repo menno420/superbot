@@ -797,9 +797,7 @@ async def _record_pickups(
             await menus_db.record_pickup(guild_id, role_id)
         for role_id in removed:
             await menus_db.record_removal(guild_id, role_id)
-    except (
-        Exception
-    ):  # noqa: BLE001 — analytics is non-critical; never block assignment
+    except Exception:  # noqa: BLE001 — analytics is non-critical; never block assignment
         logger.debug("reaction_role_service: pickup-stat write failed", exc_info=True)
 
 

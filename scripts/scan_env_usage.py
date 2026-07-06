@@ -314,7 +314,8 @@ def render_doc(records: list[dict]) -> str:
 
     if required:
         out += _table(
-            "Required (read without a default — the deploy must set these)", required,
+            "Required (read without a default — the deploy must set these)",
+            required,
         )
     if optional:
         out += _table("Optional (a default is always supplied)", optional)

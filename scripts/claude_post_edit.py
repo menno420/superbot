@@ -4,7 +4,7 @@
 Called by Claude Code after every Edit or Write tool use.
 The file path is read from CLAUDE_TOOL_INPUT_FILE_PATH.
 
-For .py files: runs black → isort → ruff --fix on the single edited file.
+For .py files: runs ruff format → ruff check --fix on the single edited file.
 Auto-fixes formatting silently in the happy path. When a fix was applied OR
 a tool reported an error, prints a loud, multi-line warning so the change is
 visible in the chat transcript — the previous "always quiet" behaviour hid
@@ -156,12 +156,13 @@ def main() -> int:
     changed_by: list[str] = []
     errors: list[tuple[str, str]] = []
 
+    # ruff replaced black + isort (A3, 2026-07-06): `ruff format` owns formatting,
+    # `ruff check --fix` owns import sorting (the `I` rule) + lint autofix.
     for cmd in (
-        [PY, "-m", "black", "--quiet", str(path)],
-        [PY, "-m", "isort", "--quiet", str(path)],
+        [PY, "-m", "ruff", "format", "--quiet", str(path)],
         [PY, "-m", "ruff", "check", "--fix", "--quiet", str(path)],
     ):
-        tool = cmd[2]  # the module name after "-m"
+        tool = f"{cmd[2]} {cmd[3]}"  # "ruff format" / "ruff check"
         try:
             result = subprocess.run(cmd, cwd=REPO_ROOT, capture_output=True, text=True)
         except FileNotFoundError:
@@ -172,7 +173,7 @@ def main() -> int:
             changed_by.append(tool)
             before = after
         # ruff exits 1 when it applies fixes (not an error); anything > 1 is a problem
-        # black/isort exit 1 for "module not found" (tool not installed in python3.10 env)
+        # ruff exits 1 for "module not found" too (tool not installed in python3.10 env)
         if result.returncode > 1 or (
             result.returncode == 1
             and "No module named" in (result.stderr + result.stdout)

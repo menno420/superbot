@@ -63,7 +63,7 @@ def _adopt_dest(relpath: str, config: Config) -> str:
     """Remap the plan's ``docs/`` prefix onto the host's configured docs root."""
     prefix = "docs/"
     if relpath.startswith(prefix) and config.docs_root != "docs":
-        return f"{config.docs_root}/{relpath[len(prefix):]}"
+        return f"{config.docs_root}/{relpath[len(prefix) :]}"
     return relpath
 
 

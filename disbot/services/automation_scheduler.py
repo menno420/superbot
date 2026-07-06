@@ -100,8 +100,7 @@ class AutomationScheduler:
         """The supervised loop."""
         self._stop = asyncio.Event()
         logger.info(
-            "automation_scheduler: starting (poll_interval=%ds, "
-            "failure_threshold=%d)",
+            "automation_scheduler: starting (poll_interval=%ds, failure_threshold=%d)",
             self.poll_interval_seconds,
             self.failure_threshold,
         )

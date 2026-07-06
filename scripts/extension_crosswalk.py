@@ -77,7 +77,9 @@ def _find_assignment(tree: ast.Module, name: str) -> ast.expr:
         targets = (
             node.targets
             if isinstance(node, ast.Assign)
-            else [node.target] if isinstance(node, ast.AnnAssign) else []
+            else [node.target]
+            if isinstance(node, ast.AnnAssign)
+            else []
         )
         for tgt in targets:
             if isinstance(tgt, ast.Name) and tgt.id == name and node.value is not None:
