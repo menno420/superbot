@@ -1,6 +1,15 @@
 # The wire-level live-bot loop — Galaxy Bot dissolves the [needs-live-bot] gate (2026-07-02)
 
-> **Status:** `ideas` — session idea (Q-0089, owner-requested harvest). Not approved for
+> **Status:** `ideas` — **⚠ CONTRADICTED-IN-PART BY SOURCE (2026-07-06, canonical-plan F-4 / PR
+> #1770): do not build as written.** A second *bot* connection cannot drive message commands or
+> passive pipelines — discord.py drops bot-authored messages at the library level
+> (`ext/commands/bot.py:1413`) and disbot drops them again (`core/runtime/message_pipeline.py:279`
+> + per-cog guards) — and slash/component interactions cannot be fabricated (Discord-minted
+> tokens). The adopted replacement is the **two-lane fidelity model** in
+> [`../planning/rebuild-test-guild-design-2026-07-06.md`](../planning/rebuild-test-guild-design-2026-07-06.md)
+> §4 (in-process synthetic gateway + real-HTTP-for-prefix hybrid; human lane for interactions).
+> Kept for provenance. Original framing below.
+> Session idea (Q-0089, owner-requested harvest). Not approved for
 > implementation. **Complements, does not duplicate,**
 > [`bot-self-test-walker-2026-06-10.md`](./bot-self-test-walker-2026-06-10.md) — the walker is
 > *in-process* synthetic invocation; this is the *out-of-process*, real-Discord loop.
