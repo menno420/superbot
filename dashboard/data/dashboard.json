@@ -1,10 +1,10 @@
 {
   "meta": {
-    "generated_at": "2026-07-06T21:41:05Z",
+    "generated_at": "2026-07-06T21:47:52Z",
     "build": {
-      "commit": "c4ab0a7d",
-      "subject": "docs(reconcile): open born-red session card — 36th Q-0107 pass (band-#1770)",
-      "committed_at": "2026-07-06T21:41:05Z"
+      "commit": "666c802a",
+      "subject": "docs(reconcile): 36th Q-0107 pass — band-#1770",
+      "committed_at": "2026-07-06T21:47:52Z"
     },
     "counts": {
       "functions": 43,
@@ -3044,7 +3044,7 @@
       "file": "2026-07-06-reconcile-band1770.md",
       "date": "2026-07-06",
       "title": "2026-07-06 — Thirty-sixth Q-0107 reconciliation pass (band-#1770)",
-      "status": "in-progress",
+      "status": "complete",
       "run_type": "routine",
       "self_initiated": false
     },
