@@ -1,29 +1,40 @@
 #!/usr/bin/env python3.10
-"""check_ci_coverage.py — find open claude/* PR heads missing their `code-quality` run.
+"""check_ci_coverage.py — recover a claude/* PR head that got NO code-quality run (dropped event).
 
-PROVENANCE / RELIABILITY (2026-06-22, owner-endorsed Q-0195 idea
-``ci-dropped-synchronize-auto-retrigger-2026-06-22``):
+PROVENANCE / RELIABILITY (2026-06-22 idea ``ci-dropped-synchronize-auto-retrigger-2026-06-22``;
+self-silencing fix 2026-07-05, CI-setup redesign PR #1737 §C.3 Mode 2 / decision A2):
     Why: GitHub sometimes **drops the `pull_request: synchronize` event**, so a PR head gets no
-    ``code-quality`` run at all. That is the *silent* CI stall — no run means no failure webhook
-    ever fires, so native auto-merge waits forever with nothing red to notice (observed on PR
-    #1283). The cancellation race was already fixed (#1275, ``cancel-in-progress: false``); this is
-    the distinct dropped-*delivery* mode. The manual remedy was an empty commit; this automates it.
+    ``code-quality`` run at all. That is the *silent* CI stall — no run means no failure webhook, so
+    native auto-merge waits forever with nothing red to notice (observed on PR #1283).
 
-    HOW IT RE-KICKS: ``--rekick`` dispatches ``code-quality.yml`` (its ``workflow_dispatch`` trigger)
-    on the PR branch via ``gh``. A dispatched run reports a ``code-quality`` check on the branch
-    head, which is the PR head for a same-repo PR, so it satisfies the required check. The presence
-    check is a natural cap: once a run exists (even queued), the next cycle sees it and does NOT
-    re-dispatch, so there is no loop. A grace window avoids racing the seconds-long gap between a
-    push and its run being registered.
+    THE SELF-SILENCING BUG THIS FIXES (was line 53, ``required not in check_run_names``): the old
+    check treated the *presence of a check-run name* as "covered." A ``--rekick`` dispatches
+    ``code-quality.yml`` via ``workflow_dispatch``; that produces a ``code-quality`` run whose NAME is
+    present — so the next cycle believed the head was covered and stopped, **even if that dispatched
+    run never satisfied the PR's required status check** (the PR stayed blocked forever). Presence is
+    not satisfaction.
 
-    UNVERIFIED — heuristic, mirrors ``pr-auto-update.yml`` scoping (claude/* non-draft, non-carved).
-    Needs ``gh`` + a token (always present in Actions); SKIP-degrades locally without them. Confirm
-    its verdicts across a few cycles before trusting the ``--rekick`` path; **delete this script +
-    its workflow if they misfire** — a missing run is always re-kickable by hand (empty commit /
-    "Re-run" / `gh workflow run code-quality.yml --ref <branch>`).
+    THE FIX — classify by the *triggering event*, robust to the one thing we could not verify offline
+    (whether a ``workflow_dispatch`` run satisfies the required check):
+      * A ``pull_request``/``push`` run of the required workflow (success, failure, OR in-progress)
+        means CI actually ran for the PR event → **COVERED**; the watchdog leaves it alone (auto-merge
+        handles success/failure; re-kicking a real *failure* would be wrong).
+      * No PR/push run at all, past a grace window → the dropped-event case → **REKICK** (dispatch).
+      * No PR/push run, but a ``workflow_dispatch`` re-kick already **completed** and still produced no
+        PR-event coverage → **ESCALATE**: open one owner-alert issue instead of re-dispatching forever.
+      This is correct either way the unknown resolves: if a dispatched run *does* satisfy the gate, the
+      PR merges and leaves the open list before we escalate; if it *doesn't*, a human is alerted rather
+      than the PR stalling silently.
+
+    UNVERIFIED (Q-0105) — heuristic; mirrors ``pr-auto-update.yml`` scoping (claude/* non-draft,
+    non-carved). Needs ``gh`` + a token (present in Actions); SKIP-degrades locally without them.
+    The ESCALATE→issue path and the event-classification want a live dropped-synchronize confirmation
+    (see the handoff in docs/planning/ci-followups-handoff-2026-07-05.md). **Delete this script + its
+    workflow if they misfire** — a missing run is always re-kickable by hand (empty commit / "Re-run" /
+    ``gh workflow run code-quality.yml --ref <branch>``).
 
 Usage:
-    check_ci_coverage.py [--rekick] [--required NAME] [--grace-min N] [--max-rekicks N]
+    check_ci_coverage.py [--rekick] [--required NAME] [--grace-min N]
 """
 
 from __future__ import annotations
@@ -34,23 +45,31 @@ import subprocess
 from collections.abc import Callable
 from datetime import datetime, timezone
 
-REQUIRED_CHECK = "code-quality"
+REQUIRED_CHECK = (
+    "code-quality"  # the required status-check name (for messaging / --required)
+)
+# The workflow whose PR/push run satisfies the required `code-quality` check. Matching on the workflow
+# file path is stable across a rename of the display name.
+REQUIRED_WORKFLOW_PATH = ".github/workflows/code-quality.yml"
 GRACE_MIN = 8  # don't re-kick a head younger than this (run may not be registered yet)
-MAX_REKICKS = 5  # per invocation, defensive cap
 CARVE_OUT_LABELS = ("do-not-automerge",)
+
+# Classifications
+COVERED = "covered"
+REKICK = "rekick"
+ESCALATE = "escalate"
+WAIT = "wait"
+
+# Event names that count as "CI ran for the PR" (i.e. the required check will reflect this head).
+_PR_EVENTS = ("pull_request", "push")
 
 
 # --------------------------------------------------------------------------- #
 # Pure logic (unit-tested without gh)
+#
+# A "run" is a dict: {"path": str, "event": str, "status": str, "conclusion": str | None}
+# mirroring the GitHub Actions `workflow_runs` shape (status is queued|in_progress|completed).
 # --------------------------------------------------------------------------- #
-
-
-def missing_required_check(
-    check_run_names: list[str],
-    required: str = REQUIRED_CHECK,
-) -> bool:
-    """True when no check run named *required* exists for the head (queued counts as present)."""
-    return required not in check_run_names
 
 
 def past_grace(
@@ -62,47 +81,62 @@ def past_grace(
     return (now - head_committed_at).total_seconds() >= grace_min * 60
 
 
-def should_rekick(
-    check_run_names: list[str],
+def classify_head(
+    runs: list[dict],
     head_committed_at: datetime,
     now: datetime,
     *,
-    required: str = REQUIRED_CHECK,
+    workflow_path: str = REQUIRED_WORKFLOW_PATH,
     grace_min: int = GRACE_MIN,
-) -> bool:
-    """A head needs a re-kick iff its required run is missing AND it is past the grace window."""
-    return missing_required_check(check_run_names, required) and past_grace(
-        head_committed_at,
-        now,
-        grace_min,
-    )
+) -> str:
+    """Classify a PR head into COVERED / REKICK / ESCALATE / WAIT.
+
+    Satisfaction, not mere presence: only a ``pull_request``/``push`` run of the required workflow
+    counts as covered. A completed ``workflow_dispatch`` run that produced no PR-event coverage means
+    our own re-kick did not unblock the PR → escalate to a human rather than self-silencing.
+    """
+    req = [r for r in runs if r.get("path") == workflow_path]
+    pr_runs = [r for r in req if r.get("event") in _PR_EVENTS]
+    if pr_runs:
+        # CI ran for the PR event (any status/conclusion) — NOT a dropped event; leave it to auto-merge.
+        return COVERED
+    dispatch_runs = [r for r in req if r.get("event") == "workflow_dispatch"]
+    if any(r.get("status") == "completed" for r in dispatch_runs):
+        # We already re-kicked; it finished but there is still no PR-event run → human needed.
+        return ESCALATE
+    if dispatch_runs:
+        return WAIT  # a dispatched re-kick is still in flight
+    if past_grace(head_committed_at, now, grace_min):
+        return REKICK  # no run at all, past grace → the dropped-synchronize case
+    return WAIT  # too fresh; a normal run may not be registered yet
 
 
-def find_uncovered(
+def find_actionable(
     prs: list[dict],
-    fetch_head: Callable[[str], tuple[list[str], datetime]],
+    fetch_head: Callable[[str], tuple[list[dict], datetime]],
     now: datetime,
     *,
-    required: str = REQUIRED_CHECK,
+    workflow_path: str = REQUIRED_WORKFLOW_PATH,
     grace_min: int = GRACE_MIN,
-) -> list[dict]:
-    """Pure: return the PRs whose head is missing *required* and past grace.
+) -> list[tuple[dict, str]]:
+    """Pure: return ``(pr, verdict)`` for every PR needing REKICK or ESCALATE.
 
-    ``fetch_head(sha) -> (check_run_names, head_committed_at)`` is injected so this is testable
-    without gh. ``prs`` items carry ``number``, ``branch``, ``sha``.
+    ``fetch_head(sha) -> (runs, head_committed_at)`` is injected so this is testable without gh.
+    ``prs`` items carry ``number``, ``branch``, ``sha``.
     """
-    uncovered: list[dict] = []
+    actionable: list[tuple[dict, str]] = []
     for pr in prs:
-        names, committed_at = fetch_head(pr["sha"])
-        if should_rekick(
-            names,
+        runs, committed_at = fetch_head(pr["sha"])
+        verdict = classify_head(
+            runs,
             committed_at,
             now,
-            required=required,
+            workflow_path=workflow_path,
             grace_min=grace_min,
-        ):
-            uncovered.append(pr)
-    return uncovered
+        )
+        if verdict in (REKICK, ESCALATE):
+            actionable.append((pr, verdict))
+    return actionable
 
 
 # --------------------------------------------------------------------------- #
@@ -167,22 +201,29 @@ def list_open_claude_prs(repo: str) -> list[dict] | None:
     return prs
 
 
-def fetch_head_via_gh(repo: str) -> Callable[[str], tuple[list[str], datetime]]:
-    def _fetch(sha: str) -> tuple[list[str], datetime]:
+def fetch_head_via_gh(repo: str) -> Callable[[str], tuple[list[dict], datetime]]:
+    """Return a fetcher: sha -> (workflow runs for that head, head commit datetime).
+
+    Uses the Actions ``workflow_runs`` endpoint (not ``check-runs``) because only it carries the
+    triggering ``event`` — the field the self-silencing fix classifies on.
+    """
+
+    def _fetch(sha: str) -> tuple[list[dict], datetime]:
         runs = _gh_json(
             [
                 "api",
-                f"repos/{repo}/commits/{sha}/check-runs",
+                f"repos/{repo}/actions/runs?head_sha={sha}&per_page=50",
                 "--jq",
-                "[.check_runs[].name]",
+                "[.workflow_runs[] | {path: .path, event: .event, "
+                "status: .status, conclusion: .conclusion}]",
             ],
         )
-        names = list(runs) if isinstance(runs, list) else []
+        run_list = list(runs) if isinstance(runs, list) else []
         commit = _gh_json(
             ["api", f"repos/{repo}/commits/{sha}", "--jq", ".commit.committer.date"],
         )
         when = _iso(commit) if isinstance(commit, str) else datetime.now(timezone.utc)
-        return names, when
+        return run_list, when
 
     return _fetch
 
@@ -210,6 +251,64 @@ def rekick(repo: str, branch: str) -> bool:
         return False
 
 
+def _alert_marker(pr_number: int) -> str:
+    return f"<!-- ci-coverage-alert:{pr_number} -->"
+
+
+def open_alert_issue(repo: str, pr: dict) -> bool:
+    """Idempotently open an owner-alert issue for a stuck head (dispatched re-kick didn't help).
+
+    Searches for an existing open issue carrying this PR's hidden marker first, so the 12-min cron
+    never spams duplicate issues. Best-effort: returns False (and the caller just logs) if gh is absent.
+    """
+    marker = _alert_marker(pr["number"])
+    existing = _gh_json(
+        [
+            "issue",
+            "list",
+            "--repo",
+            repo,
+            "--state",
+            "open",
+            "--search",
+            marker,
+            "--json",
+            "number",
+        ],
+    )
+    if isinstance(existing, list) and existing:
+        return True  # already alerted
+    body = (
+        f"The head of PR #{pr['number']} (`{pr['branch']}` @ `{pr['sha'][:8]}`) has **no "
+        f"`pull_request`/`push` run** of `{REQUIRED_WORKFLOW_PATH}`, and a `workflow_dispatch` "
+        f"re-kick already completed without producing one — so native auto-merge is stuck with "
+        f"nothing to wait on.\n\nLikely a dropped `pull_request: synchronize` event that a dispatched "
+        f"run does not satisfy for branch protection. **Manual remedy:** push an empty commit, or "
+        f"close+reopen the PR (re-arms `auto-merge-enabler`), or investigate a real block.\n\n"
+        f"{marker}"
+    )
+    try:
+        subprocess.run(
+            [
+                "gh",
+                "issue",
+                "create",
+                "--repo",
+                repo,
+                "--title",
+                f"CI watchdog: PR #{pr['number']} head has no PR-event code-quality run",
+                "--body",
+                body,
+            ],
+            capture_output=True,
+            text=True,
+            check=True,
+        )
+        return True
+    except (OSError, subprocess.CalledProcessError):
+        return False
+
+
 def main() -> int:
     import os
 
@@ -217,11 +316,10 @@ def main() -> int:
     ap.add_argument(
         "--rekick",
         action="store_true",
-        help="dispatch code-quality for uncovered heads",
+        help="act on uncovered heads (dispatch / alert)",
     )
     ap.add_argument("--required", default=REQUIRED_CHECK)
     ap.add_argument("--grace-min", type=int, default=GRACE_MIN)
-    ap.add_argument("--max-rekicks", type=int, default=MAX_REKICKS)
     args = ap.parse_args()
 
     repo = os.environ.get("GITHUB_REPOSITORY", "menno420/superbot")
@@ -233,40 +331,40 @@ def main() -> int:
         return 0
 
     now = datetime.now(timezone.utc)
-    uncovered = find_uncovered(
+    actionable = find_actionable(
         prs,
         fetch_head_via_gh(repo),
         now,
-        required=args.required,
         grace_min=args.grace_min,
     )
 
-    if not uncovered:
+    if not actionable:
         print(
-            f"check_ci_coverage: {len(prs)} open claude/* PR(s), all have a `{args.required}` run ✓",
+            f"check_ci_coverage: {len(prs)} open claude/* PR(s), all have a PR-event "
+            f"`{args.required}` run (or are within grace) ✓",
         )
         return 0
 
+    rekicks = [pr for pr, v in actionable if v == REKICK]
+    escalations = [pr for pr, v in actionable if v == ESCALATE]
     print(
-        f"check_ci_coverage: {len(uncovered)} PR head(s) missing `{args.required}` (dropped event):",
+        f"check_ci_coverage: {len(rekicks)} head(s) missing a PR-event `{args.required}` run "
+        f"(dropped event); {len(escalations)} stuck after a re-kick:",
     )
-    kicked = 0
-    for pr in uncovered:
-        line = f"  #{pr['number']} ({pr['branch']} @ {pr['sha'][:8]})"
-        if args.rekick and kicked < args.max_rekicks:
+    for pr in rekicks:
+        line = f"  #{pr['number']} ({pr['branch']} @ {pr['sha'][:8]}) -> MISSING"
+        if args.rekick:
             ok = rekick(repo, pr["branch"])
-            kicked += 1
-            print(
-                (
-                    f"{line} -> re-kicked code-quality"
-                    if ok
-                    else f"{line} -> re-kick FAILED"
-                ),
+            line += " -> re-kicked code-quality" if ok else " -> re-kick FAILED"
+        print(line)
+    for pr in escalations:
+        line = f"  #{pr['number']} ({pr['branch']} @ {pr['sha'][:8]}) -> STUCK (re-kick did not help)"
+        if args.rekick:
+            ok = open_alert_issue(repo, pr)
+            line += (
+                " -> owner-alert issue open" if ok else " -> alert FAILED (logged only)"
             )
-        else:
-            print(line)
-    if args.rekick:
-        print(f"Re-kicked {kicked} (cap {args.max_rekicks}).")
+        print(line)
     return 0
 
 

@@ -334,13 +334,18 @@ agent self-applies a required-context removal, workflow deletion, ruleset/branch
 
 ### Phase A — SAFE-ADDITIVE (ship without owner sign-off; no required-context change, no settings.json, no branch protection)
 
-> **Progress (PR #1739, 2026-07-05 — owner-directed "build the safe parts"):** A1 **shipped**; the
-> merge-gating half of A6/A7 **shipped** — `check_architecture --mode strict`, `check_tool_pins`, and
-> `check_workflow_concurrency` are now **hard steps inside the required `code-quality` context** (so they
-> gate merges with **no** branch-protection change), each verified green on `main` first. Still pending:
-> `check_session_slug_unique` (needs CI-context verification of its `origin/main` dependency), the A7
-> advisory checkers, the ruff migration (A3), and the `ci.yml`/`web-ci.yml`/`pr-freshness.yml` builds
-> (A5/A8/A9) + `check_ci_coverage` fix (A2).
+> **Progress (2026-07-05):**
+> - **G1 CodeQL merge-race — CLOSED.** The owner enabled the **`codeql-merge-protection` ruleset** on
+>   `main` (Require code scanning results · CodeQL · High-or-higher · Active). Auto-merge now waits for
+>   CodeQL and blocks on a High+ alert — the #1728→#1730 race is resolved. Prereq A1 shipped (#1739).
+> - **A1 shipped (#1739)** — `codeql.yml` → `cancel-in-progress: false`.
+> - **A6/A7 gating half shipped (#1739)** — `check_architecture --mode strict`, `check_tool_pins`,
+>   `check_workflow_concurrency` are now **hard steps in the required `code-quality` context** (gate with
+>   no branch-protection change), each verified green on `main` first.
+> - **A2 shipped (this PR)** — `check_ci_coverage.py` de-self-silenced (event-classification + escalate).
+> - **Still pending → turn-key backlog:** [`ci-followups-handoff-2026-07-05.md`](ci-followups-handoff-2026-07-05.md)
+>   (ruff migration A3, the `ci.yml`/`web-ci.yml`/`pr-freshness.yml` builds A5/A8/A9, the CodeQL stuck-scan
+>   watchdog A10, the two AST guards, `check_session_slug_unique` gate, and the owner-gated Q-0239 tail).
 
 - **A1.** ✅ **SHIPPED (#1739).** Flip `codeql.yml` → `cancel-in-progress: false`. *(Mode 3 + §C.2 prerequisite; reversible one-liner.)*
 - **A2.** Fix `check_ci_coverage.py` (check-run-enumeration + `ROUTINE_PAT` close+reopen + reopen cap →

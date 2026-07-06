@@ -35,10 +35,14 @@ creds · `[owner]` needs an owner decision/action; see [`../repo-sector-map.md`]
   workflows + `check_ci_coverage` self-silencing fix + `check_workflow_concurrency.py` (shipped,
   advisory). Corrected the brief: repo is PUBLIC → minutes free (cost = latency/clutter/contention);
   all app-CI already path-filtered; no push+PR double-fire; merge-queue unavailable (personal account).
-  **▶ `[owner]` remaining = ratify the Phase-B executable-config changes (router Q-0238 (C) + Q-0239
-  G2–G8);** Phase A is safe-additive (build new workflows non-required alongside the old). Fresh-repo
-  divergence answered (§D: converge on the contract + `parity/`; diverge on the grammar-integrity stack;
-  build at kernel K10).
+  **Executed so far:** the **CodeQL merge-protection ruleset is LIVE** (owner-enabled, closes the Q-0238
+  race); `check_architecture`/`check_tool_pins`/`check_workflow_concurrency` are now **hard merge gates**
+  (#1739); the dropped-`synchronize` watchdog is **de-self-silenced** (#1743). **▶ next = the turn-key
+  backlog** in [`../planning/ci-followups-handoff-2026-07-05.md`](../planning/ci-followups-handoff-2026-07-05.md)
+  (`[offline]` ruff consolidation · the `ci.yml`/`web-ci.yml` restructure · the CodeQL stuck-scan watchdog ·
+  the two AST guards) + `[owner]` the Phase-B config tail (router Q-0239 G2–G8: the required-context swap,
+  workflow deletions, settings.json rewires). Fresh-repo divergence answered (design §D: converge on the
+  contract + `parity/`; diverge on the grammar-integrity stack; build at kernel K10).
 - `[owner]` **Website two-site split rollout** — v1 is code-complete + reviewed; what remains is the
   owner-paced rollout (provision `botsite/` + submissions DB, domain cutover)
   ([handoff](../operations/website-split-next-steps-2026-06-19.md)).
