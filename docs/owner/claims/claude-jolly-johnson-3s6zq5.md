@@ -1,0 +1,1 @@
+- branch `claude/jolly-johnson-3s6zq5` · scope: 36th Q-0107 docs-only reconciliation pass (band-#1770) · expected files: docs/current-state.md, docs/current-state/S4-docs.md, docs/planning/reconciliation-pass-2026-07-06-band1770.md, .sessions/, docs/ideas/, dashboard/data/dashboard.json · date 2026-07-06
