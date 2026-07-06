@@ -62,7 +62,12 @@ plan cannot be "100% complete" against a surface still under discussion.
 improvements before Phase B. Their shared lens is the **ten-class critical-review rubric**
 ([`rebuild-critical-review-rubric-2026-07-03.md`](rebuild-critical-review-rubric-2026-07-03.md)) —
 so the fleet interrogates consistently instead of free-associating. This is the adversarial-
-completeness pass, scaled to the whole plan.
+completeness pass, scaled to the whole plan. **The concrete roster + paste-ready prompts live in the
+launch pad [`rebuild-gate-v-verification-fleet-2026-07-06.md`](rebuild-gate-v-verification-fleet-2026-07-06.md)**:
+four independent arms — Sonnet-5/Ultracode (architecture), a 5-session Codex fan-out (source/test truth),
+Agent Mode (external/migration/live-GitHub), and an empirical **live-testing** arm that captures the
+`verified_live` goldens the paper reviews can't — reconciled by a final Opus/Fable synthesis. Shared
+enum / evidence-labels / claim-anchor contracts make the four reports merge without manual normalization.
 
 **MIGRATION — its own big plan (Q-0234).** The move to the new repo is a distinct planning effort,
 not a Phase-C tail. The framing: **the current repo becomes the *artifact*** (the what / why / how

@@ -10,6 +10,20 @@
 > own; distinct from S4 (the docs content it produces) and S5 (its operation).*
 
 **Recently shipped (this sector):**
+- **GATE V Arm D — empirical live-testing evidence pack (this PR, 2026-07-06).** Executed
+  [`rebuild-gate-v-verification-fleet-2026-07-06.md`](../planning/rebuild-gate-v-verification-fleet-2026-07-06.md)
+  §7 against the sandbox's dedicated test bot/guild + local throwaway Postgres (never
+  production/Railway):
+  [`LIVE-VERIFIED-EVIDENCE-PACK.md`](../planning/LIVE-VERIFIED-EVIDENCE-PACK.md) — real economy/XP/
+  inventory/settings goldens; the PvP wager escrow/settle engine (`game_wager_workflow`) proved
+  idempotent under a real concurrent race (refutes the plan's blanket "wager double-pay" framing for
+  that primitive); a **genuine open gap confirmed**: the human deathmatch duel (`_DuelView`,
+  `disbot/cogs/deathmatch_cog.py`) lacks the `SettleOnceMixin` guard its sibling PvP views have, and a
+  real concurrent double-write was reproduced empirically; restart-persistence (`proof_channel_locks`)
+  survived a real bot kill+restart; the games-deferral exercisability table shows every primitive
+  tested — including the wager engine, today only called from game views — is exercisable **without**
+  invoking a game via a direct service-layer harness. Arms A (Sonnet)/B (Codex)/C (Agent Mode) of the
+  same fleet + the Σ synthesis still need to run.
 - **Stage-2 subsystem walk: L1a + L1b fully decided (PR #1725, 2026-07-05 — owner-led, live)** —
   the canonical walk artifact
   [`rebuild-stage2-subsystem-walk-2026-07-05.md`](../planning/rebuild-stage2-subsystem-walk-2026-07-05.md)
