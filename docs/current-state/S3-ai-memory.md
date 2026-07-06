@@ -10,7 +10,14 @@
 > own; distinct from S4 (the docs content it produces) and S5 (its operation).*
 
 **Recently shipped (this sector):**
-- **GATE V Arm D — empirical live-testing evidence pack (this PR, 2026-07-06).** Executed
+- **GATE V — verification-fleet pass COMPLETE → Phase-B under Sequence C (PRs #1750/#1751/#1756/#1757/#1759/#1767, 2026-07-06).**
+  All arms A–D + the Codex evidence layer + the final **synthesis (Arm Σ, #1767,
+  [`GATE-V-SYNTHESIS.md`](../analysis/rebuild-discovery/gate-v/GATE-V-SYNTHESIS.md))** are done: verdict
+  **Gate V COMPLETE → proceed to Phase-B per-step planning under Sequence C** (frozen L3→L4/L5 games edge
+  fabricated → games defer; audited-write atomicity a systemic contract-freeze, not a live defect; K7
+  urgency borrowed). Program-wide readiness still HOLDs on the two pre-existing owner gates (Gate-0
+  ratification, Phase-2.5 cold-start). The Arm D live-testing detail:
+- **GATE V Arm D — empirical live-testing evidence pack (PR #1751, 2026-07-06).** Executed
   [`rebuild-gate-v-verification-fleet-2026-07-06.md`](../planning/rebuild-gate-v-verification-fleet-2026-07-06.md)
   §7 against the sandbox's dedicated test bot/guild + local throwaway Postgres (never
   production/Railway):
@@ -23,7 +30,7 @@
   survived a real bot kill+restart; the games-deferral exercisability table shows every primitive
   tested — including the wager engine, today only called from game views — is exercisable **without**
   invoking a game via a direct service-layer harness. Arms A (Sonnet)/B (Codex)/C (Agent Mode) of the
-  same fleet + the Σ synthesis still need to run.
+  same fleet + the Σ synthesis are now all complete (see the Gate-V-COMPLETE entry above).
 - **Stage-2 subsystem walk: L1a + L1b fully decided (PR #1725, 2026-07-05 — owner-led, live)** —
   the canonical walk artifact
   [`rebuild-stage2-subsystem-walk-2026-07-05.md`](../planning/rebuild-stage2-subsystem-walk-2026-07-05.md)
