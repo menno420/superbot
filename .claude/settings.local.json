@@ -6,7 +6,14 @@
       "Bash(python3.10 -c \"import discord; print\\(discord.__version__\\)\")",
       "Bash(env)",
       "Bash(pg_isready)",
-      "mcp__Claude_Code_Remote__send_later"
+      "mcp__Claude_Code_Remote__send_later",
+      "Bash(export XDG_DATA_HOME=/tmp/spendlog_manual_test)",
+      "Bash(python3.10 -m expenses add 12.50 food \"lunch\")",
+      "Bash(python3.10 -m expenses add 8 transport \"bus\")",
+      "Bash(python3.10 -m expenses list)",
+      "Bash(python3.10 -m expenses total)",
+      "Bash(python3.10 -m pytest tests/unit/scripts/test_atlas.py -q)",
+      "Bash(git worktree *)"
     ]
   },
   "skipWorkflowUsageWarning": true

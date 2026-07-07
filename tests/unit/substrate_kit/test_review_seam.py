@@ -247,3 +247,56 @@ def test_clear_review_payload_removes_consumed_payload(tmp_path):
     assert clear_review_payload(tmp_path, config, "project_name") is True
     assert not path.exists()
     assert clear_review_payload(tmp_path, config, "project_name") is False
+
+
+# ---------------------------------------------------------------------------
+# apply_review_verdict — atomicity (Q-0223 tail ①)
+# ---------------------------------------------------------------------------
+
+
+def test_fail_path_is_atomic_when_a_late_leg_raises(tmp_path, monkeypatch):
+    # If the last leg (the review-log append) dies, the earlier escalate +
+    # downgrade legs must roll back with it — no partial verdict on disk.
+    import engine.loop.review_seam as seam
+
+    backend = _provisional(tmp_path, "project_name", "Q-002")
+    backend.set("promotion_rights", "promote")
+
+    def boom(*args, **kwargs):
+        raise RuntimeError("log write died")
+
+    monkeypatch.setattr(seam, "_rev_log", boom)
+    with pytest.raises(RuntimeError):
+        apply_review_verdict(
+            backend,
+            "project_name",
+            verdict="fail",
+            reviewer="gpt",
+        )
+    assert backend.get("open_questions", []) == []  # escalate rolled back
+    assert backend.get("promotion_rights") == "promote"  # downgrade rolled back
+    reread = JsonStateBackend(backend._path)  # noqa: SLF001
+    assert reread.get("open_questions", []) == []
+    assert reread.get("promotion_rights") == "promote"
+
+
+def test_confirm_path_is_atomic_when_a_late_leg_raises(tmp_path, monkeypatch):
+    import engine.loop.review_seam as seam
+
+    backend = _provisional(tmp_path, "project_name", "Q-002")
+
+    def boom(*args, **kwargs):
+        raise RuntimeError("log write died")
+
+    monkeypatch.setattr(seam, "_rev_log", boom)
+    with pytest.raises(RuntimeError):
+        apply_review_verdict(
+            backend,
+            "project_name",
+            verdict="pass",
+            reviewer="gpt",
+        )
+    # the confirm leg rolled back with the failed log leg
+    assert backend.get("slots")["project_name"] == "provisional"
+    reread = JsonStateBackend(backend._path)  # noqa: SLF001
+    assert reread.get("slots")["project_name"] == "provisional"

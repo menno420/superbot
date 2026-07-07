@@ -175,19 +175,25 @@ def apply_review_verdict(
     if backend.get("slots", {}).get(slot) != "provisional":
         return "not-provisional"
     question = _rev_bank_entry(slot)
+    # Each multi-write outcome is one transaction (Q-0223 tail ①): the escalate/
+    # downgrade/log (and confirm/log) legs land together or not at all. The
+    # helpers open their own transactions internally — safe, because the JSON
+    # backend's transaction is re-entrant and only the outermost exit flushes.
     if verdict == "fail":
         question_id = str(_rev_slot_value(backend, slot).get("question_id", ""))
         question_id = question_id or str(question.get("id", slot))
-        escalate_blocking(backend, question_id)
-        downgrade_promotion(
-            backend,
-            reason=f"review fail on slot '{slot}' by {reviewer}",
-        )
-        _rev_log(backend, slot, verdict, reviewer)
+        with backend.transaction():
+            escalate_blocking(backend, question_id)
+            downgrade_promotion(
+                backend,
+                reason=f"review fail on slot '{slot}' by {reviewer}",
+            )
+            _rev_log(backend, slot, verdict, reviewer)
         return "escalated"
     if question.get("objective", False):
-        confirm_slot(backend, slot, source=f"reviewer:{reviewer}")
-        _rev_log(backend, slot, verdict, reviewer)
+        with backend.transaction():
+            confirm_slot(backend, slot, source=f"reviewer:{reviewer}")
+            _rev_log(backend, slot, verdict, reviewer)
         return "confirmed"
     _rev_log(backend, slot, verdict, reviewer)
     return "recorded"

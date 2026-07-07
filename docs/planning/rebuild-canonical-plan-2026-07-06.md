@@ -270,7 +270,7 @@ G1.**
 | Gate | What it is | Who clears it | State |
 |---|---|---|---|
 | **G1 · The owner go/no-go sitting** | ONE sitting: ratify the design spec (§10.2's 14 points, as amended by F-3) **+** the Gate-0 packet rows (F-2 pre-fills) **+** the data contract (F-1) **+** veto-or-bless F-3/F-4/F-5 | owner | ⏳ ready — read §1 |
-| **G2 · Phase-2.5 cold-start A/B** | substrate-on/off evidence (offline, **startable today** once kit tail ① lands) | agents run · **owner accepts the verdict** (F-5) | ❌ never run → companion D |
+| **G2 · Phase-2.5 cold-start A/B** | substrate-on/off evidence (offline) | agents run · **owner accepts the verdict** (F-5) | 🟡 **RUN 2026-07-07 (PR #1775) — verdict: FAIL as-tested** (adopt ships the kit *inert*: unrendered templates cost orientation in 3/4 pairs, zero measured benefit). Recommended ruling: fix adopt-renders-what-it-knows + re-run one pair → [report](phase-2.5-cold-start-report-2026-07-07.md) |
 
 **Cleared gates (do not re-open):** "wait for Fable 5" (redeployed 2026-07-01) · the linchpin
 commit-gate (#1639 — coverage 96/88/94%, fit 85%) · the memory-system start-gate (#1649, kit
@@ -297,8 +297,8 @@ before step 6 touches the new repo.
 
 | # | Step | Who | Notes |
 |---|---|---|---|
-| 1 | **Ship kit tail ①** (Q-0223): re-entrant `JsonStateBackend.transaction` + atomic `apply_review_verdict` — one small PR | agent | verified still unshipped; the A/B's numbers are untrustworthy without it (BUILD-PLAN I-13) |
-| 2 | **Run Phase-2.5** ([companion D](rebuild-phase-2.5-procedure-2026-07-06.md)) → the A/B verdict artifact | agent (owner accepts, F-5) | clears G2; highest-leverage single step |
+| 1 | ✅ **Kit tail ① shipped** (Q-0223, PR #1775): re-entrant `JsonStateBackend.transaction` + atomic `apply_review_verdict` | agent | done — 427 kit tests green |
+| 2 | 🟡 **Phase-2.5 RUN** (PR #1775 → [the report](phase-2.5-cold-start-report-2026-07-07.md)): verdict **FAIL as-tested** — adopt deploys unrendered templates (pure orientation cost, no benefit). **Remainder:** the adopt-renders-what-it-knows kit fix + one re-run pair | agent (owner accepts the verdict + ruling, F-5) | the gate's evidence exists; not a green light as-is |
 | 3 | Build **`tools/check_amendments.py`** (S0's enforcing half) + fix the #1716 ledger drift | agent | Gate-V P-9; ungated current-repo tooling |
 | 4 | Continue the **Stage-2 walk** (L1c → L5, 33+ rows) | 👤 owner-live | parallel; blocks later port bands only |
 | 5 | 👤 **The go/no-go sitting (G1):** read §1, veto/bless, stamp the rulings into the router | owner | the ONE sitting; F-2 rows land as router entries |
