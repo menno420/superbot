@@ -8854,3 +8854,60 @@ verification *requirement* — which makes the IC-13 wording conflict operationa
 
 **Homes:** this Q (provenance) · canonical plan §11b A-18 rider ·
 `rebuild-idea-consolidation-report-2026-07-07.md` §7 addendum.
+
+### Q-0245 — DECIDED: the owner's second account is a declared elevated test actor (env-declared extra owner, never source-hardcoded) (2026-07-07)
+
+**Context.** Companion C's lane B named a "manually operated low-privilege second account" as a
+known gap ("no low-privilege second human account exists"). Asked what that meant, the owner
+confirmed he **has** one, will use it to drive live tests, and proposed: "it might be a good idea
+to hardcode that user ID into the bot so it has free reign to do whatever it needs to to test
+moderator functions etc."
+
+**Decision (owner-directed; implemented same day, better-implementation clause).** The intent
+(full bot authority for the test account) ships via **configuration, not source-hardcoding**: a
+new comma-separated **`EXTRA_OWNER_USER_IDS`** env var. Every id in it clears **both** owner
+seams — `config.is_platform_owner()` (the documented single source of truth every governance /
+mutation / setup / view admin gate routes through) and `bot.is_owner()` (the command-access
+operator bypass, via a small `_SuperBot.is_owner` override that delegates to the same predicate) —
+so the account holds full platform-owner authority **in every guild**, exactly like the main
+account. Empty default = zero behavior change. The owner sets the variable on Railway (and locally
+for the test bot) with his second account's id; rotating/removing it is a config change, no
+deploy-time code edit. **Safety note (flagged):** an id in this set is a full-power operator
+credential everywhere the bot runs — treat that account's security like the main account's; ids
+are deploy-declared, auditable in the deploy config, and never spoofable by message text (identity
+is the authoritative Discord user id).
+
+**New-bot landing:** the rebuild inherits this as a K0/K6 concern — a config-declared
+`extra_owner_ids`-equivalent recognized by `resolve_authority`'s owner predicate; companion C's
+lane-B driver account is its first consumer (test-guild walks of moderator functions without real
+Discord roles).
+
+**Homes:** this Q (provenance) · `disbot/config.py` (`EXTRA_OWNER_USER_IDS` + widened
+`is_platform_owner`) · `disbot/bot1.py` (`_SuperBot.is_owner`) ·
+`tests/unit/test_platform_owner_override.py` (8 new pins) · companion C §4 lane-B note ·
+canonical plan §11b A-21.
+
+### Q-0246 — DECIDED: permission-tiered operation — server owners choose Full (administrator) vs Lite (no elevated permissions), features degrade visibly (2026-07-07)
+
+**Context.** The Q-D5 discussion (boot posture on missing intents/permissions) prompted the owner
+to state the product rule, not just the failure rule: "currently the bot is a full administrator,
+so it either gets permissions or it doesn't … I'd like for it to be possible for server owners to
+choose whether they want the full bot with all capabilities, thus needing administrator, or only
+games and non admin functions the bot can do without permission, so there always is a failsave in
+case people don't want to give permissions to a bot."
+
+**Decision unpacked.** The rebuild ships **two owner-choosable capability tiers**: **Full**
+(administrator — everything) and **Lite** (games/community/utility features that need no elevated
+Discord permissions — moderation, channel/role management, cleanup etc. stay dark). Mechanism:
+every feature's manifest declares the Discord permissions it needs; the compiler derives (a) the
+two invite URLs/permission bitmasks presented at setup, and (b) the runtime census — a feature
+whose permission is absent degrades **visibly** (help/setup say "needs Manage Roles", never a
+silent failure or a crash). This **extends Q-D5's DEGRADE ruling from a failure posture to a
+supported product configuration**: running without admin is a first-class mode, not a tolerated
+error state. Lite→Full upgrade is just re-inviting/granting and flipping the census — no data or
+config loss. (Gateway *intents* keep their separate Q-D5/PG-2 treatment; this Q is about
+permissions.)
+
+**Homes:** this Q (provenance) · canonical plan §11b A-22 + §1 F-2 Q-D5 row rider · rider **R-18**
+in `rebuild-amendments.yml` (per-feature permission declaration; exact carrier decided at the
+owning fold).

@@ -110,9 +110,15 @@ synthetic payloads carry `"bot": false` (`harness/world.py:298`).
 **Build prerequisite:** the `verified_live` registry has **zero implementation today** (docs-only
 across five files) — build it (V-5) before CUT-1, recording *which lane* produced each sign-off.
 
-**Known gap to staff:** no low-privilege second human account exists in the current test guild
+**Known gap to staff:** ~~no low-privilege second human account exists in the current test guild
 (Arm D's blocker) — the owner adds/operates one for lane B; until then lane-B rows are
-maintainer-walked only.
+maintainer-walked only.~~ **RESOLVED (owner, 2026-07-07, Q-0245): the owner HAS a second account
+and will operate it for lane B.** It is additionally a **declared elevated test actor** — its user
+id goes into the live bot's `EXTRA_OWNER_USER_IDS` env var (shipped; clears both owner seams via
+`config.is_platform_owner`), so it can exercise moderator/operator functions without holding real
+Discord roles; the new bot inherits the same as a config-declared extra-owner set recognized by
+K6's owner predicate (canonical plan §11b A-21). Note lane-B's *verification* load also shrank the
+same day: slash/component sign-off inherits prefix + pipeline-true coverage per Q-0244.
 
 ## 5. Per-zone "what you'd exercise / what proves it"
 
