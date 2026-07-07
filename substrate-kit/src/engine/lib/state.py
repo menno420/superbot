@@ -82,7 +82,7 @@ class JsonStateBackend(StateBackend):
     def __init__(self, path: Path) -> None:
         self._path = Path(path)
         self._data: dict[str, Any] = self._read()
-        self._in_txn = False
+        self._txn_depth = 0
 
     def _read(self) -> dict[str, Any]:
         if not self._path.exists():
@@ -102,7 +102,7 @@ class JsonStateBackend(StateBackend):
     def set(self, key: str, value: Any) -> None:
         """Store ``value`` at ``key``; flush now unless inside a transaction."""
         self._data[key] = value
-        if not self._in_txn:
+        if self._txn_depth == 0:
             self._flush()
 
     def query(self, prefix: str = "") -> dict[str, Any]:
@@ -111,17 +111,25 @@ class JsonStateBackend(StateBackend):
 
     @contextmanager
     def transaction(self) -> Iterator[JsonStateBackend]:
-        """Buffer writes; roll back the whole document on error, else flush once."""
+        """Buffer writes; roll back the whole document on error, else flush once.
+
+        Re-entrant (Q-0223 tail ①): a helper that opens its own transaction may
+        be composed inside a caller's wider transaction. Each level snapshots on
+        entry and restores its own snapshot on error; only the *outermost* exit
+        flushes, so a composed multi-write either fully lands or fully rolls
+        back to the enclosing level's snapshot — never a partial flush.
+        """
         snapshot = copy.deepcopy(self._data)
-        self._in_txn = True
+        self._txn_depth += 1
         try:
             yield self
         except Exception:
             self._data = snapshot
             raise
         finally:
-            self._in_txn = False
-        self._flush()
+            self._txn_depth -= 1
+        if self._txn_depth == 0:
+            self._flush()
 
     def migrate(self, to_version: int) -> None:
         """Set the stored schema version (no transforms needed at v1)."""
