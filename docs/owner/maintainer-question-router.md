@@ -8911,3 +8911,78 @@ permissions.)
 **Homes:** this Q (provenance) · canonical plan §11b A-22 + §1 F-2 Q-D5 row rider · rider **R-18**
 in `rebuild-amendments.yml` (per-feature permission declaration; exact carrier decided at the
 owning fold).
+
+### Q-0247 — DECIDED: multi-repo sequencing ratified; kickoff brief directed (2026-07-07)
+
+**Owner ruling (in-session):** "yes I agree, please make sure everything is properly documented
+and ready for its own dedicated session." Ratifies the recommended sequencing in
+`docs/ideas/multi-repo-program-kit-lab-trading-2026-07-07.md`: **(1)** `superbot-next` now (plan
+§5 steps 6–8); **(2)** the substrate-kit extracts to its own repo at the step-7 second-consumer
+moment (both repos created in the same kickoff session); **(3)** the trading-research repo third,
+on a matured kit; **rail before scale** — each repo's autonomy loop proves its guardrails before
+the next launches. Repo-start mechanics stand as captured: fresh-from-kit, old repo attached
+read-only as the oracle, never clone-as-base.
+
+**Homes:** this Q · the kickoff brief
+(`docs/planning/rebuild-kickoff-steps-6-8-brief-2026-07-07.md`, the directed artifact) · the
+capture doc's routing section · current-state ▶ pointers.
+
+### Q-0248 — DECIDED: model-for-task allocation becomes an empirical, rule-based discipline (2026-07-07)
+
+**Owner ruling (in-session):** "we should also find out ways to properly use the right model for
+the right task, like everything we do, we should have a way to test this reliably and a proper
+rule to define when it is necessary and what decides the result."
+
+**Decision unpacked (the design, decide-and-flag).** Model allocation graduates from the plan's
+static §3 table to a measured discipline, in three layers:
+
+1. **Instrument now (passive, cheap):** every session/run logs `model · effort · task-class ·
+   outcome` — where outcome is objective first (CI green on first push? checker findings? rework
+   or revert within N sessions? tokens per merged PR) — as session-telemetry the kit carries
+   (the orientation-budget pattern widened). This runs through the same ~2-month observation
+   window as Q-0249, so the budget data and the allocation data are the SAME dataset.
+2. **Task-class taxonomy + default ladder:** task classes (docs-only · mechanical refactor ·
+   test writing · runtime bugfix · kernel/architecture design · review/verify · research ·
+   idea/planning) each get a default tier (Haiku → Sonnet → Opus/Fable ladder) seeded from the
+   plan's §3 table; stakes (reversibility, blast radius, frozen-grammar contact) modify upward.
+3. **The rule ("when is escalation necessary, what decides the result"):** escalation triggers
+   are mechanical — e.g. two red CI rounds on the same task, a review finding ≥N confirmed
+   defects, or the task touching frozen grammar/kernel ⇒ auto-escalate one tier; de-escalation
+   when a cheaper tier matches the incumbent's outcome quality for M consecutive tasks of that
+   class. **What decides:** objective gates first (CI/parity/checkers), judge-scored quality
+   second (the Phase-2.5 A/B judge pattern for paired same-task runs), cost as tiebreaker.
+   The kit-lab runs the paired A/Bs per class once extraction lands — this is a named lab
+   fitness function, not superbot-specific.
+
+**Scope widening (owner clarification, same session):** this discipline covers **both planes**,
+not just Claude Code sessions — **(a) the agent plane** (which model/effort runs a work session or
+routine — the three layers above), and **(b) the product plane**: which provider/model each
+*runtime* API call uses per use case — the bot's NL/knowledge answers, image review/moderation,
+future image generation, and any AI integrated into the websites (botsite, the lab's sites, the
+trading tracker). The product plane already has the enforcement point designed: the K10 gateway's
+task registry + profile resolver (per-task routing as config — the live bot's
+`AI_ROUTING_<TASK>` env pattern and the Q-0095 Haiku allocation are its precedent), and its
+"what decides the result" is the A-17 eval machinery per use case: deterministic gates + judge-
+scored quality **+ per-call cost and latency**, so a routing change is a measured config flip,
+never a vibe. Same rule shape on both planes: defaults per task class, mechanical
+escalation/de-escalation triggers, objective gates decide, cost/latency as tiebreakers.
+
+**Homes:** this Q · the capture doc part 2 (lab fitness functions) · the kickoff brief (telemetry
+from session one) · future kit-repo benchmark suite · K10's task-registry/profile-resolver row
+(the product-plane enforcement point).
+
+### Q-0249 — DECIDED: no budget caps yet — a ~2-month observation window with spend telemetry first (2026-07-07)
+
+**Owner ruling (in-session):** "budget so far is not really a problem, I'd like to test it for a
+while to see the average of a couple of months before deciding on anything."
+
+**Decision unpacked.** The capture doc's recommended budget caps (lab Railway cap, token budgets)
+are **deferred, not adopted**: instrument spend per repo/session/routine now (the Q-0248
+telemetry carries cost), let ~2 months of real usage accrue, then decide caps from the measured
+average — data over guesses, the same instinct as Q-0243. **Unchanged by this ruling:** the
+security rails are not budget rails — scoped credentials (a repo/lab never holds another repo's
+prod secrets or the live bot token) and the trading repo's real-money brake (per-trade/day/total
+caps + kill switch) stand regardless, because they guard irreversibility, not spend.
+
+**Homes:** this Q · the capture doc (open-forks + part-2 rails updated) · the kickoff brief §2
+step 8 (no Railway caps; telemetry instead).

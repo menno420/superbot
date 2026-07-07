@@ -10,6 +10,15 @@
 > own; distinct from S4 (the docs content it produces) and S5 (its operation).*
 
 **Recently shipped (this sector):**
+- **OWNER-RULINGS + KICKOFF-READINESS ROUND (PRs #1792–#1795, 2026-07-07, same conversation as #1791).**
+  Live owner rulings recorded with landings: **Q-0243** pricing-by-simulation · **Q-0244** slash
+  verification inherits prefix (never a blocker) · **Q-0245** the second account as declared
+  elevated test actor (`EXTRA_OWNER_USER_IDS` **shipped on the live bot**, both owner seams, 8
+  test pins) · **Q-0246** permission-tiered operation Full/Lite (A-22 + rider R-18) · **Q-0247**
+  multi-repo sequencing ratified · **Q-0248** empirical model-for-task allocation · **Q-0249**
+  budget observe-first (~2-month telemetry window). Program vision captured strengthened
+  ([multi-repo: kit lab + trading](../ideas/multi-repo-program-kit-lab-trading-2026-07-07.md));
+  **kickoff brief READY** ([steps 6–8](../planning/rebuild-kickoff-steps-6-8-brief-2026-07-07.md)).
 - **IDEA-CONSOLIDATION PASS — today's four owner captures folded + the plan re-verified (PR #1791, 2026-07-07 — Fable 5 ultracode, 9-lane fan-out).**
   Canonical-plan **§11b amendments A-12…A-20** + registry mints **R-16/R-17/P-5**
   ([report](../planning/rebuild-idea-consolidation-report-2026-07-07.md)): the **role-scoped
