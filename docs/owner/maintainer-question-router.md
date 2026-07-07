@@ -9113,3 +9113,76 @@ the sim-informed UX checks live in the brief; botsite v1's three design-owned fi
 untouched (v2 supersedes, v1 stays the fallback).
 
 **Homes:** this Q · the website brief · the launch index (re-cut) · current-state ▶ pointer.
+
+### Q-0254 — DIRECTED: sessions restate the understood goal back before substantive work — "understand-and-reflect" (2026-07-07)
+
+**Owner directive (in-session, live chat, not a router-routed question — recorded here per the
+provenance convention):** after watching a session's sequence of steps on the kit-lab founding
+plan, the owner asked whether a general guide already exists for how a session determines the
+kind of task it's facing and picks an efficient method for it. He then directed: **lock in a
+recurring check** — does the agent understand what the user means, and can it improve the
+user's vision and explain it back in a clear, understandable way that includes the broader specs
+the user did not state in the original ask.
+
+**What was found (the honest answer to the first half).** No single live ruleset does this
+today. Three partial, non-overlapping systems exist: `docs/AGENT_ORIENTATION.md`'s "Reading
+order by task" routes a session to *which docs to read* for a known task shape;
+`docs/owner/ai-project-workflow.md`'s 5-stage pipeline routes *which AI tool/role* handles a
+stage of a larger multi-agent project; and the (not yet adopted into this repo's live workflow)
+substrate-kit ships a genuine 5-stance task classifier (question / analysis / debug / review /
+plan — each with its own reading-route, tool-scope, and output contract). None of the three
+does message-level classification of an incoming ask, and nothing anywhere does a restate-back
+step. The question-router pattern (§10, multiple-choice format) is adjacent but exists only for
+*genuine product ambiguity* — it does not cover the ordinary case of a clear-enough ask that
+still deserves a one-line confirmation before non-trivial work starts.
+
+**Decision unpacked (applied directly — owner-directed-in-session exception, `.claude/CLAUDE.md`
+§ Working agreement).** Add a binding rule, not a proposal: before starting substantive
+(non-trivial, non-mechanical) work, a session states back — briefly, inline, not as a blocking
+question — what it understood the goal to be, **including the broader specs the ask implied but
+did not say**, so a misreading surfaces before work happens instead of after. This is explicitly
+**not** a return to stop-and-ask-before-acting (Auto Mode / decide-and-flag still govern
+execution) — it is a restate woven into the first substantive response, the same posture as
+"decide and flag," applied to *understanding* rather than to *technical calls*. For a trivial or
+fully-unambiguous ask, a one-line "doing X because Y" suffices instead of a full restate. For a
+genuinely ambiguous ask, this escalates to the existing router/question mechanism — it does not
+replace it.
+
+**Scope note:** this Q-block is the provenance anchor; the rule text lives in `.claude/CLAUDE.md`
+§ Working agreement (binding, auto-loaded every session) with a pointer from
+`docs/AGENT_ORIENTATION.md`'s "Read first" mandate. Adopting the kit's dormant stance-classifier
+into this repo's live workflow (the deeper version of "how does a session pick its method") is a
+separate, larger question — routed to the kit-lab program (`docs/planning/kit-lab-founding-plan-
+2026-07-07.md`) rather than decided here; this Q only closes the restate-and-enrich gap.
+
+**Homes:** this Q · `.claude/CLAUDE.md` § Working agreement (the rule text) ·
+`docs/AGENT_ORIENTATION.md` § "Read first" mandate (the pointer).
+
+**Addendum — the actual mechanism, in the owner's own words (same day, same conversation):**
+"I often have big ideas, and when I explain them it's often in pieces, and I don't have all the
+ideas ready at once, so I'm often relying on the agents to come up with the full pictured based
+on rough draft ideas, and the agent repeating my intent back to me in a more complete form will
+help me find out if the agent understood my intent correctly as well as gives me more ideas to
+work with and reason about." This sharpens the rule beyond error-catching: the maintainer builds
+ideas **iteratively and in fragments by design**, and relies on the agent to reason forward from
+a rough draft to its fuller shape. So the restatement is not just "did I understand" — it is
+**"here is the fuller picture I built from your fragment; does it match, and does it also give
+you something new to react to?"** Two distinct payoffs from one step: verification (catch a
+misread early) and **idea-expansion** (the filled-in picture is itself new material the
+maintainer reasons against, the same way he uses ChatGPT/Opus in the Ideas-project pipeline
+stage — `docs/owner/ai-project-workflow.md` §2). The CLAUDE.md rule text is written to this
+fuller understanding, not the narrower "confirm before acting" framing alone.
+
+**Second addendum — the feasibility-first shape of his idea process (same conversation):** "this
+is mainly because sometimes I think of something, and I don't even know for sure if we could do
+it, so I lay out the general idea, find out the possibilities, and try to expand from that, to
+eventually reach the most advanced functions in the simplest and most efficient ways." The
+starting premise is often genuinely uncertain feasibility, not just an incomplete spec — so the
+restatement's first job, when that's the shape of the ask, is **surfacing the possibility
+space** (what's actually achievable here, and by what approaches) before or alongside proposing
+a direction. The stated end-state to build *toward*, once the space is known: **the most
+advanced capability reachable by the simplest, most efficient implementation** — not the
+fanciest architecture that technically supports it. This is the same "assume he'd want the
+better one" instinct already binding in CLAUDE.md (Q-0014, Act-vs-ask), now named as the
+*explicit target* the restatement should reason toward whenever the ask starts from "can we
+even do this?" rather than a clear spec.

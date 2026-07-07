@@ -440,6 +440,14 @@ Before proposing or implementing any non-trivial change:
    verifiable changes — including a root-cause fix you find mid-task; ask only
    when something is irreversible, large/cross-cutting, or the goal itself is
    ambiguous. Aim for a positive, noticeable result every session.
+7. **Before substantive work, state back the fuller picture you built from the
+   ask** — inline, not as a blocking question — including the broader specs it
+   implied but didn't say (`.claude/CLAUDE.md` § Working agreement, Q-0254).
+   The maintainer builds ideas in fragments by design, sometimes starting from
+   uncertain feasibility; this both catches a misreading before work happens
+   and gives him new material (incl. the possibility space, when relevant) to
+   react to — reasoning toward the most advanced capability the simplest,
+   most efficient implementation can reach.
 
 This is not a courtesy — repeated rediscovery is the main reason
 SuperBot accumulates duplicate helpers and orphan plans. The minutes

@@ -31,6 +31,14 @@ only the header block is read, so a `**Subsystem:**` *example* in an idea's body
 
 Current broad captures:
 
+- [`adopt-kit-stance-classifier-2026-07-07.md`](./adopt-kit-stance-classifier-2026-07-07.md) —
+  **session idea (2026-07-07, Q-0089, understand-and-reflect rule session, Q-0254):** the
+  substrate-kit ships a genuine 5-stance task classifier (question/analysis/debug/review/plan —
+  reading-route + tool-scope + output contract per stance) but it's dormant — nothing in this
+  repo's live workflow tells a session to classify an incoming message first. Wiring it in is
+  real scope (touches `.claude/settings.json`, changes every session's opening move) and
+  measurable (the kit-lab program's B1 A/B harness can test whether it helps) — routed there
+  rather than decided unmeasured in a quick chat session.
 - [`automod-spam-detection-gaps-2026-07-07.md`](./automod-spam-detection-gaps-2026-07-07.md) —
   **session idea (2026-07-07, owner-raised, code-verified):** confirmed the owner's suspicion —
   automod's spam rule (`SpamTracker`) is pure rate-counting with zero content comparison, so it

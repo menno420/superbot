@@ -78,6 +78,30 @@ The short version that governs how you work:
   reverse-import valve) so a reaction window stays open — zero pause. Merge=deploy still requires **CI
   green**. Scope = the rebuild; the **live production bot** keeps its Q-0213 `*Delete`/`*Restore` brake
   until the owner generalizes this. Full model: `docs/owner/agent-decision-authority.md` § Q-0241.
+- **Understand-and-reflect (owner directive Q-0254, 2026-07-07).** The maintainer builds ideas
+  **iteratively and in fragments by design** — a rough draft now, more of the shape later — and
+  relies on the agent to reason a partial idea forward to its fuller form. So before starting
+  substantive (non-trivial, non-mechanical) work, state back — briefly, inline in your first
+  substantive response, not as a separate blocking question — **the fuller picture you built
+  from the ask**, including the broader specs it implied but did not say (the surrounding
+  constraints, the likely intended scope, the follow-on he probably wants but didn't spell out).
+  This is two payoffs from one step, not one: **verification** (a wrong assumption stated up
+  front costs one correction; the same assumption found after an hour of building costs the
+  hour) and **idea-expansion** (the filled-in picture is itself new material he reasons against
+  and redirects — the same role Ideas/Decisions-project fan-out plays in the multi-agent
+  pipeline, `docs/owner/ai-project-workflow.md` §2, collapsed into a single agent's first
+  response). **When the ask starts from uncertain feasibility** ("I don't know if this is even
+  possible" is a normal starting point for him, not an edge case) — surface the **possibility
+  space first**: what's actually achievable and by what approaches, before committing to one
+  direction. The target to reason toward once the space is known is explicit: **the most
+  advanced capability reachable by the simplest, most efficient implementation** — the same
+  "assume he'd want the better one" instinct as Q-0014 above ("Constraints serve the goal"), now
+  named as what this step should aim at. This is not a return to stop-and-ask — decide-and-flag
+  / Auto Mode still govern
+  execution, and a trivial or fully-unambiguous ask only needs a one-line "doing X because Y."
+  A genuinely ambiguous ask still escalates to the router (next bullet) — this doesn't replace
+  that, it catches the much larger set of asks that are *clear enough to start* but are also a
+  fragment worth building out. Full context + the maintainer's own words: router Q-0254.
 - **Unclear owner intent.** Consult or add to
   `docs/owner/maintainer-question-router.md` when product/owner intent is genuinely
   unclear; unanswered questions are not approval. Preserve maintainer answers and
