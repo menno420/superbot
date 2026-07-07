@@ -24,6 +24,13 @@ The shape it emits is the data contract from the handoff
 (``DATA_CONTRACT.md``): ``ICONS``, ``AREAS``, ``COMMANDS``, ``GAMES``, ``CHANGELOG``,
 ``STATUS`` plus the ``byCommand`` / ``byArea`` / ``byGame`` / ``commandsInArea``
 lookup helpers and the final ``window.SBDATA = { ... }`` export.
+
+Additive v2 families (v1's frozen ``app.js`` ignores unknown keys; the v2 SPA in
+``botsite/site/v2/`` consumes them): ``FEATURES`` (the full public catalogue —
+one entry per subsystem, so the site can show all 43 features instead of
+collapsing them into area bullets), ``BUILD`` (real commit provenance for the
+footer), ``COUNTS`` (the public counts block), and the ``byFeature`` /
+``featuresInArea`` helpers.
 """
 
 from __future__ import annotations
@@ -36,6 +43,14 @@ from typing import Any
 BASE_DIR = Path(__file__).resolve().parent
 SITE_JSON = BASE_DIR / "data" / "site.json"
 DATA_JS = BASE_DIR / "site" / "data.js"
+
+# The bot's public install link — the Discord "Add App" / OAuth2 authorize URL.
+# Single-sourced HERE (stdlib module) so both the Jinja chrome (``chrome.py``
+# imports it) and the generated SBDATA (``ADD_URL``) share one definition; the
+# bare ``client_id`` link uses the app's default install settings.
+ADD_TO_DISCORD_URL = (
+    "https://discord.com/oauth2/authorize?client_id=1403818430758654132"
+)
 
 # ---------------------------------------------------------------------------
 # Icon vocabulary — the inner SVG of a 24×24 stroke icon (no <svg> wrapper; the
@@ -370,6 +385,31 @@ def build_prototype_data(site: dict[str, Any]) -> dict[str, Any]:
             entry["beta"] = True
         games.append(entry)
 
+    # --- FEATURES (the full public catalogue — additive; v1 ignores it). Every
+    #     feature's area must resolve to an AREAS id (same cross-ref rule as
+    #     commands), so unknown catalogue categories fold into "other". ---
+    area_ids = {a["id"] for a in areas}
+    feature_fallback_area = (
+        "other" if "other" in area_ids else next(iter(area_ids), "other")
+    )
+    features: list[dict] = []
+    for c in catalogue:
+        key = c.get("key") or ""
+        if not key:
+            continue
+        category = c.get("category")
+        features.append(
+            {
+                "key": key,
+                "name": c.get("display_name") or key.replace("_", " ").title(),
+                "emoji": c.get("emoji") or "",
+                "area": category if category in area_ids else feature_fallback_area,
+                "description": " ".join((c.get("description") or "").split()),
+                "tags": list(c.get("tags") or []),
+                "is_game": bool(c.get("is_game")),
+            },
+        )
+
     # --- CHANGELOG (from the bot's user-facing changelog; CalVer, newest first). ---
     changelog: list[dict] = []
     for e in site.get("bot_changelog", []) or []:
@@ -444,6 +484,14 @@ def build_prototype_data(site: dict[str, Any]) -> dict[str, Any]:
         "games": games,
         "changelog": changelog,
         "status": status,
+        "features": features,
+        "build": {
+            "commit": commit,
+            "subject": str(build.get("subject") or ""),
+            "committed_at": str(build.get("committed_at") or ""),
+        },
+        "counts": dict(site.get("counts") or {}),
+        "add_url": ADD_TO_DISCORD_URL,
     }
 
 
@@ -466,8 +514,12 @@ const byCommand = (name) => COMMANDS.find((c) => c.name === name);
 const byArea = (id) => AREAS.find((a) => a.id === id);
 const byGame = (id) => GAMES.find((g) => g.id === id);
 const commandsInArea = (id) => COMMANDS.filter((c) => c.area === id);
+const byFeature = (key) => FEATURES.find((f) => f.key === key);
+const featuresInArea = (id) => FEATURES.filter((f) => f.area === id);
 
 window.SBDATA = { ICONS, AREAS, COMMANDS, GAMES, CHANGELOG, STATUS, byCommand, byArea, byGame, commandsInArea };
+/* additive v2 families — v1's frozen app.js ignores these */
+Object.assign(window.SBDATA, { FEATURES, BUILD, COUNTS, ADD_URL, byFeature, featuresInArea });
 """
 
 
@@ -500,6 +552,14 @@ def render_data_js(proto: dict[str, Any]) -> str:
         + block("CHANGELOG", proto["changelog"])
         + "\n"
         + block("STATUS", proto["status"])
+        + "\n"
+        + block("FEATURES", proto["features"])
+        + "\n"
+        + block("BUILD", proto["build"])
+        + "\n"
+        + block("COUNTS", proto["counts"])
+        + "\n"
+        + block("ADD_URL", proto["add_url"])
         + _JS_TAIL
     )
 

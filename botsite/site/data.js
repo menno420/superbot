@@ -8537,6 +8537,613 @@ const STATUS = {
   "incidents": []
 };
 
+const FEATURES = [
+  {
+    "key": "ai",
+    "name": "AI Platform",
+    "emoji": "🤖",
+    "area": "admin",
+    "description": "Read-only AI gateway diagnostics: provider state, feature flags, task routing, and request/failure counters. Does not own AI provider logic — that lives in core/runtime/ai/.",
+    "tags": [
+      "ai",
+      "platform",
+      "diagnostics",
+      "providers"
+    ],
+    "is_game": false
+  },
+  {
+    "key": "admin",
+    "name": "Administration",
+    "emoji": "⚙️",
+    "area": "admin",
+    "description": "Cog management, server stats, diagnostics",
+    "tags": [
+      "admin",
+      "cogs",
+      "management",
+      "diagnostics"
+    ],
+    "is_game": false
+  },
+  {
+    "key": "diagnostic",
+    "name": "Diagnostics",
+    "emoji": "🩺",
+    "area": "admin",
+    "description": "Bot health, latency, and system diagnostics",
+    "tags": [
+      "diagnostics",
+      "health",
+      "latency",
+      "debug"
+    ],
+    "is_game": false
+  },
+  {
+    "key": "logging",
+    "name": "Server Logging",
+    "emoji": "📝",
+    "area": "admin",
+    "description": "Per-guild moderation/cleanup event logging — channel selection, auto-create, and audit (S7)",
+    "tags": [
+      "logging",
+      "audit",
+      "moderation",
+      "cleanup"
+    ],
+    "is_game": false
+  },
+  {
+    "key": "server_management",
+    "name": "Server Management",
+    "emoji": "🧭",
+    "area": "admin",
+    "description": "Unified hub for moderation, channels, roles, cleanup, setup",
+    "tags": [
+      "admin",
+      "hub",
+      "navigation",
+      "operations"
+    ],
+    "is_game": false
+  },
+  {
+    "key": "settings",
+    "name": "Settings Manager",
+    "emoji": "⚙️",
+    "area": "admin",
+    "description": "Read-only browsing of platform settings, bindings, and audit history (S5)",
+    "tags": [
+      "settings",
+      "configuration",
+      "audit",
+      "platform"
+    ],
+    "is_game": false
+  },
+  {
+    "key": "ux_lab",
+    "name": "UX Lab",
+    "emoji": "🧪",
+    "area": "admin",
+    "description": "Interface gallery — browse UI patterns, all fake & safe",
+    "tags": [
+      "admin",
+      "design",
+      "gallery",
+      "patterns"
+    ],
+    "is_game": false
+  },
+  {
+    "key": "community",
+    "name": "Community",
+    "emoji": "🌱",
+    "area": "community",
+    "description": "Progression, roles, and community activities",
+    "tags": [
+      "community",
+      "hub",
+      "progression"
+    ],
+    "is_game": false
+  },
+  {
+    "key": "community_spotlight",
+    "name": "Community Spotlight",
+    "emoji": "🌟",
+    "area": "community",
+    "description": "Live server activity dashboard — leaders, level-ups, game stats",
+    "tags": [
+      "spotlight",
+      "activity",
+      "leaderboard",
+      "community"
+    ],
+    "is_game": false
+  },
+  {
+    "key": "counters",
+    "name": "Server Counters",
+    "emoji": "📊",
+    "area": "community",
+    "description": "Live member-count channels (total · humans · bots)",
+    "tags": [
+      "counters",
+      "stats",
+      "members",
+      "community"
+    ],
+    "is_game": false
+  },
+  {
+    "key": "ticket",
+    "name": "Support Tickets",
+    "emoji": "🎫",
+    "area": "community",
+    "description": "Private support tickets — open by command, panel, or the AI",
+    "tags": [
+      "tickets",
+      "support",
+      "help",
+      "staff"
+    ],
+    "is_game": false
+  },
+  {
+    "key": "welcome",
+    "name": "Welcome",
+    "emoji": "👋",
+    "area": "community",
+    "description": "Member greetings, farewells, and an optional entry role",
+    "tags": [
+      "welcome",
+      "greeting",
+      "onboarding",
+      "community"
+    ],
+    "is_game": false
+  },
+  {
+    "key": "economy",
+    "name": "Economy",
+    "emoji": "💰",
+    "area": "economy",
+    "description": "Daily coins, work, shop, balance",
+    "tags": [
+      "economy",
+      "currency",
+      "coins",
+      "progression"
+    ],
+    "is_game": false
+  },
+  {
+    "key": "inventory",
+    "name": "Inventory",
+    "emoji": "🎒",
+    "area": "economy",
+    "description": "Item management and crafting",
+    "tags": [
+      "inventory",
+      "items",
+      "crafting"
+    ],
+    "is_game": false
+  },
+  {
+    "key": "mining",
+    "name": "Mining",
+    "emoji": "⛏️",
+    "area": "economy",
+    "description": "Mining minigame and resource collection",
+    "tags": [
+      "mining",
+      "resources",
+      "minigame"
+    ],
+    "is_game": false
+  },
+  {
+    "key": "treasury",
+    "name": "Treasury",
+    "emoji": "🏛️",
+    "area": "economy",
+    "description": "Server-owned coin pool — contribute coins; managers disburse",
+    "tags": [
+      "treasury",
+      "economy",
+      "coins",
+      "governance"
+    ],
+    "is_game": false
+  },
+  {
+    "key": "btd6",
+    "name": "BTD6 Assistant",
+    "emoji": "🐵",
+    "area": "games",
+    "description": "Deterministic Bloons Tower Defense 6 assistant — tower/hero/map lookups, round threat summaries, and CHIMPS-mode guidance. Built on validated fixtures; consumes the AI gateway only when explicitly enabled (Module 5).",
+    "tags": [
+      "games",
+      "btd6",
+      "bloons",
+      "tower defense"
+    ],
+    "is_game": true
+  },
+  {
+    "key": "blackjack",
+    "name": "Blackjack",
+    "emoji": "🃏",
+    "area": "games",
+    "description": "Blackjack card game",
+    "tags": [
+      "games",
+      "blackjack",
+      "cards"
+    ],
+    "is_game": true
+  },
+  {
+    "key": "casino",
+    "name": "Casino",
+    "emoji": "🎰",
+    "area": "games",
+    "description": "Group card games like multiplayer poker",
+    "tags": [
+      "games",
+      "casino",
+      "poker",
+      "cards",
+      "multiplayer"
+    ],
+    "is_game": true
+  },
+  {
+    "key": "farm",
+    "name": "Chicken Farm",
+    "emoji": "🐔",
+    "area": "games",
+    "description": "Idle egg farm — hens lay eggs over time; collect, sell, grow",
+    "tags": [
+      "farm",
+      "idle",
+      "chickens",
+      "eggs",
+      "activities"
+    ],
+    "is_game": true
+  },
+  {
+    "key": "counting",
+    "name": "Counting",
+    "emoji": "🔢",
+    "area": "games",
+    "description": "Collaborative counting game",
+    "tags": [
+      "games",
+      "counting",
+      "community"
+    ],
+    "is_game": true
+  },
+  {
+    "key": "creature",
+    "name": "Creatures",
+    "emoji": "🐾",
+    "area": "games",
+    "description": "Catch original creatures and build your collection dex",
+    "tags": [
+      "creatures",
+      "minigame",
+      "activities"
+    ],
+    "is_game": true
+  },
+  {
+    "key": "deathmatch",
+    "name": "Deathmatch",
+    "emoji": "⚔️",
+    "area": "games",
+    "description": "1v1 duel battles",
+    "tags": [
+      "games",
+      "duel",
+      "pvp",
+      "deathmatch"
+    ],
+    "is_game": true
+  },
+  {
+    "key": "fishing",
+    "name": "Fishing",
+    "emoji": "🎣",
+    "area": "games",
+    "description": "Fishing minigame — cast a line, build your collection",
+    "tags": [
+      "fishing",
+      "minigame",
+      "activities"
+    ],
+    "is_game": true
+  },
+  {
+    "key": "games",
+    "name": "Games",
+    "emoji": "🎮",
+    "area": "games",
+    "description": "Competitive games and channel activities",
+    "tags": [
+      "games",
+      "hub",
+      "activities"
+    ],
+    "is_game": true
+  },
+  {
+    "key": "project_moon",
+    "name": "Project Moon",
+    "emoji": "🌑",
+    "area": "games",
+    "description": "Browsable Limbus Company knowledge — the 12 Sinners, the 7 Sins, status keywords, damage types, and E.G.O grades. Read-only, deterministic reference built on committed structural facts.",
+    "tags": [
+      "games",
+      "project moon",
+      "limbus",
+      "reference"
+    ],
+    "is_game": true
+  },
+  {
+    "key": "rps_tournament",
+    "name": "Rock Paper Scissors",
+    "emoji": "✂️",
+    "area": "games",
+    "description": "Rock Paper Scissors: quick play, PvP, bot matches, tournaments",
+    "tags": [
+      "games",
+      "rps",
+      "tournament"
+    ],
+    "is_game": true
+  },
+  {
+    "key": "chain",
+    "name": "Word Chain",
+    "emoji": "🔗",
+    "area": "games",
+    "description": "Word-chaining game",
+    "tags": [
+      "games",
+      "words",
+      "chain"
+    ],
+    "is_game": true
+  },
+  {
+    "key": "channel",
+    "name": "Channels",
+    "emoji": "📐",
+    "area": "management",
+    "description": "Channel and category creation, deletion, and restrictions",
+    "tags": [
+      "channels",
+      "management",
+      "permissions"
+    ],
+    "is_game": false
+  },
+  {
+    "key": "role",
+    "name": "Roles",
+    "emoji": "🎭",
+    "area": "management",
+    "description": "Time-based and XP-based automatic role assignment",
+    "tags": [
+      "roles",
+      "assignment",
+      "automation"
+    ],
+    "is_game": false
+  },
+  {
+    "key": "automod",
+    "name": "Automod",
+    "emoji": "🛡️",
+    "area": "moderation",
+    "description": "Spam, invite links, excessive caps, and mass-mention filtering",
+    "tags": [
+      "automod",
+      "moderation",
+      "safety",
+      "spam",
+      "filter"
+    ],
+    "is_game": false
+  },
+  {
+    "key": "cleanup",
+    "name": "Cleanup",
+    "emoji": "🧹",
+    "area": "moderation",
+    "description": "Prohibited words, command deletion, channel hygiene",
+    "tags": [
+      "cleanup",
+      "words",
+      "moderation",
+      "hygiene"
+    ],
+    "is_game": false
+  },
+  {
+    "key": "image_moderation",
+    "name": "Image moderation",
+    "emoji": "🖼️",
+    "area": "moderation",
+    "description": "Scan uploaded images for sexual, violent, harassment, or hate content",
+    "tags": [
+      "image",
+      "moderation",
+      "safety",
+      "nsfw",
+      "filter"
+    ],
+    "is_game": false
+  },
+  {
+    "key": "moderation",
+    "name": "Moderation",
+    "emoji": "🔨",
+    "area": "moderation",
+    "description": "Warnings, timeouts, bans, mod logs",
+    "tags": [
+      "moderation",
+      "safety",
+      "logs",
+      "warn",
+      "ban"
+    ],
+    "is_game": false
+  },
+  {
+    "key": "proof_channel",
+    "name": "Proof Channel",
+    "emoji": "📋",
+    "area": "moderation",
+    "description": "Proof submission and exclusive access sessions",
+    "tags": [
+      "proof",
+      "events",
+      "access"
+    ],
+    "is_game": false
+  },
+  {
+    "key": "security",
+    "name": "Server Security",
+    "emoji": "🛡️",
+    "area": "moderation",
+    "description": "Raid detection + account-age screening on member join",
+    "tags": [
+      "security",
+      "raid",
+      "moderation",
+      "safety"
+    ],
+    "is_game": false
+  },
+  {
+    "key": "karma",
+    "name": "Karma",
+    "emoji": "✨",
+    "area": "progression",
+    "description": "Peer reputation — thank helpful members with !thanks",
+    "tags": [
+      "karma",
+      "reputation",
+      "thanks",
+      "progression",
+      "leaderboard"
+    ],
+    "is_game": false
+  },
+  {
+    "key": "leaderboard",
+    "name": "Leaderboard",
+    "emoji": "🏆",
+    "area": "progression",
+    "description": "Server leaderboards for XP, coins, and games",
+    "tags": [
+      "leaderboard",
+      "rankings",
+      "stats"
+    ],
+    "is_game": false
+  },
+  {
+    "key": "xp",
+    "name": "XP & Levels",
+    "emoji": "⭐",
+    "area": "progression",
+    "description": "Experience points, levels, and leaderboards",
+    "tags": [
+      "xp",
+      "levels",
+      "progression",
+      "leaderboard"
+    ],
+    "is_game": false
+  },
+  {
+    "key": "four_twenty",
+    "name": "420",
+    "emoji": "🍃",
+    "area": "utility",
+    "description": "A leafy little easter-egg panel — wisdom and number trivia",
+    "tags": [
+      "fun",
+      "easter-egg",
+      "420"
+    ],
+    "is_game": false
+  },
+  {
+    "key": "general",
+    "name": "General",
+    "emoji": "💬",
+    "area": "utility",
+    "description": "General bot commands and information",
+    "tags": [
+      "general",
+      "info",
+      "community"
+    ],
+    "is_game": false
+  },
+  {
+    "key": "help",
+    "name": "Help",
+    "emoji": "📚",
+    "area": "utility",
+    "description": "Interactive help menu and command discovery",
+    "tags": [
+      "help",
+      "commands",
+      "discovery"
+    ],
+    "is_game": false
+  },
+  {
+    "key": "utility",
+    "name": "Utility",
+    "emoji": "🔧",
+    "area": "utility",
+    "description": "General utility commands",
+    "tags": [
+      "utility",
+      "tools",
+      "general"
+    ],
+    "is_game": false
+  }
+];
+
+const BUILD = {
+  "commit": "5c16701",
+  "subject": "owner rulings: Q-0245 EXTRA_OWNER_USER_IDS test-driver account + Q-0246 permission-tiered operation (Full/Lite)",
+  "committed_at": "2026-07-07T14:11:27Z"
+};
+
+const COUNTS = {
+  "commands": 485,
+  "features": 43,
+  "games": 12
+};
+
+const ADD_URL = "https://discord.com/oauth2/authorize?client_id=1403818430758654132";
+
 function mkHistory(seed, badDays) {
   const out = [];
   for (let i = 0; i < 60; i++) {
@@ -8552,5 +9159,9 @@ const byCommand = (name) => COMMANDS.find((c) => c.name === name);
 const byArea = (id) => AREAS.find((a) => a.id === id);
 const byGame = (id) => GAMES.find((g) => g.id === id);
 const commandsInArea = (id) => COMMANDS.filter((c) => c.area === id);
+const byFeature = (key) => FEATURES.find((f) => f.key === key);
+const featuresInArea = (id) => FEATURES.filter((f) => f.area === id);
 
 window.SBDATA = { ICONS, AREAS, COMMANDS, GAMES, CHANGELOG, STATUS, byCommand, byArea, byGame, commandsInArea };
+/* additive v2 families — v1's frozen app.js ignores these */
+Object.assign(window.SBDATA, { FEATURES, BUILD, COUNTS, ADD_URL, byFeature, featuresInArea });

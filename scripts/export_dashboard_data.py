@@ -73,6 +73,27 @@ DATA_JS_OUTPUT_FILE = REPO_ROOT / "botsite" / "site" / "data.js"
 SITE_TOPLEVEL_KEYS: frozenset[str] = frozenset(
     {"meta", "counts", "catalogue", "commands", "bot_changelog"},
 )
+
+# The program-console feed (``botsite/data/console.json`` — served at
+# ``/console/data.json`` on the public bot-site service). Same
+# whitelist-by-construction posture as ``site.json``: only repo-development
+# families that are ALREADY public in this repository (session run reports from
+# ``.sessions/``, ideas/bugs as counters + titles, the curated changelog).
+# The dev-only value families (``env_usage`` / ``settings`` / ``access`` /
+# ``reviews``) are excluded, and per-guild/user values never enter the producer.
+CONSOLE_OUTPUT_FILE = REPO_ROOT / "botsite" / "data" / "console.json"
+CONSOLE_TOPLEVEL_KEYS: frozenset[str] = frozenset(
+    {"meta", "sessions", "ideas", "bugs", "bot_changelog"},
+)
+# Per-entry field whitelist for the console's session feed (run reports).
+CONSOLE_SESSION_FIELDS: tuple[str, ...] = (
+    "file",
+    "date",
+    "title",
+    "status",
+    "run_type",
+    "self_initiated",
+)
 # Per-command fields the public ``commands`` reference exposes (no per-guild value
 # ever appears — these are repo-level command metadata). The interactive command
 # browser (plan unit S1.1 / P2) renders these in a clickable detail view:
@@ -1156,6 +1177,67 @@ def build_site_subset(data: dict, *, repo_root: Path = REPO_ROOT) -> dict:
     return subset
 
 
+def build_console_subset(data: dict) -> dict:
+    """Derive the program-console feed from the full dashboard payload.
+
+    Returns a dict whose top-level keys are **exactly**
+    :data:`CONSOLE_TOPLEVEL_KEYS` — redaction by construction, mirroring
+    :func:`build_site_subset`. The console (the owner's one-glance page at
+    ``/console``) gets: build provenance, the session run-report feed (with the
+    ``self_initiated`` ⚑ flag, Q-0172 accountability), ideas/bugs as **counters
+    plus open-bug titles** (never full bodies), and the curated changelog.
+    """
+    meta = data.get("meta", {}) or {}
+    ideas = data.get("ideas", []) or []
+    bugs = data.get("bugs", []) or []
+    updates = data.get("updates", []) or []
+
+    def _by_status(items: list[dict]) -> dict[str, int]:
+        out: dict[str, int] = {}
+        for item in items:
+            key = str(item.get("status") or "unknown").lower()
+            out[key] = out.get(key, 0) + 1
+        return dict(sorted(out.items()))
+
+    closed = {"fixed", "closed", "resolved", "wontfix", "done"}
+    open_bugs = [
+        {
+            "id": b.get("id"),
+            "title": b.get("title"),
+            "status": str(b.get("status") or "unknown").lower(),
+        }
+        for b in bugs
+        if str(b.get("status") or "").lower() not in closed
+    ][:10]
+
+    sessions = [
+        {field: entry.get(field) for field in CONSOLE_SESSION_FIELDS}
+        for entry in updates
+    ]
+
+    subset = {
+        "meta": {
+            "generated_at": meta.get("generated_at"),
+            "build": meta.get("build", {}),
+        },
+        "sessions": sessions,
+        "ideas": {"total": len(ideas), "by_status": _by_status(ideas)},
+        "bugs": {
+            "total": len(bugs),
+            "by_status": _by_status(bugs),
+            "open": open_bugs,
+        },
+        "bot_changelog": data.get("bot_changelog", []),
+    }
+    extra = set(subset) - CONSOLE_TOPLEVEL_KEYS
+    if extra:
+        raise ValueError(
+            f"console.json subset produced disallowed top-level keys: {sorted(extra)} "
+            f"(allowed: {sorted(CONSOLE_TOPLEVEL_KEYS)})",
+        )
+    return subset
+
+
 def _write_json(out: Path, payload: dict) -> str:
     """Write ``payload`` as pretty JSON to ``out`` and return its repo-relative path."""
     out.parent.mkdir(parents=True, exist_ok=True)
@@ -1179,9 +1261,9 @@ def main(argv: list[str] | None = None) -> int:
     )
     parser.add_argument(
         "--targets",
-        choices=("both", "dashboard", "site"),
+        choices=("both", "dashboard", "site", "console"),
         default="both",
-        help="which artifact(s) to write (default: both)",
+        help="which artifact(s) to write (default: both = dashboard + site + console)",
     )
     parser.add_argument(
         "--output",
@@ -1198,6 +1280,11 @@ def main(argv: list[str] | None = None) -> int:
         default=str(DATA_JS_OUTPUT_FILE),
         help="botsite/site/data.js (SPA data layer) output path; redirect in tests "
         "so they never clobber the tracked repo file",
+    )
+    parser.add_argument(
+        "--console-output",
+        default=str(CONSOLE_OUTPUT_FILE),
+        help="console.json (program-console feed) output path",
     )
     parser.add_argument(
         "--check",
@@ -1235,6 +1322,10 @@ def main(argv: list[str] | None = None) -> int:
         data_js.parent.mkdir(parents=True, exist_ok=True)
         data_js.write_text(site_data.render_from_site(subset), encoding="utf-8")
         print(f"wrote {data_js} (SPA data layer)")
+    if args.targets in ("both", "console"):
+        console = build_console_subset(data)
+        rel = _write_json(Path(args.console_output), console)
+        print(f"wrote {rel} — console feed ({len(console['sessions'])} sessions)")
     return 0
 
 

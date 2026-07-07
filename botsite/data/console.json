@@ -1,0 +1,580 @@
+{
+  "meta": {
+    "generated_at": "2026-07-07T15:29:24Z",
+    "build": {
+      "commit": "38f5e06",
+      "subject": "session start: claim + born-red card — program websites design session (brief 2026-07-07)",
+      "committed_at": "2026-07-07T15:29:24Z"
+    }
+  },
+  "sessions": [
+    {
+      "file": "2026-07-07-website-design-system-fable.md",
+      "date": "2026-07-07",
+      "title": "2026-07-07 — Program websites: design system + botsite v2 + console shell (Fable session 1/4)",
+      "status": "in-progress",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-07-07-trading-operating-model.md",
+      "date": "2026-07-07",
+      "title": "2026-07-07 — Trading operating model (Q-0251: decision ledger + sniper bucket + 3-way hybrid)",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-07-07-trading-market-ruling.md",
+      "date": "2026-07-07",
+      "title": "2026-07-07 — Trading-repo market ruling (Q-0250: stocks-first)",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-07-07-three-sessions-prep.md",
+      "date": "2026-07-07",
+      "title": "2026-07-07 — Three-sessions prep (Q-0252: program launch briefs)",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-07-07-substrate-kit-enforcement.md",
+      "date": "2026-07-07",
+      "title": "2026-07-07 — substrate-kit: adopt installs the enforcement (the forcing functions)",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": true
+    },
+    {
+      "file": "2026-07-07-session1-recut-websites.md",
+      "date": "2026-07-07",
+      "title": "2026-07-07 — Session-1 re-cut: websites on the last Fable day (Q-0253)",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-07-07-rebuild-plan-review-and-automation-idea.md",
+      "date": "2026-07-07",
+      "title": "2026-07-07 — Rebuild plan review (owner Q&A) + user-automation idea capture",
+      "status": "complete",
+      "run_type": "manual",
+      "self_initiated": true
+    },
+    {
+      "file": "2026-07-07-rebuild-idea-consolidation.md",
+      "date": "2026-07-07",
+      "title": "2026-07-07 — Rebuild idea consolidation (fold 4 captures + §3.C re-verify)",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-07-07-rebuild-gate-runners-fable5.md",
+      "date": "2026-07-07",
+      "title": "2026-07-07 — Rebuild gate-runners: kit tail ① + Phase-2.5 A/B + check_amendments (canonical-plan §5 steps 1–3)",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": true
+    },
+    {
+      "file": "2026-07-07-rebuild-final-review-fable5.md",
+      "date": "2026-07-07",
+      "title": "2026-07-07 — Rebuild FINAL review (Fable 5, ultracode) + Projects-EAP repo prep",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": true
+    },
+    {
+      "file": "2026-07-07-projects-eap-and-full-autonomy-q0241.md",
+      "date": "2026-07-07",
+      "title": "2026-07-07 — Claude Code Projects EAP for the rebuild + Q-0241 (remove owner gates, never-wait)",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-07-07-permission-allowlist-rediagnosis-q0242.md",
+      "date": "2026-07-07",
+      "title": "2026-07-07 — Permission-allowlist re-diagnosis (Q-0242): Q-0229's fix was unverified, and mostly unnecessary",
+      "status": "complete",
+      "run_type": "manual",
+      "self_initiated": true
+    },
+    {
+      "file": "2026-07-07-owner-rulings-followup.md",
+      "date": "2026-07-07",
+      "title": "2026-07-07 — Owner rulings follow-up (pricing-by-sim + slash-verification model)",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-07-07-owner-rulings-2-test-account-permission-tiers.md",
+      "date": "2026-07-07",
+      "title": "2026-07-07 — Owner rulings #2 (test-driver account + permission-tiered operation)",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-07-07-multi-repo-program-capture.md",
+      "date": "2026-07-07",
+      "title": "2026-07-07 — Multi-repo program capture (kit lab + trading repo + repo-start mechanics)",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-07-07-kickoff-readiness.md",
+      "date": "2026-07-07",
+      "title": "2026-07-07 — Kickoff readiness (steps-6–8 brief + Q-0247/Q-0248/Q-0249)",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-07-07-fable5-final-review-brief-prep.md",
+      "date": "2026-07-07",
+      "title": "2026-07-07 — Prepare Fable-5 ultracode brief for the final rebuild-plan review + Projects-EAP repo prep",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-07-06-ruff-migration.md",
+      "date": "2026-07-06",
+      "title": "2026-07-06 — Ruff migration (A3): ruff replaces black + isort",
+      "status": "complete",
+      "run_type": "manual",
+      "self_initiated": true
+    },
+    {
+      "file": "2026-07-06-reconcile-band1770.md",
+      "date": "2026-07-06",
+      "title": "2026-07-06 — Thirty-sixth Q-0107 reconciliation pass (band-#1770)",
+      "status": "complete",
+      "run_type": "routine",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-07-06-reconcile-band1740.md",
+      "date": "2026-07-06",
+      "title": "2026-07-06 — Thirty-fifth Q-0107 reconciliation pass (band-#1740)",
+      "status": "complete",
+      "run_type": "routine",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-07-06-rebuild-consolidation-fable5.md",
+      "date": "2026-07-06",
+      "title": "2026-07-06 — Rebuild consolidation: one canonical plan + foundational-completeness (Fable 5 Ultracode brief §3)",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": true
+    },
+    {
+      "file": "2026-07-06-gate-v-verification-fleet-prompts.md",
+      "date": "2026-07-06",
+      "title": "2026-07-06 — Gate V verification-fleet review prompts (documented launch pad)",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-07-06-gate-v-synthesis.md",
+      "date": "2026-07-06",
+      "title": "2026-07-06 — Gate V final synthesis (Arm Σ)",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-07-06-gate-v-findings-corrections.md",
+      "date": "2026-07-06",
+      "title": "2026-07-06 — Gate V evidence-findings corrections (Codex C2–C5 + Agent Mode)",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-07-06-gate-v-c1-and-arm-a-review.md",
+      "date": "2026-07-06",
+      "title": "2026-07-06 — Gate V: verify C1 re-run + Arm A Ultracode review (fleet complete)",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-07-06-gate-v-arm-d-live-testing.md",
+      "date": "2026-07-06",
+      "title": "2026-07-06 — GATE V Arm D: empirical live-testing evidence pack",
+      "status": "complete",
+      "run_type": "manual",
+      "self_initiated": true
+    },
+    {
+      "file": "2026-07-06-fable5-newrepo-start-brief.md",
+      "date": "2026-07-06",
+      "title": "2026-07-06 — Fable 5 Ultracode launch brief: finalize the new-repo-start method",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-07-06-fable-decision-authority-and-foundational-consolidation.md",
+      "date": "2026-07-06",
+      "title": "2026-07-06 — Fable decision authority (Q-0240) + foundational-consolidation brief revision",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-07-06-codeql-stuck-scan-watchdog.md",
+      "date": "2026-07-06",
+      "title": "2026-07-06 — Verify PR #1743 + CodeQL stuck-scan watchdog",
+      "status": "complete",
+      "run_type": "manual",
+      "self_initiated": true
+    },
+    {
+      "file": "2026-07-06-ci-arc-completion.md",
+      "date": "2026-07-06",
+      "title": "2026-07-06 — CI-arc completion: 2nd AST guard + tail cleanup",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": true
+    },
+    {
+      "file": "2026-07-06-ast-guard-audit-seam.md",
+      "date": "2026-07-06",
+      "title": "2026-07-06 — AST guard: check_audit_seam (audit-seam coverage checker)",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": true
+    },
+    {
+      "file": "2026-07-05-save-fixes-implementation.md",
+      "date": "2026-07-05",
+      "title": "2026-07-05 — Stage-2 \"save fixes\" implementation (queued current-bot bug fixes)",
+      "status": "complete",
+      "run_type": "manual",
+      "self_initiated": true
+    },
+    {
+      "file": "2026-07-05-save-fixes-codeql-followup.md",
+      "date": "2026-07-05",
+      "title": "2026-07-05 — Save-fixes follow-up: CodeQL log-injection hardening",
+      "status": "complete",
+      "run_type": "manual",
+      "self_initiated": true
+    },
+    {
+      "file": "2026-07-05-rebuild-stage2-subsystem-walk.md",
+      "date": "2026-07-05",
+      "title": "2026-07-05 — Rebuild Phase-A Stage-2 subsystem walk (owner-led)",
+      "status": "complete",
+      "run_type": "manual",
+      "self_initiated": true
+    },
+    {
+      "file": "2026-07-05-next-session-prep.md",
+      "date": "2026-07-05",
+      "title": "2026-07-05 — Next-session prep + docs banking (owner-directed)",
+      "status": "complete",
+      "run_type": "manual",
+      "self_initiated": true
+    },
+    {
+      "file": "2026-07-05-ci-watchdog-fix.md",
+      "date": "2026-07-05",
+      "title": "2026-07-05 — CI watchdog self-silencing fix + next-agent handoff",
+      "status": "complete",
+      "run_type": "manual",
+      "self_initiated": true
+    },
+    {
+      "file": "2026-07-05-ci-setup-redesign.md",
+      "date": "2026-07-05",
+      "title": "2026-07-05 — CI-setup redesign (best-possible CI: current bot + fresh repo)",
+      "status": "complete",
+      "run_type": "manual",
+      "self_initiated": true
+    },
+    {
+      "file": "2026-07-05-ci-setup-brief.md",
+      "date": "2026-07-05",
+      "title": "2026-07-05 — CI-setup redesign brief (owner-directed prep)",
+      "status": "complete",
+      "run_type": "manual",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-07-05-ci-phase-a-gating.md",
+      "date": "2026-07-05",
+      "title": "2026-07-05 — CI Phase-A: make the should-gate invariants actually block merges",
+      "status": "complete",
+      "run_type": "manual",
+      "self_initiated": true
+    },
+    {
+      "file": "2026-07-04-review-open-prs.md",
+      "date": "2026-07-04",
+      "title": "2026-07-04 — Open-PR review + merge sweep",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-07-04-reconcile.md",
+      "date": "2026-07-04",
+      "title": "2026-07-04 — Thirty-fourth Q-0107 reconciliation pass (band-#1710)",
+      "status": "complete",
+      "run_type": "routine",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-07-04-rebuild-foundational-design.md",
+      "date": "2026-07-04",
+      "title": "2026-07-04 — Rebuild foundational-DESIGN (AUDITED → Gate-0 / L0-plannable)",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-07-04-gate0-grammar-freeze.md",
+      "date": "2026-07-04",
+      "title": "2026-07-04 — Gate-0 grammar-freeze + Phase-B L0 build-order",
+      "status": "complete",
+      "run_type": "manual",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-07-04-gate0-brief-prep.md",
+      "date": "2026-07-04",
+      "title": "2026-07-04 — Prepare the Gate-0 grammar-freeze + Phase-B L0 ultracode brief",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-07-03-ultracode-quicklaunch.md",
+      "date": "2026-07-03",
+      "title": "2026-07-03 — Ultracode quick-launch prompts + durable-home verification",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-07-03-tier1-owner-decisions.md",
+      "date": "2026-07-03",
+      "title": "2026-07-03 — Tier-1 owner decisions recorded (Q-0237)",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-07-03-surface-proving-mechanics-ultracode.md",
+      "date": "2026-07-03",
+      "title": "2026-07-03 — Surface + proving foundations audit (PROMPT B, ultracode)",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-07-03-reconcile.md",
+      "date": "2026-07-03",
+      "title": "2026-07-03 — Thirty-third Q-0107 reconciliation pass (band-#1680)",
+      "status": "complete",
+      "run_type": "routine",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-07-03-rebuild-stage1-global-review.md",
+      "date": "2026-07-03",
+      "title": "2026-07-03 — Rebuild Phase A · Stage 1: the global plan review (owner-live)",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-07-03-rebuild-planning-phase-doc.md",
+      "date": "2026-07-03",
+      "title": "2026-07-03 — Document the rebuild review-then-plan phase (process + next-session goal)",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-07-03-rebuild-hub-navigation.md",
+      "date": "2026-07-03",
+      "title": "2026-07-03 — Rebuild Phase A · hub topology + navigation contract + interface presets (owner-live)",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-07-03-rebuild-conventions-freeze.md",
+      "date": "2026-07-03",
+      "title": "2026-07-03 — Rebuild Phase A · conventions freeze (owner-live, continued)",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-07-03-prep-fable5-final-review.md",
+      "date": "2026-07-03",
+      "title": "2026-07-03 — Prepare (not execute) a Fable-5 ultracode final-judgment prompt",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-07-03-phase-a-final-judgment.md",
+      "date": "2026-07-03",
+      "title": "2026-07-03 — Phase-A final judgment (Fable-5 ultracode)",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-07-03-permission-allowlist-and-endorse.md",
+      "date": "2026-07-03",
+      "title": "2026-07-03 — Permission allowlist fix + Q-0228 centralization endorsement (owner-live)",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-07-03-owner-ideas-release-loop-websites.md",
+      "date": "2026-07-03",
+      "title": "2026-07-03 — Capture 2 owner ideas: release→test→verify loop + websites cutover-role",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-07-03-oracle-and-verification-strategy.md",
+      "date": "2026-07-03",
+      "title": "2026-07-03 — New-feature oracle resolved + verification-fleet gate & repo-as-artifact strategy",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-07-03-layout-success-simulator.md",
+      "date": "2026-07-03",
+      "title": "2026-07-03 — Unified layout-success simulator (owner-directed capture)",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-07-03-foundations-engine-room-ultracode.md",
+      "date": "2026-07-03",
+      "title": "2026-07-03 — Foundational mechanics: the engine room (PROMPT A, runtime/logic)",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-07-03-foundational-mechanics-ultracode-brief.md",
+      "date": "2026-07-03",
+      "title": "2026-07-03 — Prepare two parallel ultracode session prompts (foundational-mechanics brainstorm)",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    }
+  ],
+  "ideas": {
+    "total": 208,
+    "by_status": {
+      "historical": 22,
+      "ideas": 183,
+      "reference": 3
+    }
+  },
+  "bugs": {
+    "total": 31,
+    "by_status": {
+      "fixed": 9,
+      "open": 1,
+      "unknown": 21
+    },
+    "open": [
+      {
+        "id": "BUG-0031",
+        "title": "building a Boathouse raises KeyError: 'boathouse' (structure never added to the build-reason map) — FIXED (root)",
+        "status": "unknown"
+      },
+      {
+        "id": "BUG-0030",
+        "title": "!dock structure command collides with !sail's dock alias → fishing cog fails to load → boot crash loop — FIXED (root)",
+        "status": "unknown"
+      },
+      {
+        "id": "BUG-0029",
+        "title": "XP level-up role grants bypass the audited role seam (no audit.action_recorded, no shared hierarchy preflight) — FIXED (root)",
+        "status": "unknown"
+      },
+      {
+        "id": "BUG-0028",
+        "title": "panel-initiated PvP deathmatch crashes on resolve (ctx=None → self.ctx.guild.id AttributeError) — FIXED (root)",
+        "status": "unknown"
+      },
+      {
+        "id": "BUG-0027",
+        "title": "born-red merge-gate silently fails open on a session-card slug collision (a partial PR auto-merged and clobbered a prior session log) — FIXED (root)",
+        "status": "unknown"
+      },
+      {
+        "id": "BUG-0026",
+        "title": "EffectiveStats.light_radius and .luck are dead stats (gear grants them, no game reads them) — FIXED (wired — owner decision Q-0208)",
+        "status": "unknown"
+      },
+      {
+        "id": "BUG-0025",
+        "title": "hero-card image stranded/lost when navigating into an image-less sub-panel (profile + XP hub) — FIXED (root)",
+        "status": "unknown"
+      },
+      {
+        "id": "BUG-0024",
+        "title": "test_generated_at_is_deterministic_not_wall_clock flaky under pytest -n auto (real-clock dependent) — FIXED (root)",
+        "status": "unknown"
+      },
+      {
+        "id": "BUG-0023",
+        "title": "public command counts differ between the bot status embed and the website (354 = 283 prefix · 71 slash vs ~280) — EXPECTED (documented); slash under-coverage = FIXED (root)",
+        "status": "unknown"
+      },
+      {
+        "id": "BUG-0019",
+        "title": "AI replies to messages aimed at *other* bots and claims \"you've just pinged me\" — PARTIALLY FIXED (mechanism #2 hardened; #1 awaits one owner behavior decision)",
+        "status": "unknown"
+      }
+    ]
+  },
+  "bot_changelog": [
+    {
+      "date": "2026-06-19",
+      "title": "New public bot website",
+      "kind": "improvement",
+      "summary": "A brand-new public website for the bot is taking shape — a marketing + reference site"
+    },
+    {
+      "date": "2026-06-12",
+      "title": "Owner review inbox on the dashboard",
+      "kind": "improvement",
+      "summary": "The developer dashboard now surfaces an owner review inbox, so feedback and review"
+    },
+    {
+      "date": "2026-06-08",
+      "title": "Command-alias suggestions",
+      "kind": "feature",
+      "summary": "You can now suggest a friendly alias for any command from the dashboard's Aliases page,"
+    }
+  ]
+}

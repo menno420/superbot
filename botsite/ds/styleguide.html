@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>SuperBot — program design system</title>
+    <meta name="description" content="The living style guide for the SuperBot program design system: tokens, components, charts and patterns, rendered from the real CSS." />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,500;12..96,600;12..96,700;12..96,800&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="/ds/tokens.css" />
+    <link rel="stylesheet" href="/ds/components.css" />
+    <script>
+      /* pre-paint theme (no flash): mirror of SBDS.theme.init() */
+      try { var t = localStorage.getItem("sb:theme"); if (t === "light" || t === "dark") document.documentElement.setAttribute("data-theme", t); } catch (e) {}
+    </script>
+    <style>
+      /* style-guide-only chrome (specimen frames) — not part of the system */
+      .sg-spec { border: 1px solid var(--sb-line); border-radius: var(--sb-r-lg); margin-bottom: var(--sb-s-6); overflow: hidden; }
+      .sg-spec-head { display: flex; align-items: baseline; gap: 12px; padding: 14px 20px; border-bottom: 1px solid var(--sb-line); background: var(--sb-surface-soft); }
+      .sg-spec-head h3 { font-size: var(--sb-text-md); font-weight: 700; }
+      .sg-spec-head code { font-family: var(--sb-font-mono); font-size: 11.5px; color: var(--sb-ink-4); }
+      .sg-spec-body { padding: var(--sb-s-6); display: flex; flex-direction: column; gap: var(--sb-s-4); }
+      .sg-row { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; }
+      .sg-swatches { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px; }
+      .sg-swatch { border: 1px solid var(--sb-line); border-radius: var(--sb-r-sm); overflow: hidden; }
+      .sg-swatch .c { height: 44px; }
+      .sg-swatch .m { padding: 8px 10px; font-family: var(--sb-font-mono); font-size: 10.5px; color: var(--sb-ink-3); line-height: 1.5; }
+      .sg-type-row { display: flex; align-items: baseline; gap: 18px; border-bottom: 1px dashed var(--sb-line); padding: 8px 0; }
+      .sg-type-row code { flex: none; width: 150px; font-family: var(--sb-font-mono); font-size: 11px; color: var(--sb-ink-4); }
+      .sg-toc { position: sticky; top: calc(var(--sb-nav-h) + 20px); align-self: start; display: flex; flex-direction: column; gap: 2px; }
+      .sg-toc a { font-size: 13px; color: var(--sb-ink-3); padding: 6px 10px; border-radius: var(--sb-r-xs); }
+      .sg-toc a:hover { color: var(--sb-ink-1); background: var(--sb-surface-soft); }
+      .sg-layout { display: grid; grid-template-columns: 180px 1fr; gap: var(--sb-s-7); }
+      @media (max-width: 880px) { .sg-layout { grid-template-columns: 1fr; } .sg-toc { position: static; flex-direction: row; flex-wrap: wrap; } }
+    </style>
+  </head>
+  <body>
+    <a class="sb-skip" href="#main">Skip to content</a>
+    <nav class="sb-nav" aria-label="Style guide">
+      <div class="sb-wrap-wide sb-nav-in">
+        <a href="/" class="sb-brand"><span class="sb-brand-tile" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="8" width="16" height="11" rx="3"/><path d="M12 8V4M8 3v2M16 3v2"/><circle cx="9" cy="13" r="1"/><circle cx="15" cy="13" r="1"/></svg></span> SuperBot <span class="sb-muted" style="font-weight:500">/ design system</span></a>
+        <span class="sb-nav-spacer"></span>
+        <button class="sb-iconbtn" data-theme-toggle aria-pressed="false" title="Toggle theme"></button>
+      </div>
+    </nav>
+    <main id="main" tabindex="-1">
+      <div class="sb-wrap-wide sb-section sb-section-top">
+        <div class="sb-page-hero">
+          <span class="sb-ey"><span class="dot">▸</span> Living style guide</span>
+          <h1>The program <span class="sb-grad">design system</span></h1>
+          <p class="sb-lead">Every token and component below renders from the real <code class="sb-mono">/ds/tokens.css</code> + <code class="sb-mono">/ds/components.css</code> — this page is the system's own test surface. Toggle the theme (top right) to verify both modes.</p>
+        </div>
+        <div class="sg-layout">
+          <nav class="sg-toc" aria-label="Sections"></nav>
+          <div id="specimens"></div>
+        </div>
+      </div>
+    </main>
+    <footer class="sb-footer"><div class="sb-wrap-wide sb-footer-in">
+      <span>SuperBot program design system · dark-first, token-driven, no build step.</span>
+      <span class="right"><a href="/">public site</a><a href="/console/">console</a></span>
+    </div></footer>
+    <script src="/ds/ds.js"></script>
+    <script src="/ds/styleguide.js"></script>
+  </body>
+</html>

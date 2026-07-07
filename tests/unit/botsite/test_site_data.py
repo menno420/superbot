@@ -119,8 +119,21 @@ def test_contract_file_is_the_single_source_loaded_by_the_validator(mod):
 
 
 def test_emits_every_top_level_family(proto):
-    assert set(proto) == {"icons", "areas", "commands", "games", "changelog", "status"}
+    assert set(proto) == {
+        "icons",
+        "areas",
+        "commands",
+        "games",
+        "changelog",
+        "status",
+        "features",
+        "build",
+        "counts",
+        "add_url",
+    }
     assert proto["areas"] and proto["commands"] and proto["games"]
+    assert proto["features"]
+    assert "discord.com/oauth2/authorize" in proto["add_url"]
 
 
 def test_command_fields_match_contract(proto):
@@ -168,6 +181,41 @@ def test_every_game_command_resolves(proto):
     names = {c["name"] for c in proto["commands"]}
     for g in proto["games"]:
         assert g["command"] in names, f"game {g['id']} → unknown command {g['command']}"
+
+
+# --- v2 additive families (FEATURES / BUILD / COUNTS) ----------------------
+
+
+def test_feature_fields_and_area_cross_refs(proto):
+    area_ids = {a["id"] for a in proto["areas"]}
+    for f in proto["features"]:
+        assert set(f) == {
+            "key",
+            "name",
+            "emoji",
+            "area",
+            "description",
+            "tags",
+            "is_game",
+        }
+        assert f["key"] and f["name"]
+        assert f["area"] in area_ids, f"feature {f['key']} → unknown area {f['area']}"
+        assert isinstance(f["tags"], list)
+        assert isinstance(f["is_game"], bool)
+
+
+def test_features_are_the_full_catalogue(proto, site):
+    keys = [f["key"] for f in proto["features"]]
+    assert len(keys) == len(set(keys)), "duplicate feature keys break #/feature/<key>"
+    assert len(keys) == len([c for c in site["catalogue"] if c.get("key")])
+    game_keys = {f["key"] for f in proto["features"] if f["is_game"]}
+    assert {g["id"] for g in proto["games"]} == game_keys
+
+
+def test_build_and_counts_carry_real_provenance(proto, site):
+    assert proto["build"]["commit"] == site["meta"]["build"]["commit"]
+    assert set(proto["counts"]) <= {"commands", "features", "games"}
+    assert proto["counts"].get("commands")
 
 
 def test_all_icons_exist(mod, proto):
@@ -221,6 +269,10 @@ def test_render_data_js_keeps_export_line_and_is_loadable(mod, proto):
         "const byGame",
         "const commandsInArea",
         "function mkHistory",
+        # v2 additive families ride behind the frozen v1 export line.
+        "const byFeature",
+        "const featuresInArea",
+        "Object.assign(window.SBDATA, { FEATURES, BUILD, COUNTS",
     ):
         assert token in js
     assert "GENERATED FROM botsite/data/site.json" in js
