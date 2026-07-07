@@ -1,14 +1,14 @@
 {
   "meta": {
-    "generated_at": "2026-07-07T17:50:21Z",
+    "generated_at": "2026-07-07T23:37:15Z",
     "build": {
-      "commit": "a886bc6b",
-      "subject": "Merge pull request #1803 from menno420/claude/reconcile-1800",
-      "committed_at": "2026-07-07T17:50:21Z"
+      "commit": "895e24b1",
+      "subject": "Merge pull request #1814 from menno420/claude/superbot-coordinator-kickoff-arqdye",
+      "committed_at": "2026-07-07T23:37:15Z"
     },
     "counts": {
       "functions": 43,
-      "ideas": 209,
+      "ideas": 212,
       "bugs": 31,
       "reviews": 0,
       "reviews_open": 0,
@@ -1165,6 +1165,14 @@
   ],
   "ideas": [
     {
+      "file": "adopt-kit-stance-classifier-2026-07-07.md",
+      "title": "Adopt the substrate-kit's stance classifier into this repo's live workflow",
+      "status": "ideas",
+      "date": "2026-07-07",
+      "summary": "Answering the owner's question (\"is there a guide for how a session classifies its task and",
+      "subsystems": null
+    },
+    {
       "file": "automod-spam-detection-gaps-2026-07-07.md",
       "title": "Automod's spam rule is rate-only and per-channel — two related detection gaps",
       "status": "historical",
@@ -1186,6 +1194,14 @@
       "status": "ideas",
       "date": "2026-07-07",
       "summary": "Anthropic invited us to the **Claude Code Projects** early-access program. Use it as the",
+      "subsystems": null
+    },
+    {
+      "file": "cold-start-ab-vague-idea-task-2026-07-07.md",
+      "title": "A vague-idea task shape for the kit-lab's cold-start A/B (test the understand-and-reflect doctrine itself)",
+      "status": "ideas",
+      "date": "2026-07-07",
+      "summary": "The understand-and-reflect + guiding-questions doctrine just shipped into the kit's templates",
       "subsystems": null
     },
     {
@@ -1229,6 +1245,14 @@
       "status": "ideas",
       "date": "2026-07-07",
       "summary": "Both Phase-2.5 runs measured the same behavior: a session with a purpose-built decisions ledger,",
+      "subsystems": null
+    },
+    {
+      "file": "usage-limit-aware-routines-2026-07-07.md",
+      "title": "Usage-limit-aware routines and orchestrations",
+      "status": "ideas",
+      "date": "2026-07-07",
+      "summary": "This session's 4-agent adversarial-review workflow died mid-flight when the account hit the",
       "subsystems": null
     },
     {
@@ -3108,6 +3132,22 @@
   "reviews": [],
   "updates": [
     {
+      "file": "2026-07-07-website-design-system-fable.md",
+      "date": "2026-07-07",
+      "title": "2026-07-07 — Program websites: design system + botsite v2 + console shell (Fable session 1/4)",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-07-07-understand-and-reflect-rule.md",
+      "date": "2026-07-07",
+      "title": "2026-07-07 — Understand-and-reflect workflow rule (owner-directed in-session)",
+      "status": "complete",
+      "run_type": "manual",
+      "self_initiated": false
+    },
+    {
       "file": "2026-07-07-trading-operating-model.md",
       "date": "2026-07-07",
       "title": "2026-07-07 — Trading operating model (Q-0251: decision ledger + sniper bucket + 3-way hybrid)",
@@ -3188,9 +3228,33 @@
       "self_initiated": true
     },
     {
+      "file": "2026-07-07-projects-eap-kickoff-repo-first.md",
+      "date": "2026-07-07",
+      "title": "2026-07-07 — Kickoff doc: owner creates `superbot-next` first",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-07-07-projects-eap-coordinator-kickoff.md",
+      "date": "2026-07-07",
+      "title": "2026-07-07 — Projects EAP: wiring the coordinator onto the rebuild §5 sequence",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
       "file": "2026-07-07-projects-eap-and-full-autonomy-q0241.md",
       "date": "2026-07-07",
       "title": "2026-07-07 — Claude Code Projects EAP for the rebuild + Q-0241 (remove owner gates, never-wait)",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-07-07-projects-eap-activation.md",
+      "date": "2026-07-07",
+      "title": "2026-07-07 — Claude Code Projects EAP: access granted, activation window",
       "status": "complete",
       "run_type": "",
       "self_initiated": false
@@ -3228,6 +3292,22 @@
       "self_initiated": false
     },
     {
+      "file": "2026-07-07-kit-understand-and-reflect.md",
+      "date": "2026-07-07",
+      "title": "2026-07-07 — Port understand-and-reflect + guiding-questions into the substrate-kit",
+      "status": "complete",
+      "run_type": "manual",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-07-07-kit-lab-founding-plan.md",
+      "date": "2026-07-07",
+      "title": "2026-07-07 — Kit-lab founding plan (program session 2/3)",
+      "status": "complete",
+      "run_type": "manual",
+      "self_initiated": false
+    },
+    {
       "file": "2026-07-07-kickoff-readiness.md",
       "date": "2026-07-07",
       "title": "2026-07-07 — Kickoff readiness (steps-6–8 brief + Q-0247/Q-0248/Q-0249)",
@@ -3239,6 +3319,14 @@
       "file": "2026-07-07-fable5-final-review-brief-prep.md",
       "date": "2026-07-07",
       "title": "2026-07-07 — Prepare Fable-5 ultracode brief for the final rebuild-plan review + Projects-EAP repo prep",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-07-07-coordinator-kickoff-calibration.md",
+      "date": "2026-07-07",
+      "title": "2026-07-07 — SuperBot Project coordinator: kickoff revision + calibration exchange design",
       "status": "complete",
       "run_type": "",
       "self_initiated": false
@@ -3519,70 +3607,6 @@
       "file": "2026-07-03-rebuild-conventions-freeze.md",
       "date": "2026-07-03",
       "title": "2026-07-03 — Rebuild Phase A · conventions freeze (owner-live, continued)",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-07-03-prep-fable5-final-review.md",
-      "date": "2026-07-03",
-      "title": "2026-07-03 — Prepare (not execute) a Fable-5 ultracode final-judgment prompt",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-07-03-phase-a-final-judgment.md",
-      "date": "2026-07-03",
-      "title": "2026-07-03 — Phase-A final judgment (Fable-5 ultracode)",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-07-03-permission-allowlist-and-endorse.md",
-      "date": "2026-07-03",
-      "title": "2026-07-03 — Permission allowlist fix + Q-0228 centralization endorsement (owner-live)",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-07-03-owner-ideas-release-loop-websites.md",
-      "date": "2026-07-03",
-      "title": "2026-07-03 — Capture 2 owner ideas: release→test→verify loop + websites cutover-role",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-07-03-oracle-and-verification-strategy.md",
-      "date": "2026-07-03",
-      "title": "2026-07-03 — New-feature oracle resolved + verification-fleet gate & repo-as-artifact strategy",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-07-03-layout-success-simulator.md",
-      "date": "2026-07-03",
-      "title": "2026-07-03 — Unified layout-success simulator (owner-directed capture)",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-07-03-foundations-engine-room-ultracode.md",
-      "date": "2026-07-03",
-      "title": "2026-07-03 — Foundational mechanics: the engine room (PROMPT A, runtime/logic)",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-07-03-foundational-mechanics-ultracode-brief.md",
-      "date": "2026-07-03",
-      "title": "2026-07-03 — Prepare two parallel ultracode session prompts (foundational-mechanics brainstorm)",
       "status": "complete",
       "run_type": "",
       "self_initiated": false
