@@ -1,1 +1,0 @@
-branch `claude/code-projects-early-access-7ieei5` · scope: docs-only — activate the now-granted Claude Code Projects EAP access (was invite-only in #1776; access confirmed live 2026-07-07, free until Fri 2026-07-10) — draft activation plan, review rubric, and Anthropic feedback reply · expected files: `docs/planning/*`, `docs/current-state.md`, `.sessions/*` · 2026-07-07
