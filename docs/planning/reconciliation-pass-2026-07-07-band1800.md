@@ -64,6 +64,17 @@ Phase-B canonical plan** ([`rebuild-canonical-plan-2026-07-06.md`](rebuild-canon
 founding plans, `superbot-next` kickoff) dominate the queue. The S3 sector file already carries the live
 ▶-startable pointers through #1798. No idea→plan promotion was needed to fill the band.
 
+### Drift fixed on sight (Q-0166)
+
+The `code-quality` gate surfaced a **pre-existing failure on `main`**:
+`test_check_plan_homing.py::test_live_repo_plans_are_all_homed` was red because the three
+`plan`-badged program-founding briefs added by #1798 — `website-design-fable-brief` ·
+`kit-lab-repo-founding-brief` · `trading-repo-founding-brief` (all 2026-07-07) — were linked only from
+the launch *index* (a sibling plan), never from a **routing doc**, so `check_plan_homing` treated them as
+orphans. Docs-reachability drift squarely in this pass's lane — **homed all three directly in the S3 sector
+routing doc** (`current-state/S3-ai-memory.md`, the kickoff-readiness bullet). `check_plan_homing` +
+`test_check_plan_homing` now green. This unblocked CI for **every** open PR, not just this one.
+
 ### Freshness
 
 Regenerated the committed `dashboard/data/dashboard.json` export (Q-0167). Reset the

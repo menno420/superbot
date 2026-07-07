@@ -19,6 +19,11 @@
   budget observe-first (~2-month telemetry window). Program vision captured strengthened
   ([multi-repo: kit lab + trading](../ideas/multi-repo-program-kit-lab-trading-2026-07-07.md));
   **kickoff brief READY** ([steps 6–8](../planning/rebuild-kickoff-steps-6-8-brief-2026-07-07.md)).
+  The **three/four program sessions are prepared** (PR #1798) — the
+  [launch index](../planning/program-three-sessions-launch-index-2026-07-07.md) plus the paste-ready
+  founding briefs: [program websites (Fable, session 1)](../planning/website-design-fable-brief-2026-07-07.md) ·
+  [kit-lab founding (session 2)](../planning/kit-lab-repo-founding-brief-2026-07-07.md) ·
+  [trading-repo founding (session 3)](../planning/trading-repo-founding-brief-2026-07-07.md).
 - **IDEA-CONSOLIDATION PASS — today's four owner captures folded + the plan re-verified (PR #1791, 2026-07-07 — Fable 5 ultracode, 9-lane fan-out).**
   Canonical-plan **§11b amendments A-12…A-20** + registry mints **R-16/R-17/P-5**
   ([report](../planning/rebuild-idea-consolidation-report-2026-07-07.md)): the **role-scoped

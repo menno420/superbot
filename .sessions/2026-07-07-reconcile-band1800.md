@@ -26,6 +26,10 @@ Docs-only Q-0107 reconciliation + planning pass over **band #1771–#1800**. Ful
 - **Freshness:** regenerated `dashboard/data/dashboard.json` (+ botsite mirrors) via
   `export_dashboard_data.py` (Q-0167).
 - **Runtime bugs (step 3):** none newly noticed — bug-book untouched.
+- **Drift fixed on sight (Q-0166):** the `code-quality` gate exposed a **pre-existing red on `main`** —
+  `test_check_plan_homing` failed because the three program-founding briefs from #1798 (website-design /
+  kit-lab / trading, all 2026-07-07) were unhomed (linked only from the launch index, not a routing doc).
+  Homed all three in `current-state/S3-ai-memory.md`. This unblocked CI for every open PR.
 
 ## Verification
 
@@ -62,6 +66,7 @@ pass did the disposition by hand and promoted the idea — closing the loop the 
 - **⚑ Owner manual steps:** none
 - **⚑ Self-initiated:** **closed 5 Codex Gate-V evidence PRs #1752–#1755/#1758** (decide-and-flag,
   Q-0240 — content already in merged synthesis #1767; reversible/reopen if you wanted the raw evidence
-  in-tree) + the required Q-0089 idea capture.
+  in-tree) + **fixed a pre-existing `test_check_plan_homing` red on `main`** (homed the 3 unhomed #1798
+  program briefs — was reddening CI for every PR) + the required Q-0089 idea capture.
 - **↪ Next:** the four rebuild program sessions (launch index READY) + Phase-B canonical plan; next
   recon at #1830.
