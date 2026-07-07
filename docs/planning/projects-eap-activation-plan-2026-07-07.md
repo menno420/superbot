@@ -52,6 +52,11 @@ lapse. Recommendation, in priority order:
 **Anti-pattern to avoid:** don't use the 3-day window to greenfield-plan `superbot-next` inside
 a Project — that's exactly the multi-week, high-stakes stream this doc's §4 caveat below flags as
 risky to trial under a hard deadline. Use it on work that's already low-stakes and decided.
+*(Superseded 2026-07-07 evening, owner-directed: the rebuild DOES run through the Project — by
+then the planning was complete (nothing greenfield left), the never-wait model had compressed the
+build to days-to-weeks, and the mitigations — write-back, repo-as-truth, the manual-session
+fallback — cover the lapse risk. Handoff protocol:
+[`projects-eap-coordinator-kickoff-2026-07-07.md`](projects-eap-coordinator-kickoff-2026-07-07.md).)*
 
 ## 3. How to review usefulness — a concrete rubric for this window
 
@@ -93,9 +98,10 @@ follow at the window close.
 > a production Discord bot) that had to hand-build a coordinator, shared memory, lane claims,
 > and session-state signalling before Projects existed, just to function at all. And Projects
 > lands at the perfect time for us too — we're starting a ground-up rebuild across two repos,
-> a multi-month, many-session migration that is precisely the stream a coordinator exists to
-> run. So this feedback comes from running your product on the use case it seems designed
-> for, checked against machinery we already operate.
+> planned in about three days and meant to be *built* by a coordinated fleet of sessions in
+> days rather than months — precisely the stream a coordinator exists to run, at a tempo where
+> coordination is genuinely load-bearing. So this feedback comes from running your product on
+> the use case it seems designed for, checked against machinery we already operate.
 >
 > **What we're testing it against:** since we'd already hand-built most of what Projects
 > ships — a cron-fired dispatch routine, committed-doc memory, claim files to prevent

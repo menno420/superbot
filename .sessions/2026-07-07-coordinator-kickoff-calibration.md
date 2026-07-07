@@ -91,6 +91,21 @@ with an explicit "never outranks the plan" clause; instructions untouched. (2) T
 voice: purpose-built reviewer × perfect-timing migration) + owner send-intent recorded
 (~tomorrow, interim beats deadline; journal feeds the bracketed slots).
 
+## Addendum 3 (same session, fourth PR)
+
+**Tempo correction (owner):** the "multi-month" framing was mine, not the owner's — the plan's
+own kernel estimate is ~5–8 days and the owner intends the whole migration attempted **inside
+the 3-day free window** by a continuous Fable fleet, correctness always over speed. Fixed all
+four committed month-scale claims (product review §1, activation plan anti-pattern + reply
+draft, kickoff second-mandate). **Final owner decision panel (6 Qs)** applied to the kickoff:
+tempo = 3-day *stretch goal* not deadline, correctness first; post-Friday-if-undecided =
+continue on account default + report usage draw, never pause; substrate-kit = **Public**;
+roll-up = **~09:00 Europe/Amsterdam**; test **bot + token already live** (only the guild + a
+possible separate application to avoid gateway collisions remain); calibration verdict =
+**correct in-thread**, Archive-and-rerun reserved for fundamental misses (repo-split /
+never-wait / capability overclaim). Model note: this addendum finished under Opus 4.8 after a
+Fable server error mid-edit; no content impact (edits were already placed pre-error).
+
 ## Docs audit (Q-0104)
 
 `check_docs.py --strict` ✓ · `check_current_state_ledger.py --strict` ✓ (exit 0; #1802/#1804/

@@ -116,10 +116,11 @@ SESSIONS: follow plan §3's model/effort allocation where you can control it; fl
 can't. Independent review of a band should be a different model than built it — if you cannot
 vary models, route review through the repo's existing cross-agent lane or flag it.
 
-REPORTING: one daily roll-up, calibrated to what actually needs Menno — flagged decisions,
-destructive-tier items inside their reaction window, the OWNER ACTIONS list, anything
-genuinely stuck — never a narration of every session. Always distinguish "red/incomplete by
-design" (parity CI is born-red on purpose) from "broken, needs help".
+REPORTING: one daily roll-up at ~09:00 Europe/Amsterdam, calibrated to what actually needs
+Menno — flagged decisions, destructive-tier items inside their reaction window, the OWNER
+ACTIONS list, anything genuinely stuck — never a narration of every session. Always
+distinguish "red/incomplete by design" (parity CI is born-red on purpose) from "broken,
+needs help".
 
 MEMORY: your Project memory is a working cache, never the record. Anything durable — a design
 call, a ruling, a completed step, a lesson — is written into a committed doc in the repo it
@@ -225,12 +226,15 @@ C. Your own read
   observed with a reference · expected · weight). Shallow = generic praise or critique with no
   incident behind it — the exact failure mode the guidebook's integrity rules screen for.
 
-**Verdict mechanics:** answers live in this Project chat; nothing needs committing (superbot-next
-must stay empty pre-kit, and writing them into superbot blurs the split for no gain). If the
-answers land → send §4. If they're shallow or wrong → **Archive the coordinator** (Settings →
-General → Archive), fix §2 if the miss traces to an instruction gap, and re-run — a fresh
-coordinator costs one click. Optionally paste the answers back into a superbot session later for
-a one-line verdict stamp here.
+**Verdict mechanics (policy owner-decided 2026-07-07):** answers live in this Project chat;
+nothing needs committing (superbot-next must stay empty pre-kit, and writing them into superbot
+blurs the split for no gain). If the answers land → send §4. **Mostly good with a gap or two →
+correct in-thread**: reply with targeted corrections on the specific misses, have it restate
+them right, then send §4 the same day. Reserve **Archive the coordinator** (Settings → General →
+Archive; fix §2 if the miss traces to an instruction gap, then re-run) for **fundamental
+misses only** — repo-split confusion, a never-wait misread, or a capability overclaim.
+Optionally paste the answers back into a superbot session later for a one-line verdict stamp
+here.
 
 ## 4. Kickoff message — send only after the calibration answers land
 
@@ -273,10 +277,11 @@ ACTIONS list and build elsewhere — assume same-day-ish responses from me, neve
 
 YOUR FIRST STRETCH — steps 7 and 8, starting now.
 Step 7 carries one ruling the plan text predates — Q-0247: extract the substrate kit out of
-menno420/superbot's substrate-kit/ into its own repo, menno420/substrate-kit (I create it
-and add it to this Project's scope if you can't — OWNER ACTIONS), then superbot-next adopts
-FROM the kit repo. Fresh-from-kit, never a copy of superbot. The work order for this stretch
-is docs/planning/rebuild-kickoff-steps-6-8-brief-2026-07-07.md.
+menno420/superbot's substrate-kit/ into its own repo, menno420/substrate-kit — PUBLIC (it
+never holds secrets; same free-Actions logic as superbot-next). I create it and add it to
+this Project's scope if you can't — OWNER ACTIONS. Then superbot-next adopts FROM the kit
+repo. Fresh-from-kit, never a copy of superbot. The work order for this stretch is
+docs/planning/rebuild-kickoff-steps-6-8-brief-2026-07-07.md.
 Step 8 is the riskiest unattended stretch of the whole start — the control plane: the six
 named CI gates (golden-parity born-red, check_compat_frozen, …), rulesets, CODEOWNERS,
 branch protection. Verify every required check BOTH actually blocks AND actually can pass —
@@ -301,22 +306,30 @@ Anthropic TOMORROW — so from your first roll-up onward I want the journal's fi
 entries ready: what the product made easy, what fought you, incident-shaped. The framing
 your evidence supports: this program and this product found each other at the right moment —
 we hand-built every feature Projects ships (so we can judge them against operating data),
-and Projects arrives exactly when we need to coordinate a many-session, multi-month
-migration. Integrity rules apply always: never stage or perform for the evaluation; friction
-honestly documented is a deliverable.
+and Projects arrives exactly when we need to coordinate a many-session migration we intend
+to run at fleet speed — days, not months. Integrity rules apply always: never stage or
+perform for the evaluation; friction honestly documented is a deliverable.
 
-PACING. Projects is free through Friday 2026-07-10 and this Project currently defaults to
-Fable 5 — pull the heaviest, most design-loaded work into that window (steps 7–8 today, then
-as far into the kernel bands as correctness allows). Never trade correctness for the window;
-losing the Project must cost nothing durable. In Friday's roll-up: remind me to re-decide
-model/cost posture, and deliver the assembled evidence package (guidebook §5).
+PACING AND TEMPO. Stretch goal, not a deadline: try to get the whole migration done inside
+the free window — before Friday 2026-07-10, about three days — by running continuously. The
+plan's own kernel estimate is ~5–8 days, so beating it takes relentless within-band fan-out
+and zero idle between steps. Speed never overrides correctness: missing the stretch goal is
+fine; cutting a corner is not. Projects is free through Friday and this Project currently
+defaults to Fable 5 — pull the heaviest, most design-loaded work in first. If Friday arrives
+before I've re-decided model/cost posture: continue on the account default and report the
+observed usage draw in your roll-ups — never pause for that decision. In Friday's roll-up:
+the model/cost reminder + the assembled evidence package (guidebook §5).
 
-RHYTHM. One daily roll-up: flagged decisions · destructive-tier items in their reaction
-window · the live OWNER ACTIONS list · anything genuinely stuck · an evaluation line when
-something happened — and always distinguish red-by-design (parity is born red on purpose)
-from broken. Set up routines once there's something worth watching. OWNER ACTIONS starts
-now: substrate-kit repo creation + Project scope (if you can't do it) · Railway project +
-secrets (step 8) · the public→private flip decision · test guild + test-bot token (step 12).
+RHYTHM. One daily roll-up at ~09:00 (Europe/Amsterdam): flagged decisions · destructive-tier
+items in their reaction window · the live OWNER ACTIONS list · anything genuinely stuck · an
+evaluation line when something happened — and always distinguish red-by-design (parity is
+born red on purpose) from broken. Set up routines once there's something worth watching.
+OWNER ACTIONS starts now: substrate-kit repo creation (PUBLIC — it never holds secrets; same
+free-Actions logic) + adding it to this Project's scope, if you can't do either · Railway
+project + secrets (step 8) · the public→private flip decision for superbot-next · the test
+GUILD at step 12 — the test bot and its token already exist, so only the server itself and
+the secrets handoff remain (flag if a separate bot application is needed to avoid gateway
+collisions with old-bot dev boots).
 ```
 
 ## 5. The owner-action forecast (so none of these arrives as a surprise)
@@ -326,11 +339,11 @@ maintains the live version of this list in its reports:
 
 | When | Action | Notes |
 |---|---|---|
-| step 7 | create `menno420/substrate-kit` + add to Project repo list | only if the coordinator can't (it reports which in calibration B7) |
+| step 7 | create `menno420/substrate-kit` (**Public** — owner-decided 2026-07-07: pure tooling, never holds secrets, free Actions) + add to Project repo list | only if the coordinator can't (it reports which in calibration B7) |
 | step 8 | Railway project `superbot-next`: approve spend, paste sealed secrets | per [railway plan §4](railway-setup-plan-2026-07-02.md); agent does everything else |
 | step 8 → 15 | click the superbot-next **public→private flip** | coordinator raises at 8; HARD before 15 (CUT-2 artifacts); also the free-Actions cost checkpoint |
-| step 12 | create the test guild + test-bot token; invite the bot | companion C's 9-zone layout is built by the bot once invited |
-| Fri 7/10 | re-decide model/cost posture when the free window closes; **send the Anthropic feedback reply** | coordinator reminds + delivers the assembled evidence ([guidebook](projects-eap-evaluation-guidebook-2026-07-07.md) §5); the owner sends — external comms are his alone |
+| step 12 | the test **guild** + secrets handoff — the test bot and token **already exist** (owner-confirmed 2026-07-07) | designate/create the server + invite the bot; token → Railway sealed vars, never a repo; coordinator flags if a separate application is needed to avoid gateway collisions with old-bot dev boots |
+| Fri 7/10 | re-decide model/cost posture when the free window closes; **send the Anthropic feedback reply** (owner intends an earlier interim reply ~Wed too) | coordinator reminds + delivers the assembled evidence ([guidebook](projects-eap-evaluation-guidebook-2026-07-07.md) §5); the owner sends — external comms are his alone. **Default if undecided at the close (owner-decided): continue on the account default model and report usage draw — never pause** |
 | anytime | react to ⚑ flags / destructive-tier reaction windows | silence = consent — reacting is the control, never a required approval |
 
 ## 6. The second mandate — the evaluation guidebook

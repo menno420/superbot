@@ -30,7 +30,8 @@ flag (our Q-0240/Q-0241 model). That makes us close to the target user for "auto
 
 **Strong fit, one honest caveat.** The rebuild program (build `superbot-next` kernel S0–S15, then
 port ~43 subsystems band-by-band, then a 3-stage cutover) is *exactly* the shape a Project claims
-to serve: a months-long work stream of dozens of sessions with shared context, where today every
+to serve: a work stream of dozens of sessions with shared context (once sketched as months-long;
+days-to-weeks at fleet velocity under the never-wait model, owner-corrected 2026-07-07), where today every
 session pays a real orientation tax (our measured boot-read is capped at 7,000 words *because* it
 grew unbounded). One-off sessions were never the problem; **the seams between them are** — a
 finished session's knowledge dies unless it is written into the repo, and the next session
