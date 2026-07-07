@@ -1,6 +1,6 @@
 # 2026-07-07 — Port understand-and-reflect + guiding-questions into the substrate-kit
 
-> **Status:** `in-progress`
+> **Status:** `complete`
 > **Model:** Sonnet 5 · **Governance:** Q-0106 owner-directed-in-session exception applies
 
 ## What is about to happen
