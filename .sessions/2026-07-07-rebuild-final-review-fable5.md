@@ -1,6 +1,6 @@
 # 2026-07-07 — Rebuild FINAL review (Fable 5, ultracode) + Projects-EAP repo prep
 
-> **Status:** `in-progress`
+> **Status:** `complete`
 > **Branch:** `claude/superbot-rebuild-final-review-nezu89` · **PR:** #1778 (+ fix PRs #1781, #1782 — both merged→deployed)
 > **Brief:** `docs/planning/rebuild-final-review-fable5-ultracode-brief-2026-07-07.md` (§3 mandate A–H, Q-0241)
 
