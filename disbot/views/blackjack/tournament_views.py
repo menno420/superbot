@@ -223,6 +223,14 @@ async def _check_tourn_done(tourn: _BjTournament, bot: commands.Bot):
     if len(tourn.results) < len(tourn.players):
         return  # not all players finished
 
+    # Settle-once: two players finishing concurrently (or a timeout racing the
+    # last hand) each reach here past the all-finished check; claim before any
+    # await so exactly one caller runs the payout. The paid path is already
+    # row-consumption idempotent, but the FREE-tournament reward leg has no
+    # escrow rows to consume — this claim is its only double-pay guard.
+    if not tourn.claim_settlement():
+        return
+
     announce = bot.get_channel(tourn.announce_id)
     guild = bot.get_guild(tourn.guild_id)
 
