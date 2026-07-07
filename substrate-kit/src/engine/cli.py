@@ -22,7 +22,7 @@ import tempfile
 from datetime import date
 from pathlib import Path
 
-from engine.adopt import ADOPT_PLAN, _adopt_dest, adopt
+from engine.adopt import ADOPT_PLAN, _adopt_dest, adopt, strip_unrendered_banner
 from engine.agents.agents import AGENTS, agent_document, agent_relpath
 from engine.checks.check_docs import run_doc_checks
 from engine.checks.check_namespace import check_namespace
@@ -249,6 +249,9 @@ def _render_live(target: Path, context: dict[str, str]) -> int:
         filled = render(text, context)
         leftover = find_placeholders(filled)
         leftover_total += len(leftover)
+        if not leftover:
+            # Fully rendered — the adopt-time UNRENDERED banner has done its job.
+            filled = strip_unrendered_banner(filled)
         if filled != text:
             atomic_write_text(path, filled)
             suffix = f" ({len(leftover)} slot(s) still unfilled)" if leftover else ""

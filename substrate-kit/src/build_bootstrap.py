@@ -57,6 +57,7 @@ MODULE_ORDER = (
     "hooks/stop_check.py",
     "hooks/settings.py",
     "render.py",
+    "derive.py",
     "contextpack.py",
     "adopt.py",
     "cli.py",

@@ -16,7 +16,14 @@ import pytest
 
 pytest.importorskip("engine.hooks.settings")
 
-from engine.adopt import ADOPT_PLAN, adopt, ci_snippet
+from engine.adopt import (
+    ADOPT_PLAN,
+    UNRENDERED_BANNER_FIRST_LINE,
+    adopt,
+    ci_snippet,
+    strip_unrendered_banner,
+    with_unrendered_banner,
+)
 from engine.agents.agents import AGENTS
 from engine.checks.check_docs import run_doc_checks
 from engine.ledger import parse_ledger
@@ -76,10 +83,87 @@ def test_claude_md_is_staged_not_planted(tmp_path):
     assert "CLAUDE.md.tmpl" not in {name for name, _ in ADOPT_PLAN}
 
 
-def test_unfilled_placeholders_stay_visible(tmp_path):
+def test_unfilled_placeholders_stay_visible_under_banner(tmp_path):
     root, _, _ = _adopt_into(tmp_path)
     text = (root / "CONSTITUTION.md").read_text(encoding="utf-8")
-    assert "${project_name}" in text
+    # ${project_name} is derived from the root dir name at adopt time…
+    assert "${project_name}" not in text
+    assert "repo" in text
+    # …while a genuinely un-derivable slot stays visible, under the banner.
+    assert "${drift_resolution}" in text
+    assert text.startswith(UNRENDERED_BANNER_FIRST_LINE)
+
+
+def test_derived_slots_render_and_stay_provisional(tmp_path):
+    root, config, lines = _adopt_into(tmp_path)
+    backend = JsonStateBackend(root / config.state_dir / "state.json")
+    slots = backend.get("slots", {})
+    values = backend.get("slot_values", {})
+    assert slots.get("project_name") == "provisional"
+    assert values["project_name"]["value"] == "repo"
+    assert values["project_name"]["source"] == "derived"
+    assert any(line.startswith("derived: project_name") for line in lines)
+    # A doc whose only slot is project_name is now fully rendered: no banner.
+    ledger = (root / "docs" / "decisions.md").read_text(encoding="utf-8")
+    assert "${" not in ledger
+    assert not ledger.startswith(UNRENDERED_BANNER_FIRST_LINE)
+
+
+def test_derivation_never_overwrites_an_existing_answer(tmp_path):
+    root = tmp_path / "repo"
+    config = Config()
+    backend = _make_backend(root, config, {"project_name": "demobot"})
+    adopt(root, config, backend, kit_root=tmp_path / "kit")
+    values = backend.get("slot_values", {})
+    assert values["project_name"]["value"] == "demobot"
+
+
+def test_python_project_derives_language_and_verify_command(tmp_path):
+    root = tmp_path / "repo"
+    root.mkdir(parents=True)
+    (root / "pyproject.toml").write_text(
+        '[project]\nname = "x"\nrequires-python = ">=3.10"\n', encoding="utf-8"
+    )
+    (root / "tests").mkdir()
+    config = Config()
+    backend = _make_backend(root, config)
+    adopt(root, config, backend, kit_root=tmp_path / "kit")
+    values = backend.get("slot_values", {})
+    assert values["primary_language"]["value"] == "Python >=3.10"
+    assert values["verify_command"]["value"] == "python3 -m pytest"
+    staged = (root / config.state_dir / "claude" / "CLAUDE.md").read_text(
+        encoding="utf-8"
+    )
+    assert "python3 -m pytest" in staged
+    assert "${verify_command}" not in staged
+
+
+def test_banner_strips_when_placeholders_fill():
+    bannered = with_unrendered_banner("# Doc\n\n${architecture_layers}\n")
+    assert bannered.startswith(UNRENDERED_BANNER_FIRST_LINE)
+    filled = bannered.replace("${architecture_layers}", "layered")
+    assert strip_unrendered_banner(filled) == "# Doc\n\nlayered\n"
+    # A fully-rendered doc never gains a banner, and stripping is a no-op.
+    assert with_unrendered_banner("# Clean\n") == "# Clean\n"
+    assert strip_unrendered_banner("# Clean\n") == "# Clean\n"
+
+
+def test_adopt_as_single_file_vendors_bootstrap(tmp_path, monkeypatch):
+    fake_bootstrap = tmp_path / "dist" / "bootstrap.py"
+    fake_bootstrap.parent.mkdir(parents=True)
+    fake_bootstrap.write_text("# fake single-file bootstrap\n", encoding="utf-8")
+    monkeypatch.setattr("sys.argv", [str(fake_bootstrap), "adopt"])
+    root, config, lines = _adopt_into(tmp_path)
+    assert "planted: bootstrap.py" in lines
+    assert (root / "bootstrap.py").read_text(encoding="utf-8") == (
+        "# fake single-file bootstrap\n"
+    )
+    settings = (root / config.state_dir / "hooks" / "settings.template.json").read_text(
+        encoding="utf-8"
+    )
+    # Hook commands reference the vendored root copy, not a path outside the repo.
+    assert "bootstrap.py hook" in settings
+    assert str(fake_bootstrap) not in settings
 
 
 def test_filled_slot_renders_into_planted_doc(tmp_path):
