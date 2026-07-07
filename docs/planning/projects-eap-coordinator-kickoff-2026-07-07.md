@@ -373,6 +373,7 @@ maintains the live version of this list in its reports:
 |---|---|---|
 | step 7 | create `menno420/substrate-kit` (**Public** — owner-decided 2026-07-07: pure tooling, never holds secrets, free Actions) + add to Project repo list | only if the coordinator can't (it reports which in calibration B7) |
 | step 8 | Railway project `superbot-next`: approve spend, paste sealed secrets | per [railway plan §4](railway-setup-plan-2026-07-02.md); agent does everything else |
+| step 8 | **enforce the control plane: branch protection, rulesets, required-status-check designation, OIDC on superbot-next** — likely **owner-only** | the coordinator can *author* the six CI workflow files + CODEOWNERS via PRs, but making them *required* + branch protection + OIDC is a different API surface. Its first probe (2026-07-07) confirmed repo *creation* is available but did **not** test branch-protection/ruleset management specifically, and no standard GitHub MCP tool exposes it — so this enforcement half stays unconfirmed and likely the owner's. Pre-loaded on OWNER ACTIONS so step 8 doesn't stall |
 | step 8 → 15 | click the superbot-next **public→private flip** | coordinator raises at 8; HARD before 15 (CUT-2 artifacts); also the free-Actions cost checkpoint |
 | step 12 | the test **guild** + secrets handoff — the test bot and token **already exist** (owner-confirmed 2026-07-07) | designate/create the server + invite the bot; token → Railway sealed vars, never a repo; coordinator flags if a separate application is needed to avoid gateway collisions with old-bot dev boots |
 | Fri 7/10 | re-decide model/cost posture when the free window closes; **send the Anthropic feedback reply** (owner intends an earlier interim reply ~Wed too) | coordinator reminds + delivers the assembled evidence ([guidebook](projects-eap-evaluation-guidebook-2026-07-07.md) §5); the owner sends — external comms are his alone. **Default if undecided at the close (owner-decided): continue on the account default model and report usage draw — never pause** |
@@ -391,7 +392,65 @@ the coordinator is told to read, so secrecy was illusory anyway — signal integ
 the guidebook's never-perform rule plus record-based verdicts (the owner and the repo record
 score the tests, never the coordinator's self-report).
 
-## 7. What this does and doesn't replace
+## 7. Working-relationship inquiry (send once the coordinator is running)
+
+Owner-directed (2026-07-07): distinct from the calibration (§3, which tested *understanding*),
+this inquiry asks the coordinator to **advise the owner on how to work with it best** — where
+thinking should happen (finalized prompts outside vs. brainstorming in-Project), how its
+context/memory actually works, and when to talk to it vs. a child session. Unlike the
+calibration, most answers are the coordinator's *self-model*, not verifiable facts — so the
+marker of a good answer is honesty about what it doesn't yet know, and the answers get
+**confirmed by observation** over the next few days (this inquiry naturally runs the product
+review's write-back + memory tests). It also doubles as high-signal evaluation evidence: how a
+user discovers the optimal interaction model is exactly the feedback Anthropic asked for.
+
+```
+Separate from the build — I want to learn how to work with you best, so I use you the right way
+instead of guessing. Answer from how you ACTUALLY operate, not how you think I want you to work;
+where the honest answer is "I don't know yet" or "it depends," say so and on what. These shape
+how I talk to you for the rest of the program.
+
+1. Finished vs. raw. Do you get more from a finalized, pre-thought-out prompt (like the
+   kickoff), or from a rough idea we develop together in this chat? Where's the line — what's
+   worth me polishing outside first, and what's better brought to you half-formed?
+
+2. This chat's role. Should this coordinator chat be my main workspace — brainstorming,
+   deciding, steering, all in here — or better kept as a thin control channel (dispatch +
+   status) with the real thinking in dedicated sessions or outside? What gets noisy or stale if
+   I overload it?
+
+3. Your context, honestly. What do you actually carry between my messages, what do you re-read
+   each time, and what do you lose? When I tell you something once, does it genuinely stick, or
+   should I write it into a doc for it to survive? Does a very long chat with you degrade — and
+   if so, what's the tell, and is archive-and-restart the fix? What's the highest-bandwidth way
+   to get a piece of context (a decision, a constraint, a screenshot) into your working picture?
+
+4. You vs. a child session. When is it better for me to talk to you, vs. open a working session
+   and talk to it directly? What kinds of asks should never go through you because you'd just
+   relay them and add a hop (you mentioned relaying is your bottleneck)?
+
+5. Steering mid-flight. If I want to redirect while your fleet is running, what's the cheapest
+   way — a message here, stopping a specific session, something else? Does interrupting cost you
+   (lost work, confused state), or is it free? How do you want a correction phrased?
+
+6. Decisions vs. options. Do you work better when I hand you a made decision, or when I give you
+   the trade-off and let you decide-and-flag? Where do you genuinely want me to decide, and
+   where would you rather I stay out of the way?
+
+7. Your load. How many parallel things can you actually coordinate before your quality drops or
+   you lose track? What's the signal that I've given you too much — and when should we spin up a
+   second Project instead of piling more onto this one?
+
+8. Stuck vs. working vs. waiting. From my side, what does each look like? What's the cheapest
+   habit on my end that keeps you unblocked without me hovering — and how do I tell "red by
+   design" from "actually broken" without opening every session?
+
+9. What you'd change about me. Having worked with me across the calibration and first stretch:
+   what's the one thing about how I hand you work that, if I changed it, would make you
+   materially more effective?
+```
+
+## 8. What this does and doesn't replace
 
 Nothing in the canonical plan changes — this is execution mechanism only. If the coordinator
 proves a poor fit (scored on the four §10 tests, by observation), the same §5 sequence runs
