@@ -8986,3 +8986,36 @@ caps + kill switch) stand regardless, because they guard irreversibility, not sp
 
 **Homes:** this Q · the capture doc (open-forks + part-2 rails updated) · the kickoff brief §2
 step 8 (no Railway caps; telemetry instead).
+
+### Q-0250 — DECIDED: the trading repo starts stocks-first (US large-cap tech); DEGIRO stays the owner's manual venue; the crypto proving-ground suggestion is withdrawn (2026-07-07)
+
+**Context.** The multi-repo capture left "which market/asset class first" as an open fork; the
+outside-the-box sweep suggested crypto as a cheap rigor proving ground (free complete data, 24/7,
+trivial paper trading). The owner answered: he trades **stocks only**, on **DEGIRO**, mostly US
+large-cap tech (Intel, Nvidia); he has no way — and no desire — to trade crypto, though he'd
+accept it if genuinely best "since most of it will not be done by me."
+
+**Decision (owner preference wins; the technical case supports it).** **Stocks-first, US
+large-cap tech as the initial scope.** Rationale: for liquid mega-caps the usual data killers are
+weak (survivorship bias is a broad-universe problem; large-cap daily/intraday data with
+documented splits/dividends is cheap and good; spreads are tight so cost modeling stays honest) —
+and the falsification ladder proves out fine there, so crypto's data-cheapness advantage isn't
+worth building where the owner's interest and ground truth aren't. Three binding riders:
+
+1. **Point-in-time universe rule — the selection-bias guard.** The backtest universe is defined
+   by a dated rule (e.g. "top-N US tech by market cap as of each rebalance date"), **never** "the
+   stocks the owner holds/likes today" — NVDA is one of history's best performers, and a universe
+   chosen on hindsight makes any long-biased strategy look brilliant. The owner's picks are
+   welcome as *watchlist/priority inputs*, not as the universe definition.
+2. **The automated lane rides an API broker, not DEGIRO.** DEGIRO has **no official public API**
+   (unofficial reverse-engineered clients violate its terms and break routinely — not a
+   foundation). Paper trading runs on an API-native broker (IBKR-class, EU-available, real paper
+   environments; Alpaca-class for US-stock paper). The eventual capped-live gate (if ever) uses
+   the same API broker, under the standing real-money brake.
+3. **DEGIRO integrates read-only at the tracker.** DEGIRO supports transaction/portfolio export;
+   the tracking website ingests those exports so the owner's *real* portfolio appears next to the
+   strategies' paper portfolios — his manual trading becomes a benchmark lane, not an execution
+   dependency.
+
+**Homes:** this Q · the capture doc's open-forks + Part 3 (fork closed) · the future trading-repo
+founding brief (this Q is its market-scope input).
