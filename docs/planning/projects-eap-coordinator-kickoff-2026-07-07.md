@@ -298,12 +298,14 @@ plan specifies, loudly flagged, never paused. When something only I can supply b
 ACTIONS list and build elsewhere — assume same-day-ish responses from me, never minutes.
 
 YOUR FIRST STRETCH — steps 7 and 8, starting now.
-Step 7 carries one ruling the plan text predates — Q-0247: extract the substrate kit out of
-menno420/superbot's substrate-kit/ into its own repo, menno420/substrate-kit — PUBLIC (it
-never holds secrets; same free-Actions logic as superbot-next). I create it and add it to
-this Project's scope if you can't — OWNER ACTIONS. Then superbot-next adopts FROM the kit
-repo. Fresh-from-kit, never a copy of superbot. The work order for this stretch is
-docs/planning/rebuild-kickoff-steps-6-8-brief-2026-07-07.md.
+Step 7 (plan §5 step 7, per Q-0247) has two parts in order: (a) EXTRACT the substrate kit out
+of menno420/superbot's substrate-kit/ into its own repo, menno420/substrate-kit — PUBLIC (it
+never holds secrets; same free-Actions logic as superbot-next); that repo is the kit's
+permanent home and the source every future repo (kit-lab, trading) adopts from. I create it
+and add it to this Project's scope if you can't — OWNER ACTIONS. (b) THEN superbot-next adopts
+FROM the kit repo: python3 dist/bootstrap.py adopt → doc skeletons, decision ledger,
+orientation-budget + namespace/seam checkers, staged hooks. Fresh-from-kit, never a copy of
+superbot — the kit is never adopted straight out of superbot's directory.
 Step 8 is the riskiest unattended stretch of the whole start — the control plane: the six
 named CI gates (golden-parity born-red, check_compat_frozen, …), rulesets, CODEOWNERS,
 branch protection. Verify every required check BOTH actually blocks AND actually can pass —

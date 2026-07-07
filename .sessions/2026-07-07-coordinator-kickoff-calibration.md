@@ -150,6 +150,18 @@ for kit-lab/trading), then superbot-next adopts FROM that repo — never a copy 
 the same as an explicit item to the owner's in-thread correction so the live coordinator doesn't
 proceed on its A2 reading.
 
+## Addendum 7 (seventh PR)
+
+Owner steer: don't send the coordinator chasing a separate doc when the content is (now)
+documented — inline it or drop the pointer. Since the plan step-7 row now states the Q-0247
+sequence (addendum 6) and the kickoff §4 describes steps 7–8 substantively, the kickoff's hard
+pointer "the work order for this stretch is [steps-6–8 brief]" was redundant doc-chasing.
+Removed it: §4 step-7 is now self-contained (extract → substrate-kit repo → adopt-from-it with
+the `dist/bootstrap.py adopt` command + the permanent-home/source rationale inlined), and the
+stale "one ruling the plan text predates" phrasing is fixed to "plan §5 step 7, per Q-0247"
+(the plan no longer predates it). The brief stays a valid planning artifact (launch-index
+references it); only the coordinator prompt's dependency on it is removed.
+
 ## Docs audit (Q-0104)
 
 `check_docs.py --strict` ✓ · `check_current_state_ledger.py --strict` ✓ (exit 0; #1802/#1804/
