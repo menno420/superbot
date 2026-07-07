@@ -80,6 +80,17 @@ keep-the-four-tests-blind decision (⚑ owner-directed)** — and rightly so: th
 committed in the repo the coordinator is told to read, so the secrecy was illusory; integrity
 now rests on the guidebook's never-perform rule + record-based verdicts instead.
 
+## Addendum 2 (same session, third PR — after #1812 merged)
+
+Two owner ratifications folded: (1) **thin instructions / inclusive kickoff split confirmed** —
+§4's kickoff message expanded into the one-time full imprint of the program (mission paragraph,
+how-we-work, first-stretch steps 7–8 with guardrails, session structure, second mandate with
+the owner's mutual-fit framing + the write-to-Anthropic-tomorrow deadline, pacing, rhythm),
+with an explicit "never outranks the plan" clause; instructions untouched. (2) The owner's
+**mutual-fit framing folded into the activation plan §4 draft reply** (opening paragraph in his
+voice: purpose-built reviewer × perfect-timing migration) + owner send-intent recorded
+(~tomorrow, interim beats deadline; journal feeds the bracketed slots).
+
 ## Docs audit (Q-0104)
 
 `check_docs.py --strict` ✓ · `check_current_state_ledger.py --strict` ✓ (exit 0; #1802/#1804/

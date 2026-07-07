@@ -234,48 +234,89 @@ a one-line verdict stamp here.
 
 ## 4. Kickoff message — send only after the calibration answers land
 
+Deliberately **inclusive**, by owner direction (2026-07-07 evening): the instructions (§2) stay
+thin because *every* session pays their cost on boot, but this kickoff is read once, by one
+agent, as its one-time imprint of the whole program — so it carries the full picture rather
+than only pointing at it. It still never outranks the plan, and it says so.
+
 ```
-Kickoff. The work is the SuperBot rebuild, run per menno420/superbot's
-docs/planning/rebuild-canonical-plan-2026-07-06.md §5 — re-read it now, including the Q-0241
-amendment banner and §11/§11b.
+Kickoff. From this message on, the rebuild program is yours to run. This message is
+deliberately complete — your one-time imprint of the whole picture — but it never outranks
+the plan: menno420/superbot's docs/planning/rebuild-canonical-plan-2026-07-06.md is the
+binding source of truth. Re-read it now (the Q-0241 amendment banner, §5, §8, §11/§11b)
+before acting on anything below.
 
-Where things stand: steps 1–3 are done and merged. Step 4 (the Stage-2 walk) is mine, runs in
-parallel, and blocks later port bands only — never wait on it. Step 5 is retired (Q-0241).
-Step 6 is done: superbot-next exists, empty, in this Project's scope — and deliberately
-PUBLIC for now (free Actions minutes). So: nothing sensitive in any commit, ever, and raise
-the private flip at step 8 (it must be flipped before step 15's import artifacts).
+THE PROGRAM IN ONE PARAGRAPH. menno420/superbot runs a live production Discord bot (~58
+cogs, ~1,800 merged PRs, real users with real balances) that has grown to its architectural
+ceiling. This program rebuilds it from scratch in menno420/superbot-next as a
+manifest-driven, declarative system (frozen L0 grammar, kernel bands K0–K10, measured
+declarative fit ~85%), ports the ~43 subsystems band-by-band under golden parity (the old
+bot's behavior, captured as 465 goldens, is the oracle — the new repo is BORN RED on parity
+by design), and cuts production over in three staged cuts: CUT-1 (test guild) → CUT-2
+(shadow import) → CUT-3 (token swap, 7-day rollback window). The old repo stays the record
+and the oracle; the new repo becomes the clean source of truth; the old project ends as an
+archived backup. Seventeen steps, plan §5. Steps 1–6 are done — including the repo itself:
+superbot-next exists, empty, in this Project's scope, and deliberately PUBLIC for now (free
+Actions minutes). So: nothing sensitive in any commit, ever; the private flip is raised at
+step 8 and is HARD before step 15's import artifacts. Step 4 (the Stage-2 walk) is mine,
+runs in parallel, and blocks later port bands only — never wait on it. Step 5 is retired.
 
-Start with step 7, with one ruling the plan text predates — Q-0247: the substrate kit is
-extracted into its own repo (menno420/substrate-kit) as part of this step, and superbot-next
-adopts FROM the kit; superbot-next is built fresh-from-kit, never from a copy of superbot.
-The full packaging of steps 6–8 (including that fork) is
-docs/planning/rebuild-kickoff-steps-6-8-brief-2026-07-07.md — use it as the work order for
-this stretch. If you can't create the substrate-kit repo or add it to this Project's scope
-yourself, that's the first OWNER ACTION.
+HOW WE WORK. I can't code and won't review your diffs — I steer by reacting to what I see:
+in the Discord server, in PRs, in your reports. That is why the working model
+(Q-0240/Q-0241) is decide-and-flag + never-wait: you make the calls, record a one-line
+rationale, flag the notable ones, and keep moving. Silence = consent = done. Live-testing in
+a real server is YOUR gate — CI green alone is never "done". The destructive tier (real prod
+data, the CUT-3 token swap, deleting old-bot data) runs only via the reversible paths the
+plan specifies, loudly flagged, never paused. When something only I can supply blocks a lane
+(secrets, spend, repo settings, a Discord server or token): park that lane on the OWNER
+ACTIONS list and build elsewhere — assume same-day-ish responses from me, never minutes.
 
-Then step 8 (control plane) with care — it's the riskiest unattended stretch: stand up the
-six named CI gates + rulesets + CODEOWNERS, verify each required check both actually blocks
-and actually can pass, and never introduce PAT machinery. The Railway half needs my secrets
-and spend approval: park it on the OWNER ACTIONS list and keep moving. Then straight on per
-§5 — kernel bands, layer V, K10 — never waiting between steps.
+YOUR FIRST STRETCH — steps 7 and 8, starting now.
+Step 7 carries one ruling the plan text predates — Q-0247: extract the substrate kit out of
+menno420/superbot's substrate-kit/ into its own repo, menno420/substrate-kit (I create it
+and add it to this Project's scope if you can't — OWNER ACTIONS), then superbot-next adopts
+FROM the kit repo. Fresh-from-kit, never a copy of superbot. The work order for this stretch
+is docs/planning/rebuild-kickoff-steps-6-8-brief-2026-07-07.md.
+Step 8 is the riskiest unattended stretch of the whole start — the control plane: the six
+named CI gates (golden-parity born-red, check_compat_frozen, …), rulesets, CODEOWNERS,
+branch protection. Verify every required check BOTH actually blocks AND actually can pass —
+a misconfigured gate either bricks the merge path or protects nothing. No PAT machinery,
+ever. The Railway half (my secrets, my spend approval) goes on OWNER ACTIONS; don't stall on
+it. Then straight on per §5 — kernel bands S1→S9 (one session per band; the settings-engine
+and panel-runtime PROVIDES land inside S8/S9), then S10–S15, layer V, K10, CUT-1 — never
+waiting between steps.
 
-Pacing: Projects is free through Friday 2026-07-10 and this Project's default model is
-currently Fable 5 — pull the heaviest, most design-loaded work into that window (steps 7–8
-now, then as far into the kernel bands as correctness allows). Never trade correctness for
-the window: your write-back discipline means losing the Project costs nothing durable. In
-Friday's roll-up, remind me to re-decide model/cost posture.
+SESSIONS AND STRUCTURE. Fan out the way the plan already describes: one session per kernel
+band; claim-per-subsystem in the port bands; parallelize freely within a band. Every session
+inherits your Project instructions. Sessions that write inside menno420/superbot follow that
+repo's own conventions on top (claims, born-red session cards). Write-back is the law of the
+program: anything durable lands in a committed doc the same session it's learned — assume
+this Project could vanish tomorrow and the program must continue from the repos alone.
 
-Second standing duty, active from today: this Project is also the live evaluation of Claude
+THE SECOND MANDATE, active from today. This Project is also the live evaluation of Claude
 Code Projects itself — you read the guidebook at calibration
-(docs/planning/projects-eap-evaluation-guidebook-2026-07-07.md); now create the evaluation
-journal it specifies and seed it with your onboarding observations, calibration included. In
-Friday's roll-up, alongside the model/cost reminder, deliver the assembled evidence for my
-Anthropic feedback reply per the guidebook §5.
+(docs/planning/projects-eap-evaluation-guidebook-2026-07-07.md). Create the evaluation
+journal now and seed it with your onboarding observations, calibration included. I write to
+Anthropic TOMORROW — so from your first roll-up onward I want the journal's first real
+entries ready: what the product made easy, what fought you, incident-shaped. The framing
+your evidence supports: this program and this product found each other at the right moment —
+we hand-built every feature Projects ships (so we can judge them against operating data),
+and Projects arrives exactly when we need to coordinate a many-session, multi-month
+migration. Integrity rules apply always: never stage or perform for the evaluation; friction
+honestly documented is a deliverable.
 
-Set up routines once there's something worth watching (a morning roll-up; CI/dependency
-sweeps when superbot-next has CI). Start the OWNER ACTIONS list now with: Railway project +
-secrets (step 8) · substrate-kit repo creation + Project scope (if you can't do it) · the
-public→private flip decision · test guild + test-bot token (step 12).
+PACING. Projects is free through Friday 2026-07-10 and this Project currently defaults to
+Fable 5 — pull the heaviest, most design-loaded work into that window (steps 7–8 today, then
+as far into the kernel bands as correctness allows). Never trade correctness for the window;
+losing the Project must cost nothing durable. In Friday's roll-up: remind me to re-decide
+model/cost posture, and deliver the assembled evidence package (guidebook §5).
+
+RHYTHM. One daily roll-up: flagged decisions · destructive-tier items in their reaction
+window · the live OWNER ACTIONS list · anything genuinely stuck · an evaluation line when
+something happened — and always distinguish red-by-design (parity is born red on purpose)
+from broken. Set up routines once there's something worth watching. OWNER ACTIONS starts
+now: substrate-kit repo creation + Project scope (if you can't do it) · Railway project +
+secrets (step 8) · the public→private flip decision · test guild + test-bot token (step 12).
 ```
 
 ## 5. The owner-action forecast (so none of these arrives as a surprise)
