@@ -76,22 +76,32 @@ rather than restate them unchanged.
 
 Diana's confirmation email explicitly invites feedback at
 `claude-code-early-access@anthropic.com`. Below is a **ready-to-send, external-facing** draft —
-shorter and less repo-internal than the full product-review doc, but traceable to it. Send after
-running at least the dedupe + write-back tests once; fill in the bracketed examples from what
-actually happened.
+shorter and less repo-internal than the full product-review doc, but traceable to it. Fill in
+the bracketed examples from what actually happened — the coordinator's evaluation journal
+([guidebook](projects-eap-evaluation-guidebook-2026-07-07.md) §2/§5) feeds them. **Owner
+intent (2026-07-07 evening): send ~tomorrow, after first real coordinator use** — interim,
+incident-backed feedback beats waiting for the Friday deadline; a second, fuller note can
+follow at the window close.
 
 > Subject: Re: Claude Code Projects EAP — feedback after first activation
 >
 > Hi Omid / Diana,
 >
-> Thanks for the access — sharing early feedback after standing up one Project on our repo
-> (`superbot`, a Discord bot with ~1,800 merged PRs of largely autonomous-agent development, so
-> we came in with strong opinions about what a coordinator needs to earn its place).
+> Thanks for the access — and honestly, I think we found each other at quite a good moment.
+> Our project is built in a way that makes it close to a purpose-built reviewer for exactly
+> this feature: a one-person, ~1,800-merged-PR, largely autonomous-agent program (`superbot`,
+> a production Discord bot) that had to hand-build a coordinator, shared memory, lane claims,
+> and session-state signalling before Projects existed, just to function at all. And Projects
+> lands at the perfect time for us too — we're starting a ground-up rebuild across two repos,
+> a multi-month, many-session migration that is precisely the stream a coordinator exists to
+> run. So this feedback comes from running your product on the use case it seems designed
+> for, checked against machinery we already operate.
 >
-> **What we're testing it against:** we'd already hand-built most of what Projects ships —
-> a cron-fired dispatch routine, committed-doc memory, claim files to prevent duplicate parallel
-> work, and a CI gate that holds a PR "red by design" until a session declares itself done. So our
-> bar is "does this beat what we already built," not "is this a nice-to-have."
+> **What we're testing it against:** since we'd already hand-built most of what Projects
+> ships — a cron-fired dispatch routine, committed-doc memory, claim files to prevent
+> duplicate parallel work, and a CI gate that holds a PR "red by design" until a session
+> declares itself done — our bar is "does this beat what we already built," not "is this a
+> nice-to-have."
 >
 > **Four things we're specifically checking, and what we found:**
 > 1. *Duplicate-work prevention* — [what happened when two sessions/tasks overlapped]
