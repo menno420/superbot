@@ -1,10 +1,10 @@
 {
   "meta": {
-    "generated_at": "2026-07-07T06:21:44Z",
+    "generated_at": "2026-07-07T08:25:26Z",
     "build": {
-      "commit": "0c9ce92c",
-      "subject": "Merge pull request #1779 from menno420/bot/dashboard-refresh",
-      "committed_at": "2026-07-07T06:21:44Z"
+      "commit": "b06fe45",
+      "subject": "feat(economy): wire the ready-but-unwired transfer() to !pay / !transfer",
+      "committed_at": "2026-07-07T08:25:26Z"
     },
     "counts": {
       "functions": 43,
@@ -15,7 +15,7 @@
       "updates": 60,
       "env_vars": 39,
       "cogs": 55,
-      "commands": 484,
+      "commands": 485,
       "setting_keys": 120,
       "setting_domains": 17,
       "typed_settings": 100,
@@ -7162,6 +7162,19 @@
             "jobs"
           ],
           "brief": "Show all jobs, requirements, and your mastery for each.",
+          "classification": "",
+          "has_panel": false,
+          "button_backed": false
+        },
+        {
+          "name": "pay",
+          "type": "prefix",
+          "is_group": false,
+          "parent": null,
+          "aliases": [
+            "transfer"
+          ],
+          "brief": "Send coins to another member. Usage: !pay @user <amount>",
           "classification": "",
           "has_panel": false,
           "button_backed": false
