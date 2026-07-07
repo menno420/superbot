@@ -51,13 +51,24 @@ since it's a common request in servers that don't want a full automod rule for a
 
 ## Recommended routing
 
-None of these are foundational/architectural — they're feature-level additions that fit the
-existing moderation/security subsystem ownership and don't need a K0-K10 kernel decision the way the
-channel-role-authority gap does (see
-[`channel-role-scoped-authority-gap-2026-07-07.md`](./channel-role-scoped-authority-gap-2026-07-07.md)).
-Reasonable to route as: (1) the join-verification gate as a small addition to `security_cog.py`'s
-existing join-defense family; (2) ban-appeal as a specialized ticket category rather than a new
-subsystem; (3) trigger→response as a standalone small feature whenever there's appetite, lowest
-priority of the three. None block the rebuild; whoever ports the moderation/security subsystem in
-Sequence C's port bands should decide whether these three port forward as new manifest-declared
-features or stay backlog.
+**ROUTED — thin decide-at-port anchors folded as canonical-plan
+[`§11b A-14`](../planning/rebuild-canonical-plan-2026-07-06.md) (2026-07-07, same day,
+idea-consolidation session).** The verification confirmed all three absences but corrected this
+doc in two places (full evidence:
+[`rebuild-idea-consolidation-report-2026-07-07.md`](../planning/rebuild-idea-consolidation-report-2026-07-07.md) §2.3):
+
+- **Item 2 is partially subsumed by an owner decision two days older than this doc:** Stage-2 walk
+  row 6 (2026-07-05) already commits a **case/appeal system** as required Phase-B scope. A-14
+  anchors the remaining open surface question — banned-user (non-member) **DM intake**, genuinely
+  new for this bot since the ticket system is guild-only — to that committed design.
+- **Item 1** is anchored to walk row 9's already-committed quarantine build (same join-defense
+  family, same audited role seam), as the **first consumer of the A-12 role-scoped authority lane**
+  (deny-until-role). Constraint carried: **button-verify, zero-PII, no external calls** — the
+  Q-0111 declined tiers 3/4 (fingerprinting / third-party CAPTCHA / IP reputation) stay declined;
+  don't re-litigate them via "CAPTCHA" phrasing.
+- **Item 3 stays backlog** — and this doc's "not captured as an idea anywhere before" claim was
+  **wrong**: a full prior design capture exists at
+  [`community-platform-features-2026-06-12.md`](./community-platform-features-2026-06-12.md) §4
+  ("Custom commands (TagScript-safe)", routed Roadmap Someday), with a live UX-lab mockup
+  (`disbot/views/ux_lab/mockups.py:399-421`) and the grammar family G-11 already minted pending.
+  Nothing can evaporate; it is L2-community-shaped, not band-2 moderation work.

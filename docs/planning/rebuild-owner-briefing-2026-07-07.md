@@ -117,7 +117,12 @@ measured against how fast the agent fleet actually merges: **about two weeks, fl
 - ~15% of the surface won't fit the declarative style and stays ordinary code — counted and
   visible, not hidden.
 - ~~The two-week estimate assumes your gate turnarounds are hours-to-a-day~~ *(Q-0241: no human
-  gates remain in the loop — the agents are the pacing item, plus CI.)*
+  gates remain in the loop — the agents are the pacing item, plus CI — **corrected 2026-07-07
+  (canonical plan §11b A-18): plus one bounded human input that never blocks anything. Discord's
+  rules mean only a human can drive slash commands, buttons, and panels live, so those get a
+  click-through walk from you (or a second account you operate) — batched once per port band,
+  roughly 15–30 minutes a band, ~2–4 hours total across the port. Anything you don't get to is
+  published as a visible coverage-debt list at cutover, never silently skipped.**)*
 
 **Bottom line:** read the canonical plan's §1 (five flags) and §5 (the 17-step sequence) whenever
 you like. The program no longer waits for anything from you — say something only if what you read,

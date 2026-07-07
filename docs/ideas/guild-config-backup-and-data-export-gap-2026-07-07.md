@@ -29,8 +29,8 @@ An earlier gap-analysis idea (`docs/ideas/gap-analysis-2026-06-11.md:21-26`) nam
 half has been thoroughly mechanized in the rebuild: rubric class 12 (privacy/retention/erasure),
 `StoreSpec.data_class`/`erasure_ref`/`cache_scope`, a `check_data_lifecycle` checker, and a dedicated
 `sb/kernel/privacy/erasure.py` executor are all named and land at build step S11
-(`rebuild-gate0-worklist-2026-07-04.md:171-178`, canonical plan §11 A-... adjacent to the backup/DR
-row). But the **export** half — a user-facing "give me everything you have keyed to my user ID" —
+(`rebuild-gate0-worklist-2026-07-04.md:171-178`; the S11 row of the frozen build order —
+*citation fixed 2026-07-07: erasure lands via the S11 build-order row, not a §11 amendment*). But the **export** half — a user-facing "give me everything you have keyed to my user ID" —
 does not reappear anywhere in the Gate-0 grammar or the S0-S15 build order. It looks like it quietly
 dropped out between the original idea capture and the formalized privacy rubric.
 
@@ -42,8 +42,25 @@ need too — it's a read instead of a delete over the same inventory.
 
 ## Recommended routing
 
-Both are docs-only findings, not urgent the way the channel-role-authority gap is — neither blocks
-K6/K7/K8 or any near-term build step. Reasonable next step: raise both at whatever session next
-touches S11 (privacy/erasure lands there) or S14 (backup/DR), since both ride the same
-`StoreSpec`/backup infrastructure already being built for other reasons — cheapest to add as a
-sibling of work already in flight rather than as a separate initiative later.
+**ROUTED — both folded as canonical-plan
+[`§11b A-15`](../planning/rebuild-canonical-plan-2026-07-06.md) (2026-07-07, same day,
+idea-consolidation session),** rather than waiting for "whatever session next touches S11/S14"
+(the free hunt found that deferral would have let the carriers freeze unowned — three parallel
+store-walk inventories were about to be built). Where it landed (full evidence:
+[`rebuild-idea-consolidation-report-2026-07-07.md`](../planning/rebuild-idea-consolidation-report-2026-07-07.md) §2.4):
+
+- **Export** → S11's PROVIDES widens with `run_export`, the read-only twin of `run_erasure` over
+  the same compiled `data_class != NONE` store slice (the completeness proof — the hard half —
+  inherited by construction; the same step also lands the `cost_posture`/`quota_ref` throttle the
+  command needs). The user-facing command is a step-13 consumer. Honest correction to this doc's
+  "a read instead of a delete" framing: delivery, **cross-guild aggregation** (the erasure executor
+  itself is single-guild today — A-15 fixes both walks), Art. 15(4) third-party filtering, and
+  post-erasure tombstone ordering are real, bounded design points — a small feature riding a free
+  inventory, not a pure rider.
+- **Per-guild config backup/restore** → explicitly **NOT S14** (verified whole-DB-DR-only) — it
+  lands at step 13 **band 1** as a spec-06 **draft-lane consumer** (snapshot = manifest-driven read
+  of per-guild settings + binding rows; restore = a `Producer.IMPORT_REPAIR`/PRESET draft →
+  preview → accept → per-op idempotent K7 apply), converging with the guild-template idea.
+- GDPR framing recorded in A-15/IC-8: Art. 15 access almost certainly applies, but a manual DSAR
+  path satisfies the law — mechanizing export is a **posture-consistency** choice (matching the
+  mechanized erasure), flagged for the owner's veto.

@@ -90,10 +90,20 @@ lock in, since it's an authority-model shape question, not a feature to bolt on 
 
 ## Recommended routing
 
-This should be raised explicitly with whoever writes K6's Phase-B per-step plan (canonical plan §5
-step 9, not yet started) — ideally *before* that plan is written, since retrofitting a role-scoped
-authority lane after K7/K8 are built against the current `Lane{CAPABILITY,TIER}` shape is
-substantially more expensive than adding it now. Given the "frozen grammar" discipline this repo
-uses, this is the kind of finding that would normally become a numbered amendment (like the
-canonical plan's §11 A-series) at the next review pass that touches K6 — flagging it here so it
-doesn't have to be rediscovered from scratch then.
+**ROUTED — folded into the plan of record (2026-07-07, same day, idea-consolidation session):**
+
+- **Canonical-plan amendment [`§11b A-12`](../planning/rebuild-canonical-plan-2026-07-06.md)** +
+  **rider R-16** in `rebuild-amendments.yml` — landed *before* K6's Phase-B per-step plan exists,
+  exactly as this section asked. The folded shape refines the sketch above in two ways (full
+  reasoning: [`rebuild-idea-consolidation-report-2026-07-07.md`](../planning/rebuild-idea-consolidation-report-2026-07-07.md)
+  §2.1): both legs ship as ONE amendment (`Lane.ROLE_SET` **and** a channel-access role-set —
+  the frozen design separates who from where, so neither leg alone covers both asks), refs name a
+  **declared role binding** (`role:<binding_name>`), never literal role IDs, and the lane must
+  express **deny-until-role/quarantine** as well as allow-sets (the join-verification gate,
+  §11b A-14, is its first consumer).
+- Bonus finding recorded in A-12: the live governance stack contains **vestigial, never-activatable
+  role-override plumbing** (`PolicySource.ROLE_OVERRIDE` etc.) — carried as an explicit
+  do-not-port kill note.
+- **Item 4 (the live-bot `!channel restrict <channel> <role>` convenience command) stays HERE as
+  the open remainder** — live-bot backlog, separable, weighed against CUT-3 proximity (the new-bot
+  equivalent rides G-18 at the channel port band per A-12).
