@@ -96,12 +96,15 @@ creds · `[owner]` needs an owner decision/action; see [`../repo-sector-map.md`]
   — the single source of truth consolidating the whole rebuild corpus: corrected layer taxonomy
   (AI = K10 · automation = K5+K9+K7 spread · verification = layer V), one phase arc, the canonical
   gates (**G1** owner go/no-go sitting reading its §1 flag list · **G2** Phase-2.5 A/B), and the
-  17-step start sequence. ▶ next startable per its §5: **step 1 kit tail ①** (Q-0223 re-entrant
-  txn fix, small PR) → **step 2 run Phase-2.5** per
-  [companion D](../planning/rebuild-phase-2.5-procedure-2026-07-06.md) → **step 3
-  `tools/check_amendments.py`**. Companions: [test-guild design
-  (C)](../planning/rebuild-test-guild-design-2026-07-06.md) · Phase-2.5 procedure (D). *(Supersedes
-  the 07-05 next-session-priority assessment — same recommendation, now sequenced.)*
+  17-step start sequence. **Steps 1–3 executed (PR #1775, 2026-07-07):** kit tail ① shipped (427
+  kit tests) · **Phase-2.5 RUN — verdict FAIL as-tested** (`adopt` deploys unrendered templates:
+  orientation cost in 3/4 pairs, no measured benefit —
+  [the G2 report](../planning/phase-2.5-cold-start-report-2026-07-07.md)) ·
+  `tools/check_amendments.py` built + CI-wired. ▶ next: **the adopt-renders-what-it-knows kit fix
+  + one A/B re-run pair** (the G2 remainder), and 👤 **the G1 sitting** (canonical §1 + the
+  [owner briefing](../planning/rebuild-owner-briefing-2026-07-07.md)). Companions:
+  [test-guild (C)](../planning/rebuild-test-guild-design-2026-07-06.md) · [Phase-2.5 procedure
+  (D)](../planning/rebuild-phase-2.5-procedure-2026-07-06.md).
 - `[owner]` **▶ THE REBUILD REVIEW-THEN-PLAN PHASE IS LIVE** (owner-directed 2026-07-03): the pre-build
   **new-bot capability audit** is complete (#1662…#1668/#1674, verdict **GO-with-amendments**, measured
   all-43 fit **85.1%**) and

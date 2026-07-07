@@ -1,3 +1,0 @@
-# Claim
-
-- `claude/superbot-rebuild-phase-2.5-qk07s7` (restarted from main post-#1770) · Execute canonical-plan §5 steps 1–3: kit tail ① (Q-0223 re-entrant txn + atomic apply_review_verdict), run the Phase-2.5 cold-start A/B per companion D (gate G2), build `tools/check_amendments.py` (+ tests, advisory CI step), plus a plain-language owner briefing doc · expected files: `substrate-kit/src/engine/lib/state.py`, `substrate-kit/src/engine/loop/review_seam.py`, `substrate-kit/dist/bootstrap.py`, `tests/unit/substrate_kit/`, `tools/check_amendments.py`, `tests/unit/tools/`, `.github/workflows/code-quality.yml` (advisory step), `docs/planning/phase-2.5-cold-start-report-2026-07-07.md`, `docs/planning/rebuild-owner-briefing-2026-07-07.md`, `.sessions/` · 2026-07-07
