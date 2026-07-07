@@ -118,6 +118,26 @@ Block B as genuine self-discovery, not a quiz. Owner-facing "why this exists" pr
 match. Instructions (§2) deliberately untouched — this is first-turn-specific, and §2 stays
 thin by design.
 
+## Addendum 5 (same session, sixth PR — the coordinator's calibration came back + scored)
+
+The owner launched the Project and pasted the coordinator's calibration answers back. Scored
+strong pass (12/13 at-or-above bar): **Q7 verified against live GitHub** (superbot HEAD
+`fe297a8`/#1816 exact — it read live state, didn't guess; also correctly caught its own
+7-behind local clone `700bdce`/#1809). Standouts: named Q-0244/A-10/two-lane on slash
+verification, derived "start step-14 telemetry early in parallel," self-identified "mistaking a
+child's silence for success" as its top never-wait risk, discovered it likely **can't enforce
+per-band model allocation from the coordinator seat** (confirms the Part-2 uncertainty), and
+answered the permission-prompt unknown with "I don't know + here's a 10-min probe."
+
+**One fork surfaced + owner-resolved:** answer #5 proposed fixing OLD-bot runtime bugs itself
+and auto-deploying, colliding with the "never touch disbot/" instruction. **Owner ruling
+(fix-and-flag-low-risk):** contained bugs-first fixes allowed with L-21 re-capture + a flag;
+money/auth/user-data/*Delete-*Restore stays surfaced-and-gated. Applied to §2 REPOS block + the
+A5 reading key; the binding in-thread correction (this + sync-before-trusting-local +
+run-the-permission-probe + use-Project-default-models) was handed to the owner to send before
+the kickoff. ⚑ This is a durable owner decision softening a prior instruction — recorded here +
+in the kickoff doc; route to the question router if a Q-number is wanted.
+
 ## Docs audit (Q-0104)
 
 `check_docs.py --strict` ✓ · `check_current_state_ledger.py --strict` ✓ (exit 0; #1802/#1804/
