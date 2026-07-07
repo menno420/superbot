@@ -547,6 +547,12 @@ Current broad captures:
   so the raw Gate-V evidence PRs (this band's #1752–#1755/#1758) get an explicit merge-or-close decision
   instead of accumulating unreviewed across passes. Sibling of the open-PR staleness classifier + the
   reconcile-headline-sector-currency-check. Sector S4. Disposable (Q-0105).
+- [`reconcile-open-pr-disposition-actuator-2026-07-07.md`](./reconcile-open-pr-disposition-actuator-2026-07-07.md) —
+  **captured by the band-#1800 reconciliation pass (2026-07-07):** promote the passive disposition-*guard*
+  above into an active *actuator* — a dry-run helper that emits a ready-to-run disposition line per open PR
+  (`close #N — evidence-consumed into <merged doc>` / `leave #N — dependabot`), so a reconciler stops
+  re-deriving the same merge-or-close judgment and deferring it (the 5 Codex evidence PRs sat two passes
+  before this pass closed them). Advisory/dry-run; the reconciler still decides. Sector S4. Disposable (Q-0105).
 - [`band-queue-hit-rate-metric-2026-06-22.md`](./band-queue-hit-rate-metric-2026-06-22.md) —
   **captured by the band-#1320 reconciliation pass (2026-06-22):** every pass plans a ~30-slice next band, and
   almost every subsequent pass records "the buffer became the band" in prose only — no number. Extend
