@@ -8804,3 +8804,53 @@ above the repo's `allow` list — a project file structurally cannot force full 
 
 **Homes:** `.claude/settings.json` (ten new entries) · this Q (provenance, supersedes Q-0229's
 unverified claim) · `.sessions/2026-07-07-rebuild-plan-review-and-automation-idea.md` (continuation).
+
+### Q-0243 — DECIDED: category-B automation pricing is decided by a dedicated SIMULATION, not a judgment call (2026-07-07)
+
+**Context.** Canonical plan §11b A-13 ships the user-self-service automation scheduler with
+category B (auto-acting, e.g. auto-collect) structurally reserved but compile-fenced OFF pending a
+dedicated pricing session (the owner's explicit earlier instruction — see
+`docs/ideas/user-self-service-automation-scheduler-2026-07-07.md`). Asked what should happen next,
+the owner ruled on that session's *method*.
+
+**Owner ruling (in-session, 2026-07-07):** "The pricing session should probably be decided by a
+dedicated simulation."
+
+**Decision unpacked.** The pricing session's deliverable is a **simulation** in the repo's
+established sim-decides-design pattern (layer V-3; precedent: the gear-set numbers, claim-layout,
+menu-layout sims): model **automated-vs-manual player expected value over time** for each candidate
+pricing shape (flat unlock vs per-use, coins+XP mix, allowance curve), and set the price from the
+sim's output — drift-pinnable afterward, never a guessed number. This ratifies the idea doc's own
+"needs the same measured/simulated approach the rebuild already uses for layout decisions" as the
+*binding mechanism*, not just an aspiration. The unlock still rides Q-0039's earned track;
+automation capability is never real-money purchasable (A-13/IC-4).
+
+**Homes:** this Q (provenance) · canonical plan §11b A-13 rider ·
+`docs/ideas/user-self-service-automation-scheduler-2026-07-07.md` (pricing section).
+
+### Q-0244 — DECIDED: slash-command verification inherits prefix coverage; owner flags dysfunction reactively; the human lane never blocks (2026-07-07)
+
+**Context.** §11b A-18 budgeted the human `verified_live` lane (~150–250 click-through units,
+since agents cannot drive slash/component interactions live — the frozen A-10 constraint) and
+flagged two owner-intent questions: may a delegated human sign rows, and should unsigned
+human-tier rows hard-block CUT-3 or ride as a published debt list (IC-12)? IC-13 separately
+flagged the Q-0241/A-10 capability-claim contradiction.
+
+**Owner ruling (in-session, 2026-07-07):** "if we test the prefix commands then the slash
+commands should be considered working as well, I will flag whenever I find any slash commands
+dysfunctional, but it shouldn't be a blocker."
+
+**Decision unpacked.** (1) A slash/component surface counts as **verified** when its prefix twin
+passes live agent-driven testing AND the slash path passes the in-process pipeline-true replay
+(the parity technique — real payload parsing, converters, authority, error handler; only HTTP
+faked). No separate human live click-through is required for sign-off. (2) The owner's mechanism
+is **reactive flagging**: he reports dysfunctional slash commands as he encounters them in the
+server — routed bugs-first, like any live miss. (3) **Nothing in the human lane blocks CUT-3** —
+IC-12 resolves to the published coverage-debt-list model, and the human tier shrinks to the
+optional Q-0234 "self-explanatory" judgment walks at the owner's leisure (Q-0222's "per-command
+owner sign-off one by one" is superseded-in-part by this lighter model). (4) The A-10 capability
+fact stands unchanged (agents still *cannot* drive slash/components live); what changed is the
+verification *requirement* — which makes the IC-13 wording conflict operationally moot.
+
+**Homes:** this Q (provenance) · canonical plan §11b A-18 rider ·
+`rebuild-idea-consolidation-report-2026-07-07.md` §7 addendum.
