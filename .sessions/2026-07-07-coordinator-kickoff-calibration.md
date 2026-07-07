@@ -229,6 +229,22 @@ sending it one (images work for this repo's sessions; its harness untested). Eva
 write-back/memory test evidence; Q9 = the unattended-permissions evidence — both for the Anthropic
 mail.
 
+## Addendum 12 (twelfth PR — consent-wall model corrected + Anthropic feedback sharpened)
+
+Step 7's push stayed walled even after the owner's in-session "go ahead" — the classifier denied
+the `git push` AND the GitHub-API route as a bypass. This **falsified the earlier model** ("an
+in-chat owner go-ahead clears the wall", which I'd written into the §8 operating model). Corrected:
+the real authorization lever is a **Settings → Permissions allow rule** (`Bash(git push:*)`),
+ideally at **Project level** so future sessions inherit it (the per-session-vs-project scope is the
+remaining unknown — owner sets it and reports). Consent hierarchy: plan docs < coordinator dispatch
+< in-chat owner "yes" < settings rule. Fixed the §8 bullet (drift: it stated a now-false "confirmed
+clear"). Owner's sharpening (folded into the activation-plan §4 Anthropic draft): the real gap isn't
+just that prompts stall unattended sessions — it's that **granting a permission correctly is not
+self-explanatory**; intuitive paths (chat yes, API) are denied as bypasses without pointing at the
+fix, and a non-coder can't tell how/whether to pre-authorize. Safety behavior correct;
+discoverability + scoping are the gap. Owner action: add `Bash(git push:*)` in the step-7 session's
+Settings → Permissions (or Project-level if available), reply "retry".
+
 ## Docs audit (Q-0104)
 
 `check_docs.py --strict` ✓ · `check_current_state_ledger.py --strict` ✓ (exit 0; #1802/#1804/

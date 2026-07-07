@@ -126,7 +126,15 @@ follow at the window close.
 > - A native "work-in-progress, don't auto-merge yet" PR state that auto-merge respects — we
 >   built this ourselves (a session-card + CI gate) after a half-done PR merged once.
 > - A declarative, per-Project pre-authorization manifest for tool permissions — runtime
->   permission prompts are the single most common way an unattended session stalls.
+>   permission prompts are the single most common way an unattended session stalls, and the
+>   bigger problem underneath is that **granting a permission correctly is not self-explanatory.**
+>   Concrete incident (our coordinator's first repo publish): an in-chat owner "go ahead" was
+>   denied, the GitHub-API route was denied *as a bypass attempt*, and the actual lever — a
+>   `Bash(git push:*)` allow rule under Settings → Permissions — was undiscoverable from the UI,
+>   with its scope (per-session vs. per-Project) still unclear. A non-coder owner running auto
+>   mode currently cannot tell how, or whether it's even possible, to pre-authorize an action the
+>   safety layer keeps denying — and the denial messages don't point at the fix. The safety
+>   *behavior* is correct; the **discoverability and scoping of the authorization** are the gap.
 > - Native lane claims ("this session owns scope X until it ends," visible to siblings at
 >   session start) — we built a claim-file convention for exactly this.
 >
