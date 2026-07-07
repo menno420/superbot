@@ -466,6 +466,10 @@ const COMMANDS = [
     "planned": [
       {
         "status": "idea",
+        "title": "Channel-level, role-scoped access is missing — live bot AND the…"
+      },
+      {
+        "status": "idea",
         "title": "Idea — the off-Discord websites: rebuild disposition, cutover role…"
       },
       {
@@ -499,6 +503,10 @@ const COMMANDS = [
     "cooldown": null,
     "examples": [],
     "planned": [
+      {
+        "status": "idea",
+        "title": "Automod's spam rule is rate-only and per-channel — two related…"
+      },
       {
         "status": "idea",
         "title": "Safety & Community — one operator landing"
@@ -589,6 +597,10 @@ const COMMANDS = [
     "cooldown": null,
     "examples": [],
     "planned": [
+      {
+        "status": "idea",
+        "title": "Moderation feature gaps versus competitor bots (researched, most…"
+      },
       {
         "status": "idea",
         "title": "Idea — server-owner-configurable moderation/warning DMs"
@@ -1028,7 +1040,7 @@ const COMMANDS = [
   {
     "name": "bulkcreate",
     "area": "management",
-    "status": "finished",
+    "status": "in-progress",
     "summary": "Create multiple channels. Usage: !bulkcreate <ch1> [ch2...] [category]",
     "description": "Create multiple channels. Usage: !bulkcreate <ch1> [ch2...] [category]",
     "usage": "!bulkcreate",
@@ -1036,12 +1048,17 @@ const COMMANDS = [
     "permissions": "Administrator",
     "cooldown": null,
     "examples": [],
-    "planned": []
+    "planned": [
+      {
+        "status": "idea",
+        "title": "Channel-level, role-scoped access is missing — live bot AND the…"
+      }
+    ]
   },
   {
     "name": "bulkdelete",
     "area": "management",
-    "status": "finished",
+    "status": "in-progress",
     "summary": "Delete multiple channels. Usage: !bulkdelete <name|id> [name|id...] or <keyword>",
     "description": "Delete multiple channels. Usage: !bulkdelete <name|id> [name|id...] or <keyword>",
     "usage": "!bulkdelete",
@@ -1049,7 +1066,12 @@ const COMMANDS = [
     "permissions": "Administrator",
     "cooldown": null,
     "examples": [],
-    "planned": []
+    "planned": [
+      {
+        "status": "idea",
+        "title": "Channel-level, role-scoped access is missing — live bot AND the…"
+      }
+    ]
   },
   {
     "name": "buy",
@@ -1219,7 +1241,7 @@ const COMMANDS = [
   {
     "name": "channelinfo",
     "area": "management",
-    "status": "finished",
+    "status": "in-progress",
     "summary": "Channel details. Usage: !channelinfo <name|id>",
     "description": "Channel details. Usage: !channelinfo <name|id>",
     "usage": "!channelinfo",
@@ -1227,12 +1249,17 @@ const COMMANDS = [
     "permissions": "Administrator",
     "cooldown": null,
     "examples": [],
-    "planned": []
+    "planned": [
+      {
+        "status": "idea",
+        "title": "Channel-level, role-scoped access is missing — live bot AND the…"
+      }
+    ]
   },
   {
     "name": "channelmenu",
     "area": "management",
-    "status": "finished",
+    "status": "in-progress",
     "summary": "Open the interactive channel management panel.",
     "description": "Open the interactive channel management panel.",
     "usage": "!channelmenu",
@@ -1240,7 +1267,12 @@ const COMMANDS = [
     "permissions": "Administrator",
     "cooldown": null,
     "examples": [],
-    "planned": []
+    "planned": [
+      {
+        "status": "idea",
+        "title": "Channel-level, role-scoped access is missing — live bot AND the…"
+      }
+    ]
   },
   {
     "name": "character",
@@ -1396,6 +1428,10 @@ const COMMANDS = [
     "planned": [
       {
         "status": "idea",
+        "title": "Moderation feature gaps versus competitor bots (researched, most…"
+      },
+      {
+        "status": "idea",
         "title": "Idea — server-owner-configurable moderation/warning DMs"
       },
       {
@@ -1411,7 +1447,7 @@ const COMMANDS = [
   {
     "name": "clone",
     "area": "management",
-    "status": "finished",
+    "status": "in-progress",
     "summary": "Clone a channel. Usage: !clone <name|id> <new_name>",
     "description": "Clone a channel. Usage: !clone <name|id> <new_name>",
     "usage": "!clone",
@@ -1419,7 +1455,12 @@ const COMMANDS = [
     "permissions": "Administrator",
     "cooldown": null,
     "examples": [],
-    "planned": []
+    "planned": [
+      {
+        "status": "idea",
+        "title": "Channel-level, role-scoped access is missing — live bot AND the…"
+      }
+    ]
   },
   {
     "name": "close",
@@ -1848,6 +1889,10 @@ const COMMANDS = [
     "planned": [
       {
         "status": "idea",
+        "title": "Channel-level, role-scoped access is missing — live bot AND the…"
+      },
+      {
+        "status": "idea",
         "title": "Idea — the off-Discord websites: rebuild disposition, cutover role…"
       },
       {
@@ -2030,6 +2075,10 @@ const COMMANDS = [
     "planned": [
       {
         "status": "idea",
+        "title": "Channel-level, role-scoped access is missing — live bot AND the…"
+      },
+      {
+        "status": "idea",
         "title": "Idea — the off-Discord websites: rebuild disposition, cutover role…"
       },
       {
@@ -2041,7 +2090,7 @@ const COMMANDS = [
   {
     "name": "del",
     "area": "management",
-    "status": "finished",
+    "status": "in-progress",
     "summary": "Delete a specific channel. Usage: !del <name|id>",
     "description": "Delete a specific channel. Usage: !del <name|id>",
     "usage": "!del",
@@ -2049,7 +2098,12 @@ const COMMANDS = [
     "permissions": "Administrator",
     "cooldown": null,
     "examples": [],
-    "planned": []
+    "planned": [
+      {
+        "status": "idea",
+        "title": "Channel-level, role-scoped access is missing — live bot AND the…"
+      }
+    ]
   },
   {
     "name": "delete",
@@ -2078,6 +2132,10 @@ const COMMANDS = [
     "cooldown": null,
     "examples": [],
     "planned": [
+      {
+        "status": "idea",
+        "title": "Channel-level, role-scoped access is missing — live bot AND the…"
+      },
       {
         "status": "idea",
         "title": "Idea — the off-Discord websites: rebuild disposition, cutover role…"
@@ -2498,7 +2556,7 @@ const COMMANDS = [
   {
     "name": "evt",
     "area": "management",
-    "status": "finished",
+    "status": "in-progress",
     "summary": "Create or delete an event channel. Usage: !evt <name|id> <create/delete>",
     "description": "Create or delete an event channel. Usage: !evt <name|id> <create/delete>",
     "usage": "!evt",
@@ -2506,7 +2564,12 @@ const COMMANDS = [
     "permissions": "Administrator",
     "cooldown": null,
     "examples": [],
-    "planned": []
+    "planned": [
+      {
+        "status": "idea",
+        "title": "Channel-level, role-scoped access is missing — live bot AND the…"
+      }
+    ]
   },
   {
     "name": "explore",
@@ -3296,6 +3359,10 @@ const COMMANDS = [
     "planned": [
       {
         "status": "idea",
+        "title": "Moderation feature gaps versus competitor bots (researched, most…"
+      },
+      {
+        "status": "idea",
         "title": "Idea — server-owner-configurable moderation/warning DMs"
       },
       {
@@ -3446,6 +3513,10 @@ const COMMANDS = [
     "planned": [
       {
         "status": "idea",
+        "title": "Channel-level, role-scoped access is missing — live bot AND the…"
+      },
+      {
+        "status": "idea",
         "title": "Idea — the off-Discord websites: rebuild disposition, cutover role…"
       },
       {
@@ -3539,7 +3610,7 @@ const COMMANDS = [
   {
     "name": "lock",
     "area": "management",
-    "status": "finished",
+    "status": "in-progress",
     "summary": "Lock a channel. Usage: !lock <name|id>",
     "description": "Lock a channel. Usage: !lock <name|id>",
     "usage": "!lock",
@@ -3547,7 +3618,12 @@ const COMMANDS = [
     "permissions": "Administrator",
     "cooldown": null,
     "examples": [],
-    "planned": []
+    "planned": [
+      {
+        "status": "idea",
+        "title": "Channel-level, role-scoped access is missing — live bot AND the…"
+      }
+    ]
   },
   {
     "name": "locks",
@@ -3861,6 +3937,10 @@ const COMMANDS = [
     "planned": [
       {
         "status": "idea",
+        "title": "Moderation feature gaps versus competitor bots (researched, most…"
+      },
+      {
+        "status": "idea",
         "title": "Idea — server-owner-configurable moderation/warning DMs"
       },
       {
@@ -3887,6 +3967,10 @@ const COMMANDS = [
     "planned": [
       {
         "status": "idea",
+        "title": "Moderation feature gaps versus competitor bots (researched, most…"
+      },
+      {
+        "status": "idea",
         "title": "Idea — server-owner-configurable moderation/warning DMs"
       },
       {
@@ -3911,6 +3995,10 @@ const COMMANDS = [
     "cooldown": null,
     "examples": [],
     "planned": [
+      {
+        "status": "idea",
+        "title": "Moderation feature gaps versus competitor bots (researched, most…"
+      },
       {
         "status": "idea",
         "title": "Idea — server-owner-configurable moderation/warning DMs"
@@ -3941,7 +4029,7 @@ const COMMANDS = [
   {
     "name": "move",
     "area": "management",
-    "status": "finished",
+    "status": "in-progress",
     "summary": "Move a channel to a category. Usage: !move <channel name|id> <category name|id>",
     "description": "Move a channel to a category. Usage: !move <channel name|id> <category name|id>",
     "usage": "!move",
@@ -3949,7 +4037,12 @@ const COMMANDS = [
     "permissions": "Administrator",
     "cooldown": null,
     "examples": [],
-    "planned": []
+    "planned": [
+      {
+        "status": "idea",
+        "title": "Channel-level, role-scoped access is missing — live bot AND the…"
+      }
+    ]
   },
   {
     "name": "myprofile",
@@ -4138,7 +4231,7 @@ const COMMANDS = [
   {
     "name": "permissions",
     "area": "management",
-    "status": "finished",
+    "status": "in-progress",
     "summary": "Modify channel permissions. Usage: !permissions <name|id> <@role> <allow/deny>",
     "description": "Modify channel permissions. Usage: !permissions <name|id> <@role> <allow/deny>",
     "usage": "!permissions",
@@ -4146,7 +4239,12 @@ const COMMANDS = [
     "permissions": "Administrator",
     "cooldown": null,
     "examples": [],
-    "planned": []
+    "planned": [
+      {
+        "status": "idea",
+        "title": "Channel-level, role-scoped access is missing — live bot AND the…"
+      }
+    ]
   },
   {
     "name": "ping",
@@ -4458,6 +4556,10 @@ const COMMANDS = [
     "planned": [
       {
         "status": "idea",
+        "title": "Channel-level, role-scoped access is missing — live bot AND the…"
+      },
+      {
+        "status": "idea",
         "title": "Idea — the off-Discord websites: rebuild disposition, cutover role…"
       },
       {
@@ -4555,6 +4657,10 @@ const COMMANDS = [
     "planned": [
       {
         "status": "idea",
+        "title": "Channel-level, role-scoped access is missing — live bot AND the…"
+      },
+      {
+        "status": "idea",
         "title": "Idea — the off-Discord websites: rebuild disposition, cutover role…"
       },
       {
@@ -4648,6 +4754,10 @@ const COMMANDS = [
     "planned": [
       {
         "status": "idea",
+        "title": "Channel-level, role-scoped access is missing — live bot AND the…"
+      },
+      {
+        "status": "idea",
         "title": "Idea — the off-Discord websites: rebuild disposition, cutover role…"
       },
       {
@@ -4659,7 +4769,7 @@ const COMMANDS = [
   {
     "name": "rename",
     "area": "management",
-    "status": "finished",
+    "status": "in-progress",
     "summary": "Rename a channel. Usage: !rename <old name|id> <new_name>",
     "description": "Rename a channel. Usage: !rename <old name|id> <new_name>",
     "usage": "!rename",
@@ -4667,7 +4777,12 @@ const COMMANDS = [
     "permissions": "Administrator",
     "cooldown": null,
     "examples": [],
-    "planned": []
+    "planned": [
+      {
+        "status": "idea",
+        "title": "Channel-level, role-scoped access is missing — live bot AND the…"
+      }
+    ]
   },
   {
     "name": "repair",
@@ -4868,6 +4983,10 @@ const COMMANDS = [
     "planned": [
       {
         "status": "idea",
+        "title": "Channel-level, role-scoped access is missing — live bot AND the…"
+      },
+      {
+        "status": "idea",
         "title": "Idea — the off-Discord websites: rebuild disposition, cutover role…"
       },
       {
@@ -4892,6 +5011,10 @@ const COMMANDS = [
     "planned": [
       {
         "status": "idea",
+        "title": "Channel-level, role-scoped access is missing — live bot AND the…"
+      },
+      {
+        "status": "idea",
         "title": "Idea — the off-Discord websites: rebuild disposition, cutover role…"
       },
       {
@@ -4912,6 +5035,10 @@ const COMMANDS = [
     "cooldown": null,
     "examples": [],
     "planned": [
+      {
+        "status": "idea",
+        "title": "Channel-level, role-scoped access is missing — live bot AND the…"
+      },
       {
         "status": "idea",
         "title": "Idea — the off-Discord websites: rebuild disposition, cutover role…"
@@ -4936,6 +5063,10 @@ const COMMANDS = [
     "planned": [
       {
         "status": "idea",
+        "title": "Channel-level, role-scoped access is missing — live bot AND the…"
+      },
+      {
+        "status": "idea",
         "title": "Idea — the off-Discord websites: rebuild disposition, cutover role…"
       },
       {
@@ -4956,6 +5087,10 @@ const COMMANDS = [
     "cooldown": null,
     "examples": [],
     "planned": [
+      {
+        "status": "idea",
+        "title": "Channel-level, role-scoped access is missing — live bot AND the…"
+      },
       {
         "status": "idea",
         "title": "Idea — the off-Discord websites: rebuild disposition, cutover role…"
@@ -5270,6 +5405,10 @@ const COMMANDS = [
     "planned": [
       {
         "status": "idea",
+        "title": "Moderation feature gaps versus competitor bots (researched, most…"
+      },
+      {
+        "status": "idea",
         "title": "Safety & Community — one operator landing"
       },
       {
@@ -5532,6 +5671,10 @@ const COMMANDS = [
     "cooldown": null,
     "examples": [],
     "planned": [
+      {
+        "status": "idea",
+        "title": "Channel-level, role-scoped access is missing — live bot AND the…"
+      },
       {
         "status": "idea",
         "title": "Idea — the off-Discord websites: rebuild disposition, cutover role…"
@@ -5943,7 +6086,7 @@ const COMMANDS = [
   {
     "name": "slowmode",
     "area": "management",
-    "status": "finished",
+    "status": "in-progress",
     "summary": "Set a channel's slowmode. Usage: !slowmode <name|id> <seconds> (0 disables; max 21600 = 6h)",
     "description": "Set a channel's slowmode. Usage: !slowmode <name|id> <seconds> (0 disables; max 21600 = 6h)",
     "usage": "!slowmode",
@@ -5953,7 +6096,12 @@ const COMMANDS = [
     "permissions": "Administrator",
     "cooldown": null,
     "examples": [],
-    "planned": []
+    "planned": [
+      {
+        "status": "idea",
+        "title": "Channel-level, role-scoped access is missing — live bot AND the…"
+      }
+    ]
   },
   {
     "name": "source-health",
@@ -6657,6 +6805,10 @@ const COMMANDS = [
     "planned": [
       {
         "status": "idea",
+        "title": "Moderation feature gaps versus competitor bots (researched, most…"
+      },
+      {
+        "status": "idea",
         "title": "Idea — server-owner-configurable moderation/warning DMs"
       },
       {
@@ -6728,7 +6880,7 @@ const COMMANDS = [
   {
     "name": "topic",
     "area": "management",
-    "status": "finished",
+    "status": "in-progress",
     "summary": "Set a channel's topic. Usage: !topic <name|id> <text> (omit text to clear)",
     "description": "Set a channel's topic. Usage: !topic <name|id> <text> (omit text to clear)",
     "usage": "!topic",
@@ -6738,7 +6890,12 @@ const COMMANDS = [
     "permissions": "Administrator",
     "cooldown": null,
     "examples": [],
-    "planned": []
+    "planned": [
+      {
+        "status": "idea",
+        "title": "Channel-level, role-scoped access is missing — live bot AND the…"
+      }
+    ]
   },
   {
     "name": "tower",
@@ -6834,6 +6991,10 @@ const COMMANDS = [
     "planned": [
       {
         "status": "idea",
+        "title": "Moderation feature gaps versus competitor bots (researched, most…"
+      },
+      {
+        "status": "idea",
         "title": "Idea — server-owner-configurable moderation/warning DMs"
       },
       {
@@ -6906,7 +7067,7 @@ const COMMANDS = [
   {
     "name": "unlock",
     "area": "management",
-    "status": "finished",
+    "status": "in-progress",
     "summary": "Unlock a channel. Usage: !unlock <name|id>",
     "description": "Unlock a channel. Usage: !unlock <name|id>",
     "usage": "!unlock",
@@ -6914,7 +7075,12 @@ const COMMANDS = [
     "permissions": "Administrator",
     "cooldown": null,
     "examples": [],
-    "planned": []
+    "planned": [
+      {
+        "status": "idea",
+        "title": "Channel-level, role-scoped access is missing — live bot AND the…"
+      }
+    ]
   },
   {
     "name": "unsetrole",
@@ -6928,6 +7094,10 @@ const COMMANDS = [
     "cooldown": null,
     "examples": [],
     "planned": [
+      {
+        "status": "idea",
+        "title": "Channel-level, role-scoped access is missing — live bot AND the…"
+      },
       {
         "status": "idea",
         "title": "Idea — the off-Discord websites: rebuild disposition, cutover role…"
@@ -7143,6 +7313,10 @@ const COMMANDS = [
     "cooldown": null,
     "examples": [],
     "planned": [
+      {
+        "status": "idea",
+        "title": "Moderation feature gaps versus competitor bots (researched, most…"
+      },
       {
         "status": "idea",
         "title": "Idea — server-owner-configurable moderation/warning DMs"
@@ -7556,7 +7730,7 @@ const CHANGELOG = [
   {
     "version": "2026.06.19",
     "date": "Jun 19, 2026",
-    "build": "b06fe45",
+    "build": "8bf5d3a",
     "title": "New public bot website",
     "changes": [
       {
@@ -7568,7 +7742,7 @@ const CHANGELOG = [
   {
     "version": "2026.06.12",
     "date": "Jun 12, 2026",
-    "build": "b06fe45",
+    "build": "8bf5d3a",
     "title": "Owner review inbox on the dashboard",
     "changes": [
       {
@@ -7580,7 +7754,7 @@ const CHANGELOG = [
   {
     "version": "2026.06.08",
     "date": "Jun 08, 2026",
-    "build": "b06fe45",
+    "build": "8bf5d3a",
     "title": "Command-alias suggestions",
     "changes": [
       {

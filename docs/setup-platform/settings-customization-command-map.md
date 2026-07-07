@@ -279,15 +279,21 @@ through `moderation_service` (no parallel audit path).
 7. **dedicated_panel_command**: `none`.
 8. **help_menu_direct_navigation_hook**: `build_help_menu_view` (policy summary).
 9. **existing_SettingSpec_declarations**: `enabled`, `spam_enabled`,
-   `invites_enabled`, `caps_enabled`, `mentions_enabled`, `spam_count`,
-   `spam_window_seconds`, `caps_percent`, `mentions_count`, `exempt_roles`,
+   `invites_enabled`, `caps_enabled`, `mentions_enabled`,
+   `cross_channel_spam_enabled`, `duplicate_enabled`, `spam_count`,
+   `spam_window_seconds`, `caps_percent`, `mentions_count`,
+   `cross_channel_spam_count`, `duplicate_count`, `exempt_roles`,
    `exempt_channels` (`disbot/cogs/automod/schemas.py`). All flags default OFF;
    defaults + bounds are the single source of truth in
-   `disbot/services/automod_config.py`.
+   `disbot/services/automod_config.py`. The cross-channel-spam and
+   duplicate-content rules were added 2026-07-07 (owner-raised gap: the
+   original spam rule is rate-only and keyed per-channel).
 10. **existing_settings_keys**: `AUTOMOD_ENABLED`, `AUTOMOD_SPAM_ENABLED`,
     `AUTOMOD_INVITES_ENABLED`, `AUTOMOD_CAPS_ENABLED`, `AUTOMOD_MENTIONS_ENABLED`,
+    `AUTOMOD_CROSS_CHANNEL_SPAM_ENABLED`, `AUTOMOD_DUPLICATE_ENABLED`,
     `AUTOMOD_SPAM_COUNT`, `AUTOMOD_SPAM_WINDOW_SECONDS`, `AUTOMOD_CAPS_PERCENT`,
-    `AUTOMOD_MENTIONS_COUNT`, `AUTOMOD_EXEMPT_ROLES`, `AUTOMOD_EXEMPT_CHANNELS`
+    `AUTOMOD_MENTIONS_COUNT`, `AUTOMOD_CROSS_CHANNEL_SPAM_COUNT`,
+    `AUTOMOD_DUPLICATE_COUNT`, `AUTOMOD_EXEMPT_ROLES`, `AUTOMOD_EXEMPT_CHANNELS`
     (`disbot/utils/settings_keys/automod.py`). Stored as scalar guild settings —
     **no migration**.
 11. **existing_BindingSpec_entries**: none.

@@ -19,6 +19,10 @@ def test_any_rule_enabled():
     assert not AutomodPolicy(enabled=True).any_rule_enabled
     assert AutomodPolicy(enabled=True, spam_enabled=True).any_rule_enabled
     assert AutomodPolicy(enabled=True, mentions_enabled=True).any_rule_enabled
+    assert AutomodPolicy(
+        enabled=True, cross_channel_spam_enabled=True
+    ).any_rule_enabled
+    assert AutomodPolicy(enabled=True, duplicate_enabled=True).any_rule_enabled
 
 
 def test_defaults_are_all_off():
@@ -33,6 +37,10 @@ async def test_load_policy_composes_typed_values(monkeypatch):
         "enabled": True,
         "spam_enabled": True,
         "spam_count": 8,
+        "cross_channel_spam_enabled": True,
+        "cross_channel_spam_count": 3,
+        "duplicate_enabled": True,
+        "duplicate_count": 4,
         "exempt_roles": "10, 20",
         "exempt_channels": "30",
     }
@@ -49,6 +57,10 @@ async def test_load_policy_composes_typed_values(monkeypatch):
     assert pol.enabled is True
     assert pol.spam_enabled is True
     assert pol.spam_count == 8
+    assert pol.cross_channel_spam_enabled is True
+    assert pol.cross_channel_spam_count == 3
+    assert pol.duplicate_enabled is True
+    assert pol.duplicate_count == 4
     assert pol.exempt_role_ids == frozenset({10, 20})
     assert pol.exempt_channel_ids == frozenset({30})
     # Unset fields fall back to the canonical defaults.

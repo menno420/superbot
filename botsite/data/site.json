@@ -1,10 +1,10 @@
 {
   "meta": {
-    "generated_at": "2026-07-07T08:25:26Z",
+    "generated_at": "2026-07-07T11:38:19Z",
     "build": {
-      "commit": "b06fe45",
-      "subject": "feat(economy): wire the ready-but-unwired transfer() to !pay / !transfer",
-      "committed_at": "2026-07-07T08:25:26Z"
+      "commit": "8bf5d3a",
+      "subject": "plan: Fable-5 ultracode brief to fold today's ideas into the rebuild plan",
+      "committed_at": "2026-07-07T11:38:19Z"
     }
   },
   "counts": {
@@ -10522,6 +10522,10 @@
       "status": "in-progress",
       "linked_ideas": [
         {
+          "title": "Channel-level, role-scoped access is missing — live bot AND the frozen rebuild design",
+          "status": "ideas"
+        },
+        {
           "title": "Idea — the off-Discord websites: rebuild disposition, cutover role, and staying current",
           "status": "ideas"
         },
@@ -10542,8 +10546,13 @@
       "description": null,
       "use_cases": null,
       "examples": [],
-      "status": "finished",
-      "linked_ideas": [],
+      "status": "in-progress",
+      "linked_ideas": [
+        {
+          "title": "Channel-level, role-scoped access is missing — live bot AND the frozen rebuild design",
+          "status": "ideas"
+        }
+      ],
       "notes": null
     },
     {
@@ -10556,8 +10565,13 @@
       "description": null,
       "use_cases": null,
       "examples": [],
-      "status": "finished",
-      "linked_ideas": [],
+      "status": "in-progress",
+      "linked_ideas": [
+        {
+          "title": "Channel-level, role-scoped access is missing — live bot AND the frozen rebuild design",
+          "status": "ideas"
+        }
+      ],
       "notes": null
     },
     {
@@ -10570,8 +10584,13 @@
       "description": null,
       "use_cases": null,
       "examples": [],
-      "status": "finished",
-      "linked_ideas": [],
+      "status": "in-progress",
+      "linked_ideas": [
+        {
+          "title": "Channel-level, role-scoped access is missing — live bot AND the frozen rebuild design",
+          "status": "ideas"
+        }
+      ],
       "notes": null
     },
     {
@@ -10584,8 +10603,13 @@
       "description": "Open the interactive channel management panel.",
       "use_cases": null,
       "examples": [],
-      "status": "finished",
-      "linked_ideas": [],
+      "status": "in-progress",
+      "linked_ideas": [
+        {
+          "title": "Channel-level, role-scoped access is missing — live bot AND the frozen rebuild design",
+          "status": "ideas"
+        }
+      ],
       "notes": null
     },
     {
@@ -10598,8 +10622,13 @@
       "description": null,
       "use_cases": null,
       "examples": [],
-      "status": "finished",
-      "linked_ideas": [],
+      "status": "in-progress",
+      "linked_ideas": [
+        {
+          "title": "Channel-level, role-scoped access is missing — live bot AND the frozen rebuild design",
+          "status": "ideas"
+        }
+      ],
       "notes": null
     },
     {
@@ -10612,8 +10641,13 @@
       "description": null,
       "use_cases": null,
       "examples": [],
-      "status": "finished",
-      "linked_ideas": [],
+      "status": "in-progress",
+      "linked_ideas": [
+        {
+          "title": "Channel-level, role-scoped access is missing — live bot AND the frozen rebuild design",
+          "status": "ideas"
+        }
+      ],
       "notes": null
     },
     {
@@ -10628,6 +10662,10 @@
       "examples": [],
       "status": "in-progress",
       "linked_ideas": [
+        {
+          "title": "Channel-level, role-scoped access is missing — live bot AND the frozen rebuild design",
+          "status": "ideas"
+        },
         {
           "title": "Idea — the off-Discord websites: rebuild disposition, cutover role, and staying current",
           "status": "ideas"
@@ -10652,6 +10690,10 @@
       "status": "in-progress",
       "linked_ideas": [
         {
+          "title": "Channel-level, role-scoped access is missing — live bot AND the frozen rebuild design",
+          "status": "ideas"
+        },
+        {
           "title": "Idea — the off-Discord websites: rebuild disposition, cutover role, and staying current",
           "status": "ideas"
         },
@@ -10672,8 +10714,13 @@
       "description": null,
       "use_cases": null,
       "examples": [],
-      "status": "finished",
-      "linked_ideas": [],
+      "status": "in-progress",
+      "linked_ideas": [
+        {
+          "title": "Channel-level, role-scoped access is missing — live bot AND the frozen rebuild design",
+          "status": "ideas"
+        }
+      ],
       "notes": null
     },
     {
@@ -10688,6 +10735,10 @@
       "examples": [],
       "status": "in-progress",
       "linked_ideas": [
+        {
+          "title": "Channel-level, role-scoped access is missing — live bot AND the frozen rebuild design",
+          "status": "ideas"
+        },
         {
           "title": "Idea — the off-Discord websites: rebuild disposition, cutover role, and staying current",
           "status": "ideas"
@@ -10709,8 +10760,13 @@
       "description": null,
       "use_cases": null,
       "examples": [],
-      "status": "finished",
-      "linked_ideas": [],
+      "status": "in-progress",
+      "linked_ideas": [
+        {
+          "title": "Channel-level, role-scoped access is missing — live bot AND the frozen rebuild design",
+          "status": "ideas"
+        }
+      ],
       "notes": null
     },
     {
@@ -10723,8 +10779,13 @@
       "description": "PR F: paginated to dodge Discord's 25-field and 6000-char caps.",
       "use_cases": null,
       "examples": [],
-      "status": "finished",
-      "linked_ideas": [],
+      "status": "in-progress",
+      "linked_ideas": [
+        {
+          "title": "Channel-level, role-scoped access is missing — live bot AND the frozen rebuild design",
+          "status": "ideas"
+        }
+      ],
       "notes": null
     },
     {
@@ -10739,6 +10800,10 @@
       "examples": [],
       "status": "in-progress",
       "linked_ideas": [
+        {
+          "title": "Channel-level, role-scoped access is missing — live bot AND the frozen rebuild design",
+          "status": "ideas"
+        },
         {
           "title": "Idea — the off-Discord websites: rebuild disposition, cutover role, and staying current",
           "status": "ideas"
@@ -10760,8 +10825,13 @@
       "description": null,
       "use_cases": null,
       "examples": [],
-      "status": "finished",
-      "linked_ideas": [],
+      "status": "in-progress",
+      "linked_ideas": [
+        {
+          "title": "Channel-level, role-scoped access is missing — live bot AND the frozen rebuild design",
+          "status": "ideas"
+        }
+      ],
       "notes": null
     },
     {
@@ -10774,8 +10844,13 @@
       "description": null,
       "use_cases": null,
       "examples": [],
-      "status": "finished",
-      "linked_ideas": [],
+      "status": "in-progress",
+      "linked_ideas": [
+        {
+          "title": "Channel-level, role-scoped access is missing — live bot AND the frozen rebuild design",
+          "status": "ideas"
+        }
+      ],
       "notes": null
     },
     {
@@ -10788,8 +10863,13 @@
       "description": null,
       "use_cases": null,
       "examples": [],
-      "status": "finished",
-      "linked_ideas": [],
+      "status": "in-progress",
+      "linked_ideas": [
+        {
+          "title": "Channel-level, role-scoped access is missing — live bot AND the frozen rebuild design",
+          "status": "ideas"
+        }
+      ],
       "notes": null
     },
     {
@@ -10806,6 +10886,10 @@
       "examples": [],
       "status": "in-progress",
       "linked_ideas": [
+        {
+          "title": "Channel-level, role-scoped access is missing — live bot AND the frozen rebuild design",
+          "status": "ideas"
+        },
         {
           "title": "Idea — the off-Discord websites: rebuild disposition, cutover role, and staying current",
           "status": "ideas"
@@ -10830,6 +10914,10 @@
       "status": "in-progress",
       "linked_ideas": [
         {
+          "title": "Channel-level, role-scoped access is missing — live bot AND the frozen rebuild design",
+          "status": "ideas"
+        },
+        {
           "title": "Idea — the off-Discord websites: rebuild disposition, cutover role, and staying current",
           "status": "ideas"
         },
@@ -10853,6 +10941,10 @@
       "status": "in-progress",
       "linked_ideas": [
         {
+          "title": "Channel-level, role-scoped access is missing — live bot AND the frozen rebuild design",
+          "status": "ideas"
+        },
+        {
           "title": "Idea — the off-Discord websites: rebuild disposition, cutover role, and staying current",
           "status": "ideas"
         },
@@ -10873,8 +10965,13 @@
       "description": null,
       "use_cases": null,
       "examples": [],
-      "status": "finished",
-      "linked_ideas": [],
+      "status": "in-progress",
+      "linked_ideas": [
+        {
+          "title": "Channel-level, role-scoped access is missing — live bot AND the frozen rebuild design",
+          "status": "ideas"
+        }
+      ],
       "notes": null
     },
     {
@@ -10889,6 +10986,10 @@
       "examples": [],
       "status": "in-progress",
       "linked_ideas": [
+        {
+          "title": "Channel-level, role-scoped access is missing — live bot AND the frozen rebuild design",
+          "status": "ideas"
+        },
         {
           "title": "Idea — the off-Discord websites: rebuild disposition, cutover role, and staying current",
           "status": "ideas"
@@ -10915,6 +11016,10 @@
       "status": "in-progress",
       "linked_ideas": [
         {
+          "title": "Channel-level, role-scoped access is missing — live bot AND the frozen rebuild design",
+          "status": "ideas"
+        },
+        {
           "title": "Idea — the off-Discord websites: rebuild disposition, cutover role, and staying current",
           "status": "ideas"
         },
@@ -10937,6 +11042,10 @@
       "examples": [],
       "status": "in-progress",
       "linked_ideas": [
+        {
+          "title": "Channel-level, role-scoped access is missing — live bot AND the frozen rebuild design",
+          "status": "ideas"
+        },
         {
           "title": "Idea — the off-Discord websites: rebuild disposition, cutover role, and staying current",
           "status": "ideas"
@@ -10961,6 +11070,10 @@
       "status": "in-progress",
       "linked_ideas": [
         {
+          "title": "Channel-level, role-scoped access is missing — live bot AND the frozen rebuild design",
+          "status": "ideas"
+        },
+        {
           "title": "Idea — the off-Discord websites: rebuild disposition, cutover role, and staying current",
           "status": "ideas"
         },
@@ -10984,6 +11097,10 @@
       "status": "in-progress",
       "linked_ideas": [
         {
+          "title": "Channel-level, role-scoped access is missing — live bot AND the frozen rebuild design",
+          "status": "ideas"
+        },
+        {
           "title": "Idea — the off-Discord websites: rebuild disposition, cutover role, and staying current",
           "status": "ideas"
         },
@@ -11004,8 +11121,13 @@
       "description": null,
       "use_cases": null,
       "examples": [],
-      "status": "finished",
-      "linked_ideas": [],
+      "status": "in-progress",
+      "linked_ideas": [
+        {
+          "title": "Channel-level, role-scoped access is missing — live bot AND the frozen rebuild design",
+          "status": "ideas"
+        }
+      ],
       "notes": null
     },
     {
@@ -11020,6 +11142,10 @@
       "examples": [],
       "status": "in-progress",
       "linked_ideas": [
+        {
+          "title": "Channel-level, role-scoped access is missing — live bot AND the frozen rebuild design",
+          "status": "ideas"
+        },
         {
           "title": "Idea — the off-Discord websites: rebuild disposition, cutover role, and staying current",
           "status": "ideas"
@@ -11043,8 +11169,13 @@
       "description": null,
       "use_cases": null,
       "examples": [],
-      "status": "finished",
-      "linked_ideas": [],
+      "status": "in-progress",
+      "linked_ideas": [
+        {
+          "title": "Channel-level, role-scoped access is missing — live bot AND the frozen rebuild design",
+          "status": "ideas"
+        }
+      ],
       "notes": null
     },
     {
@@ -11059,8 +11190,13 @@
       "description": null,
       "use_cases": null,
       "examples": [],
-      "status": "finished",
-      "linked_ideas": [],
+      "status": "in-progress",
+      "linked_ideas": [
+        {
+          "title": "Channel-level, role-scoped access is missing — live bot AND the frozen rebuild design",
+          "status": "ideas"
+        }
+      ],
       "notes": null
     },
     {
@@ -11073,8 +11209,13 @@
       "description": null,
       "use_cases": null,
       "examples": [],
-      "status": "finished",
-      "linked_ideas": [],
+      "status": "in-progress",
+      "linked_ideas": [
+        {
+          "title": "Channel-level, role-scoped access is missing — live bot AND the frozen rebuild design",
+          "status": "ideas"
+        }
+      ],
       "notes": null
     },
     {
@@ -11089,6 +11230,10 @@
       "examples": [],
       "status": "in-progress",
       "linked_ideas": [
+        {
+          "title": "Channel-level, role-scoped access is missing — live bot AND the frozen rebuild design",
+          "status": "ideas"
+        },
         {
           "title": "Idea — the off-Discord websites: rebuild disposition, cutover role, and staying current",
           "status": "ideas"
@@ -11155,6 +11300,10 @@
       "status": "in-progress",
       "linked_ideas": [
         {
+          "title": "Automod's spam rule is rate-only and per-channel — two related detection gaps",
+          "status": "ideas"
+        },
+        {
           "title": "Safety & Community — one operator landing",
           "status": "ideas"
         },
@@ -11177,6 +11326,10 @@
       "examples": [],
       "status": "in-progress",
       "linked_ideas": [
+        {
+          "title": "Moderation feature gaps versus competitor bots (researched, most turned out already covered)",
+          "status": "ideas"
+        },
         {
           "title": "Idea — server-owner-configurable moderation/warning DMs",
           "status": "ideas"
@@ -11233,6 +11386,10 @@
       "status": "in-progress",
       "linked_ideas": [
         {
+          "title": "Moderation feature gaps versus competitor bots (researched, most turned out already covered)",
+          "status": "ideas"
+        },
+        {
           "title": "Idea — server-owner-configurable moderation/warning DMs",
           "status": "ideas"
         },
@@ -11283,6 +11440,10 @@
       "status": "in-progress",
       "linked_ideas": [
         {
+          "title": "Moderation feature gaps versus competitor bots (researched, most turned out already covered)",
+          "status": "ideas"
+        },
+        {
           "title": "Idea — server-owner-configurable moderation/warning DMs",
           "status": "ideas"
         },
@@ -11326,6 +11487,10 @@
       "status": "in-progress",
       "linked_ideas": [
         {
+          "title": "Moderation feature gaps versus competitor bots (researched, most turned out already covered)",
+          "status": "ideas"
+        },
+        {
           "title": "Idea — server-owner-configurable moderation/warning DMs",
           "status": "ideas"
         },
@@ -11353,6 +11518,10 @@
       "status": "in-progress",
       "linked_ideas": [
         {
+          "title": "Moderation feature gaps versus competitor bots (researched, most turned out already covered)",
+          "status": "ideas"
+        },
+        {
           "title": "Idea — server-owner-configurable moderation/warning DMs",
           "status": "ideas"
         },
@@ -11379,6 +11548,10 @@
       "examples": [],
       "status": "in-progress",
       "linked_ideas": [
+        {
+          "title": "Moderation feature gaps versus competitor bots (researched, most turned out already covered)",
+          "status": "ideas"
+        },
         {
           "title": "Idea — server-owner-configurable moderation/warning DMs",
           "status": "ideas"
@@ -11449,6 +11622,10 @@
       "status": "in-progress",
       "linked_ideas": [
         {
+          "title": "Moderation feature gaps versus competitor bots (researched, most turned out already covered)",
+          "status": "ideas"
+        },
+        {
           "title": "Safety & Community — one operator landing",
           "status": "ideas"
         },
@@ -11486,6 +11663,10 @@
       "status": "in-progress",
       "linked_ideas": [
         {
+          "title": "Moderation feature gaps versus competitor bots (researched, most turned out already covered)",
+          "status": "ideas"
+        },
+        {
           "title": "Idea — server-owner-configurable moderation/warning DMs",
           "status": "ideas"
         },
@@ -11513,6 +11694,10 @@
       "status": "in-progress",
       "linked_ideas": [
         {
+          "title": "Moderation feature gaps versus competitor bots (researched, most turned out already covered)",
+          "status": "ideas"
+        },
+        {
           "title": "Idea — server-owner-configurable moderation/warning DMs",
           "status": "ideas"
         },
@@ -11539,6 +11724,10 @@
       "examples": [],
       "status": "in-progress",
       "linked_ideas": [
+        {
+          "title": "Moderation feature gaps versus competitor bots (researched, most turned out already covered)",
+          "status": "ideas"
+        },
         {
           "title": "Idea — server-owner-configurable moderation/warning DMs",
           "status": "ideas"

@@ -51,7 +51,9 @@ class AutomodStage:
 
 
 class Automod(commands.Cog):
-    """Automated message-filter layer (spam · invites · caps · mass mentions)."""
+    """Automated message-filter layer (spam · cross-channel spam · duplicate
+    content · invites · caps · mass mentions).
+    """
 
     def __init__(self, bot: commands.Bot) -> None:
         self.bot = bot
@@ -80,6 +82,12 @@ class Automod(commands.Cog):
             "",
             f"🛑 **Spam** — {_flag(policy.spam_enabled)} "
             f"(> {policy.spam_count} msgs / {policy.spam_window_seconds}s)",
+            f"🌐 **Cross-channel spam** — {_flag(policy.cross_channel_spam_enabled)} "
+            f"(> {policy.cross_channel_spam_count} msgs across channels / "
+            f"{policy.spam_window_seconds}s)",
+            f"🔁 **Duplicate content** — {_flag(policy.duplicate_enabled)} "
+            f"(>= {policy.duplicate_count}x same message / "
+            f"{policy.spam_window_seconds}s)",
             f"🔗 **Invite links** — {_flag(policy.invites_enabled)}",
             f"🔠 **Excessive caps** — {_flag(policy.caps_enabled)} "
             f"(>= {policy.caps_percent}% uppercase)",

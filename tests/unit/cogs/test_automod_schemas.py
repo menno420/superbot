@@ -44,10 +44,14 @@ _EXPECTED_DEFAULTS = {
     "invites_enabled": automod_config.DEFAULT_INVITES_ENABLED,
     "caps_enabled": automod_config.DEFAULT_CAPS_ENABLED,
     "mentions_enabled": automod_config.DEFAULT_MENTIONS_ENABLED,
+    "cross_channel_spam_enabled": automod_config.DEFAULT_CROSS_CHANNEL_SPAM_ENABLED,
+    "duplicate_enabled": automod_config.DEFAULT_DUPLICATE_ENABLED,
     "spam_count": automod_config.DEFAULT_SPAM_COUNT,
     "spam_window_seconds": automod_config.DEFAULT_SPAM_WINDOW_SECONDS,
     "caps_percent": automod_config.DEFAULT_CAPS_PERCENT,
     "mentions_count": automod_config.DEFAULT_MENTIONS_COUNT,
+    "cross_channel_spam_count": automod_config.DEFAULT_CROSS_CHANNEL_SPAM_COUNT,
+    "duplicate_count": automod_config.DEFAULT_DUPLICATE_COUNT,
     "exempt_roles": automod_config.DEFAULT_EXEMPT_ROLES,
     "exempt_channels": automod_config.DEFAULT_EXEMPT_CHANNELS,
 }
@@ -88,6 +92,10 @@ def test_threshold_validators_reject_out_of_range():
         by_name["caps_percent"].validator(0)
     with pytest.raises(ValueError):
         by_name["enabled"].validator("yes")  # not a bool
+    with pytest.raises(ValueError):
+        by_name["cross_channel_spam_count"].validator(1)  # below MIN
+    with pytest.raises(ValueError):
+        by_name["duplicate_count"].validator(1)  # below MIN
 
 
 def test_exempt_csv_validator():
