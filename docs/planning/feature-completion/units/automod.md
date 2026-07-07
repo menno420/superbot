@@ -17,7 +17,11 @@
 > (roles/channels). Actions route through the audited `moderation_service` seam (`auto_delete` + `warn`
 > with `actor_id=None`, reusing moderation's escalation ladder — no second ladder). All flags default
 > **OFF** so a fresh guild is unaffected; config is the standard `!settings` widget gated by
-> `moderation.settings.configure` (automod *is* moderation's automated layer). Gaps are best-in-class
+> `moderation.settings.configure` (automod *is* moderation's automated layer). **Owner-verified
+> 2026-07-07 (see punch #5/#6):** the spam rule is rate-only (no content-duplicate detection) and
+> keyed per-channel (a multi-channel burst never trips it) — detail in
+> [`../../../ideas/automod-spam-detection-gaps-2026-07-07.md`](../../../ideas/automod-spam-detection-gaps-2026-07-07.md).
+> Gaps are best-in-class
 > breadth (word-blacklist is cleanup's; no attachment/embed rules; no rule-stats view) and the live ✔.
 
 ## Rubric (server function)
@@ -89,6 +93,14 @@
    mention), confirm delete + warn + mod-log, with screenshots; check false-positive rate.
 3. **Owner sign-off** — maintainer confirms "it does its job the most convenient way."
 4. **Rule-stats view** *(offline, deepening, optional)* — per-rule trigger counts to help tune thresholds.
+5. **Cross-channel spam keying** *(owner-raised 2026-07-07, higher severity)* — `SpamTracker`'s
+   `(guild_id, user_id, channel_id)` key means a burst spread across multiple channels never trips the
+   rule at all, regardless of content; add a guild-wide counter alongside the existing per-channel one.
+   Detail + design sketch: [`automod-spam-detection-gaps-2026-07-07.md`](../../../ideas/automod-spam-detection-gaps-2026-07-07.md).
+6. **Content-duplicate detection** *(owner-raised 2026-07-07)* — the spam rule is rate-only and never
+   compares message content, so it can't distinguish a burst of different messages from the same message
+   pasted repeatedly; add as its own rule (not a modification of the existing spam rule), through the
+   same audited `moderation_service` seam. Same doc as #5.
 
 ## Evidence
 - **Tests:** `tests/unit/services/test_automod_service.py` · `…/test_automod_config.py` ·

@@ -31,6 +31,14 @@ only the header block is read, so a `**Subsystem:**` *example* in an idea's body
 
 Current broad captures:
 
+- [`automod-spam-detection-gaps-2026-07-07.md`](./automod-spam-detection-gaps-2026-07-07.md) —
+  **session idea (2026-07-07, owner-raised, code-verified):** confirmed the owner's suspicion —
+  automod's spam rule (`SpamTracker`) is pure rate-counting with zero content comparison, so it
+  can't distinguish a burst of different messages from the same message repeated. Found a more
+  severe related gap while verifying: the tracker is keyed per-channel, so a burst spread across
+  multiple channels never trips the rule at all regardless of content — the only rate limit
+  automod has is fully bypassable today. Tracked on the automod completion certificate's
+  punch-list (items #5/#6).
 - [`channel-role-scoped-authority-gap-2026-07-07.md`](./channel-role-scoped-authority-gap-2026-07-07.md) —
   **⚠ time-sensitive (2026-07-07, owner-raised):** neither the live governance stack nor the frozen
   K6 authority design (`Lane{CAPABILITY,TIER}` + `ChannelAccessDecision`) can express "only role X in

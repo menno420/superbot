@@ -8758,3 +8758,49 @@ rebuild override"; amendment stamp on
 [`../planning/rebuild-canonical-plan-2026-07-06.md`](../planning/rebuild-canonical-plan-2026-07-06.md)
 §1/§4/§5 (G1/G2/👤 retired); binding pointer in `.claude/CLAUDE.md` § Working agreement (Act vs. ask).
 Provenance: `.sessions/2026-07-07-projects-eap-and-full-autonomy-q0241.md`.
+
+---
+
+### Q-0242 — DIRECTED: Q-0229's "bare `mcp__<server>` = allow every tool" claim is empirically false; exact tool-name entries added for Claude Code Remote (2026-07-07)
+
+> **Context.** Owner reported the *same* recurring permission-prompt problem Q-0229 (2026-07-03) was
+> supposed to have fixed: `send_later` and `delete_trigger` (Claude Code Remote's scheduling tools)
+> still prompt on the mobile/web client, with screenshots from earlier in this very session as live
+> evidence. Owner: *"this is also a recurring problem, which I've tried to fix more times than I can
+> count... even with these actions on the allowlist it keeps happening."*
+
+**Findings.** Q-0229 added bare `mcp__<server>` entries (`mcp__Claude_Code_Remote`, `mcp__github`,
+`mcp__codegraph`, `mcp__context7`) to `.claude/settings.json`, reasoning "bare `mcp__<server>` matches
+every tool on that server." **That claim was never live-verified and this session's evidence refutes
+it for at least one server:** `delete_trigger` had no exact-name entry (only the bare wildcard) and
+prompted — expected, if the wildcard doesn't actually prefix-match. But `send_later` had **both** the
+bare wildcard **and** an exact `mcp__Claude_Code_Remote__send_later` entry (in the tracked
+`.claude/settings.local.json`) and **still prompted** — which the bare-wildcard theory alone can't
+explain, and which per the repo's own Q-0120 rule ("a green check/claim that contradicts visible
+evidence is a bug in the check, not the evidence") means the Q-0229 fix should be treated as
+unverified, not working, until proven otherwise.
+
+**Decision (owner-directed in-session; Q-0106 executable-config exception).** Added explicit,
+individually-named allow entries for all ten Claude Code Remote tools (`add_repo`, `create_trigger`,
+`delete_trigger`, `fire_trigger`, `list_environments`, `list_repos`, `list_triggers`,
+`register_repo_root`, `send_later`, `update_trigger`) to `.claude/settings.json` (the shared,
+committed project file — not `settings.local.json`, removing any ambiguity about whether a
+"local"-scoped file is fully honored on the remote/web client for an ephemeral, freshly-cloned
+container). The bare `mcp__Claude_Code_Remote`/`mcp__github`/`mcp__codegraph`/`mcp__context7`
+entries were **left in place, not removed** (additive-only change; they may still help for tools not
+individually enumerated, and removing them risked losing whatever partial coverage they do provide).
+
+**Honest caveat — this may not fully resolve it.** Given send_later kept prompting even while exactly
+allowlisted, there's a real chance Claude Code Remote's *action-scheduling* tools specifically
+(`create_trigger`/`update_trigger`/`delete_trigger`/`fire_trigger`/`send_later` — anything that
+creates or removes standing autonomous behavior firing later without the owner present) are
+deliberately exempted from allowlist auto-approval on the interactive surface, as a safety design that
+no `settings.json` entry can override. **The next session to hit this should verify empirically
+before re-attempting the same fix a third time**: if these tools still prompt after this change, stop
+adding allowlist entries for this specific tool class and instead treat it as confirmed-deliberate
+platform behavior (report/ask upstream if a true override is wanted), per Q-0229's own pointer to the
+**environment-level permission mode** (code.claude.com / the in-session mode toggle) as the only lever
+above the repo's `allow` list — a project file structurally cannot force full bypass on this surface.
+
+**Homes:** `.claude/settings.json` (ten new entries) · this Q (provenance, supersedes Q-0229's
+unverified claim) · `.sessions/2026-07-07-rebuild-plan-review-and-automation-idea.md` (continuation).
