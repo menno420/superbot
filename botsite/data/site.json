@@ -1,10 +1,10 @@
 {
   "meta": {
-    "generated_at": "2026-07-07T11:38:19Z",
+    "generated_at": "2026-07-07T14:11:27Z",
     "build": {
-      "commit": "8bf5d3a",
-      "subject": "plan: Fable-5 ultracode brief to fold today's ideas into the rebuild plan",
-      "committed_at": "2026-07-07T11:38:19Z"
+      "commit": "5c16701",
+      "subject": "owner rulings: Q-0245 EXTRA_OWNER_USER_IDS test-driver account + Q-0246 permission-tiered operation (Full/Lite)",
+      "committed_at": "2026-07-07T14:11:27Z"
     }
   },
   "counts": {
@@ -11299,10 +11299,6 @@
       "examples": [],
       "status": "in-progress",
       "linked_ideas": [
-        {
-          "title": "Automod's spam rule is rate-only and per-channel — two related detection gaps",
-          "status": "ideas"
-        },
         {
           "title": "Safety & Community — one operator landing",
           "status": "ideas"

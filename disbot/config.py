@@ -46,7 +46,8 @@ except ValueError:
 def _parse_extra_owner_ids(raw: str) -> frozenset[int]:
     """Parse ``EXTRA_OWNER_USER_IDS`` (comma/semicolon-separated Discord user
     ids) into a frozenset, silently dropping malformed tokens — a typo in the
-    env var must never crash boot (config is imported by everything)."""
+    env var must never crash boot (config is imported by everything).
+    """
     ids: set[int] = set()
     for token in raw.replace(";", ",").split(","):
         token = token.strip()

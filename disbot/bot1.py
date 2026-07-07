@@ -77,6 +77,7 @@ intents = discord.Intents.default()
 intents.message_content = True
 intents.members = True
 
+
 class _SuperBot(commands.Bot):
     """``commands.Bot`` + the deploy-declared extra owner accounts (Q-0245).
 
