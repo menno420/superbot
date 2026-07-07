@@ -9,7 +9,9 @@
 > [`frozen-l0-grammar.md`](../analysis/rebuild-discovery/foundations/gate-0/frozen-l0-grammar.md)).
 > The consolidated arc + gates:
 > [`rebuild-canonical-plan-2026-07-06.md`](rebuild-canonical-plan-2026-07-06.md). §10.2's
-> ratification list remains the G1 sitting payload, as amended by that plan's F-3. The header's
+> ratification list is the **decide-and-flag veto payload** (that plan's §1, as amended by F-3) —
+> the **G1 sitting was RETIRED as a blocker by Q-0241 (#1776, 2026-07-07)**: the owner reacts to
+> the flag list anytime; nothing waits on it. The header's
 > "amendments — now folded in" refers only to the six 07-02 spike amendments; the G-9…G-24 set
 > lives in the Gate-0 registry (`rebuild-amendments.yml`).
 

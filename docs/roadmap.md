@@ -149,9 +149,12 @@
   **[rebuild-canonical-plan-2026-07-06.md](planning/rebuild-canonical-plan-2026-07-06.md)** (#1770;
   supersedes the design-spec / linchpin / handoff framing below). **Q-0241 (#1776)** retired the owner
   go/no-go gate — the coordinator builds in logical order, live-tests in a server, silence=consent. **Gate
-  V is COMPLETE (#1767)**; **Phase-2.5 A/B RAN (#1775, FAIL as-tested)** → remainder = adopt-render fix +
-  one re-run pair. ▶ next per canonical §5: Phase-2.5 remainder → kernel S1–S9 → layer V → K10 → port
-  bands; **Projects-EAP as the coordinator** ([idea](ideas/claude-code-projects-for-the-rebuild-2026-07-07.md)).
+  V is COMPLETE (#1767)**; **Phase-2.5 is CLOSED** (#1775 FAIL-as-tested → the adopt-render fix + re-run
+  pair, final-review session #1778); **the FINAL plan review ran 2026-07-07** (#1778 — verdict: ready,
+  §11 amendments folded; [report](planning/rebuild-final-review-report-2026-07-07.md)). ▶ next per
+  canonical §5: **create `superbot-next` (step 6)** → bootstrap kit (7) → control plane (8) → kernel
+  S1–S9 → layer V → K10 → port bands; **Projects-EAP as the coordinator**
+  ([owner-sendable review](planning/projects-eap-product-review-2026-07-07.md)).
   *(Historical: the 👤 owner-gate framing + the design-spec/linchpin/handoff pointers are superseded by
   the canonical plan §9.)*
 - **Now:** **▶ FINALIZE THE MEMORY SUBSTRATE** — owner-queued 2026-07-02 as a **Fable 5 ultracode**

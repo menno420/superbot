@@ -86,6 +86,14 @@
 
 ## Recently shipped — archived (newest first)
 
+- **#1683 (2026-07-03, workflow — cut permission prompts + endorse invocation centralizations, Q-0229/Q-0228)** —
+  broadened `.claude/settings.json` with whole-MCP-server allow entries (`mcp__Claude_Code_Remote`,
+  `mcp__github`, `mcp__codegraph`, `mcp__context7`) so tools like `send_later` stop prompting —
+  the destructive-ops `ask` brake left intact (Q-0229 diagnosis: web downgrades project-scope
+  `bypassPermissions`, so the explicit allow list is the reliable lever); and updated Q-0228 + the
+  conventions log §6 to record the owner **endorsing** the C-1…C-7 invocation-stack centralizations
+  as foundations to build toward.
+
 - **#1680 (2026-07-03, S3 rebuild — Phase-A conventions freeze: naming · invocation ladder · mod-actions-as-data · authority, Q-0224…Q-0228)** —
   the owner-live conventions-freeze continuation of Stage 1, folded into the
   [conventions decisions log](planning/rebuild-conventions-invocation-authority-2026-07-03.md):

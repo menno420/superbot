@@ -10,13 +10,15 @@
 > 2026-07-06). This doc fills exactly those gaps. Pass bar + verdict acceptance are canonical-plan
 > flag **F-5** (decided + flagged, not open).
 
-## 0. Why this gates Phase 3
+## 0. Why this runs before the Phase-3 build *(was "why this gates" — the gate is retired, Q-0241/#1776)*
 
 The substrate-kit is the first thing K0 does in the new repo. The kit is *finished* (#1649;
 422/422 tests; one-step adopt re-proven live this session) but has **never been tested from a true
 cold start** — every session that ever used it ran inside this repo's warm context. The A/B is
 the one experiment that validates the portability thesis before a ~100-PR commitment rides on it
-(strategy §5.2.1). It is **offline, throwaway, and cannot touch production anything.**
+(strategy §5.2.1). It is **offline, throwaway, and cannot touch production anything.** Under
+Q-0241 its verdict *informs* the K0 bootstrap step (fix-and-re-run on a FAIL); it no longer
+blocks anything.
 
 ## 1. Prerequisite (one small PR)
 
@@ -80,13 +82,13 @@ blinding is partial — the judge is instructed to score *behavior*, not artifac
 workflow errors** (a kit-caused dead-end the session cannot recover from = automatic FAIL).
 
 **Tie/ambiguous:** run one more paired task. Still ambiguous → the verdict is recorded honestly as
-**"no measurable cold-start benefit"** — itself gate-relevant evidence (the kit keeps its
-checker/guard value regardless; the *portability claim* just loses its headline). The gate then
-becomes an explicit owner judgment call at G1 rather than a measured pass.
+**"no measurable cold-start benefit"** — itself decision-relevant evidence (the kit keeps its
+checker/guard value regardless; the *portability claim* just loses its headline).
 
-**Who accepts:** agents run the whole thing; **the owner accepts the verdict** at (or before) the
-G1 sitting — reconciling the strategy's "agent-buildable, no owner gate" with Gate-V O-8's
-"owner-run" (the *run* is agents'; the *acceptance* is the owner's).
+**Who accepts (amended by Q-0241/#1776):** agents run the whole thing **and accept their own
+verdict** — record it, fix a specific failure cause, re-run, and proceed; the verdict + any
+fix are flagged on the run report for the owner's after-the-fact review (silence = consent).
+*(The original "owner accepts at the G1 sitting" reconciliation is retired with the sitting.)*
 
 ## 6. Artifact
 
