@@ -1,14 +1,14 @@
 {
   "meta": {
-    "generated_at": "2026-07-07T00:00:50Z",
+    "generated_at": "2026-07-07T01:44:10Z",
     "build": {
-      "commit": "026de980",
-      "subject": "Merge pull request #1772 from menno420/claude/jolly-johnson-3s6zq5",
-      "committed_at": "2026-07-07T00:00:50Z"
+      "commit": "ad4a66ef",
+      "subject": "docs: Fable-5 ultracode brief + prompt for the final rebuild-plan review & Projects-EAP repo prep (#1777)",
+      "committed_at": "2026-07-07T01:44:10Z"
     },
     "counts": {
       "functions": 43,
-      "ideas": 200,
+      "ideas": 201,
       "bugs": 31,
       "reviews": 0,
       "reviews_open": 0,
@@ -1164,6 +1164,14 @@
     }
   ],
   "ideas": [
+    {
+      "file": "claude-code-projects-for-the-rebuild-2026-07-07.md",
+      "title": "Claude Code Projects (EAP) as the rebuild coordinator",
+      "status": "ideas",
+      "date": "2026-07-07",
+      "summary": "Anthropic invited us to the **Claude Code Projects** early-access program. Use it as the",
+      "subsystems": null
+    },
     {
       "file": "codex-evidence-pr-disposition-guard-2026-07-06.md",
       "title": "Idea: codex/evidence-PR disposition guard",
@@ -3033,6 +3041,30 @@
   "reviews": [],
   "updates": [
     {
+      "file": "2026-07-07-rebuild-gate-runners-fable5.md",
+      "date": "2026-07-07",
+      "title": "2026-07-07 — Rebuild gate-runners: kit tail ① + Phase-2.5 A/B + check_amendments (canonical-plan §5 steps 1–3)",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": true
+    },
+    {
+      "file": "2026-07-07-projects-eap-and-full-autonomy-q0241.md",
+      "date": "2026-07-07",
+      "title": "2026-07-07 — Claude Code Projects EAP for the rebuild + Q-0241 (remove owner gates, never-wait)",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-07-07-fable5-final-review-brief-prep.md",
+      "date": "2026-07-07",
+      "title": "2026-07-07 — Prepare Fable-5 ultracode brief for the final rebuild-plan review + Projects-EAP repo prep",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
       "file": "2026-07-06-ruff-migration.md",
       "date": "2026-07-06",
       "title": "2026-07-06 — Ruff migration (A3): ruff replaces black + isort",
@@ -3487,30 +3519,6 @@
       "status": "complete",
       "run_type": "manual",
       "self_initiated": false
-    },
-    {
-      "file": "2026-07-02-railway-automation-grant.md",
-      "date": "2026-07-02",
-      "title": "2026-07-02 — Railway: the full-automation grant (Q-0213) + R-now execution",
-      "status": "complete",
-      "run_type": "manual",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-07-02-railway-audit-and-plan.md",
-      "date": "2026-07-02",
-      "title": "2026-07-02 — Railway: token-capability audit + new-project setup plan",
-      "status": "complete",
-      "run_type": "manual",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-07-02-memory-retention-policy.md",
-      "date": "2026-07-02",
-      "title": "2026-07-02 — Memory retention & deletion policy (design session)",
-      "status": "complete",
-      "run_type": "manual",
-      "self_initiated": true
     }
   ],
   "bot_changelog": [
