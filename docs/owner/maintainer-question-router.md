@@ -9019,3 +9019,49 @@ worth building where the owner's interest and ground truth aren't. Three binding
 
 **Homes:** this Q · the capture doc's open-forks + Part 3 (fork closed) · the future trading-repo
 founding brief (this Q is its market-scope input).
+
+### Q-0251 — DECIDED: the trading repo's operating model — decision-ledger mock trades, a sniper bucket, and the 3-way hybrid allocator (2026-07-07)
+
+**Owner ruling (in-session, elaborating Q-0250):** trades are **mock trades** that "wouldn't even
+need to be actually executed — if we just document our decision and check the results after the
+decided time, we know whether or not our trade would have worked"; backtest across multiple
+stocks "and even crypto too eventually if it's helpful"; score strategies by "highest % of gain
+over a set amount of time or a set amount of trades"; rare-but-precise strategies matter (his
+example: a strategy that over many years found only 5 trades but no losers — "not very useful
+data, but it does prove that the idea is there") and must not be the only strategy; eventually
+run a **3-way hybrid** dividing money across an **active trading** section, a **swing-trade**
+section, and a **reserve/save** section "that either remains available for lucky moments or
+specifically for entry at a decided level."
+
+**Decision unpacked (strengthened, decide-and-flag):**
+
+1. **The decision ledger IS the v1 product — no broker needed at all.** Every signal is recorded
+   *before* its outcome window (instrument, direction, size, thesis, entry, exit rules, horizon)
+   and verified against market data after it closes. **Git commits are the tamper-evidence**: a
+   decision committed at time T provably predates its outcome — nobody, human or AI, can
+   pretend-predict after the fact. Forward testing this way complements backtesting and is the
+   strongest antidote to overfit (a strategy can't overfit the future). The Q-0250 API-broker
+   paper lane becomes a *later* upgrade (realistic fills/slippage), not a prerequisite.
+2. **Scoring:** the leaderboard shows gain % per set time AND per set trade count as the owner
+   asked — plus the honesty columns (max drawdown, sample size, exposure time) so a lucky
+   3-trade streak never outranks a robust 300-trade record; the promotion ladder (Q-0250 rider
+   context) stays the gate.
+3. **The sniper bucket (rare-but-precise strategies) is a first-class citizen** with different
+   statistics: tiny samples get uncertainty-aware evaluation (a 5-for-5 record proves the
+   pattern class exists, not yet the edge — across many candidate strategies, some 5/5 appears
+   by pure luck), mandatory forward-test emphasis (tiny-N backtests overfit worst), and
+   **notification wiring**: when a sniper setup triggers live, the owner gets pinged (the
+   notification/automation primitives from the bot program are the natural transport). Sniper
+   signals are also a named *reserve-deployment trigger* (below).
+4. **The 3-way hybrid is an ALLOCATOR — itself a strategy, itself backtested.** Buckets: active
+   (short-horizon strategies) · swing (longer-horizon) · reserve (cash). The allocator's rules —
+   bucket weights, rebalancing, profit routing, reserve refill — are declared and evaluated like
+   any strategy, so the *hybrid* has a track record, not just its components. **Reserve
+   discipline:** deployment rules are pre-declared (crash/drawdown triggers, pre-decided entry
+   levels = standing limit-style entries in the ledger, sniper signals) — "lucky moments" are
+   defined in advance, never discretionary hindsight.
+5. **Crypto re-scope:** eventually admissible as *backtest robustness data* (does a strategy
+   class survive on an unrelated asset class?), never a trading venue — consistent with Q-0250.
+
+**Homes:** this Q · the capture doc Part 3 (operating-model subsection) · the future trading-repo
+founding brief (Q-0250 + Q-0251 are its two design inputs).
