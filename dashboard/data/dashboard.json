@@ -1,10 +1,10 @@
 {
   "meta": {
-    "generated_at": "2026-07-07T11:38:19Z",
+    "generated_at": "2026-07-07T14:11:27Z",
     "build": {
-      "commit": "8bf5d3a",
-      "subject": "plan: Fable-5 ultracode brief to fold today's ideas into the rebuild plan",
-      "committed_at": "2026-07-07T11:38:19Z"
+      "commit": "5c16701",
+      "subject": "owner rulings: Q-0245 EXTRA_OWNER_USER_IDS test-driver account + Q-0246 permission-tiered operation (Full/Lite)",
+      "committed_at": "2026-07-07T14:11:27Z"
     },
     "counts": {
       "functions": 43,
@@ -13,7 +13,7 @@
       "reviews": 0,
       "reviews_open": 0,
       "updates": 60,
-      "env_vars": 39,
+      "env_vars": 40,
       "cogs": 55,
       "commands": 485,
       "setting_keys": 124,
@@ -1167,7 +1167,7 @@
     {
       "file": "automod-spam-detection-gaps-2026-07-07.md",
       "title": "Automod's spam rule is rate-only and per-channel — two related detection gaps",
-      "status": "ideas",
+      "status": "historical",
       "date": "2026-07-07",
       "summary": "`SpamTracker` (`disbot/services/automod_service.py:56-91`) is the entirety of the \"repeated",
       "subsystems": null
@@ -3108,6 +3108,14 @@
       "self_initiated": true
     },
     {
+      "file": "2026-07-07-rebuild-idea-consolidation.md",
+      "date": "2026-07-07",
+      "title": "2026-07-07 — Rebuild idea consolidation (fold 4 captures + §3.C re-verify)",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
       "file": "2026-07-07-rebuild-gate-runners-fable5.md",
       "date": "2026-07-07",
       "title": "2026-07-07 — Rebuild gate-runners: kit tail ① + Phase-2.5 A/B + check_amendments (canonical-plan §5 steps 1–3)",
@@ -3138,6 +3146,22 @@
       "status": "complete",
       "run_type": "manual",
       "self_initiated": true
+    },
+    {
+      "file": "2026-07-07-owner-rulings-followup.md",
+      "date": "2026-07-07",
+      "title": "2026-07-07 — Owner rulings follow-up (pricing-by-sim + slash-verification model)",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-07-07-owner-rulings-2-test-account-permission-tiers.md",
+      "date": "2026-07-07",
+      "title": "2026-07-07 — Owner rulings #2 (test-driver account + permission-tiered operation)",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
     },
     {
       "file": "2026-07-07-fable5-final-review-brief-prep.md",
@@ -3546,30 +3570,6 @@
       "status": "complete",
       "run_type": "manual",
       "self_initiated": false
-    },
-    {
-      "file": "2026-07-02-review-recent-session.md",
-      "date": "2026-07-02",
-      "title": "2026-07-02 — Review the most recent session (#1649 substrate-kit finalize)",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-07-02-review-codex-prs.md",
-      "date": "2026-07-02",
-      "title": "2026-07-02 — Review the 2 recent Codex PRs (#1654, #1655) + fix the drift they found",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-07-02-reconcile.md",
-      "date": "2026-07-02",
-      "title": "2026-07-02 — Thirty-second Q-0107 reconciliation pass (band-#1650)",
-      "status": "complete",
-      "run_type": "routine",
-      "self_initiated": false
     }
   ],
   "bot_changelog": [
@@ -3658,7 +3658,7 @@
       "usages": [
         {
           "file": "disbot/config.py",
-          "line": 203,
+          "line": 235,
           "layer": "config",
           "has_default": true
         },
@@ -3680,7 +3680,7 @@
       "usages": [
         {
           "file": "disbot/config.py",
-          "line": 202,
+          "line": 234,
           "layer": "config",
           "has_default": true
         }
@@ -3713,7 +3713,7 @@
       "usages": [
         {
           "file": "disbot/config.py",
-          "line": 186,
+          "line": 218,
           "layer": "config",
           "has_default": true
         },
@@ -3751,7 +3751,7 @@
       "usages": [
         {
           "file": "disbot/config.py",
-          "line": 249,
+          "line": 281,
           "layer": "config",
           "has_default": true
         }
@@ -3799,7 +3799,7 @@
       "usages": [
         {
           "file": "disbot/config.py",
-          "line": 241,
+          "line": 273,
           "layer": "config",
           "has_default": true
         }
@@ -3847,7 +3847,7 @@
       "usages": [
         {
           "file": "disbot/config.py",
-          "line": 229,
+          "line": 261,
           "layer": "config",
           "has_default": true
         }
@@ -3863,7 +3863,7 @@
       "usages": [
         {
           "file": "disbot/config.py",
-          "line": 232,
+          "line": 264,
           "layer": "config",
           "has_default": true
         }
@@ -3879,7 +3879,7 @@
       "usages": [
         {
           "file": "disbot/config.py",
-          "line": 235,
+          "line": 267,
           "layer": "config",
           "has_default": true
         }
@@ -4039,7 +4039,23 @@
       "usages": [
         {
           "file": "disbot/config.py",
-          "line": 148,
+          "line": 180,
+          "layer": "config",
+          "has_default": true
+        }
+      ]
+    },
+    {
+      "name": "EXTRA_OWNER_USER_IDS",
+      "required": false,
+      "usage_count": 1,
+      "layers": [
+        "config"
+      ],
+      "usages": [
+        {
+          "file": "disbot/config.py",
+          "line": 70,
           "layer": "config",
           "has_default": true
         }
@@ -4103,7 +4119,7 @@
       "usages": [
         {
           "file": "disbot/bot1.py",
-          "line": 180,
+          "line": 198,
           "layer": "bot1",
           "has_default": true
         }
@@ -4119,7 +4135,7 @@
       "usages": [
         {
           "file": "disbot/config.py",
-          "line": 149,
+          "line": 181,
           "layer": "config",
           "has_default": true
         }
@@ -4137,7 +4153,7 @@
       "usages": [
         {
           "file": "disbot/config.py",
-          "line": 185,
+          "line": 217,
           "layer": "config",
           "has_default": true
         },
@@ -4178,7 +4194,7 @@
       "usages": [
         {
           "file": "disbot/config.py",
-          "line": 212,
+          "line": 244,
           "layer": "config",
           "has_default": true
         },
@@ -4201,7 +4217,7 @@
       "usages": [
         {
           "file": "disbot/config.py",
-          "line": 216,
+          "line": 248,
           "layer": "config",
           "has_default": true
         },
@@ -4240,7 +4256,7 @@
       "usages": [
         {
           "file": "disbot/config.py",
-          "line": 184,
+          "line": 216,
           "layer": "config",
           "has_default": true
         },
@@ -4264,7 +4280,7 @@
       "usages": [
         {
           "file": "disbot/config.py",
-          "line": 183,
+          "line": 215,
           "layer": "config",
           "has_default": true
         },
@@ -4292,7 +4308,7 @@
       "usages": [
         {
           "file": "disbot/bot1.py",
-          "line": 177,
+          "line": 195,
           "layer": "bot1",
           "has_default": true
         }

@@ -77,7 +77,25 @@ intents = discord.Intents.default()
 intents.message_content = True
 intents.members = True
 
-bot = commands.Bot(
+
+class _SuperBot(commands.Bot):
+    """``commands.Bot`` + the deploy-declared extra owner accounts (Q-0245).
+
+    ``is_owner`` is the seam every ``_is_bot_owner_from_ctx``-style operator
+    bypass rides (core.runtime.command_access). Short-circuiting through
+    ``config.is_platform_owner`` keeps the "who is the bot owner?" rule in
+    exactly one place — the owner's declared test account (EXTRA_OWNER_USER_IDS)
+    then clears both owner seams identically, while discord.py's normal
+    application-owner lookup stays the fallback.
+    """
+
+    async def is_owner(self, user: discord.abc.User) -> bool:
+        if user is not None and config.is_platform_owner(getattr(user, "id", None)):
+            return True
+        return await super().is_owner(user)
+
+
+bot = _SuperBot(
     command_prefix=config.PREFIX,
     intents=intents,
     help_command=None,

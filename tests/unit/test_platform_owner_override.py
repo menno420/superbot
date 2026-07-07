@@ -315,3 +315,81 @@ def test_view_member_is_admin_plain_member_false():
     from views.base import member_is_admin
 
     assert member_is_admin(_member(OTHER_ID)) is False
+
+
+# ---------------------------------------------------------------------------
+# EXTRA_OWNER_USER_IDS — the owner's declared second/test account (Q-0245)
+# ---------------------------------------------------------------------------
+#
+# The env-declared extra-owner set makes the owner's test account equivalent
+# to the platform owner through the SAME single seam (is_platform_owner) plus
+# the discord.py ``bot.is_owner`` seam (the _SuperBot subclass).  Additive
+# only: an empty set (the default) changes nothing.
+
+EXTRA_ID = 777_000_222
+
+
+def test_parse_extra_owner_ids_empty_and_whitespace():
+    assert config._parse_extra_owner_ids("") == frozenset()
+    assert config._parse_extra_owner_ids("  ,  ") == frozenset()
+
+
+def test_parse_extra_owner_ids_single_and_multi():
+    assert config._parse_extra_owner_ids("123") == frozenset({123})
+    assert config._parse_extra_owner_ids("123, 456") == frozenset({123, 456})
+    # semicolons tolerated as separators
+    assert config._parse_extra_owner_ids("123;456") == frozenset({123, 456})
+
+
+def test_parse_extra_owner_ids_drops_malformed_tokens():
+    # a typo in the env var must never crash boot — bad tokens are dropped
+    assert config._parse_extra_owner_ids("abc, 123, 12x") == frozenset({123})
+
+
+def test_is_platform_owner_honours_extra_set(monkeypatch):
+    monkeypatch.setattr(config, "EXTRA_OWNER_USER_IDS", frozenset({EXTRA_ID}))
+    assert config.is_platform_owner(EXTRA_ID) is True
+    assert config.is_platform_owner(OWNER_ID) is True  # main owner unaffected
+    assert config.is_platform_owner(OTHER_ID) is False
+    assert config.is_platform_owner(None) is False
+
+
+def test_extra_set_grants_even_when_main_owner_unconfigured(monkeypatch):
+    # deploy-declared means exactly what is declared: the extra account keeps
+    # its grant even if BOT_OWNER_USER_ID failed to parse (None)
+    monkeypatch.setattr(config, "BOT_OWNER_USER_ID", None)
+    monkeypatch.setattr(config, "EXTRA_OWNER_USER_IDS", frozenset({EXTRA_ID}))
+    assert config.is_platform_owner(EXTRA_ID) is True
+    assert config.is_platform_owner(OTHER_ID) is False
+
+
+def test_empty_extra_set_is_inert(monkeypatch):
+    monkeypatch.setattr(config, "EXTRA_OWNER_USER_IDS", frozenset())
+    assert config.is_platform_owner(OWNER_ID) is True
+    assert config.is_platform_owner(EXTRA_ID) is False
+
+
+@pytest.mark.asyncio
+async def test_bot_is_owner_short_circuits_for_extra_owner(monkeypatch):
+    """The discord.py seam (``bot.is_owner``) honours the same predicate,
+    without ever hitting discord.py's application-owner API fallback."""
+    import bot1
+
+    monkeypatch.setattr(config, "EXTRA_OWNER_USER_IDS", frozenset({EXTRA_ID}))
+    assert await bot1.bot.is_owner(SimpleNamespace(id=EXTRA_ID)) is True
+
+
+@pytest.mark.asyncio
+async def test_bot_is_owner_delegates_for_non_owner(monkeypatch):
+    """A non-owner falls through to discord.py's normal lookup (pinned via
+    ``owner_id`` so the test never performs a network call)."""
+    import bot1
+
+    monkeypatch.setattr(config, "EXTRA_OWNER_USER_IDS", frozenset())
+    monkeypatch.setattr(config, "BOT_OWNER_USER_ID", OWNER_ID)
+    monkeypatch.setattr(bot1.bot, "owner_id", OWNER_ID)
+    try:
+        assert await bot1.bot.is_owner(SimpleNamespace(id=OTHER_ID)) is False
+        assert await bot1.bot.is_owner(SimpleNamespace(id=OWNER_ID)) is True
+    finally:
+        monkeypatch.setattr(bot1.bot, "owner_id", None)

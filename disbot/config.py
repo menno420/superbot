@@ -43,6 +43,34 @@ except ValueError:
     BOT_OWNER_USER_ID = None
 
 
+def _parse_extra_owner_ids(raw: str) -> frozenset[int]:
+    """Parse ``EXTRA_OWNER_USER_IDS`` (comma/semicolon-separated Discord user
+    ids) into a frozenset, silently dropping malformed tokens — a typo in the
+    env var must never crash boot (config is imported by everything).
+    """
+    ids: set[int] = set()
+    for token in raw.replace(";", ",").split(","):
+        token = token.strip()
+        if not token:
+            continue
+        try:
+            ids.add(int(token))
+        except ValueError:
+            continue
+    return frozenset(ids)
+
+
+# Additional fully-trusted operator accounts (owner ruling Q-0245) — e.g. the
+# owner's second/test account used to exercise moderator functions live.
+# Every id listed here clears BOTH owner seams (``is_platform_owner`` below
+# and ``bot.is_owner`` via the bot1 subclass), in EVERY guild — treat these
+# accounts' credentials exactly like the main owner account's. Deploy-time
+# env var, never hardcoded in source; empty default grants nothing.
+EXTRA_OWNER_USER_IDS: frozenset[int] = _parse_extra_owner_ids(
+    os.getenv("EXTRA_OWNER_USER_IDS", ""),
+)
+
+
 def is_platform_owner(user_id: int | None) -> bool:
     """True iff ``user_id`` is the deploy-declared bot/platform owner.
 
@@ -65,12 +93,16 @@ def is_platform_owner(user_id: int | None) -> bool:
     Returns ``False`` for ``None`` and when no owner is configured
     (``BOT_OWNER_USER_ID is None``) so an unconfigured deployment grants no
     one elevated authority by accident.
+
+    Accounts in :data:`EXTRA_OWNER_USER_IDS` (owner ruling Q-0245 — the
+    owner's declared second/test account) are equivalent to the platform
+    owner through this same single seam.
     """
-    return (
-        user_id is not None
-        and BOT_OWNER_USER_ID is not None
-        and user_id == BOT_OWNER_USER_ID
-    )
+    if user_id is None:
+        return False
+    if user_id in EXTRA_OWNER_USER_IDS:
+        return True
+    return BOT_OWNER_USER_ID is not None and user_id == BOT_OWNER_USER_ID
 
 
 # ==========================
