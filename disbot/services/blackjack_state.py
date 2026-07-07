@@ -114,7 +114,7 @@ class _PvPState(SettleOnceMixin):
         self.messages: dict[int, discord.Message] = {}
 
 
-class _BjTournament(TournamentRegistration):
+class _BjTournament(TournamentRegistration, SettleOnceMixin):
     def __init__(
         self,
         host_id: int,

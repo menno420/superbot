@@ -69,6 +69,7 @@ from services import (  # noqa: F401 — game_state_service kept for back-compat
     game_wager_workflow,
     tournament_state_service,
 )
+from utils.terminal_guard import SettleOnceMixin
 from utils.ui_constants import INFO_COLOR
 from views.rps import _RpsRegistrationView
 from views.rps._helpers import RPS_PVP_ESCROW_SUBSYSTEM
@@ -76,7 +77,11 @@ from views.rps._helpers import RPS_PVP_ESCROW_SUBSYSTEM
 logger = logging.getLogger("bot")
 
 
-class RockPaperScissorsCog(commands.Cog, name="Rock Paper Scissors"):  # type: ignore[call-arg]
+class RockPaperScissorsCog(
+    SettleOnceMixin,
+    commands.Cog,
+    name="Rock Paper Scissors",
+):  # type: ignore[call-arg]
     """Rock Paper Scissors: quick play, PvP, bot matches, tournaments."""
 
     def __init__(self, bot) -> None:
@@ -397,6 +402,7 @@ class RockPaperScissorsCog(commands.Cog, name="Rock Paper Scissors"):  # type: i
             return
 
         self.tournament_active = True
+        self.rearm_settlement()  # new tournament → new payout claim
         self.game_mode = mode
         self.current_round = self.players.copy()
         random.shuffle(self.current_round)
@@ -662,6 +668,10 @@ class RockPaperScissorsCog(commands.Cog, name="Rock Paper Scissors"):  # type: i
     async def check_tournament_progress(self, guild, last_channel):
         """Checks if the tournament is over or starts a new round."""
         if len(self.current_round) == 1:
+            # Settle-once: racing resolvers both reach here; the FREE-reward
+            # leg has no escrow rows, so this claim is its only guard.
+            if not self.claim_settlement():
+                return
             winner = self.current_round[0]
             # P0-1 — pay the winner the escrowed pot (the sum of the
             # actual entry rows, not a recomputed fee×players) and delete
