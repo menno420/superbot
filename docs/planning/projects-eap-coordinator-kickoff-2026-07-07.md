@@ -505,14 +505,22 @@ every `DECIDED:` as *also commit it to a doc*, not chat-only.
   stuck. No need to open sessions to audit. It labels red-by-design vs. broken every report;
   unlabeled red = a coordinator miss, call it. Cheapest owner habit: one same-day visit on a ⚠ +
   the 09:00 roll-up.
-- **▸ Consent walls (the one latency-critical thing).** The classifier walls *destructive* or
-  *new-external-publish* actions and discounts the coordinator's relayed words — only the owner's
-  voice in that session's own chat clears it. Treat ⚠ consent lines as the sole moments the
-  owner's absence is the critical path; everything else tolerates it by design. **Open unknowns:**
-  whether a wall recurs per-push or clears once a repo has content (step-7/8 pushes are the live
-  experiment), and whether Project settings expose a scoped pre-authorization (the coordinator
-  can't see settings — the *owner* can, and should check). Confirmed clear: a scoped in-session
-  go-ahead ("go ahead for this session's pushes to substrate-kit and superbot-next").
+- **▸ Consent walls (the one latency-critical thing).** Auto mode's safety layer walls
+  *destructive* or *new-external-publish* actions (a `git push` publishing first content to a
+  public repo; a branch delete). **Corrected 2026-07-07 — the step-7 wall falsified the earlier
+  "an in-chat owner go-ahead clears it" model:** a chat "go ahead" is **not** sufficient; the
+  classifier denied the push *and* the GitHub-API route as a bypass. The real authorization lever
+  is a **Settings → Permissions allow rule** (for pushes: `Bash(git push:*)`). Consent hierarchy
+  observed: plan docs < coordinator dispatch < in-chat owner "yes" < **a settings rule** — only
+  the last actually authorizes. **Tempo fix:** set the rule at **Project level** if that scope
+  exists, so every future session inherits it — otherwise each kernel-band session walls one by
+  one. An allow-rule beats switching auto mode off (keeps every other guardrail up); the broad
+  push-allow is bounded by branch protection on `main` (step 8) + the session's repo scope + the
+  PR/CI merge gates, so allowing push ≠ allowing merge-to-prod. **Still open:** whether that rule
+  scopes per-session or per-Project (owner sets it and reports). This whole
+  discover-the-permission friction is a flagged Anthropic-feedback item (activation-plan §4):
+  granting a permission correctly is not self-explanatory. Treat ⚠ consent lines as the sole
+  moments the owner's absence is the critical path.
 - **▸ Load.** Scales on clean-ownership sessions (claims + self-describing PRs + write-back), not
   on head-only state. Overload tells: stale checklist · generic replies · misattributed work ·
   growing wake latency. A second Project is for a separate *decision rhythm* (the trading repo
