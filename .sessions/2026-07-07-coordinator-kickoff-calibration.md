@@ -214,6 +214,21 @@ pre-authorization for the two program repos, not a blanket off-switch. Watch: th
 superbot-next's first commit too (one consent covers both); the tell for a real tempo tax is if
 the *second* push (a kernel band) also stalls.
 
+## Addendum 11 (eleventh PR — coordinator's §7 answers → durable operating model)
+
+The coordinator answered the §7 working-relationship inquiry — an outstanding set (honest: it
+marked its unknowns — screenshots untested, consent recurrence unknown, Project-settings
+pre-authorization unknown — rather than bluffing). Distilled the answers into a durable operating
+model (new kickoff §8; renumbered "what this replaces" → §9). Highest-value takeaway: **mark the
+register (DECIDED / IDEA / QUESTION)** — the coordinator's own #1 ask, the chat-level twin of
+Q-0254. Load-bearing caveat I added: its memory claim ("say-it-once sticks") is unverified, so
+until observed to hold, every `DECIDED:` should ALSO be committed to a doc (belt-and-suspenders),
+not chat-only. Two owner follow-ups flagged: check Project settings for a per-repo
+pre-authorization lever (coordinator can't see settings; owner can); test screenshot handling by
+sending it one (images work for this repo's sessions; its harness untested). Eval: Q3 = the
+write-back/memory test evidence; Q9 = the unattended-permissions evidence — both for the Anthropic
+mail.
+
 ## Docs audit (Q-0104)
 
 `check_docs.py --strict` ✓ · `check_current_state_ledger.py --strict` ✓ (exit 0; #1802/#1804/
