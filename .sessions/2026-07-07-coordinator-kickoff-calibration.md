@@ -245,6 +245,29 @@ fix, and a non-coder can't tell how/whether to pre-authorize. Safety behavior co
 discoverability + scoping are the gap. Owner action: add `Bash(git push:*)` in the step-7 session's
 Settings → Permissions (or Project-level if available), reply "retry".
 
+## Addendum 13 (thirteenth PR — two serious EAP findings; consent-wall model corrected again)
+
+Owner opened "Edit environment" (per my wrong permissions guess) and hit two things:
+1. **SECURITY (urgent):** the env-var field holds real credentials (GitHub PAT, DATABASE_URL,
+   OpenAI key) in a box the UI itself warns is "visible to anyone using this environment — don't
+   add secrets." Flagged to the owner: rotate all three (coordinate with the live consumers so
+   prod doesn't break), the PAT is likely removable (integration auth + plan bans PAT-in-env), no
+   secret VALUES recorded anywhere. Captured as an activation-plan §4 feedback bullet
+   (structural finding only, zero values).
+2. **AUTO-MODE DEAD-END:** confirmed via claude-code-guide + owner — cloud Projects are
+   **auto-mode-only** (no prompting-mode switch), there is **no permissions UI** (Edit-environment =
+   Name/Network/EnvVars/SetupScript; Project settings = General/Repositories), and the committed
+   `.claude/settings.json` allow-rule is session-start-only + may be classifier-overridden. So the
+   first-publish push wall may be **un-self-clearable in cloud** → Anthropic escalation. This
+   **falsified my prior §8 "Settings → Permissions allow rule is the lever" correction** — fixed
+   §8 again to the accurate picture + practical unblocks (`/permissions` attempt · local
+   CLI/Remote-Control push · escalate). Both findings sharpened into activation-plan §4 (the
+   auto-mode one reframed as the single highest-signal finding).
+
+Lesson for me: I guessed the UI twice and was wrong twice — should have used claude-code-guide
+before sending the owner clicking (which is how they landed on the secrets screen). Verify
+product-UI claims before directing a non-coder.
+
 ## Docs audit (Q-0104)
 
 `check_docs.py --strict` ✓ · `check_current_state_ledger.py --strict` ✓ (exit 0; #1802/#1804/

@@ -125,16 +125,28 @@ follow at the window close.
 >   invisible without polling.
 > - A native "work-in-progress, don't auto-merge yet" PR state that auto-merge respects — we
 >   built this ourselves (a session-card + CI gate) after a half-done PR merged once.
-> - A declarative, per-Project pre-authorization manifest for tool permissions — runtime
->   permission prompts are the single most common way an unattended session stalls, and the
->   bigger problem underneath is that **granting a permission correctly is not self-explanatory.**
->   Concrete incident (our coordinator's first repo publish): an in-chat owner "go ahead" was
->   denied, the GitHub-API route was denied *as a bypass attempt*, and the actual lever — a
->   `Bash(git push:*)` allow rule under Settings → Permissions — was undiscoverable from the UI,
->   with its scope (per-session vs. per-Project) still unclear. A non-coder owner running auto
->   mode currently cannot tell how, or whether it's even possible, to pre-authorize an action the
->   safety layer keeps denying — and the denial messages don't point at the fix. The safety
->   *behavior* is correct; the **discoverability and scoping of the authorization** are the gap.
+> - **A discoverable, scoped way to authorize an action auto mode blocks — right now there may be
+>   none, and this is our single highest-signal finding.** Auto mode is meant to let sessions run
+>   unattended *without* prompts; but its safety layer *hard-denies* some actions (a first `git
+>   push` publishing to a public repo) rather than prompting — and cloud Projects offer **no switch
+>   to a prompting mode, no discoverable permission-rule UI** (the session's "Edit environment" has
+>   only Name / Network / Environment variables / Setup script; Project settings only General /
+>   Repositories), and the documented `.claude/settings.json` allow-rule (`Bash(git push:*)`) is
+>   read only at session start and, per your own docs, may be overridden by the auto classifier
+>   anyway. Concrete incident (our coordinator's first repo publish): in-chat "go ahead" denied,
+>   GitHub-API route denied as a bypass, no mode to switch to, no settings pane to add a rule — an
+>   autonomous session hit a wall it **could not self-clear**, and a non-coder owner could not find
+>   any way to grant the one action. The safety *behavior* is right; the missing piece is a
+>   **discoverable, scoped pre-authorization** (a per-Project allow-list) so auto mode runs
+>   unattended *and* can be told "these specific actions are fine."
+> - **The environment's only env-var field forces credential exposure.** The cloud environment's
+>   "Environment variables" box is the sole place to set the vars a real setup needs (database URL,
+>   API keys), yet it warns "these are visible to anyone using this environment — don't add secrets
+>   or credentials" with no secure alternative surfaced. So an operator is pushed to either break
+>   their setup or paste live credentials into a field the product itself flags as unsafe —
+>   readable by every autonomous session in the Project, i.e. exactly the surface a prompt-injection
+>   through untrusted content would target. A sealed/reference-variable mechanism (write-only,
+>   masked at rest, unreadable by the session that consumes it) is the missing piece.
 > - Native lane claims ("this session owns scope X until it ends," visible to siblings at
 >   session start) — we built a claim-file convention for exactly this.
 >
