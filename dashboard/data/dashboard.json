@@ -1,14 +1,14 @@
 {
   "meta": {
-    "generated_at": "2026-07-07T14:11:27Z",
+    "generated_at": "2026-07-07T17:08:04Z",
     "build": {
-      "commit": "5c16701",
-      "subject": "owner rulings: Q-0245 EXTRA_OWNER_USER_IDS test-driver account + Q-0246 permission-tiered operation (Full/Lite)",
-      "committed_at": "2026-07-07T14:11:27Z"
+      "commit": "8dc42d23",
+      "subject": "Merge pull request #1797 from menno420/claude/rebuild-plan-consolidation-c34c0b",
+      "committed_at": "2026-07-07T17:08:04Z"
     },
     "counts": {
       "functions": 43,
-      "ideas": 207,
+      "ideas": 208,
       "bugs": 31,
       "reviews": 0,
       "reviews_open": 0,
@@ -1206,6 +1206,14 @@
         "moderation",
         "security"
       ]
+    },
+    {
+      "file": "multi-repo-program-kit-lab-trading-2026-07-07.md",
+      "title": "The multi-repo program: superbot-next · the substrate-kit self-improvement lab · the trading research repo",
+      "status": "ideas",
+      "date": "2026-07-07",
+      "summary": "1. **Repo-start mechanics:** \"should the new session in the new repo just clone the old repo",
+      "subsystems": null
     },
     {
       "file": "substrate-kit-auto-drafted-handoff-2026-07-07.md",
@@ -3092,6 +3100,22 @@
   "reviews": [],
   "updates": [
     {
+      "file": "2026-07-07-trading-operating-model.md",
+      "date": "2026-07-07",
+      "title": "2026-07-07 — Trading operating model (Q-0251: decision ledger + sniper bucket + 3-way hybrid)",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-07-07-trading-market-ruling.md",
+      "date": "2026-07-07",
+      "title": "2026-07-07 — Trading-repo market ruling (Q-0250: stocks-first)",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
       "file": "2026-07-07-substrate-kit-enforcement.md",
       "date": "2026-07-07",
       "title": "2026-07-07 — substrate-kit: adopt installs the enforcement (the forcing functions)",
@@ -3159,6 +3183,22 @@
       "file": "2026-07-07-owner-rulings-2-test-account-permission-tiers.md",
       "date": "2026-07-07",
       "title": "2026-07-07 — Owner rulings #2 (test-driver account + permission-tiered operation)",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-07-07-multi-repo-program-capture.md",
+      "date": "2026-07-07",
+      "title": "2026-07-07 — Multi-repo program capture (kit lab + trading repo + repo-start mechanics)",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-07-07-kickoff-readiness.md",
+      "date": "2026-07-07",
+      "title": "2026-07-07 — Kickoff readiness (steps-6–8 brief + Q-0247/Q-0248/Q-0249)",
       "status": "complete",
       "run_type": "",
       "self_initiated": false
@@ -3537,38 +3577,6 @@
       "title": "2026-07-03 — The critical-review rubric (owner-directed)",
       "status": "complete",
       "run_type": "",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-07-03-capability-audit-capstone.md",
-      "date": "2026-07-03",
-      "title": "2026-07-03 — New-bot capability-audit CAPSTONE (final review + unified build plan)",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-07-02-workflow-consent-fleet-config.md",
-      "date": "2026-07-02",
-      "title": "2026-07-02 — Stop fleet sessions re-prompting for multi-agent-workflow consent",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-07-02-ultracode-memory-substrate-finalize.md",
-      "date": "2026-07-02",
-      "title": "2026-07-02 — Finalize the AI-memory substrate (handoff §5.B, ultracode)",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-07-02-session-ideas-harvest.md",
-      "date": "2026-07-02",
-      "title": "2026-07-02 — Ideas harvest from today's session arc (owner-requested)",
-      "status": "complete",
-      "run_type": "manual",
       "self_initiated": false
     }
   ],
