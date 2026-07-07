@@ -66,6 +66,20 @@ same leak in one day. **Workflow improvement:** claim-file cleanup has no guard;
 whose branch has no open PR — enforce-don't-exhort (Q-0132/Q-0194) applied to the claim
 lifecycle's *exit* half. Routed as a candidate guard, not built here (docs-only session).
 
+## Addendum (same session, second PR — after #1811 merged)
+
+Owner follow-up: the Project's purpose is **dual** — rebuild execution AND evaluating Claude
+Code Projects itself, with the explicit long-term goal of earning a standing collaboration
+channel with Anthropic (trusted tester/advisor). Shipped: **the evaluation guidebook**
+(`docs/planning/projects-eap-evaluation-guidebook-2026-07-07.md` — journal home + entry
+template, the seven EAP axes, integrity rules, Friday evidence package, append-friendly §6 for
+the owner's own ideas) + folds into the handoff doc (SECOND MANDATE paragraph in the
+instructions; calibration intro line + new item 13 with reading key; kickoff second-duty
+paragraph; Friday owner-table row; new §6). **This supersedes the earlier
+keep-the-four-tests-blind decision (⚑ owner-directed)** — and rightly so: the tests were
+committed in the repo the coordinator is told to read, so the secrecy was illusory; integrity
+now rests on the guidebook's never-perform rule + record-based verdicts instead.
+
 ## Docs audit (Q-0104)
 
 `check_docs.py --strict` ✓ · `check_current_state_ledger.py --strict` ✓ (exit 0; #1802/#1804/
