@@ -1002,6 +1002,84 @@ def _settle_findings(mod, tmp_path, monkeypatch, src, *, rel="views/pvp.py"):
     return mod.rule_settle_once_adoption([tmp_path / rel], {})
 
 
+# The deathmatch human-duel shape the 2026-07-07 widening exists to catch: a
+# cog-layer view whose W/L write (update_leaderboard) is reachable from a
+# button resolve AND on_timeout with no claim — the Gate-V Arm-D live
+# double-write (FINAL-REVIEW §6.3 #1).
+_SETTLE_COG_DUEL_NO_GUARD = """\
+import discord
+
+
+class _DuelView(discord.ui.View):
+    async def _resolve(self, interaction):
+        await self.cog.update_leaderboard(winner_id=1, loser_id=2, guild_id=3)
+
+    async def on_timeout(self):
+        await self.cog.update_leaderboard(winner_id=2, loser_id=1, guild_id=3)
+"""
+
+# An unguarded tournament payout in a cog — the FREE-reward leg has no escrow
+# rows to consume, so the caller-side claim is its only double-pay guard.
+_SETTLE_COG_TOURNAMENT_NO_GUARD = """\
+from services import game_wager_workflow
+
+
+class _Tourn:
+    async def check_progress(self, guild):
+        await game_wager_workflow.payout_tournament(
+            guild_id=guild.id, subsystem="x", winner_id=1, reason="win",
+            free_reward=100, free_reason="free",
+        )
+"""
+
+
+def test_settle_flags_unguarded_cog_duel_view(mod, tmp_path, monkeypatch):
+    # cogs/ joined the scan roots in the 2026-07-07 widening.
+    findings = _settle_findings(
+        mod, tmp_path, monkeypatch, _SETTLE_COG_DUEL_NO_GUARD, rel="cogs/dm.py"
+    )
+    assert len(findings) == 2
+    assert {f.qualname for f in findings} == {
+        "_DuelView._resolve",
+        "_DuelView.on_timeout",
+    }
+
+
+def test_settle_cog_duel_view_with_mixin_is_clean(mod, tmp_path, monkeypatch):
+    src = _SETTLE_COG_DUEL_NO_GUARD.replace(
+        "class _DuelView(discord.ui.View):",
+        "class _DuelView(SettleOnceMixin, discord.ui.View):",
+    )
+    assert (
+        _settle_findings(mod, tmp_path, monkeypatch, src, rel="cogs/dm.py") == []
+    )
+
+
+def test_settle_flags_unguarded_tournament_payout(mod, tmp_path, monkeypatch):
+    findings = _settle_findings(
+        mod,
+        tmp_path,
+        monkeypatch,
+        _SETTLE_COG_TOURNAMENT_NO_GUARD,
+        rel="cogs/tourn.py",
+    )
+    assert len(findings) == 1
+    assert "payout_tournament" in findings[0].message
+
+
+def test_settle_guarded_tournament_payout_is_clean(mod, tmp_path, monkeypatch):
+    src = _SETTLE_COG_TOURNAMENT_NO_GUARD.replace(
+        "        await game_wager_workflow.payout_tournament(",
+        "        if not self.claim_settlement():\n"
+        "            return\n"
+        "        await game_wager_workflow.payout_tournament(",
+    )
+    assert (
+        _settle_findings(mod, tmp_path, monkeypatch, src, rel="cogs/tourn.py")
+        == []
+    )
+
+
 def test_settle_flags_unguarded_wager_settle(mod, tmp_path, monkeypatch):
     findings = _settle_findings(mod, tmp_path, monkeypatch, _SETTLE_NO_GUARD)
     assert len(findings) == 1

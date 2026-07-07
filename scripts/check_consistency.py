@@ -882,15 +882,23 @@ def rule_card_engine_helper_duplication(
 # Rule 6 — settle-once adoption (money-safety)
 # ---------------------------------------------------------------------------
 
-# The escrow-paying wager helpers (``services/game_wager_workflow.py``).  A call
-# to either *moves the pot* — a payout or a refund — so running it twice
-# double-settles.  These are the precise, unambiguous money-safety sites; the
-# fuzzier "posts a terminal result" leg the idea also sketches
+# The settle sinks.  ``settle_pvp``/``refund_pvp``/``payout_tournament`` are
+# the escrow-moving wager helpers (``services/game_wager_workflow.py``) — a
+# call *moves the pot* (payout / refund / tournament pot + FREE reward), so
+# running one twice double-settles; ``payout_tournament``'s free-reward leg has
+# no escrow rows to consume, making the caller-side claim its ONLY guard.
+# ``update_leaderboard`` is the deathmatch W/L recorder — the non-wager settle
+# the 2026-07-06 Gate-V Arm-D live run double-wrote through the unguarded
+# ``_DuelView`` (FINAL-REVIEW §6.3 #1); its lone definition wraps
+# ``db.update_deathmatch`` behind a single method, so call sites are precise.
+# The fuzzier "posts a terminal result" leg the idea also sketches
 # (``settle-once-architecture-guard-2026-06-24.md``) is deliberately NOT
 # implemented here — static "settles via a result message reachable from
 # ``on_timeout``" detection is false-positive-prone, and a warn-clean rule must
 # stay precise (the idea's own "be conservative, warn-first" caution).
-_WAGER_SETTLE_CALLS = frozenset({"settle_pvp", "refund_pvp"})
+_WAGER_SETTLE_CALLS = frozenset(
+    {"settle_pvp", "refund_pvp", "payout_tournament", "update_leaderboard"}
+)
 
 # The settle-once guard primitive (``utils/terminal_guard.py``).
 _SETTLE_ONCE_MIXIN = "SettleOnceMixin"
@@ -973,7 +981,7 @@ def _settle_site_is_guarded(
 def rule_settle_once_adoption(
     files: list[Path],
     exceptions: dict,
-    roots: tuple[str, ...] = ("views/", "services/"),
+    roots: tuple[str, ...] = ("views/", "services/", "cogs/"),
 ) -> list[Finding]:
     """Flag a wager-settle site that does not adopt the settle-once guard.
 
@@ -993,11 +1001,15 @@ def rule_settle_once_adoption(
     rule never asks for a wrong change.
 
     Warn-only (Q-0105 — the mixin is young; graduate to ``error`` once it stays
-    clean across a few sessions).  Runs clean today (both callers adopt).  Scopes
-    ``views/`` + ``services/`` (the RPS/blackjack views call it; a state object
-    like ``blackjack_state._PvPState`` lives in ``services/``).  ``game_wager_workflow``
-    itself only *defines* ``settle_pvp``/``refund_pvp`` (never calls them), so it is
-    not matched.  Allowlist a verified single-trigger exception in
+    clean across a few sessions).  Runs clean today (all callers adopt).  Scopes
+    ``views/`` + ``services/`` + ``cogs/`` — the 2026-07-07 widening: the
+    deathmatch human-duel view lives in ``cogs/`` and its unguarded W/L write
+    was live-confirmed by Gate-V Arm D, so the cog layer is in scope, and the
+    tournament payout / deathmatch leaderboard sinks joined the sink set.
+    ``game_wager_workflow`` itself only *defines* the wager sinks (never calls
+    them), and ``Deathmatch.update_leaderboard`` — the single-trigger wrapper
+    whose body calls ``db.update_deathmatch`` — is itself a definition, not a
+    matched call.  Allowlist a verified single-trigger exception in
     ``consistency_exceptions.yml``.
     """
     cfg = exceptions.get("settle_once_adoption", {})

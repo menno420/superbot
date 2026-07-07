@@ -9,6 +9,7 @@ from discord.ext.commands import BucketType, cooldown
 from services import mining_workflow
 from utils import db, equipment
 from utils.mining import workshop as mining_workshop
+from utils.terminal_guard import SettleOnceMixin
 
 # Base duel constants — the floor every fighter starts from before equipped
 # combat gear (utils.equipment.EffectiveStats) tilts it.
@@ -91,7 +92,7 @@ async def _tick_duel_gear_wear(
     return notes
 
 
-class _DuelView(discord.ui.View):
+class _DuelView(SettleOnceMixin, discord.ui.View):
     def __init__(
         self,
         cog: Deathmatch,
@@ -150,7 +151,10 @@ class _DuelView(discord.ui.View):
 
     async def on_timeout(self) -> None:
         duel = self.duel
-        if duel.is_over:
+        # Shares the settle-once claim with ``_resolve`` so a timeout firing
+        # just as the finishing blow lands can't write a second W/L + gear-wear
+        # settlement (the Gate-V Arm-D live-confirmed double-write).
+        if not self.claim_settlement():
             return
         opponent = duel.player2 if duel.turn == duel.player1 else duel.player1
         duel.is_over = True
@@ -228,6 +232,11 @@ class _DuelView(discord.ui.View):
             winner, loser = duel.player1, duel.player2
 
         if winner:
+            # Settle-once: claim inside the winner branch (a non-finishing
+            # move must not consume the claim), before any await, so a
+            # finishing-blow double-click or a racing timeout short-circuits.
+            if not self.claim_settlement():
+                return
             duel.is_over = True
             self.cog.active_duels.pop(self.duel_key, None)
             await self.cog.update_leaderboard(
