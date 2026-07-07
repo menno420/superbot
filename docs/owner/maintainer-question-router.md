@@ -9088,3 +9088,28 @@ so and it becomes a review brief instead — but the recommendation is to spend 
 actually starting the repo.
 
 **Homes:** this Q · the launch index + two new briefs · current-state ▶ pointer.
+
+### Q-0253 — DECIDED: session 1 re-cut to the websites (last Fable day); the kickoff demotes to Opus-class — the first recorded Q-0248 allocation decision (2026-07-07)
+
+**Owner correction (in-session):** "session 1 should probably be different … today is the last
+day fable is included in the subscription for a while, it's probably best to properly use it for
+a good design and well functioning website etc … use the design of the existing websites as
+guidance, specifically the looks of the botsite, but it should come up with its own improved
+version … clear and easy to use and feature rich, possibly also decided by simulations."
+
+**Decision unpacked (agreed, with one refinement).** The Fable-availability constraint changes
+the allocation: Fable's scarce last-day capacity goes to work where its edge is most visible —
+**design quality** (the websites) and, if today's capacity allows more sessions, the two deep
+**research-and-plan** sessions (kit-lab, trading). The **kickoff (§5 steps 6–8) needs Fable
+least**: it executes an already-complete, twice-reviewed plan — mechanical repo creation, kit
+adoption, CI arming — comfortably Opus-class work. So the launch package re-cuts to FOUR
+sessions: ① websites (Fable, today — brief:
+`docs/planning/website-design-fable-brief-2026-07-07.md`); ②/③ kit-lab + trading founding plans
+(Fable today if capacity allows, else Opus `xhigh` — both briefs stand unchanged); ④ the kickoff
+(Opus-class, any day — brief unchanged). This is the **first recorded model-reallocation decision
+under Q-0248** (task-class: mechanical-execution-of-complete-plan ⇒ tier below frontier; the
+Fable-availability window recorded as an allocation constraint). Website scope, priorities, and
+the sim-informed UX checks live in the brief; botsite v1's three design-owned files stay
+untouched (v2 supersedes, v1 stays the fallback).
+
+**Homes:** this Q · the website brief · the launch index (re-cut) · current-state ▶ pointer.
