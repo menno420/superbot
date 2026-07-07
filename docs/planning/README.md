@@ -115,6 +115,7 @@ The source-grounded discovery evidence — 4 Codex maps, verified against shippe
 
 | Plan | Status / gate |
 |---|---|
+| [rebuild-owner-briefing](rebuild-owner-briefing-2026-07-07.md) | **the plain-language owner companion (2026-07-07)** — the whole program, the safety story, the five flag items, and the owner's one sitting, rendered for a non-coder; restates nothing normative (the canonical plan wins) |
 | [**rebuild-canonical-plan**](rebuild-canonical-plan-2026-07-06.md) | **⭐ THE single source of truth (2026-07-06, PR #1770)** — the consolidated, correctly-layered plan: corrected K0–K10 + layer-V taxonomy (AI-invocation = K10; automation = the K5+K9+K7 spread; verification = layer V), the one canonical phase arc (both old vocabularies reconciled), the canonical gate list (G1 owner sitting · G2 Phase-2.5), the 17-step start sequence, the flag-for-gate list (F-1…F-5, Gate-0 rows pre-filled), and the full decisions log (Q-0240 decide-and-flag). **Read this first; it states which older docs it supersedes (§9)** |
 | [rebuild-test-guild-design](rebuild-test-guild-design-2026-07-06.md) | **companion C** — the test-guild layout (9 zones / ~40 channels, per-zone exercise/proof map, CUT-1 mapping) + the two-lane live-fidelity driver model (F-4) |
 | [rebuild-phase-2.5-procedure](rebuild-phase-2.5-procedure-2026-07-06.md) | **companion D** — the runnable Phase-2.5 substrate-on/off cold-start A/B (environment, arm protocol, 3 measures, pass bar F-5, artifact); prereq: kit tail ① (Q-0223) |
