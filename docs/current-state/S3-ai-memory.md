@@ -10,6 +10,20 @@
 > own; distinct from S4 (the docs content it produces) and S5 (its operation).*
 
 **Recently shipped (this sector):**
+- **PROGRAM SESSION 2 RAN — the kit-lab founding plan SHIPPED (PR #1804, 2026-07-07 — Fable 5 ultracode).**
+  [`kit-lab-founding-plan-2026-07-07.md`](../planning/kit-lab-founding-plan-2026-07-07.md) — the
+  executable founding plan for the extracted kit repo + self-improvement lab: multi-consumer
+  release discipline (semver v1.0.0 + pinned `bootstrap.py` asset + `release.json` + the new
+  `upgrade` verb w/ 3-way planted-doc diff + rollback), the four benchmark families to runnable
+  depth (B1 cold-start A/B routine post-auto-draft · B2 Q-0248 model-allocation dataset on the
+  console's declared contract · B3 guard-fire/FP telemetry · B4 ideas-that-ship-and-survive),
+  the ONE daily lab loop (9-part prompt skeleton, enumerated destructive tier, warm-session
+  never-grades rule), work-surface order (console → Railway → 👤 bot token), the `docs/program/`
+  PL-register governance home (cite-never-copy), the `friction`-issue protocol, and 6 build
+  bands KL-1…KL-6 (12–14 PRs). 24 decisions ⚑ (D-1…D-24) + 11 gate flags (KF-1…KF-11) + 13
+  provisioning rows (P1…P13); zero new router Q-blocks needed. A 4-lens adversarial review
+  fleet's 26 confirmed findings were folded before close (§13 lists the load-bearing ones).
+  The plan travels to the kit repo at extraction (kickoff = session 4).
 - **OWNER-RULINGS + KICKOFF-READINESS ROUND (PRs #1792–#1795, 2026-07-07, same conversation as #1791).**
   Live owner rulings recorded with landings: **Q-0243** pricing-by-simulation · **Q-0244** slash
   verification inherits prefix (never a blocker) · **Q-0245** the second account as declared
