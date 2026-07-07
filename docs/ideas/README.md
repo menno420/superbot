@@ -31,6 +31,14 @@ only the header block is read, so a `**Subsystem:**` *example* in an idea's body
 
 Current broad captures:
 
+- [`user-self-service-automation-scheduler-2026-07-07.md`](./user-self-service-automation-scheduler-2026-07-07.md) —
+  **session idea (2026-07-07, Q-0089, rebuild-plan-review session):** owner-proposed guardrailed,
+  unlockable, user-facing recurring scheduler ("cron jobs for themselves" — a daily rank ping, a
+  periodic game-state check), explicitly asked for as a **foundational, cross-subsystem** primitive
+  rather than a one-off command. Splits the ask into a low-risk notify-only tier and a higher-risk
+  auto-acting tier (names the concrete fairness failure: automating an action a forgetful human would
+  otherwise miss is a balance break, not a QoL win) and ties the design to the not-yet-built K9
+  durability band so it lands as a kernel extension instead of a later per-feature bolt-on.
 - [`substrate-kit-auto-drafted-handoff-2026-07-07.md`](./substrate-kit-auto-drafted-handoff-2026-07-07.md) —
   **session idea (2026-07-07, Q-0089, final-review session #1778):** the Phase-2.5 A/B measured the
   same failure twice — sessions with a rendered ledger/session-log scaffolding in-repo still write
