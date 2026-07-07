@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>SuperBot — program console</title>
+    <meta name="robots" content="noindex" />
+    <meta name="description" content="The SuperBot program at a glance: session run reports, self-initiated work flags, ideas and bugs, deploys — plus declared lanes for telemetry, the rebuild port, and the trading tracker." />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,500;12..96,600;12..96,700;12..96,800&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="/ds/tokens.css" />
+    <link rel="stylesheet" href="/ds/components.css" />
+    <link rel="stylesheet" href="/console/console.css" />
+    <script>
+      try { var t = localStorage.getItem("sb:theme"); if (t === "light" || t === "dark") document.documentElement.setAttribute("data-theme", t); } catch (e) {}
+    </script>
+  </head>
+  <body>
+    <a class="sb-skip" href="#main">Skip to content</a>
+    <nav class="sb-nav" aria-label="Console">
+      <div class="sb-wrap-wide sb-nav-in">
+        <a href="/console/" class="sb-brand"><span class="sb-brand-tile" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="8" width="16" height="11" rx="3"/><path d="M12 8V4M8 3v2M16 3v2"/><circle cx="9" cy="13" r="1"/><circle cx="15" cy="13" r="1"/></svg></span> SuperBot <span class="sb-muted" style="font-weight:500">/ program console</span></a>
+        <span class="sb-nav-spacer"></span>
+        <a href="/" class="sb-nav-link">public site</a>
+        <a href="/design" class="sb-nav-link">design system</a>
+        <button class="sb-iconbtn" data-theme-toggle aria-pressed="false" title="Toggle theme"></button>
+      </div>
+    </nav>
+    <main id="main" tabindex="-1">
+      <div class="sb-wrap-wide sb-section sb-section-top">
+        <div class="sb-page-hero">
+          <span class="sb-ey"><span class="dot">▸</span> One glance</span>
+          <h1>The <span class="sb-grad">program</span>, right now</h1>
+          <p class="sb-lead" id="console-meta">Loading the program feed…</p>
+        </div>
+        <span class="sb-visually-hidden" aria-live="polite" data-console-live></span>
+        <div id="console-app"></div>
+      </div>
+    </main>
+    <footer class="sb-footer"><div class="sb-wrap-wide sb-footer-in">
+      <span>Every lane on this page is honest: real feeds render real data; missing feeds say so and declare their contract. No fake numbers.</span>
+      <span class="right"><a href="https://github.com/menno420/superbot" rel="noopener">github</a></span>
+    </div></footer>
+    <script src="/ds/ds.js"></script>
+    <script src="/console/console.js"></script>
+  </body>
+</html>

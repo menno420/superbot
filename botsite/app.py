@@ -35,12 +35,13 @@ block in ``base.html``.
 from __future__ import annotations
 
 import json
+import os
 import sys
 from pathlib import Path
 from typing import Any
 
 from fastapi import FastAPI, Request
-from fastapi.responses import FileResponse, HTMLResponse, Response
+from fastapi.responses import FileResponse, HTMLResponse, JSONResponse, Response
 from fastapi.templating import Jinja2Templates
 
 BASE_DIR = Path(__file__).resolve().parent
@@ -48,6 +49,18 @@ BASE_DIR = Path(__file__).resolve().parent
 # #970 deploy-crash gotcha). index.html/app.js/app.css are copied verbatim from the
 # design handoff (do-not-edit); data.js is generated from site.json.
 SITE_DIR = BASE_DIR / "site"
+# The program design system + the v2 front-end + the program console (all new
+# files — v1's three design-owned files stay untouched; v1 remains the default
+# front-end until the owner flips BOTSITE_FRONTEND=v2).
+DS_DIR = BASE_DIR / "ds"
+V2_DIR = SITE_DIR / "v2"
+CONSOLE_DIR = BASE_DIR / "console"
+CONSOLE_JSON = BASE_DIR / "data" / "console.json"
+
+# Which front-end `/` serves: "v1" (default — the Claude-Design SPA) or "v2"
+# (the program-design-system rebuild). v2 is always reachable at /v2 either way,
+# so the owner can review it live before flipping the env var on Railway.
+FRONTEND = os.environ.get("BOTSITE_FRONTEND", "v1").strip().lower()
 
 # The app runs both as a package (`botsite.app`, local) and as a top-level module
 # (`app:app`, Railway Root Directory = botsite), and the test loads app.py by file
@@ -102,13 +115,17 @@ def healthz() -> dict[str, str]:
 
 @app.get("/", response_class=HTMLResponse)
 def index() -> FileResponse:
-    """Serve the Claude-Design SPA shell (the public site front-end).
+    """Serve the public site front-end (v1 by default; v2 behind the env flip).
 
-    The SPA is a hash-routed single-page app: every page (Home / Features /
-    Commands / Games / Changelog / Status) renders client-side from
-    ``window.SBDATA`` (loaded from ``/data.js``). The server only needs to ship the
-    shell here; routing happens in the browser at ``/#/...``.
+    Both front-ends are hash-routed SPAs rendering client-side from
+    ``window.SBDATA`` (loaded from ``/data.js``). v1 (the Claude-Design SPA)
+    stays the default; setting ``BOTSITE_FRONTEND=v2`` on the Railway service
+    flips ``/`` to the v2 shell (which references its assets absolutely, so it
+    serves identically from ``/`` and ``/v2``). v1 keeps working at its asset
+    routes either way — the flip is one env var, and the rollback is unsetting it.
     """
+    if FRONTEND == "v2":
+        return FileResponse(V2_DIR / "index.html", media_type="text/html")
     return FileResponse(SITE_DIR / "index.html", media_type="text/html")
 
 
@@ -161,6 +178,104 @@ def site_data_json() -> Response:
         media_type="application/json",
         headers={"Cache-Control": "no-cache"},
     )
+
+
+# ===========================================================================
+# The v2 estate — program design system (/ds, /design), the v2 SPA (/v2), and
+# the program console (/console). All explicit FileResponses: app.py stays the
+# single owner of routing, and only these named files are ever served.
+# ===========================================================================
+
+# Asset name → (absolute path, media type), precomputed from LITERAL names at
+# import time so the request parameter never reaches a filesystem path (the
+# lookup key is the whole sanitization — a miss is a 404, and the served Path
+# object was built from the literal, not from the request).
+_V2_ASSETS = {
+    name: (V2_DIR / name, media)
+    for name, media in (
+        ("index.html", "text/html"),
+        ("app.js", "application/javascript"),
+        ("app.css", "text/css"),
+    )
+}
+_DS_ASSETS = {
+    name: (DS_DIR / name, media)
+    for name, media in (
+        ("tokens.css", "text/css"),
+        ("components.css", "text/css"),
+        ("ds.js", "application/javascript"),
+        ("styleguide.js", "application/javascript"),
+    )
+}
+_CONSOLE_ASSETS = {
+    name: (CONSOLE_DIR / name, media)
+    for name, media in (
+        ("index.html", "text/html"),
+        ("console.js", "application/javascript"),
+        ("console.css", "text/css"),
+    )
+}
+
+
+@app.get("/v2", response_class=HTMLResponse)
+@app.get("/v2/", response_class=HTMLResponse)
+def site_v2() -> FileResponse:
+    """The v2 front-end shell (always reachable; `/` flips via BOTSITE_FRONTEND)."""
+    return FileResponse(V2_DIR / "index.html", media_type="text/html")
+
+
+@app.get("/v2/{asset}")
+def v2_asset(asset: str) -> Response:
+    """v2 SPA assets (explicit whitelist — no directory serving)."""
+    entry = _V2_ASSETS.get(asset)
+    if entry is None:
+        return Response(status_code=404)
+    path, media = entry
+    return FileResponse(path, media_type=media)
+
+
+@app.get("/ds/{asset}")
+def ds_asset(asset: str) -> Response:
+    """Program design-system assets shared by every program site."""
+    entry = _DS_ASSETS.get(asset)
+    if entry is None:
+        return Response(status_code=404)
+    path, media = entry
+    return FileResponse(path, media_type=media)
+
+
+@app.get("/design", response_class=HTMLResponse)
+def design_styleguide() -> FileResponse:
+    """The living style guide — renders every design-system token + component."""
+    return FileResponse(DS_DIR / "styleguide.html", media_type="text/html")
+
+
+@app.get("/console", response_class=HTMLResponse)
+@app.get("/console/", response_class=HTMLResponse)
+def console_index() -> FileResponse:
+    """The program console — the owner's one-glance page (honest lanes only)."""
+    return FileResponse(CONSOLE_DIR / "index.html", media_type="text/html")
+
+
+@app.get("/console/{asset}")
+def console_asset(asset: str) -> Response:
+    """Console assets + its data feed (committed console.json, if exported)."""
+    if asset == "data.json":
+        if CONSOLE_JSON.exists():
+            return FileResponse(
+                CONSOLE_JSON,
+                media_type="application/json",
+                headers={"Cache-Control": "no-cache"},
+            )
+        return JSONResponse(
+            {"available": False, "reason": "console.json not exported yet"},
+            status_code=404,
+        )
+    entry = _CONSOLE_ASSETS.get(asset)
+    if entry is None:
+        return Response(status_code=404)
+    path, media = entry
+    return FileResponse(path, media_type=media)
 
 
 # Legacy page routes — the earlier server-rendered Jinja front-end, kept as a

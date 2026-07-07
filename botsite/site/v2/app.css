@@ -1,0 +1,52 @@
+/* ============================================================================
+   SuperBot public site v2 — page-specific styles
+   Thin by design: the look lives in /ds/tokens.css + /ds/components.css.
+   Only layout that is unique to THIS site's pages belongs here.
+   ========================================================================== */
+
+/* ── home hero ───────────────────────────────────────────── */
+.v2-hero { position: relative; padding: 92px 0 60px; text-align: center; }
+.v2-hero .glow-main {
+  top: -200px; left: 50%; transform: translateX(-50%);
+  width: 760px; height: 520px; background: var(--sb-hero-glow);
+}
+.v2-hero h1 {
+  position: relative; font-size: var(--sb-text-hero); line-height: 1.03; font-weight: 800;
+  letter-spacing: -0.035em; max-width: 880px; margin: 0 auto;
+}
+.v2-hero p.sub { position: relative; font-size: 19px; line-height: 1.6; color: var(--sb-ink-3); max-width: 620px; margin: 26px auto 0; }
+.v2-hero .cta-row { display: flex; gap: 14px; justify-content: center; margin-top: 36px; flex-wrap: wrap; }
+.v2-hero .sb-kicker { margin-bottom: 30px; }
+.v2-hero .hint { position: relative; margin-top: 22px; font-size: 12.5px; color: var(--sb-ink-4); }
+.v2-hero .sb-statrow { max-width: 640px; margin: 56px auto 0; }
+
+/* nav: hide the Add button only at the narrowest width */
+@media (max-width: 640px) { .v2-add { display: none; } }
+
+/* ── commands browser ────────────────────────────────────── */
+.v2-cmdbar { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; margin-bottom: 14px; }
+.v2-cmdbar .sb-search { flex: 1 1 280px; }
+.v2-cmdbar select.sb-inp { padding: 10px 12px; flex: none; width: auto; }
+.v2-count { font-family: var(--sb-font-mono); font-size: 12px; color: var(--sb-ink-4); margin-bottom: 12px; display: block; }
+.v2-alias { font-family: var(--sb-font-mono); font-size: 11.5px; color: var(--sb-ink-4); white-space: nowrap; }
+.sb-cmdlist .sb-cmdrow { content-visibility: auto; contain-intrinsic-size: auto 52px; }
+
+/* group headers when commands are grouped by area */
+.v2-group-head { display: flex; align-items: center; gap: 10px; margin: 26px 0 12px; }
+.v2-group-head:first-child { margin-top: 0; }
+.v2-group-head h3 { font-size: var(--sb-text-lg); font-weight: 700; text-transform: capitalize; }
+.v2-group-head .n { font-family: var(--sb-font-mono); font-size: 11.5px; color: var(--sb-ink-4); }
+
+/* ── features catalogue ──────────────────────────────────── */
+.v2-feature-card .emoji { font-size: 20px; line-height: 1; }
+.v2-tagrow { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; position: relative; }
+.v2-tag { font-family: var(--sb-font-mono); font-size: 10.5px; color: var(--sb-ink-4); border: 1px solid var(--sb-line); border-radius: var(--sb-r-pill); padding: 2px 8px; text-transform: lowercase; }
+
+/* ── status page ─────────────────────────────────────────── */
+.v2-honesty { display: flex; gap: 8px; align-items: flex-start; margin-top: 14px; font-size: 12.5px; color: var(--sb-ink-4); }
+.v2-honesty svg { flex: none; margin-top: 1px; }
+
+/* ── footer build line ───────────────────────────────────── */
+.v2-build { font-family: var(--sb-font-mono); font-size: 11.5px; color: var(--sb-ink-4); }
+.v2-build a { color: var(--sb-ink-3); }
+.v2-build a:hover { color: var(--sb-brand-hi); }
