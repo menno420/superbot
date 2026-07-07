@@ -519,12 +519,14 @@ creds · `[owner]` needs an owner decision/action; see [`../repo-sector-map.md`]
   the ingest lane, *not* hand-committed, ADR-006); then **Slice B** = extract the shared
   `KnowledgeDomain` seam from BTD6 + Limbus
   ([plan](../planning/project-moon-knowledge-domain-plan-2026-06-21.md)).
-- `[offline]` **botsite React-SPA migration PR 2** — serve the built React app from `botsite/` + cutover
-  (PR 1 foundation shipped; [plan](../planning/botsite-react-spa-migration-plan-2026-06-20.md)). *(The
-  build/serve code is offline + self-mergeable like PR 1; the domain cutover itself is `[owner]`.)*
+- `[owner]` **botsite v2 rollout** — the 2026-07-07 design session (PR #1802) shipped the program
+  design system (`botsite/ds/`, live style guide at `/design`), **botsite v2** (`/v2`, on the real
+  `site.json` data) and the **program console** (`/console`); v1 stays the default at `/` until the
+  owner sets `BOTSITE_FRONTEND=v2` on the Railway botsite service (rollback = unset). Verification
+  record: [website-v2-verification-2026-07-07](../planning/website-v2-verification-2026-07-07.md).
+  *(The React-SPA migration plan is `historical` — superseded by v2's no-build path.)*
 
-**In flight (don't duplicate):** Starboard PR 2 (#1270) config polish · botsite React-SPA
-migration **PR 1** (#1305 — runnable data-fed React app + `/site-data.json`; foundation).
+**In flight (don't duplicate):** Starboard PR 2 (#1270) config polish.
 
 **Owner-paced / gated:** reaction-roles web builder (Surface A; PR 6 shipped #1279) · creature PvP balance + art (Q-0187) ·
 website rollout ·

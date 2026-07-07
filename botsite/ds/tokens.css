@@ -1,0 +1,271 @@
+/* ============================================================================
+   SuperBot program design system — design tokens
+   ----------------------------------------------------------------------------
+   The shared foundation every program site loads FIRST (before components.css).
+   Evolution of the botsite v1 neon identity (near-black canvas, neon-green
+   brand, mono eyebrows, per-category accents) rebuilt as a themeable token set:
+   dark is the brand-native default on :root; a full light theme overrides via
+   [data-theme="light"] (set early by ds.js — see SBDS.theme).
+
+   Rules:
+   - Components reference ONLY semantic tokens (--sb-*), never raw hex.
+   - Chart marks use --sb-chart-*; status colors ALWAYS ship with icon + label.
+   - v1 compat aliases at the bottom let generated data (data.js area colors
+     like "var(--g)") resolve in v2 with theme-correct values. v1's own files
+     are untouched — these aliases exist only where tokens.css is loaded.
+   Style guide (living reference): /design
+   ========================================================================== */
+
+:root {
+  /* ── primitives: brand greens ─────────────────────────── */
+  --sb-g-100: #dcfce7;
+  --sb-g-200: #bbf7d0;
+  --sb-g-300: #86efac;
+  --sb-g-400: #4ade80;
+  --sb-g-500: #22c55e;
+  --sb-g-600: #16a34a;
+  --sb-g-700: #15803d;
+  --sb-g-800: #166534;
+  --sb-g-900: #14532d;
+  --sb-g-ink: #03190c;
+
+  /* ── primitives: accent families (light + deep steps) ──── */
+  --sb-sky-300: #7dd3fc;
+  --sb-sky-400: #38bdf8;
+  --sb-sky-600: #0284c7;
+  --sb-sky-700: #0369a1;
+  --sb-amber-300: #fcd34d;
+  --sb-amber-400: #fbbf24;
+  --sb-amber-600: #b45309;
+  --sb-amber-700: #92400e;
+  --sb-pink-300: #f9a8d4;
+  --sb-pink-400: #f472b6;
+  --sb-pink-600: #db2777;
+  --sb-pink-700: #be185d;
+  --sb-indigo-300: #a5b4fc;
+  --sb-indigo-400: #818cf8;
+  --sb-indigo-500: #6366f1;
+  --sb-indigo-600: #4f46e5;
+  --sb-rose-300: #fda4af;
+  --sb-rose-400: #fb7185;
+  --sb-rose-600: #e11d48;
+  --sb-rose-700: #be123c;
+
+  /* ── typography ──────────────────────────────────────── */
+  --sb-font-display: "Bricolage Grotesque", ui-sans-serif, system-ui, sans-serif;
+  --sb-font-body: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --sb-font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  --sb-text-xs: 11px;
+  --sb-text-sm: 12.5px;
+  --sb-text-base: 14px;
+  --sb-text-md: 15.5px;
+  --sb-text-lg: 17px;
+  --sb-text-xl: 20px;
+  --sb-text-2xl: 24px;
+  --sb-text-3xl: 30px;
+  --sb-text-4xl: 40px;
+  --sb-text-5xl: 52px;
+  --sb-text-hero: clamp(40px, 7vw, 64px);
+  --sb-track-caps: 0.14em;
+  --sb-track-tight: -0.03em;
+
+  /* ── spacing (4px base) ──────────────────────────────── */
+  --sb-s-1: 4px;
+  --sb-s-2: 8px;
+  --sb-s-3: 12px;
+  --sb-s-4: 16px;
+  --sb-s-5: 20px;
+  --sb-s-6: 24px;
+  --sb-s-7: 32px;
+  --sb-s-8: 40px;
+  --sb-s-9: 56px;
+  --sb-s-10: 72px;
+  --sb-s-11: 96px;
+
+  /* ── radii ───────────────────────────────────────────── */
+  --sb-r-xs: 6px;
+  --sb-r-sm: 9px;
+  --sb-r-md: 12px;
+  --sb-r-lg: 18px;
+  --sb-r-xl: 24px;
+  --sb-r-pill: 999px;
+
+  /* ── motion ──────────────────────────────────────────── */
+  --sb-t-fast: 0.12s;
+  --sb-t-med: 0.18s;
+  --sb-t-slow: 0.3s;
+  --sb-ease: cubic-bezier(0.2, 0.7, 0.3, 1);
+
+  /* ── z layers ────────────────────────────────────────── */
+  --sb-z-nav: 40;
+  --sb-z-drawer: 60;
+  --sb-z-palette: 90;
+
+  /* ── layout ──────────────────────────────────────────── */
+  --sb-wrap: 1140px;
+  --sb-wrap-narrow: 880px;
+  --sb-wrap-wide: 1360px;
+  --sb-gutter: 28px;
+  --sb-nav-h: 64px;
+
+  /* ════════════════════════════════════════════════════════
+     SEMANTIC TOKENS — dark theme (brand-native default)
+     ════════════════════════════════════════════════════════ */
+
+  /* surfaces */
+  --sb-bg: #04060e;
+  --sb-bg-2: #020409;
+  --sb-surface: #0a1020;
+  --sb-surface-soft: rgba(255, 255, 255, 0.022);
+  --sb-well: #060a16;
+  --sb-line: #1a2236;
+  --sb-line-2: #2a3450;
+  --sb-scrim: rgba(2, 4, 9, 0.72);
+
+  /* ink */
+  --sb-ink-1: #f1f5f9;
+  --sb-ink-2: #c3ccdb;
+  --sb-ink-3: #8b94a8;
+  --sb-ink-4: #586074;
+
+  /* brand */
+  --sb-brand: var(--sb-g-500);
+  --sb-brand-hi: var(--sb-g-400);
+  --sb-brand-ink: var(--sb-g-300);
+  --sb-brand-tint: rgba(74, 222, 128, 0.12);
+  --sb-brand-line: rgba(74, 222, 128, 0.7);
+  --sb-on-brand: var(--sb-g-ink);
+
+  /* category accents (theme-stepped: 400s on dark, 600s on light) */
+  --sb-sky: var(--sb-sky-400);
+  --sb-amber: var(--sb-amber-400);
+  --sb-pink: var(--sb-pink-400);
+  --sb-indigo: var(--sb-indigo-400); /* 400-step like its siblings — 500 fell under 4.5:1 as badge text */
+  --sb-rose: var(--sb-rose-400);
+
+  /* status (never color-alone: pair with icon + label) */
+  --sb-ok: var(--sb-g-400);
+  --sb-warn: var(--sb-amber-400);
+  --sb-info: var(--sb-sky-400);
+  --sb-danger: var(--sb-rose-400);
+  --sb-ok-tint: rgba(74, 222, 128, 0.14);
+  --sb-warn-tint: rgba(251, 191, 36, 0.14);
+  --sb-info-tint: rgba(56, 189, 248, 0.14);
+  --sb-danger-tint: rgba(251, 113, 133, 0.14);
+
+  /* charts (single-hue magnitude by default; text wears ink tokens) */
+  --sb-chart-mark: var(--sb-g-400);
+  --sb-chart-mark-soft: rgba(74, 222, 128, 0.24);
+  --sb-chart-track: rgba(255, 255, 255, 0.05);
+  --sb-chart-grid: #1a2236;
+  --sb-chart-axis: #2a3450;
+
+  /* focus (consumed by the global :focus-visible outline rule) */
+  --sb-focus: var(--sb-g-400);
+
+  /* elevation & glow (glows are a dark-theme voice; light swaps to shadows) */
+  --sb-shadow-1: 0 1px 2px rgba(0, 0, 0, 0.4);
+  --sb-shadow-2: 0 6px 24px -8px rgba(0, 0, 0, 0.55);
+  --sb-shadow-3: 0 16px 48px -12px rgba(0, 0, 0, 0.65);
+  --sb-glow-brand: 0 0 18px rgba(34, 197, 94, 0.45);
+  --sb-glow-brand-lg: 0 0 28px rgba(74, 222, 128, 0.7);
+  --sb-glow-soft: 0 0 24px -10px rgba(34, 197, 94, 0.6);
+  --sb-hero-glow: radial-gradient(ellipse at center, rgba(34, 197, 94, 0.28), rgba(34, 197, 94, 0.05) 46%, transparent 72%);
+  --sb-dot-ink: rgba(74, 222, 128, 0.5);
+  --sb-dot-alpha: 0.07;
+
+  color-scheme: dark;
+}
+
+/* ════════════════════════════════════════════════════════
+   LIGHT THEME — a real theme, not an inversion: white panels,
+   deep-green interactive, 600-step accents (text-safe), glows
+   retired in favor of soft layered shadows.
+   ════════════════════════════════════════════════════════ */
+:root[data-theme="light"] {
+  --sb-bg: #f5f7fb;
+  --sb-bg-2: #eef1f8;
+  --sb-surface: #ffffff;
+  --sb-surface-soft: #ffffff;
+  --sb-well: #f1f4fa;
+  --sb-line: #e2e8f2;
+  --sb-line-2: #c9d3e4;
+  --sb-scrim: rgba(15, 23, 42, 0.4);
+
+  --sb-ink-1: #0b1220;
+  --sb-ink-2: #313c52;
+  --sb-ink-3: #5a6479;
+  --sb-ink-4: #6f7990; /* ≥4:1 on both light surfaces — caption text stays readable */
+
+  --sb-brand: var(--sb-g-600);
+  --sb-brand-hi: var(--sb-g-700);
+  --sb-brand-ink: var(--sb-g-800);
+  --sb-brand-tint: #e5f7ec;
+  --sb-brand-line: rgba(22, 163, 74, 0.55);
+  --sb-on-brand: var(--sb-g-ink);
+
+  --sb-sky: var(--sb-sky-600);
+  --sb-amber: var(--sb-amber-600);
+  --sb-pink: var(--sb-pink-700);
+  --sb-indigo: var(--sb-indigo-600);
+  --sb-rose: var(--sb-rose-700);
+
+  --sb-ok: var(--sb-g-700);
+  --sb-warn: var(--sb-amber-600);
+  --sb-info: var(--sb-sky-700);
+  --sb-danger: var(--sb-rose-700);
+  --sb-ok-tint: #e5f7ec;
+  --sb-warn-tint: #fdf1df;
+  --sb-info-tint: #e3f3fd;
+  --sb-danger-tint: #fde9ed;
+
+  --sb-chart-mark: var(--sb-g-600);
+  --sb-chart-mark-soft: rgba(22, 163, 74, 0.2);
+  --sb-chart-track: rgba(15, 23, 42, 0.06);
+  --sb-chart-grid: #e2e8f2;
+  --sb-chart-axis: #c9d3e4;
+
+  --sb-focus: var(--sb-g-600);
+
+  --sb-shadow-1: 0 1px 2px rgba(15, 23, 42, 0.06);
+  --sb-shadow-2: 0 6px 20px -8px rgba(15, 23, 42, 0.14);
+  --sb-shadow-3: 0 16px 44px -12px rgba(15, 23, 42, 0.18);
+  --sb-glow-brand: 0 2px 10px rgba(22, 163, 74, 0.22);
+  --sb-glow-brand-lg: 0 4px 16px rgba(22, 163, 74, 0.3);
+  --sb-glow-soft: 0 8px 24px -12px rgba(15, 23, 42, 0.16);
+  --sb-hero-glow: radial-gradient(ellipse at center, rgba(34, 197, 94, 0.14), rgba(34, 197, 94, 0.03) 46%, transparent 72%);
+  --sb-dot-ink: rgba(21, 128, 61, 0.55);
+  --sb-dot-alpha: 0.1;
+
+  color-scheme: light;
+}
+
+/* ── v1 data compatibility aliases ─────────────────────────
+   Generated SBDATA embeds v1 palette vars ("var(--g)", "var(--sky)"…) as
+   category colors. Mapping them onto semantic tokens keeps the generated
+   data portable AND theme-correct wherever tokens.css is loaded. */
+:root,
+:root[data-theme="light"] {
+  --g: var(--sb-brand);
+  --g-bright: var(--sb-brand-hi);
+  --g-soft: var(--sb-brand-ink);
+  --sky: var(--sb-sky);
+  --amber: var(--sb-amber);
+  --pink: var(--sb-pink);
+  --indigo: var(--sb-indigo);
+  --rose: var(--sb-rose);
+  --ink: var(--sb-on-brand);
+  --t-1: var(--sb-ink-1);
+  --t-2: var(--sb-ink-2);
+  --t-3: var(--sb-ink-3);
+  --t-4: var(--sb-ink-4);
+  --line: var(--sb-line);
+  --line-2: var(--sb-line-2);
+  --bg: var(--sb-bg);
+  --bg-2: var(--sb-bg-2);
+  --panel: var(--sb-surface);
+  --panel-soft: var(--sb-surface-soft);
+  --font-display: var(--sb-font-display);
+  --font-body: var(--sb-font-body);
+  --font-mono: var(--sb-font-mono);
+}

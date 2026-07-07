@@ -140,8 +140,27 @@ def _render_form(
 
 @router.get("/submit", response_class=HTMLResponse)
 def submit_form(request: Request) -> HTMLResponse:
-    """Render the public bug/suggestion form (and the thank-you state after a POST)."""
-    return _render_form(request, submitted=request.query_params.get("submitted") == "1")
+    """Render the public bug/suggestion form (and the thank-you state after a POST).
+
+    ``?about=command:warn`` (the v2 site's suggest-CTA links) prefills the title
+    so the report arrives with its subject attached — the context the CTA
+    promises is actually carried, not silently dropped. Jinja escapes the value
+    on render; anything unparseable is simply ignored.
+    """
+    values: dict[str, str] = {}
+    about = request.query_params.get("about", "")[:80]
+    if about:
+        prefix, _, name = about.partition(":")
+        name = name.strip()
+        if name and prefix == "command":
+            values["title"] = f"!{name}: "
+        elif name and prefix in ("feature", "game", "area"):
+            values["title"] = f"{name}: "
+    return _render_form(
+        request,
+        submitted=request.query_params.get("submitted") == "1",
+        values=values,
+    )
 
 
 @router.post("/submit", response_model=None)
