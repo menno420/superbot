@@ -78,6 +78,18 @@ The short version that governs how you work:
   reverse-import valve) so a reaction window stays open — zero pause. Merge=deploy still requires **CI
   green**. Scope = the rebuild; the **live production bot** keeps its Q-0213 `*Delete`/`*Restore` brake
   until the owner generalizes this. Full model: `docs/owner/agent-decision-authority.md` § Q-0241.
+- **Understand-and-reflect (owner directive Q-0254, 2026-07-07).** Before starting substantive
+  (non-trivial, non-mechanical) work, state back — briefly, inline in your first substantive
+  response, not as a separate blocking question — what you understood the goal to be,
+  **including the broader specs the ask implied but did not say** (the surrounding constraints,
+  the likely intended scope, the follow-on the user probably wants but didn't spell out). The
+  point is catching a misreading *before* work happens, not after: a wrong assumption stated up
+  front costs one correction; the same assumption discovered after an hour of building costs the
+  hour. This is not a return to stop-and-ask — decide-and-flag / Auto Mode still govern
+  execution, and a trivial or fully-unambiguous ask only needs a one-line "doing X because Y."
+  A genuinely ambiguous ask still escalates to the router (next bullet) — this doesn't replace
+  that, it catches the much larger set of asks that are *clear enough to start* but would
+  benefit from a cheap confirmation anyway. Full context: router Q-0254.
 - **Unclear owner intent.** Consult or add to
   `docs/owner/maintainer-question-router.md` when product/owner intent is genuinely
   unclear; unanswered questions are not approval. Preserve maintainer answers and

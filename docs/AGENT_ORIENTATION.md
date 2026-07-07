@@ -440,6 +440,10 @@ Before proposing or implementing any non-trivial change:
    verifiable changes — including a root-cause fix you find mid-task; ask only
    when something is irreversible, large/cross-cutting, or the goal itself is
    ambiguous. Aim for a positive, noticeable result every session.
+7. **Before substantive work, restate the understood goal back** — inline, not
+   as a blocking question — including the broader specs the ask implied but
+   didn't say (`.claude/CLAUDE.md` § Working agreement, Q-0254). Catches a
+   misreading before work happens, not after.
 
 This is not a courtesy — repeated rediscovery is the main reason
 SuperBot accumulates duplicate helpers and orphan plans. The minutes
