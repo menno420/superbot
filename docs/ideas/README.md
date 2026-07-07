@@ -31,6 +31,22 @@ only the header block is read, so a `**Subsystem:**` *example* in an idea's body
 
 Current broad captures:
 
+- [`channel-role-scoped-authority-gap-2026-07-07.md`](./channel-role-scoped-authority-gap-2026-07-07.md) —
+  **⚠ time-sensitive (2026-07-07, owner-raised):** neither the live governance stack nor the frozen
+  K6 authority design (`Lane{CAPABILITY,TIER}` + `ChannelAccessDecision`) can express "only role X in
+  channel Y" — confirmed at both layers. K6 hasn't been built yet and sits on the strand-1 chain
+  (S8/K7 consumes it), so this is worth deciding before the next K6-touching session, not filed for
+  later like most of this backlog.
+- [`moderation-feature-gaps-2026-07-07.md`](./moderation-feature-gaps-2026-07-07.md) —
+  **session idea (2026-07-07, owner-raised):** researched the live moderation/security stack against
+  competitor-bot feature sets — most suspected gaps turned out already shipped; three genuine misses
+  found: a join-time verification/CAPTCHA gate, a dedicated ban-appeal/modmail flow distinct from the
+  general ticket system, and custom trigger→response commands. Feature-level, not architectural.
+- [`guild-config-backup-and-data-export-gap-2026-07-07.md`](./guild-config-backup-and-data-export-gap-2026-07-07.md) —
+  **session idea (2026-07-07, foundational-capability sweep):** two adjacent misses found while
+  checking the rebuild's K0-K10 taxonomy for completeness — self-service per-guild settings
+  backup/restore (distinct from whole-DB disaster recovery), and the "export" half of GDPR-style user
+  data requests (erasure is thoroughly mechanized; export never reappeared after the original idea).
 - [`user-self-service-automation-scheduler-2026-07-07.md`](./user-self-service-automation-scheduler-2026-07-07.md) —
   **session idea (2026-07-07, Q-0089, rebuild-plan-review session):** owner-proposed guardrailed,
   unlockable, user-facing recurring scheduler ("cron jobs for themselves" — a daily rank ping, a
