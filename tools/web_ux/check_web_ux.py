@@ -238,7 +238,7 @@ def local_server():
     try:
         for _ in range(60):
             try:
-                urllib.request.urlopen(url + "/healthz", timeout=1)
+                urllib.request.urlopen(url + "/healthz", timeout=1)  # noqa: S310 - local http server
                 break
             except OSError:
                 time.sleep(0.25)
@@ -361,9 +361,9 @@ def run_perf(base_url: str) -> tuple[list[str], list[str]]:
     ]
     shell = 0
     for path in shell_assets:
-        with urllib.request.urlopen(base_url + path, timeout=5) as resp:
+        with urllib.request.urlopen(base_url + path, timeout=5) as resp:  # noqa: S310 - local/CLI-given http url
             shell += len(resp.read())
-    with urllib.request.urlopen(base_url + "/data.js", timeout=5) as resp:
+    with urllib.request.urlopen(base_url + "/data.js", timeout=5) as resp:  # noqa: S310 - local/CLI-given http url
         data_len = len(resp.read())
     notes.append(f"shell weight {shell:,}B (budget {SHELL_WEIGHT_BUDGET:,}B)")
     notes.append(f"data.js {data_len:,}B (budget {DATA_WEIGHT_BUDGET:,}B)")
