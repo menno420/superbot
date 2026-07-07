@@ -1,8 +1,8 @@
 # 2026-07-07 — Claude Code Projects EAP: access granted, activation window
 
-> **Status:** `in-progress` — born-red per Q-0133. About to do: draft an activation plan +
-> review rubric + Anthropic feedback reply now that access is **actually live** (not just
-> invited), given the EAP's free window closes **Friday 2026-07-10**.
+> **Status:** `complete` — deliberate final flip (born-red gate, Q-0133). Docs-only (no
+> `disbot/` runtime code): `check_docs.py --strict` and `check_current_state_ledger.py --strict`
+> both green (ledger note = benign newest-merge lag, #1804/#1805).
 
 ## What's new since #1776/#1777
 
@@ -17,3 +17,34 @@ claude.ai/code/projects/browse, not something this session can do).
 
 See `docs/planning/projects-eap-activation-plan-2026-07-07.md` for the plan, rubric, and
 feedback-reply draft.
+
+## ⚑ Self-initiated
+
+None — this session's scope was the owner's own message (forwarded EAP access email + explicit
+ask to brainstorm use case / review approach / Anthropic feedback). No promotions beyond that ask.
+
+## 💡 Session idea (Q-0089)
+
+**Trial-window tripwire.** The activation plan's 3-day window (free through Fri 7/10) is exactly
+the kind of externally-imposed deadline that's easy to let slip once a session ends. Idea: a
+`send_later`/routine self check-in timed to the deadline itself (not just the usual hourly PR
+babysit) that re-surfaces "did the §3 rubric get run, did the §4 reply get sent" if nobody has
+acted by then — a generic pattern for any EAP/trial/offer with a hard external clock, not just
+this one. (Grep-checked `docs/ideas/` — not present as a general pattern.)
+
+## ⟲ Previous-session review (Q-0102)
+
+Previous distinct session (#1776, the EAP-invite eval + Q-0241): **did well** — it correctly
+separated the durable governance change (Q-0241, its own provenance) from the speculative product
+idea, so today's follow-up could cleanly extend the idea doc rather than re-litigate the rule.
+**Could have anticipated:** it framed activation as a single "owner accepts the invite" gate
+without noting that EAP access, once granted, often carries its own clock (a free-trial window) —
+that's exactly what showed up today and reshaped the plan from "scope broadly" to "one bounded
+stream, 3 days." **System delta:** worth a standing habit — when a speculative idea doc names an
+external dependency (an invite, an API waitlist, a partner offer), flag in the doc itself that
+acceptance may arrive with a deadline, so the follow-up session isn't the first one to notice.
+
+## ▶ Next action
+
+Owner-facing (§5 of the activation plan): create the Project, paste Custom Instructions, run it
+against the kit-lab or next port-band, score the §3 rubric, send the §4 reply before Fri 7/10.

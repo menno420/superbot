@@ -1,6 +1,6 @@
 # Claude Code Projects EAP — activation plan (access live, 2026-07-07)
 
-> **Status:** `active` — supersedes the "next lifecycle step" of
+> **Status:** `plan` — supersedes the "next lifecycle step" of
 > `docs/ideas/claude-code-projects-for-the-rebuild-2026-07-07.md` now that access is real, not
 > hypothetical. **Provenance:** owner-forwarded email (Omid Mogasemi's invite → Diana Liu's
 > "you should have just received access" confirmation) + the EAP PDF (identical content to the
