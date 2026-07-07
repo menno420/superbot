@@ -137,16 +137,30 @@ misunderstanding still costs nothing. It probes three things the kickoff cannot:
 coordinator actually read (A), whether it knows its own harness rather than guessing at it (B),
 and whether it can think about this program rather than recite it (C). Block B is
 contamination-proof by design — its answers are verifiable facts about the coordinator's own
-access and harness that no doc (including this one) can supply.
+access and harness that no doc (including this one) can supply. **The first turn is framed to
+the coordinator as *its own* goal, not just the owner's test (owner-added 2026-07-07):** map
+your capabilities and limits before you run unattended — self-knowledge of its operating
+envelope is something it will need under never-wait, and a coordinator that discovers a real
+limit here rather than mid-kernel-band is exactly the outcome both the build and the Anthropic
+evaluation want.
 
 ```
-Before I hand you any work: I want to see how you've understood this program. Answer from your
-own reading — open the repos and the canonical plan now if you haven't. Rules: your own words
-only (if a sentence of your answer could be found by grep in our docs, rewrite it); where you
-don't know something, say "I don't know" plus how you'd find out — an honest unknown scores
-better with me than a confident guess I can't check; keep it compact, numbered like below. Do
-NOT start any plan step, open any PR, or create anything after answering — this message hands
-you no work. The kickoff follows separately if these answers land.
+This first turn has two jobs, and building is not one of them. First: show me you've
+understood the program, in your own words. Second, and just as important: map your own
+operating envelope — what you, as this Project's coordinator, can and cannot actually do
+(repo access, spawning sessions, model/effort control, what auto mode does at a permission
+prompt with nobody watching, where your reports land, what "stuck" looks like for you). You'll
+run mostly unattended under never-wait, so you need to know your own edges before you lean on
+them, and I need to know them before I hand you the build. Treat block B as genuine
+self-discovery, not a quiz you're passing: actually probe your harness. Where you can't verify
+something, say "I don't know" plus how you'd find out — an honest unknown scores better with me
+than a confident guess I can't check.
+
+Answer from your own reading — open the repos and the canonical plan now if you haven't. Your
+own words only (if a sentence of your answer could be found by grep in our docs, rewrite it);
+keep it compact, numbered like below. Do NOT start any plan step, open any PR, or create
+anything after answering — this message hands you no work. The kickoff follows separately if
+these answers land.
 
 One more thing to know before you answer: besides the rebuild, this Project has a second
 purpose — it is itself a live evaluation of Claude Code Projects, and the feedback it produces

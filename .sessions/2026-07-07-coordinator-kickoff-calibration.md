@@ -106,6 +106,18 @@ possible separate application to avoid gateway collisions remain); calibration v
 never-wait / capability overclaim). Model note: this addendum finished under Opus 4.8 after a
 Fable server error mid-edit; no content impact (edits were already placed pre-error).
 
+## Addendum 4 (same session, fifth PR)
+
+**First-turn framing (owner):** the calibration message had the capability/limits *questions*
+(Block B) but framed the whole turn as "prove you understood the program" — the owner asked to
+make **self-discovery of capabilities and limits an explicit main goal of the first turn**.
+Rewrote the §3 intro to name two jobs (understand the program · map your own operating
+envelope) and elevate self-discovery to "just as important," tied to why it matters (running
+unattended under never-wait; discovering a limit here beats mid-kernel-band) and reframing
+Block B as genuine self-discovery, not a quiz. Owner-facing "why this exists" prose updated to
+match. Instructions (§2) deliberately untouched — this is first-turn-specific, and §2 stays
+thin by design.
+
 ## Docs audit (Q-0104)
 
 `check_docs.py --strict` ✓ · `check_current_state_ledger.py --strict` ✓ (exit 0; #1802/#1804/
