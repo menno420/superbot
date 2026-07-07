@@ -86,6 +86,51 @@
 
 ## Recently shipped — archived (newest first)
 
+- **#1682 (2026-07-03, workflow — thirty-third Q-0107 reconciliation pass, band-#1680)** — the
+  thirty-third Q-0107 docs-only reconciliation + planning pass
+  ([pass record](planning/reconciliation-pass-2026-07-03-band1680.md)): reconciled band
+  #1651–#1680, trimmed Recently-shipped to 20, disposed 7 open PRs, confirmed the control-plane,
+  refreshed the dashboard export, reset the marker #1650 → #1680.
+- **#1692 · #1694 · #1702 · #1706 · #1707 · #1709 · #1710 (2026-07-03/04, docs — dashboard-data refreshes, Q-0167)** —
+  seven per-source-merge **dashboard-data refreshes** keeping the committed `dashboard/data/dashboard.json`
+  export fresh as the S3 rebuild foundations arc landed.
+- **#1688 (2026-07-03, S3 rebuild — two parallel ultracode prompts prepared, Q-0236)** —
+  owner-directed preparation (not launched): [two paste-ready ultracode session
+  prompts](planning/rebuild-foundational-mechanics-ultracode-brief-2026-07-03.md) to brainstorm +
+  audit every foundational mechanic (use-now + could-use) against today's decisions — session A =
+  runtime/logic engine room, session B = presentation/UX + verification — disjoint scopes,
+  rubric-scored issues ledgers, each its own claim + PR. Owner sends them in parallel; survivors
+  feed the Stage-2 walk / Gate-V fleet.
+- **#1687 (2026-07-03, S3 rebuild — unified layout-success simulator idea, Q-0235)** —
+  captured the idea to unify the 5 bespoke UX-layout sims into one **instruction-driven
+  layout-success simulator** (deterministic + AI user models; "create roles" → does a user model
+  reach the right node?) that quantifies the "self-explanatory" half of the Q-0234 oracle and is
+  the mechanism behind "sim optimizes arrangement" (Q-0230); sim defines settings bot-wide, live
+  co-test is the final review.
+- **#1686 (2026-07-03, S3 rebuild — new-feature oracle + verification-fleet gate + repo-as-artifact strategy, Q-0234)** —
+  resolved the rubric's class-8 verification hole: the correctness oracle = parity goldens (ported) +
+  **competitor-benchmark & live co-test** ("works · logical · self-explanatory", reusing the Q-0222
+  `verified_live` sign-off) for new features. Recorded **Gate V** (a multi-agent verification-fleet
+  pass over the finished plan, using the ten-class rubric as its shared lens) between Phase A and
+  Phase B, and the **migration-as-its-own-plan / repo-as-artifact** framing (current repo = what/why/
+  how artifact; new repo = clean source of truth) in the phase sequence.
+- **#1685 (2026-07-03, S3 rebuild — the critical-review rubric, Q-0233)** —
+  owner-directed [reusable review lens](planning/rebuild-critical-review-rubric-2026-07-03.md): the
+  ten gap-classes caught reviewing the rebuild plan this session (dependency-order inversion,
+  forgotten capability, thin step, stale un-anchored claim, fragmentation, under-generalization,
+  missing standard, verification hole, UX-contract gap, naming/collision) turned into probing
+  questions with mechanization tags — run against every subsystem in the Stage-2 walk + every
+  Phase-B plan (it *is* the adversarial-completeness checklist). Mechanizable classes routed as a
+  [checker backlog](ideas/rebuild-critical-review-checkers-2026-07-03.md).
+- **#1684 (2026-07-03, S3 rebuild — Phase-A hub topology + navigation contract + interface presets, Q-0230…Q-0232)** —
+  owner-live [hub/navigation decisions log](planning/rebuild-hub-navigation-presets-2026-07-03.md):
+  one **unified help hub** (admin a permission-gated node + `!admin` direct-open, re-checked at
+  click time); the **navigation contract** (Back+Home injected into every rendered state, every
+  node directly openable by command, **persistent restart-safe panels** that also survive the
+  merge=deploy redeploys); and **per-guild interface presets** with live preview — verified as an
+  existing-but-fragmented surface (setup preset_select + help overlay editor + ~7 preset impls) to
+  be improved + centralized onto one preset/template primitive (C-3). Open: preset exclusion =
+  hide-vs-disable.
 - **#1683 (2026-07-03, workflow — cut permission prompts + endorse invocation centralizations, Q-0229/Q-0228)** —
   broadened `.claude/settings.json` with whole-MCP-server allow entries (`mcp__Claude_Code_Remote`,
   `mcp__github`, `mcp__codegraph`, `mcp__context7`) so tools like `send_later` stop prompting —
