@@ -10,6 +10,13 @@
 > **Model:** Claude **Fable 5**, `/effort ultracode` (foundational session: it sets two repos'
 > shape and the control plane). Per Q-0248, log model/effort/task-class/outcome telemetry from
 > session one — the kickoff is the first data point of the model-allocation dataset.
+>
+> **Route update (2026-07-07 evening):** this session now runs through the **"SuperBot" Projects
+> coordinator** — the send order (Custom Instructions → calibration exchange → kickoff message)
+> lives in [`projects-eap-coordinator-kickoff-2026-07-07.md`](projects-eap-coordinator-kickoff-2026-07-07.md).
+> This brief stays the **work order for steps 6–8** (the Q-0247 kit-extraction fork included);
+> **step 6 is done** — `superbot-next` exists, owner-created 2026-07-07, empty, and *deliberately
+> PUBLIC* for now (free Actions minutes; flip-to-private flagged at step 8, hard before step 15).
 
 ## 1. Reading route (in order)
 

@@ -1,122 +1,276 @@
 # Claude Code Projects — coordinator kickoff for the `superbot-next` rebuild (2026-07-07)
 
 > **Status:** `plan` — the "thin wiring note" the canonical rebuild plan deliberately deferred
-> (`rebuild-canonical-plan-2026-07-06.md` §9: *"Deliberately NOT folded: ... Projects-EAP as
-> coordinator (the plan stays product-agnostic; a thin wiring note lands on §5 if the owner
-> accepts the EAP)"*). Access is now live and accepted (`projects-eap-activation-plan-2026-07-07.md`,
-> PR #1807). This doc is the paste-ready setup: one Project, one repo-scope sequence, one
-> Custom Instructions block, one kickoff message — everything needed to start canonical-plan §5
-> at step 6 through the coordinator instead of a manually-launched session.
+> (`rebuild-canonical-plan-2026-07-06.md` §9/§11), now the full **handoff protocol** for running
+> canonical-plan §5 step 7+ through the "SuperBot" Claude Code Project.
+> **Revised same day (evening):** the Project now EXISTS (owner-created; screenshots verified) and
+> this doc gained the owner→coordinator **calibration exchange** (§3) that runs before any work is
+> handed, plus the changed facts (§1) and the Q-0247 step-7 fold. Supersedes the morning draft
+> wholesale. Companion analysis: [product review](projects-eap-product-review-2026-07-07.md) ·
+> [activation plan](projects-eap-activation-plan-2026-07-07.md). The canonical plan itself stays
+> product-agnostic — this doc is execution mechanism only.
+>
+> **Send order (owner):** paste §2 into Project Settings → Project instructions (replace the
+> sample text wholesale) → send §3 (calibration) → **read the answers against §3's reading key**
+> → only if they land, send §4 (kickoff). Nothing auto-flows from §3 to §4: the kickoff message
+> is the explicit start signal, sent by you.
 
 ## 0. One Project, not multiple
 
-Use **one** Project for the whole rebuild, not one per band or per repo. The coordinator's whole
-value is fanning a single work stream out across many sessions with shared memory — splitting it
-into several Projects would fragment exactly the memory that's the point of adopting this. (A
-*separate* Project is right for a genuinely separate stream — e.g. the trading-research repo
-mentioned in `docs/current-state.md` — but that's a different program, not this one.) The
-canonical plan's own step 9/13 language — "agent fleet, one session per band" / "agent fleet,
-claim-per-subsystem" — is precisely what one Project's coordinator is built to run.
+Use **one** Project for the whole rebuild. The coordinator's value is fanning a single work
+stream across many sessions with shared memory — splitting it fragments exactly that. (A
+*separate* Project fits a genuinely separate stream — the trading repo, the kit lab — not this
+program.) The plan's own "agent fleet, one session per band" / "claim-per-subsystem" phrasing is
+precisely what one coordinator runs.
 
-## 1. Repo scope — create `superbot-next` yourself first
+## 1. Setup state + the facts that changed since the morning draft
 
-A Project's repo list is chosen through GitHub connection UI (owner action), and it can only list
-repos that already exist. Rather than have the coordinator create `superbot-next` as its first act
-(the original plan below), **create it yourself first** — it's a 30-second manual step and it lets
-the Project's repo picker offer both repos from the start, which is worth confirming works before
-depending on it:
+**Done (verified from the owner's UI, 2026-07-07 evening):**
 
-1. GitHub → New repository → name `superbot-next`, owner `menno420`, **Private**, and **do not**
-   initialize with a README/`.gitignore`/license — the plan specifies "empty, private" (§5 step 6)
-   so the substrate-kit's doc-skeleton bootstrap (step 7) starts from a truly blank repo.
-2. Create the Project and select **both** `menno420/superbot` and `menno420/superbot-next` in the
-   repo picker.
+- Project **"SuperBot"** exists; **both** `menno420/superbot` and `menno420/superbot-next` are
+  connected in Settings → Repositories. Custom instructions are still the sample placeholder —
+  **replace wholesale with §2**, don't append.
+- `menno420/superbot-next` exists (owner-created), **empty** — and **deliberately PUBLIC**, kept
+  public for unlimited free GitHub Actions minutes. This amends the plan's "empty, private"
+  (§5 step 6, amendment recorded there): the flip-to-private is a **checkpoint the coordinator
+  raises at step 8** and a **hard requirement before step 15** — CUT-2's dry-run reconciliation
+  diff carries real user balances and must never publish from a public repo. Two consequences to
+  encode, not just the flip: (a) *never-commit-secrets is the primary guard* — visibility only
+  changes the blast radius; (b) the flip ends the free-Actions rationale, so it is a **cost
+  checkpoint too** (private-repo minutes bill the plan quota right when CI gets heaviest).
+- Product facts the EAP PDF got wrong or undersold, now observed directly: **Model is a
+  per-Project default** (currently **Fable 5**, not "always Opus 4.8"); **Effort** is a
+  per-Project default (currently High); **Project instructions are sent with each new session**
+  (children inherit the rules, not just the coordinator); the **coordinator session is
+  archivable** (Settings → General → Archive = fresh coordinator on next message — the retry
+  lever if calibration fails); sessions pin to an **Environment**.
+- **Free through Friday 2026-07-10.** Whether "free" means unmetered Fable 5 usage or merely the
+  feature is unverified — the owner keeps Fable 5 as the Project default and watches whether it
+  draws from plan usage. Design consequence: exploit the window hard, but nothing durable may
+  depend on the Project surviving it (write-back discipline, §2).
 
-(Original two-pass plan, if you'd rather have the coordinator do it: create the Project scoped to
-`menno420/superbot` only, let the coordinator create `superbot-next` as §5 step 6, then add it to
-the Project's repo list afterward. Functionally equivalent — the only difference is who clicks
-"create repository" and whether the multi-repo picker gets exercised on day one.)
+## 2. Custom Instructions — paste into Project Settings → Project instructions
 
-## 2. Custom Instructions — paste into Project Settings → Custom Instructions
-
-```
-This Project executes the SuperBot rebuild: a from-scratch rewrite of the Discord bot in
-menno420/superbot, landing in a new repo menno420/superbot-next.
-
-Binding source of truth: menno420/superbot's docs/planning/rebuild-canonical-plan-2026-07-06.md
-(read the whole file, especially §5 "the start sequence" and §8 "decisions log"). Do not
-re-derive decisions that file already made — it exists precisely so you don't have to. If
-something in it looks wrong, flag it in your status report rather than silently deviating.
-
-Orientation: menno420/superbot's docs/AGENT_ORIENTATION.md and .claude/CLAUDE.md explain how this
-program works and are worth reading once per fresh session, not just by you as coordinator.
-
-Repos: menno420/superbot is the read-mostly reference repo (plan, design spec, current bot
-source for parity comparison) — the current bot keeps running there and is not to be touched
-except where the plan's step 14 ("telemetry-sidecar capture on the OLD bot") explicitly says so.
-menno420/superbot-next is the write target once created (§5 step 6) — that's where the rebuild's
-code, tests, and CI actually land.
-
-Working model (owner directives Q-0240/Q-0241, full text in superbot's
-docs/owner/agent-decision-authority.md): decide and proceed, don't wait for approval. Build in
-the logical order the plan already specifies (§5, steps 6 through 17, in sequence — later steps
-may run in parallel once their prerequisites are met, per the plan's own "agent fleet" / "claim
-per subsystem" phrasing). Live-test each piece against a real server before calling it done, not
-just CI green. Never pause for a go/no-go — silence is consent. The one exception: the
-destructive tier (importing real production data, the CUT-3 token swap at step 17, deleting the
-old bot's data) must run via the reversible path the plan already specifies for it (shadow-first,
-the N=7 day rollback window, the reverse-import valve) — not paused, just kept reversible so a
-reaction window stays open. Flag every one of those steps clearly when you reach them, with what
-you did and why it's still reversible.
-
-Status reporting: send a daily roll-up. Keep it to what actually needs my attention — flagged
-decisions, anything stuck, anything genuinely ambiguous — not a narration of every session's
-progress. Distinguish "still working, as designed" from "broken, needs help" explicitly, since
-early port-band work will intentionally sit with red/incomplete CI for a while.
-
-Do not put durable decisions only in Project memory. Anything worth keeping — a design call, a
-ruling, a completed step — gets written into a committed doc or session record in whichever repo
-it belongs to (superbot-next once it exists), the same way every other session in this program
-already works. Treat your own memory as a working cache, not the source of truth.
-```
-
-## 3. First message to the coordinator — paste after creating the Project
+Deliberately **thin**: repo roles, the decision model, and reporting/memory rules are embedded
+because they must bind *before and regardless of* any reading; everything else points at the
+canonical plan, which carries its own amendments (§11/§11b already postdate this doc's first
+draft — a content-heavy instructions block would have gone stale twice in one day). The
+plan-wins clause makes the drift direction explicit.
 
 ```
-Read docs/planning/rebuild-canonical-plan-2026-07-06.md in menno420/superbot in full, especially
-§5 (the start sequence) and §8 (decisions log). Steps 1-3 are already done (kit tail, Phase-2.5,
-check_amendments.py — all merged). Step 4 (the Stage-2 walk) is owner-live and continuing in
-parallel elsewhere — it blocks later port bands (step 13), not repo start, so don't wait on it.
-Step 5 (the go/no-go sitting) is retired per Q-0241 in the plan's amendment banner. Step 6
-(create menno420/superbot-next) is already done — the repo exists, empty and private, and is
-already in this Project's scope.
+You are the coordinator for the SuperBot rebuild: a from-scratch rewrite of the Discord bot in
+menno420/superbot, landing in menno420/superbot-next. You run the program; the owner (Menno, a
+non-coder) steers by reacting to what he sees — in the server, in PRs, in your reports.
+Instructions snapshot 2026-07-07: wherever this text and the plan disagree, the plan wins —
+flag the drift, don't silently follow either.
 
-Start at step 7: bootstrap the substrate-kit via python3 dist/bootstrap.py adopt (the kit itself
-lives in menno420/superbot's substrate-kit/) inside menno420/superbot-next. Then continue in
-order: step 8 (control plane: rulesets, OIDC, named-gate workflows, CODEOWNERS, branch
-protection — flag the Railway project setup since it needs secrets only I can supply), then the
-kernel bands (steps 9-12) and beyond per the plan.
+SOURCE OF TRUTH: menno420/superbot's docs/planning/rebuild-canonical-plan-2026-07-06.md is the
+binding plan — §5 (start sequence), §8 (decisions log), §11/§11b (amendments), and the Q-0241
+amendment banner at the top. Its decisions are settled: never re-derive or re-litigate them;
+if one looks wrong, flag it in your report and keep to the plan unless following it is unsafe.
+Re-read §5 + the banner at the start of every session that acts on the plan. Sessions working
+inside superbot also follow that repo's own conventions (.claude/CLAUDE.md,
+docs/AGENT_ORIENTATION.md — claims, session cards, born-red PRs).
 
-Set up whatever routines make sense for a build this size (nightly CI/dependency sweeps, a
-morning status roll-up) once there's something worth checking on.
+REPOS — the split that must never blur:
+- menno420/superbot = the LIVE production bot + the program's record (plan, decision ledger,
+  parity goldens). Read freely. Writes are narrow: docs-only program bookkeeping under that
+  repo's conventions, and the plan's step 14 telemetry sidecar when you reach it. NEVER touch
+  disbot/ or anything else the live bot runs on — merges to its main auto-deploy to
+  production within minutes.
+- menno420/superbot-next = the rebuild target; all new code, tests, CI land here. It starts
+  fresh from the substrate kit (Q-0247): NEVER clone or copy superbot's code as a base — the
+  old repo is the read-only oracle you compare behavior against, never a starting point. Keep
+  it empty until the kit adoption is its first commit.
+- superbot-next is currently PUBLIC (deliberate: free Actions minutes). Treat every commit as
+  world-readable. Never commit secrets, tokens, or real user data — in any repo, ever. Raise
+  the public→private flip at step 8 (owner clicks it); it MUST be flipped before step 15's
+  import artifacts, which contain real user balances.
+
+DECISION MODEL (owner directives Q-0240/Q-0241; full text in superbot's
+docs/owner/agent-decision-authority.md): decide and proceed — never wait for approval on work
+you have been handed. Silence = consent = done. Live-test each piece in a real server before
+calling it done; CI green alone is not done. Record every self-made decision with a one-line
+rationale; flag the notable ones. One rider: the destructive tier (importing real production
+data, the CUT-3 token swap, deleting old-bot data) executes only via the reversible path the
+plan specifies (shadow-first, the N=7d rollback window, the reverse-import valve) — no pause,
+but the reaction window must genuinely stay open, and each such step gets a loud flag stating
+what you did and why it is still reversible. Merging always requires green CI.
+
+Plan-step execution begins when Menno explicitly hands you work in this chat. A message that
+asks you questions is a question, not a work order — never-wait governs work already handed.
+When you hit something only he can supply (secrets, spend approval, a repo/Project setting
+you lack rights to, a Discord server or token): park that lane, add it to the single OWNER
+ACTIONS list you maintain and re-show in every report, and keep building elsewhere. Never
+fabricate a credential or work around a permission wall.
+
+SESSIONS: follow plan §3's model/effort allocation where you can control it; flag where you
+can't. Independent review of a band should be a different model than built it — if you cannot
+vary models, route review through the repo's existing cross-agent lane or flag it.
+
+REPORTING: one daily roll-up, calibrated to what actually needs Menno — flagged decisions,
+destructive-tier items inside their reaction window, the OWNER ACTIONS list, anything
+genuinely stuck — never a narration of every session. Always distinguish "red/incomplete by
+design" (parity CI is born-red on purpose) from "broken, needs help".
+
+MEMORY: your Project memory is a working cache, never the record. Anything durable — a design
+call, a ruling, a completed step, a lesson — is written into a committed doc in the repo it
+belongs to, in the same session it was learned. Assume this Project could vanish tomorrow and
+the program must continue from the repos alone.
 ```
 
-(If you went with the coordinator-creates-it variant of §1 instead, use the original wording:
-start at step 6 with "create an empty, private GitHub repo menno420/superbot-next, then tell me
-directly so I can add it to this Project's repo list" before step 7.)
+## 3. The introduction/calibration message — send FIRST, before any work
 
-## 4. What this does and doesn't replace
+**Why this exists:** under Q-0241 there is no downstream owner gate where a half-understood plan
+gets caught — the gates were retired on purpose. This exchange replaces them at the *entry*
+point: one message, before authority engages, that makes shallow understanding visible while a
+misunderstanding still costs nothing. It probes three things the kickoff cannot: whether the
+coordinator actually read (A), whether it knows its own harness rather than guessing at it (B),
+and whether it can think about this program rather than recite it (C). Block B is
+contamination-proof by design — its answers are verifiable facts about the coordinator's own
+access and harness that no doc (including this one) can supply.
 
-This wiring note does not change anything in the canonical plan itself — it's purely the
-execution mechanism. The plan stays product-agnostic per its own §9 note; if the Project
-coordinator turns out to be a poor fit partway through (see the four review tests in
-`projects-eap-product-review-2026-07-07.md` §10), the same §5 sequence still runs fine through
-manually-launched sessions, which is how every step before step 6 was already executed.
+```
+Before I hand you any work: I want to see how you've understood this program. Answer from your
+own reading — open the repos and the canonical plan now if you haven't. Rules: your own words
+only (if a sentence of your answer could be found by grep in our docs, rewrite it); where you
+don't know something, say "I don't know" plus how you'd find out — an honest unknown scores
+better with me than a confident guess I can't check; keep it compact, numbered like below. Do
+NOT start any plan step, open any PR, or create anything after answering — this message hands
+you no work. The kickoff follows separately if these answers land.
 
-## 5. Next lifecycle step
+A. The program, explained back
+1. In one short paragraph: what is being built, why a fresh repo instead of refactoring the
+   existing one, and what role each of the two repos plays while that happens?
+2. Walk me through the plan's §5 as YOU would run it: what's already done, what you'd do
+   first, and where the first live milestone is. Flag anything in the sequence you'd push
+   back on.
+3. What did Q-0241 retire, and what did it deliberately keep? Give one concrete example each
+   of: something you'd do without telling me first; something you'd do but flag loudly; and
+   something that must run on a reversible path even though you don't pause for it.
+4. Scenario: you finish a kernel band, its tests and live checks are green, and I say nothing
+   for two days. What happens next, and why?
+5. Scenario: mid-port, one of your sessions discovers a real bug in the OLD bot's runtime
+   code. What do you do about it — and what's the one rule about the old bot's goldens that
+   applies?
+6. How will you verify that slash commands and buttons work in the new bot, given what agents
+   can and cannot drive live? There is a specific ruling on this in our docs — I want it in
+   your words, with the ruling number if you found it.
 
-Owner-facing: create the Project (§1.1), paste §2 into Custom Instructions, send §3 as the first
-message. Everything after that is the coordinator's job per the plan. Revisit the
-`projects-eap-activation-plan-2026-07-07.md` §3 rubric once step 6-8 are underway — this is
-exactly the "already-decided, multi-session, bounded-enough-to-observe" stream that plan
-recommended trialing against.
+B. You, specifically — capabilities and limits (verify, don't assume)
+7. Prove your repo access both ways: report superbot's current HEAD (short sha + the latest
+   merged PR number) and what is currently inside superbot-next. Then: which repos are in
+   this Project's scope, and what does that mean for repos outside it? (We'll need a third
+   repo soon — what would have to happen before you could work in it?)
+8. What can you actually control about the sessions you spawn — model, effort, how many run
+   in parallel? What are you inheriting from this Project's settings right now? Mark every
+   item you haven't verified as "unknown".
+9. What does auto mode change about how your sessions run unattended — concretely, what
+   happens when a session hits a permission prompt with nobody at the keyboard? If you don't
+   know, how will you find out cheaply before it bites us mid-kernel-band?
+10. Where do your reports and updates actually surface for me, and what's your plan for the
+    daily roll-up — when it lands, what's in it, and what's deliberately NOT in it?
+11. What does "stuck" mean for you in this program, and what exactly happens when you hit it?
+    And the reverse: name the failure mode you think YOU are most at risk of in a never-wait
+    setup, and the guard you'll run against it.
+
+C. Your own read
+12. Having actually looked inside both repos: what is a Project coordinator genuinely the
+    right tool for in THIS program, and which parts would you route around it (manual
+    sessions, the repo's existing machinery)? Don't repeat our docs' analysis — I've read it;
+    I want yours.
+```
+
+**Reading key (owner-facing — what good vs. shallow looks like):**
+
+- **A1–A2:** good = the two-repo shape in its own words (old repo = record + oracle, new =
+  clean target), steps 1–6 marked done, step 7 next, CUT-1 named as the first live milestone.
+  Shallow = paraphrased plan headings, no step states, or "I'd start by creating the repo"
+  (already done — means it didn't check).
+- **A3–A4:** good = retired the *gates/waiting*, kept the *reversible path* for the destructive
+  tier + CI-green; #4 = flag it in the roll-up and move to the next band (silence = consent).
+  Wrong = "I'd wait for your confirmation" (never-wait not understood) or "I'd proceed to
+  import prod data" (rider not understood).
+- **A5:** the two-part answer is routing (old-repo runtime fixes are not its mandate — report
+  it / leave it to the live bot's own lanes) **plus** the golden rule (a behavior-changing
+  old-bot fix must re-capture affected goldens in the same PR — L-21). Missing the golden half
+  is the tell to probe.
+- **A6:** the ruling is **Q-0244** — slash/components count as verified via live prefix twins +
+  the in-process pipeline-true replay; agents cannot click slash/buttons live. "I'll click
+  through them in Discord" is a hard fail (capability overclaim).
+- **B7–B10:** answers are checkable facts — verify #7 yourself against GitHub. Confident but
+  unverifiable claims here are exactly the overclaiming this exchange screens for; honest
+  "unknown, here's how I'd test it" is a pass.
+- **B11:** any real answer beats a generic one; the strongest names a *plausible* self-risk
+  (e.g. plowing past a wrong assumption because nothing forces a stop) with a concrete guard.
+- **C12:** must contain an actual opinion with a boundary ("good for X, I'd route around it
+  for Y"). A restatement of the product review = fail on this item.
+
+**Verdict mechanics:** answers live in this Project chat; nothing needs committing (superbot-next
+must stay empty pre-kit, and writing them into superbot blurs the split for no gain). If the
+answers land → send §4. If they're shallow or wrong → **Archive the coordinator** (Settings →
+General → Archive), fix §2 if the miss traces to an instruction gap, and re-run — a fresh
+coordinator costs one click. Optionally paste the answers back into a superbot session later for
+a one-line verdict stamp here.
+
+## 4. Kickoff message — send only after the calibration answers land
+
+```
+Kickoff. The work is the SuperBot rebuild, run per menno420/superbot's
+docs/planning/rebuild-canonical-plan-2026-07-06.md §5 — re-read it now, including the Q-0241
+amendment banner and §11/§11b.
+
+Where things stand: steps 1–3 are done and merged. Step 4 (the Stage-2 walk) is mine, runs in
+parallel, and blocks later port bands only — never wait on it. Step 5 is retired (Q-0241).
+Step 6 is done: superbot-next exists, empty, in this Project's scope — and deliberately
+PUBLIC for now (free Actions minutes). So: nothing sensitive in any commit, ever, and raise
+the private flip at step 8 (it must be flipped before step 15's import artifacts).
+
+Start with step 7, with one ruling the plan text predates — Q-0247: the substrate kit is
+extracted into its own repo (menno420/substrate-kit) as part of this step, and superbot-next
+adopts FROM the kit; superbot-next is built fresh-from-kit, never from a copy of superbot.
+The full packaging of steps 6–8 (including that fork) is
+docs/planning/rebuild-kickoff-steps-6-8-brief-2026-07-07.md — use it as the work order for
+this stretch. If you can't create the substrate-kit repo or add it to this Project's scope
+yourself, that's the first OWNER ACTION.
+
+Then step 8 (control plane) with care — it's the riskiest unattended stretch: stand up the
+six named CI gates + rulesets + CODEOWNERS, verify each required check both actually blocks
+and actually can pass, and never introduce PAT machinery. The Railway half needs my secrets
+and spend approval: park it on the OWNER ACTIONS list and keep moving. Then straight on per
+§5 — kernel bands, layer V, K10 — never waiting between steps.
+
+Pacing: Projects is free through Friday 2026-07-10 and this Project's default model is
+currently Fable 5 — pull the heaviest, most design-loaded work into that window (steps 7–8
+now, then as far into the kernel bands as correctness allows). Never trade correctness for
+the window: your write-back discipline means losing the Project costs nothing durable. In
+Friday's roll-up, remind me to re-decide model/cost posture.
+
+Set up routines once there's something worth watching (a morning roll-up; CI/dependency
+sweeps when superbot-next has CI). Start the OWNER ACTIONS list now with: Railway project +
+secrets (step 8) · substrate-kit repo creation + Project scope (if you can't do it) · the
+public→private flip decision · test guild + test-bot token (step 12).
+```
+
+## 5. The owner-action forecast (so none of these arrives as a surprise)
+
+Everything the program needs from the owner in the next stretch, per the plan — the coordinator
+maintains the live version of this list in its reports:
+
+| When | Action | Notes |
+|---|---|---|
+| step 7 | create `menno420/substrate-kit` + add to Project repo list | only if the coordinator can't (it reports which in calibration B7) |
+| step 8 | Railway project `superbot-next`: approve spend, paste sealed secrets | per [railway plan §4](railway-setup-plan-2026-07-02.md); agent does everything else |
+| step 8 → 15 | click the superbot-next **public→private flip** | coordinator raises at 8; HARD before 15 (CUT-2 artifacts); also the free-Actions cost checkpoint |
+| step 12 | create the test guild + test-bot token; invite the bot | companion C's 9-zone layout is built by the bot once invited |
+| Fri 7/10 | re-decide model/cost posture when the free window closes | coordinator reminds in that day's roll-up |
+| anytime | react to ⚑ flags / destructive-tier reaction windows | silence = consent — reacting is the control, never a required approval |
+
+## 6. What this does and doesn't replace
+
+Nothing in the canonical plan changes — this is execution mechanism only. If the coordinator
+proves a poor fit (the four tests in
+[`projects-eap-product-review-2026-07-07.md`](projects-eap-product-review-2026-07-07.md) §10 —
+deliberately NOT quoted in §2's instructions, so the behavioral tests stay uncontaminated), the
+same §5 sequence runs through manually-launched sessions, exactly how every step before 6 was
+executed. The write-back rule in §2 is what makes that fallback free.

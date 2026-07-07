@@ -32,7 +32,12 @@
   multi-repo sequencing ratified · **Q-0248** empirical model-for-task allocation · **Q-0249**
   budget observe-first (~2-month telemetry window). Program vision captured strengthened
   ([multi-repo: kit lab + trading](../ideas/multi-repo-program-kit-lab-trading-2026-07-07.md));
-  **kickoff brief READY** ([steps 6–8](../planning/rebuild-kickoff-steps-6-8-brief-2026-07-07.md)).
+  **kickoff brief READY** ([steps 6–8](../planning/rebuild-kickoff-steps-6-8-brief-2026-07-07.md));
+  **the Projects-coordinator route is READY too (2026-07-07 evening)** — the "SuperBot" Project
+  exists (both repos in scope; `superbot-next` owner-created, empty, *deliberately public* until
+  the flagged flip), and the full handoff protocol (Custom Instructions → **owner→coordinator
+  calibration exchange** → kickoff message) is
+  [`projects-eap-coordinator-kickoff-2026-07-07.md`](../planning/projects-eap-coordinator-kickoff-2026-07-07.md).
   The **three/four program sessions are prepared** (PR #1798) — the
   [launch index](../planning/program-three-sessions-launch-index-2026-07-07.md) plus the paste-ready
   founding briefs: [program websites (Fable, session 1)](../planning/website-design-fable-brief-2026-07-07.md) ·
