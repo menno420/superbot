@@ -162,6 +162,17 @@ stale "one ruling the plan text predates" phrasing is fixed to "plan §5 step 7,
 (the plan no longer predates it). The brief stays a valid planning artifact (launch-index
 references it); only the coordinator prompt's dependency on it is removed.
 
+## Addendum 8 (eighth PR)
+
+Owner directive: "don't spare on agents — I want to see what it's capable of." Added to the
+kickoff §4 SESSIONS AND STRUCTURE paragraph as an explicit fan-out mandate: use the fleet
+aggressively, max useful concurrency, prefer parallel workers over a serial crawl, don't ration
+agents to save tokens (explicit owner directive, not a budget). Bounded only by real
+dependencies + correctness — the kernel strand S1→S9 is near-linear (agents there = within-band
+fan-out, not fake cross-band parallelism per the plan's own D-19 correction), the port bands
+(step 13) are where wide claim-per-subsystem fan-out pays off. Also delivered the complete
+finalized prompt (corrections + full kickoff body) to the owner to paste.
+
 ## Docs audit (Q-0104)
 
 `check_docs.py --strict` ✓ · `check_current_state_ledger.py --strict` ✓ (exit 0; #1802/#1804/
