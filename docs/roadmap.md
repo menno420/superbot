@@ -145,11 +145,15 @@
   [ADR-006](decisions/006-btd6-data-provenance-ownership.md).
 
 ### S3 — AI-Memory system  ·  *the mechanism — the self-improving-agent engine (shippable on its own)*
-- **Now:** 👤 **the rebuild owner gate — design + evidence both in** (2026-07-02): the
-  [design spec](planning/rebuild-design-spec-2026-07-02.md) plus the
-  [linchpin-validation evidence package](planning/rebuild-linchpin-validation-2026-07-02.md) (#1639 —
-  Phase-0.5 golden harness `parity/` coverage-measured + grammar spike 73%→85% tier-1/2, verdict
-  **GO with six grammar amendments**).
+- **Now:** **the rebuild is UN-GATED and in motion (2026-07-07).** Plan of record =
+  **[rebuild-canonical-plan-2026-07-06.md](planning/rebuild-canonical-plan-2026-07-06.md)** (#1770;
+  supersedes the design-spec / linchpin / handoff framing below). **Q-0241 (#1776)** retired the owner
+  go/no-go gate — the coordinator builds in logical order, live-tests in a server, silence=consent. **Gate
+  V is COMPLETE (#1767)**; **Phase-2.5 A/B RAN (#1775, FAIL as-tested)** → remainder = adopt-render fix +
+  one re-run pair. ▶ next per canonical §5: Phase-2.5 remainder → kernel S1–S9 → layer V → K10 → port
+  bands; **Projects-EAP as the coordinator** ([idea](ideas/claude-code-projects-for-the-rebuild-2026-07-07.md)).
+  *(Historical: the 👤 owner-gate framing + the design-spec/linchpin/handoff pointers are superseded by
+  the canonical plan §9.)*
 - **Now:** **▶ FINALIZE THE MEMORY SUBSTRATE** — owner-queued 2026-07-02 as a **Fable 5 ultracode**
   session; canonical startup prompt =
   **[rebuild handoff §5.B](planning/rebuild-ultracode-handoff-2026-07-02.md)** (extended with the
