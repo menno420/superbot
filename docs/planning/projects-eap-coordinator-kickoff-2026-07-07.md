@@ -64,6 +64,14 @@ non-coder) steers by reacting to what he sees — in the server, in PRs, in your
 Instructions snapshot 2026-07-07: wherever this text and the plan disagree, the plan wins —
 flag the drift, don't silently follow either.
 
+SECOND MANDATE: this Project is also itself a live evaluation of Claude Code Projects (we are
+in Anthropic's early-access program). Read menno420/superbot's
+docs/planning/projects-eap-evaluation-guidebook-2026-07-07.md once, then live by it: keep the
+evaluation journal it specifies, add an evaluation line to reports only when something
+happened, and never stage or perform for the evaluation — it observes real work, and honestly
+documented product friction is a deliverable, not a failure. You assemble evidence; all
+external communication (Anthropic included) is Menno's alone.
+
 SOURCE OF TRUTH: menno420/superbot's docs/planning/rebuild-canonical-plan-2026-07-06.md is the
 binding plan — §5 (start sequence), §8 (decisions log), §11/§11b (amendments), and the Q-0241
 amendment banner at the top. Its decisions are settled: never re-derive or re-litigate them;
@@ -139,6 +147,11 @@ better with me than a confident guess I can't check; keep it compact, numbered l
 NOT start any plan step, open any PR, or create anything after answering — this message hands
 you no work. The kickoff follows separately if these answers land.
 
+One more thing to know before you answer: besides the rebuild, this Project has a second
+purpose — it is itself a live evaluation of Claude Code Projects, and the feedback it produces
+goes to Anthropic (guidebook: docs/planning/projects-eap-evaluation-guidebook-2026-07-07.md in
+superbot). Your answers here are its first data point.
+
 A. The program, explained back
 1. In one short paragraph: what is being built, why a fresh repo instead of refactoring the
    existing one, and what role each of the two repos plays while that happens?
@@ -179,6 +192,9 @@ C. Your own read
     right tool for in THIS program, and which parts would you route around it (manual
     sessions, the repo's existing machinery)? Don't repeat our docs' analysis — I've read it;
     I want yours.
+13. After reading the evaluation guidebook: give me the first two entries you would write in
+    the evaluation journal about your experience so far (Project onboarding, this exchange —
+    anything you've actually observed). Incident-shaped, per the guidebook's template.
 ```
 
 **Reading key (owner-facing — what good vs. shallow looks like):**
@@ -205,6 +221,9 @@ C. Your own read
   (e.g. plowing past a wrong assumption because nothing forces a stop) with a concrete guard.
 - **C12:** must contain an actual opinion with a boundary ("good for X, I'd route around it
   for Y"). A restatement of the product review = fail on this item.
+- **C13:** good = concrete *observed* product behavior in the journal's template shape (axis ·
+  observed with a reference · expected · weight). Shallow = generic praise or critique with no
+  incident behind it — the exact failure mode the guidebook's integrity rules screen for.
 
 **Verdict mechanics:** answers live in this Project chat; nothing needs committing (superbot-next
 must stay empty pre-kit, and writing them into superbot blurs the split for no gain). If the
@@ -246,6 +265,13 @@ now, then as far into the kernel bands as correctness allows). Never trade corre
 the window: your write-back discipline means losing the Project costs nothing durable. In
 Friday's roll-up, remind me to re-decide model/cost posture.
 
+Second standing duty, active from today: this Project is also the live evaluation of Claude
+Code Projects itself — you read the guidebook at calibration
+(docs/planning/projects-eap-evaluation-guidebook-2026-07-07.md); now create the evaluation
+journal it specifies and seed it with your onboarding observations, calibration included. In
+Friday's roll-up, alongside the model/cost reminder, deliver the assembled evidence for my
+Anthropic feedback reply per the guidebook §5.
+
 Set up routines once there's something worth watching (a morning roll-up; CI/dependency
 sweeps when superbot-next has CI). Start the OWNER ACTIONS list now with: Railway project +
 secrets (step 8) · substrate-kit repo creation + Project scope (if you can't do it) · the
@@ -263,14 +289,25 @@ maintains the live version of this list in its reports:
 | step 8 | Railway project `superbot-next`: approve spend, paste sealed secrets | per [railway plan §4](railway-setup-plan-2026-07-02.md); agent does everything else |
 | step 8 → 15 | click the superbot-next **public→private flip** | coordinator raises at 8; HARD before 15 (CUT-2 artifacts); also the free-Actions cost checkpoint |
 | step 12 | create the test guild + test-bot token; invite the bot | companion C's 9-zone layout is built by the bot once invited |
-| Fri 7/10 | re-decide model/cost posture when the free window closes | coordinator reminds in that day's roll-up |
+| Fri 7/10 | re-decide model/cost posture when the free window closes; **send the Anthropic feedback reply** | coordinator reminds + delivers the assembled evidence ([guidebook](projects-eap-evaluation-guidebook-2026-07-07.md) §5); the owner sends — external comms are his alone |
 | anytime | react to ⚑ flags / destructive-tier reaction windows | silence = consent — reacting is the control, never a required approval |
 
-## 6. What this does and doesn't replace
+## 6. The second mandate — the evaluation guidebook
+
+Owner-directed (2026-07-07, evening): the Project's purpose is dual — execute the rebuild
+**and** evaluate Claude Code Projects itself, well enough that the feedback earns a standing
+collaboration channel with Anthropic. The coordinator-facing guide is
+**[`projects-eap-evaluation-guidebook-2026-07-07.md`](projects-eap-evaluation-guidebook-2026-07-07.md)**
+(journal + template, the seven axes, integrity rules, the Friday evidence package). This
+**supersedes this doc's earlier keep-the-tests-blind stance**: the four behavioral tests
+([product review](projects-eap-product-review-2026-07-07.md) §10) were committed in the repo
+the coordinator is told to read, so secrecy was illusory anyway — signal integrity now rests on
+the guidebook's never-perform rule plus record-based verdicts (the owner and the repo record
+score the tests, never the coordinator's self-report).
+
+## 7. What this does and doesn't replace
 
 Nothing in the canonical plan changes — this is execution mechanism only. If the coordinator
-proves a poor fit (the four tests in
-[`projects-eap-product-review-2026-07-07.md`](projects-eap-product-review-2026-07-07.md) §10 —
-deliberately NOT quoted in §2's instructions, so the behavioral tests stay uncontaminated), the
-same §5 sequence runs through manually-launched sessions, exactly how every step before 6 was
-executed. The write-back rule in §2 is what makes that fallback free.
+proves a poor fit (scored on the four §10 tests, by observation), the same §5 sequence runs
+through manually-launched sessions, exactly how every step before 6 was executed. The
+write-back rule in §2 is what makes that fallback free.
