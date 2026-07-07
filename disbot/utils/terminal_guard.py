@@ -63,3 +63,12 @@ class SettleOnceMixin:
     def is_settled(self) -> bool:
         """Whether the terminal transition has already been claimed."""
         return self._settlement_claimed
+
+    def rearm_settlement(self) -> None:
+        """Reset the claim for a NEW terminal cycle.
+
+        For long-lived holders whose terminal transition recurs per cycle
+        (a cog holding per-tournament state), call this exactly once at the
+        start of each cycle — never from a settling path.
+        """
+        self._settlement_claimed = False
