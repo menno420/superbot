@@ -166,3 +166,38 @@ twice-measured.
    mechanize write-back (session-close drafts the card from git diff + test state), then re-run a
    T4-style pair to test whether continuity finally moves. The kit's checker/guard half remains
    untested by these task shapes (unchanged limitation).
+
+---
+
+## 6. Enforcement addendum (2026-07-07, owner-directed — the forcing functions, PR #1783)
+
+The owner read the re-run and made the decisive observation: **this repo's memory discipline was
+never voluntary** — sessions write their journals because two *forcing functions* make them, and the
+A/B measured neither. In this repo: (a) a Stop-hook **nag** fires at session end, and (b) a required
+**CI check holds the merge red** until the session card is written (`scripts/check_session_gate.py`).
+The kit shipped the *notebook* but, by its deliberate safety default, only **stages** those forcing
+functions — and its `check --strict` even treated a *missing* journal as advisory-not-failure, so the
+door did not actually lock. The A/B ran in a bare local repo with no CI and used lightweight agents
+that never fired the Stop hook, so it measured the notebook stripped of the machinery that makes it
+get used here.
+
+**Shipped (PR #1783):**
+- `check --require-session-log` — a *missing* session log becomes a **hard failure** (gate mode),
+  closing the advisory-not-failure hole.
+- `adopt --wire-enforcement` — lays down a **live** CI workflow (`.github/workflows/substrate-gate.yml`)
+  running that gate on every PR + the live nag hook (composing with the #1778 bootstrap vendoring).
+  Opt-in; the stage-only default is preserved (the kit still never installs executable CI silently).
+
+**Proven end-to-end** (the exact command CI runs, on a scratch adoption): a session that does work
+but skips its journal → `check --strict --require-session-log` exits **1 (MERGE HELD)**; write the
+journal → exits **0**. The door locks and opens. **Behavioral proof by lived evidence:** this is the
+*same mechanism* that held every PR of the final-review session (#1778/#1781/#1782/#1783) born-red
+until its close-out was written — the forcing function is demonstrably behavior-changing here, and
+the kit now ships it verbatim.
+
+**Honest boundary:** the *door* (CI blocks the merge) is proven directly and is the stronger of the
+two forcing functions — a nag can be ignored, a required red check cannot. The *nag hook's* isolated
+behavioral effect can only be exercised in a live Claude Code CLI session, not a subagent, so it
+stays a live-CLI claim. Net: the kit no longer ships a notebook nobody's made to use — it ships the
+lock. The auto-drafted-handoff idea (§5.3) remains the complementary next step: make writing the
+journal *easy*, not just *mandatory*.

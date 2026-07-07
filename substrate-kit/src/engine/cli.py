@@ -515,16 +515,25 @@ def _extra_check_findings(target: Path, config: Config) -> list:
     return findings
 
 
-def cmd_check(target: Path, strict: bool) -> int:
+def cmd_check(
+    target: Path,
+    strict: bool,
+    *,
+    require_session_log: bool = False,
+) -> int:
     """Run every hygiene checker against ``target``.
 
     Docs (badge/link/reachable), the decisions ledger + stamp discipline, the
     namespace/shadowing guard, the seam-authority fences, and the orientation
     word budget — each engaging only when its inputs exist. Findings always
-    count toward the exit code (under ``--strict``); a *missing* session log is
-    advisory (a host may run ``check`` mid-session), but an *incomplete*
-    existing log counts. Uses config defaults if ``target`` has no
-    ``substrate.config.json`` yet, so a project can lint before onboarding.
+    count toward the exit code (under ``--strict``); an *incomplete* existing
+    session log counts. A *missing* session log is **advisory by default** (a
+    host may run ``check`` mid-session) but becomes a **hard failure** under
+    ``require_session_log`` — the gate mode the live CI workflow runs, so a
+    session that never writes its journal cannot merge (the "locked door" that
+    makes the memory ritual non-optional, not merely advised). Uses config
+    defaults if ``target`` has no ``substrate.config.json`` yet, so a project
+    can lint before onboarding.
     """
     config = load_config(target)
     docs_root = target / config.docs_root
@@ -541,8 +550,17 @@ def cmd_check(target: Path, strict: bool) -> int:
 
     log = latest_session_log(target / config.sessions_dir)
     log_missing: list[str] = check_log(log, config.session_markers) if log else []
+    # In gate mode an absent log is itself a failing condition, so it must feed
+    # the exit code exactly like an incomplete one.
+    log_absent_fails = log is None and require_session_log
     if log is None:
-        _emit("check: no session log found yet (advisory — not a failure).")
+        if require_session_log:
+            _emit(
+                f"check: MERGE HELD — no session log under {config.sessions_dir}/ "
+                "(--require-session-log): write one before merging.",
+            )
+        else:
+            _emit("check: no session log found yet (advisory — not a failure).")
     else:
         rel = log.relative_to(target) if log.is_relative_to(target) else log
         if log_missing:
@@ -550,7 +568,7 @@ def cmd_check(target: Path, strict: bool) -> int:
         else:
             _emit(f"check: session log {rel} complete.")
 
-    if not doc_findings and not log_missing:
+    if not doc_findings and not log_missing and not log_absent_fails:
         _emit("check: all checks passed.")
         return 0
     return 1 if strict else 0
@@ -901,12 +919,17 @@ def cmd_economy(
     return 2
 
 
-def cmd_adopt(target: Path, include_claude: bool) -> int:
+def cmd_adopt(
+    target: Path,
+    include_claude: bool,
+    wire_enforcement: bool = False,
+) -> int:
     """Adopt the workflow into ``target``: init, plant the docs, stage the packs.
 
     The one-step flow: ``init`` runs first (idempotent — config + state), so a
     bare directory with nothing but the bootstrap file becomes a fully
-    substrate-governed project in this single command.
+    substrate-governed project in this single command. ``wire_enforcement``
+    additionally turns on the live nag hook + the CI locked door.
     """
     rc = cmd_init(target)
     if rc != 0:
@@ -919,6 +942,7 @@ def cmd_adopt(target: Path, include_claude: bool) -> int:
         backend,
         kit_root=_kit_root(),
         include_claude=include_claude,
+        wire_enforcement=wire_enforcement,
     )
     for line in lines:
         _emit(f"adopt: {line}")
@@ -1109,6 +1133,15 @@ def build_parser() -> argparse.ArgumentParser:
         action="store_true",
         help="also write .claude/CLAUDE.md + .claude/settings.json (skip-if-exists)",
     )
+    adopt_p.add_argument(
+        "--wire-enforcement",
+        action="store_true",
+        help=(
+            "turn on the forcing functions: the live nag hook (implies "
+            "--include-claude) + a live CI gate that holds the merge red until "
+            "the session journal is written"
+        ),
+    )
     adopt_p.add_argument("--target", type=Path, default=Path.cwd())
     contextpack = sub.add_parser(
         "contextpack",
@@ -1208,6 +1241,11 @@ def build_parser() -> argparse.ArgumentParser:
     check = sub.add_parser("check", help="run the doc + session-log hygiene checks")
     check.add_argument("--target", type=Path, default=Path.cwd())
     check.add_argument("--strict", action="store_true", help="exit 1 if any violation")
+    check.add_argument(
+        "--require-session-log",
+        action="store_true",
+        help="fail (not just advise) when the session log is missing — the CI gate mode",
+    )
     return parser
 
 
@@ -1239,7 +1277,11 @@ def main(argv: list[str] | None = None) -> int:
         if args.command == "hook":
             return cmd_hook(args.target, args.event)
         if args.command == "check":
-            return cmd_check(args.target, args.strict)
+            return cmd_check(
+                args.target,
+                args.strict,
+                require_session_log=args.require_session_log,
+            )
         if args.command == "answer":
             return cmd_answer(args.target, args.slot, " ".join(args.value))
         if args.command == "confirm":
@@ -1278,7 +1320,11 @@ def main(argv: list[str] | None = None) -> int:
                 bands=args.bands,
             )
         if args.command == "adopt":
-            return cmd_adopt(args.target, args.include_claude)
+            return cmd_adopt(
+                args.target,
+                args.include_claude,
+                wire_enforcement=args.wire_enforcement,
+            )
         if args.command == "contextpack":
             return cmd_contextpack(args.target, args.index)
         if args.command == "session-start":

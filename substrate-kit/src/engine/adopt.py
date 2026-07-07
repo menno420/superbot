@@ -206,6 +206,51 @@ def ci_snippet() -> str:
     )
 
 
+LIVE_CI_RELPATH = ".github/workflows/substrate-gate.yml"
+
+
+def live_ci_workflow(interpreter: str = "python3") -> str:
+    """Return the LIVE (uncommented) CI gate workflow — the locked door.
+
+    Unlike :func:`ci_snippet` (a commented example the host installs by hand),
+    this is a working GitHub-Actions workflow ``adopt --wire-enforcement``
+    writes into ``.github/workflows/``. It runs
+    ``bootstrap.py check --strict --require-session-log`` on every pull request,
+    so the merge is **held red** until the session's journal is written and the
+    whole hygiene suite passes. This is the forcing function that makes the
+    memory ritual non-optional: a nag can be ignored, a failing required check
+    cannot. `fetch-depth: 0` gives the checkout full history (the gate itself is
+    git-free, but hosts commonly extend this workflow with diff-aware steps).
+    A docs-only or bot PR that shouldn't need a session card is handled by the
+    host adding a `paths-ignore:` or a label carve-out — kept strict by default
+    on purpose (the discipline is the point).
+    """
+    return (
+        "# substrate-kit enforcement gate (LIVE — installed by "
+        "`bootstrap.py adopt --wire-enforcement`).\n"
+        "# Holds the merge red until the session journal is written and every\n"
+        "# hygiene check passes. Edit `paths-ignore` / add a label carve-out if\n"
+        "# some PRs legitimately need no session card.\n"
+        "name: substrate-gate\n"
+        "on:\n"
+        "  pull_request:\n"
+        "  push:\n"
+        "    branches: [main]\n"
+        "jobs:\n"
+        "  substrate-gate:\n"
+        "    runs-on: ubuntu-latest\n"
+        "    steps:\n"
+        "      - uses: actions/checkout@v4\n"
+        "        with:\n"
+        "          fetch-depth: 0\n"
+        "      - uses: actions/setup-python@v5\n"
+        "        with:\n"
+        '          python-version: "3.x"\n'
+        "      - name: substrate gate (docs + session-log required)\n"
+        f"        run: {interpreter} bootstrap.py check --strict --require-session-log\n"
+    )
+
+
 def adopt(
     root: Path,
     config: Config,
@@ -213,6 +258,7 @@ def adopt(
     *,
     kit_root: Path,
     include_claude: bool = False,
+    wire_enforcement: bool = False,
 ) -> list[str]:
     """Adopt the substrate workflow into ``root``; return the report lines.
 
@@ -227,7 +273,18 @@ def adopt(
     (5) stage the CI example; (6) with ``include_claude``, additionally
     write ``.claude/CLAUDE.md`` + ``.claude/settings.json`` if absent;
     (7) close with the next-steps line.
+
+    ``wire_enforcement`` turns on the two **forcing functions** that make the
+    memory ritual actually get used (the Phase-2.5 re-run showed docs alone get
+    read but not written back): it implies ``include_claude`` (the live Stop-hook
+    **nag**) **and** plants a live CI workflow (:data:`LIVE_CI_RELPATH`) running
+    the ``--require-session-log`` gate — the **locked door** that holds a merge
+    red until the journal is written. Kept opt-in: the kit still never installs
+    executable CI/hooks silently (the deliberate safety default), but a host —
+    or the rebuild's K0 session — flips this on to reproduce the enforcement
+    this repo's discipline actually runs on.
     """
+    include_claude = include_claude or wire_enforcement
     assert_safe_target(root, kit_root)
     templates = load_templates()
     report: list[str] = []
@@ -306,6 +363,17 @@ def adopt(
             claude_dir / "settings.json",
             ".claude/settings.json",
             settings_text,
+            report,
+        )
+
+    # (6b) Enforcement opt-in: the LIVE CI gate (the locked door). include_claude
+    # above already wired the live nag; this adds the required check that a
+    # missing journal can never merge past.
+    if wire_enforcement:
+        _adopt_plant(
+            root / LIVE_CI_RELPATH,
+            LIVE_CI_RELPATH,
+            live_ci_workflow(config.interpreter_for_checks or "python3"),
             report,
         )
 

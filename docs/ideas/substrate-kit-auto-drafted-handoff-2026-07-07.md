@@ -3,6 +3,14 @@
 > **Status:** `ideas` — capture, not a plan. **Subsystem:** substrate-kit (S3).
 > **Provenance:** the Phase-2.5 cold-start A/B, measured twice (original run #1775 + the
 > 2026-07-07 re-run pair in the final-review session #1778).
+>
+> **Update (2026-07-07, PR #1783):** the *other half* of the write-back problem — **making the
+> journal mandatory** — is now shipped: `adopt --wire-enforcement` installs a live CI gate that
+> holds the merge red until the session card is written (`check --require-session-log`). That is
+> the *locked door*. This idea is the complementary half: make writing the card **easy** (auto-draft
+> it from evidence) so the mandatory thing is also a low-friction thing. Door without draft = the
+> work gets recorded but grudgingly; draft without door = it gets skipped; both = the discipline
+> this repo actually runs on. Build this next.
 
 ## The observed failure (twice-measured, not hypothesized)
 

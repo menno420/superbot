@@ -18,9 +18,11 @@ pytest.importorskip("engine.hooks.settings")
 
 from engine.adopt import (
     ADOPT_PLAN,
+    LIVE_CI_RELPATH,
     UNRENDERED_BANNER_FIRST_LINE,
     adopt,
     ci_snippet,
+    live_ci_workflow,
     strip_unrendered_banner,
     with_unrendered_banner,
 )
@@ -219,9 +221,7 @@ def test_include_claude_writes_live_tree_skip_if_exists(tmp_path):
     (root / ".claude" / "CLAUDE.md").write_text("mine\n", encoding="utf-8")
     config = Config()
     backend = JsonStateBackend(root / config.state_dir / "state.json")
-    lines = adopt(
-        root, config, backend, kit_root=tmp_path / "kit", include_claude=True
-    )
+    lines = adopt(root, config, backend, kit_root=tmp_path / "kit", include_claude=True)
     assert "kept: .claude/CLAUDE.md" in lines
     assert (root / ".claude" / "CLAUDE.md").read_text(encoding="utf-8") == "mine\n"
 
@@ -319,3 +319,63 @@ def test_ci_snippet_is_fully_commented_and_runs_strict_check():
     for needle in needles:
         assert needle in text, needle
     assert all(line.startswith("#") for line in text.splitlines() if line.strip())
+
+
+# ---------------------------------------------------------------------------
+# Enforcement wiring (the forcing functions)
+# ---------------------------------------------------------------------------
+
+
+def test_live_ci_workflow_is_uncommented_and_gates_on_the_session_log():
+    text = live_ci_workflow()
+    # Real workflow, not a commented example: the YAML keys are live.
+    assert "\nname: substrate-gate\n" in text
+    assert "on:\n" in text and "jobs:\n" in text
+    # The locked door: the required check fails without a session log.
+    assert "check --strict --require-session-log" in text
+    # A custom interpreter threads through (the config's check interpreter).
+    assert "python3.10 bootstrap.py" in live_ci_workflow("python3.10")
+
+
+def test_wire_enforcement_plants_live_ci_and_live_claude(tmp_path):
+    root = tmp_path / "repo"
+    config = Config()
+    backend = _make_backend(root, config)
+    lines = adopt(
+        root, config, backend, kit_root=tmp_path / "kit", wire_enforcement=True
+    )
+    # The locked door: a live CI workflow running the gate.
+    workflow = root / LIVE_CI_RELPATH
+    assert workflow.is_file()
+    assert "check --strict --require-session-log" in workflow.read_text(
+        encoding="utf-8"
+    )
+    assert f"planted: {LIVE_CI_RELPATH}" in lines
+    # The nag: wire_enforcement implies include_claude → live hooks.
+    assert (root / ".claude" / "settings.json").is_file()
+    settings = json.loads(
+        (root / ".claude" / "settings.json").read_text(encoding="utf-8")
+    )
+    stop_cmd = settings["hooks"]["Stop"][0]["hooks"][0]["command"]
+    assert "hook stopcheck" in stop_cmd
+
+
+def test_default_adopt_never_installs_live_ci(tmp_path):
+    root, _, _ = _adopt_into(tmp_path)
+    # Safety default preserved: no live CI, no live .claude, without opt-in.
+    assert not (root / LIVE_CI_RELPATH).exists()
+    assert not (root / ".claude").exists()
+
+
+def test_wire_enforcement_does_not_clobber_an_existing_workflow(tmp_path):
+    root = tmp_path / "repo"
+    config = Config()
+    backend = _make_backend(root, config)
+    workflow = root / LIVE_CI_RELPATH
+    workflow.parent.mkdir(parents=True)
+    workflow.write_text("name: mine\n", encoding="utf-8")
+    lines = adopt(
+        root, config, backend, kit_root=tmp_path / "kit", wire_enforcement=True
+    )
+    assert workflow.read_text(encoding="utf-8") == "name: mine\n"
+    assert f"kept: {LIVE_CI_RELPATH}" in lines
