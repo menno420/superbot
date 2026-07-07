@@ -3,11 +3,17 @@
 > **Status:** `plan` — the launch brief + paste-ready prompt for a dedicated **Claude Fable 5,
 > `/effort ultracode`** session. Owner-directed (2026-07-07), same day as
 > [`rebuild-final-review-report-2026-07-07.md`](rebuild-final-review-report-2026-07-07.md) — this is a
-> **narrower follow-on**, not a redo: fold five new owner-raised findings into
+> **narrower follow-on**, not a redo: fold four new owner-raised findings into
 > [`rebuild-canonical-plan-2026-07-06.md`](rebuild-canonical-plan-2026-07-06.md) and re-verify the plan
 > at the same rigor as the prior pass, explicitly hunting for further enhancements the new material
 > surfaces. Governance: **Q-0241** (never-wait, live-test, silence=consent), **Q-0240**
 > (decide-and-flag) — this session decides its own calls and does not wait for the owner.
+>
+> **Updated same day (post-launch):** a fifth finding (automod's cross-channel-spam evasion + missing
+> duplicate-content detection) was **shipped directly on the live bot** (PR #1789, merged) rather than
+> left for this session to reason about — see the full reasoning in §4. It needs **zero attention**
+> from this session: not folding, not re-verifying, not even reading for context. The mandate below is
+> four findings, not five.
 
 ---
 
@@ -29,14 +35,14 @@
    companions `rebuild-test-guild-design-2026-07-06.md` and `rebuild-phase-2.5-procedure-2026-07-06.md`.
 3. **The prior final review** — `rebuild-final-review-report-2026-07-07.md` — so you don't re-derive or
    re-litigate what it already settled (§2 below condenses this).
-4. **Today's five new captures, all dated 2026-07-07** (read all five; four are candidates for folding,
-   one is explicitly out of scope — see §3/§4):
+4. **Today's four remaining captures, all dated 2026-07-07 — all candidates for folding** (see §3):
    - `docs/ideas/channel-role-scoped-authority-gap-2026-07-07.md`
    - `docs/ideas/user-self-service-automation-scheduler-2026-07-07.md`
    - `docs/ideas/moderation-feature-gaps-2026-07-07.md`
    - `docs/ideas/guild-config-backup-and-data-export-gap-2026-07-07.md`
-   - `docs/ideas/automod-spam-detection-gaps-2026-07-07.md` (read for context only — §4 explains why
-     this one does NOT get folded into the rebuild plan)
+   - (A fifth capture, `docs/ideas/automod-spam-detection-gaps-2026-07-07.md`, is now `historical` —
+     shipped live, PR #1789 merged. Skip it entirely; do not read it, fold it, or mention it in your
+     output. §4 explains why it was resolved this way instead of through this consolidation.)
 5. **This session's own plan critique** (chat-only until now — captured in full in §3.C below since it
    has no other durable home) — treat it as a sixth input with the same weight as the idea docs.
 
@@ -48,6 +54,12 @@ fix shipped, cold-start *benefit* claim still unproven — carry the caveat, don
 the sim dispositions (D-17), the sequencing/K7-urgency question, the K9=durability/K10=AI-kernel
 numbering (Gate-0 wins, not the old design-spec numbering). Full detail in the final-review report's
 §A/§2 — don't reopen any of it here.
+
+**Also settled, same day, after this brief was first written:** the automod cross-channel-spam +
+duplicate-content gap is **fixed and merged** (PR #1789) — `SpamTracker.record_and_count_any_channel`
++ a new `DuplicateTracker`, both through the existing audited `moderation_service` seam, both
+defaulting OFF, fully tested. This is not a rebuild-plan matter at all (see §4) — it's listed here
+only so you don't go looking for it.
 
 ## 3. The mandate — what this session must produce
 
@@ -128,16 +140,24 @@ verdict (fold, refine, or explicitly reject with reasoning), not a rhetorical as
 
 ## 4. What NOT to do
 
-- **Do not fold `automod-spam-detection-gaps-2026-07-07.md` into the rebuild plan at all.** It's a
-  live-bot finding (the `SpamTracker` in `disbot/services/automod_service.py` is rate-only with no
-  content-duplicate check, and is keyed per-channel so multi-channel bursts evade it entirely) — already
-  tracked on its own completion certificate (`docs/planning/feature-completion/units/automod.md`,
-  punch-list items #5/#6). Different track, different lifecycle; mixing it into the rebuild
-  consolidation would be scope confusion. Read it for context if useful, nothing more.
+- **Do not fold, re-read, or re-verify the automod cross-channel-spam/duplicate-content finding at
+  all — it's fully resolved, not merely out of scope.** The owner initially asked whether this should
+  go into the rebuild plan instead of staying a live-bot punch-list item; the answer was no *and* it
+  no longer even needs a plan mention, because it was fixed directly on the live bot the same day
+  (PR #1789, merged) rather than deferred. The reasoning, in case a future reader wonders why a
+  live-bot bug fix happened mid-rebuild-planning-session: the rebuild ports subsystems by replaying
+  **goldens captured from the live bot's current behavior** and requires byte-for-byte parity before
+  merging (`red until parity`) — leaving the bug unfixed would mean whatever golden gets captured for
+  automod encodes the *buggy* behavior, and the new bot would then be obligated to reproduce that exact
+  bug to pass its own parity gate. A plan footnote doesn't reliably prevent that; golden-replay porting
+  carries forward whatever it's given by default. Fixing it live instead means the correction flows
+  into the rebuild automatically via the project's own existing rule (L-21: any PR that changes
+  golden-captured behavior re-captures the affected goldens in the same PR) — no special-casing, no
+  amendment, no re-verification needed. Treat this as closed; spend zero budget on it.
 - Don't re-open Gate V / Sequence C / the K7-urgency question, the Phase-2.5 A/B, or the K9/K10 numbering
   — all settled, per §2.
 - Don't treat this as license to re-review the whole plan from scratch the way the 2026-07-07 final
-  review did — that pass is done and its findings stand; this session's job is the five new inputs plus
+  review did — that pass is done and its findings stand; this session's job is the four new inputs plus
   the five specific re-verify points in §3.C, not a fresh A–H sweep.
 - Don't wait for the owner on anything reversible — decide, live-test if applicable, flag on the report.
   The only genuine owner call buried in today's material is the automation-scheduler's pricing mechanism
@@ -168,7 +188,7 @@ verdict (fold, refine, or explicitly reject with reasoning), not a rhetorical as
 > `docs/planning/rebuild-idea-consolidation-fable5-ultracode-brief-2026-07-07.md` first — it is your
 > full brief, reading route, and the "already-settled, don't-redo" baseline.
 >
-> Fold today's five owner-raised findings into the rebuild plan of record
+> Fold today's four remaining owner-raised findings into the rebuild plan of record
 > (`rebuild-canonical-plan-2026-07-06.md`): the **channel-role-scoped authority gap** (K6, time-sensitive
 > — K6 isn't built yet) and the **user-self-service automation scheduler** (K9, with category-B
 > auto-acting automation structurally reserved but gated off pending its own dedicated pricing session)
@@ -183,8 +203,9 @@ verdict (fold, refine, or explicitly reject with reasoning), not a rhetorical as
 > rollback-window-vs-game-cadence sanity check) — but don't treat that list as exhaustive. Reason freely
 > over the whole corpus and today's discussion and surface anything else worth enhancing.
 >
-> Do **not** fold the automod duplicate-message/cross-channel-spam finding into the rebuild plan — it's a
-> live-bot gap tracked on its own completion certificate, a separate track entirely.
+> A fifth finding from today (automod duplicate-message/cross-channel-spam evasion) is **already fully
+> resolved — shipped directly on the live bot (PR #1789, merged), not through this plan.** It needs zero
+> attention from you: don't read the idea doc, don't fold it, don't mention it in your report.
 >
 > You operate under **Q-0241**: decide reversible calls yourself, flag every decision on your
 > consolidation report, and never wait for me — if I say nothing, it's approved. Ship the report and the
