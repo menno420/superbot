@@ -1,10 +1,10 @@
 {
   "meta": {
-    "generated_at": "2026-07-07T15:58:22Z",
+    "generated_at": "2026-07-07T16:22:03Z",
     "build": {
-      "commit": "b27b4a1",
-      "subject": "design system + botsite v2 + program console + console feed",
-      "committed_at": "2026-07-07T15:58:22Z"
+      "commit": "3a879c1",
+      "subject": "Merge remote-tracking branch 'origin/claude/website-design-brief-ryc3do' into claude/website-design-brief-ryc3do",
+      "committed_at": "2026-07-07T16:22:03Z"
     }
   },
   "sessions": [
@@ -55,6 +55,14 @@
       "status": "complete",
       "run_type": "",
       "self_initiated": false
+    },
+    {
+      "file": "2026-07-07-reconcile-band1800.md",
+      "date": "2026-07-07",
+      "title": "Session — thirty-seventh Q-0107 reconciliation pass (band-#1800)",
+      "status": "complete",
+      "run_type": "routine",
+      "self_initiated": true
     },
     {
       "file": "2026-07-07-rebuild-plan-review-and-automation-idea.md",
@@ -479,21 +487,13 @@
       "status": "complete",
       "run_type": "",
       "self_initiated": false
-    },
-    {
-      "file": "2026-07-03-foundational-mechanics-ultracode-brief.md",
-      "date": "2026-07-03",
-      "title": "2026-07-03 — Prepare two parallel ultracode session prompts (foundational-mechanics brainstorm)",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
     }
   ],
   "ideas": {
-    "total": 208,
+    "total": 209,
     "by_status": {
       "historical": 22,
-      "ideas": 183,
+      "ideas": 184,
       "reference": 3
     }
   },

@@ -9131,9 +9131,9 @@ const FEATURES = [
 ];
 
 const BUILD = {
-  "commit": "5c16701",
-  "subject": "owner rulings: Q-0245 EXTRA_OWNER_USER_IDS test-driver account + Q-0246 permission-tiered operation (Full/Lite)",
-  "committed_at": "2026-07-07T14:11:27Z"
+  "commit": "6f4657c1",
+  "subject": "Merge pull request #1800 from menno420/claude/rebuild-plan-consolidation-c34c0b",
+  "committed_at": "2026-07-07T17:26:28Z"
 };
 
 const COUNTS = {
