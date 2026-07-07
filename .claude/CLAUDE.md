@@ -97,11 +97,21 @@ The short version that governs how you work:
   advanced capability reachable by the simplest, most efficient implementation** — the same
   "assume he'd want the better one" instinct as Q-0014 above ("Constraints serve the goal"), now
   named as what this step should aim at. This is not a return to stop-and-ask — decide-and-flag
-  / Auto Mode still govern
-  execution, and a trivial or fully-unambiguous ask only needs a one-line "doing X because Y."
-  A genuinely ambiguous ask still escalates to the router (next bullet) — this doesn't replace
-  that, it catches the much larger set of asks that are *clear enough to start* but are also a
-  fragment worth building out. Full context + the maintainer's own words: router Q-0254.
+  / Auto Mode still govern execution, and a trivial or fully-unambiguous ask only needs a one-line
+  "doing X because Y." A genuinely ambiguous ask still escalates to the router (next bullet) —
+  this doesn't replace that, it catches the much larger set of asks that are *clear enough to
+  start* but are also a fragment worth building out. **The same live conversation added two
+  more mechanisms:** unattended sessions route a genuinely useful, non-derivable question into
+  this router instead of skipping it or guessing; and during exploratory/brainstorming work,
+  surface the single most useful question the ask raises that you can't derive yourself — rare
+  and selective, never during routine execution, only when it would matter and be actionable —
+  with a big or vague idea earning a dedicated research pass (a delegated subagent, reviewed the
+  same session) or its own session rather than an answer from memory alone. **This whole rule
+  graduated to portable kit doctrine the same day** (`substrate-kit/src/engine/templates/
+  CONSTITUTION.md.tmpl` + `collaboration-model.md.tmpl` + `question-router.md.tmpl`) so it
+  travels to every future repo, not just this one — this entry stays as superbot's local copy
+  until superbot itself upgrades from a real kit release. Full context + the maintainer's own
+  words: router Q-0254.
 - **Unclear owner intent.** Consult or add to
   `docs/owner/maintainer-question-router.md` when product/owner intent is genuinely
   unclear; unanswered questions are not approval. Preserve maintainer answers and
