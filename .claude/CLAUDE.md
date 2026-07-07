@@ -68,6 +68,16 @@ The short version that governs how you work:
   owner only genuine **product/intent** ambiguity; irreversible / production / external work is
   **decided-and-flagged-for-veto, not blocked** — the sole stop-and-wait is *executing* something
   irreversible before the gate. Full model: `docs/owner/agent-decision-authority.md`.
+  **Rebuild override — never-wait (owner directive Q-0241, 2026-07-07):** for the **rebuild program**
+  (building `superbot-next` + porting the bot) even that last stop-and-wait is retired — the coordinator
+  builds **in logical order**, **live-tests each piece in a real server** (an agent drives all commands
+  live), and **never waits for the owner: silence = consent = done.** The G1/G2/👤 gates in the canonical
+  rebuild plan are no longer blockers; the owner's control is *reacting to what he sees in the server*.
+  Retained (flagged, vetoable, *not a gate*): the destructive tier (prod data import, CUT-3 token swap,
+  deleting old-bot data) executes via the reversible path the plan specifies (shadow-first, N=7d rollback,
+  reverse-import valve) so a reaction window stays open — zero pause. Merge=deploy still requires **CI
+  green**. Scope = the rebuild; the **live production bot** keeps its Q-0213 `*Delete`/`*Restore` brake
+  until the owner generalizes this. Full model: `docs/owner/agent-decision-authority.md` § Q-0241.
 - **Unclear owner intent.** Consult or add to
   `docs/owner/maintainer-question-router.md` when product/owner intent is genuinely
   unclear; unanswered questions are not approval. Preserve maintainer answers and

@@ -34,7 +34,42 @@ moving user data. On paper, decide; at execution, gate.
 | Reversible-until-a-gate (nearly all planning/design/technical calls) | **Decide + one-line rationale + flag on the run report.** No routing. |
 | Irreversible **once executed** but decided *on paper* now (e.g. a data-migration contract, a schema shape) | **Decide the recommended ruling**, flag it **prominently** as "veto at the gate." Don't block. |
 | Formally reserved by a prior owner-endorsed gate (e.g. the Gate-0 rows) | **Pre-fill the recommended ruling per item** so the owner's sitting is a fast bless-or-override. Don't pre-empt the gate, don't route it as an open question. |
-| Would *execute* something irreversible before the gate (create repo, prod write, data move) | **Stop and ask** — this is the real brake. |
+| Would *execute* something irreversible before the gate (create repo, prod write, data move) | **Stop and ask** — this is the real brake. *(For the rebuild program this last row is overridden — see Q-0241 below.)* |
+
+## Q-0241 — the rebuild override (never-wait, live-test, silence=consent)
+
+> **Provenance:** owner directive **Q-0241** (2026-07-07): *"get rid of the owner gates/blockers … it
+> should just build everything in logical order and live test it so I can see the results in a server,
+> but it should never wait for me, if I don't say something about it it should be considered done."*
+> Applied in-session (Q-0106 exception). Full block: `maintainer-question-router.md` Q-0241.
+
+Q-0240's *last table row* — "stop and ask before executing something irreversible" — is the owner's one
+retained brake. **For the rebuild program (building `superbot-next` + porting the bot), Q-0241 removes
+even that brake.** The owner's control shifts from **approval-before-execution** to
+**reaction-after-visibility**:
+
+- **No owner gates.** The rebuild's G1 go/no-go sitting, G2 "owner accepts the verdict," and every 👤
+  owner-gated step (incl. "create the repo") are retired as blockers. Build everything **in logical
+  order**; do not pause between phases for sign-off.
+- **Live-test replaces owner verification.** Each piece is exercised **live in a real server** (an agent
+  drives all commands in a live bot session). Live-green is the coordinator's own gate; the "does it
+  work?" question is never routed up. The owner *sees results in the server*.
+- **Silence = consent = done.** Never wait for the owner. If he says nothing about a piece, it is
+  accepted. His control point is **reacting to what he sees** — a message stops or redirects; absence of
+  a message is approval.
+
+**The reversibility rider (decide-and-flag, vetoable — not a gate).** Reaction-after-visibility only
+bites while the thing is still reversible when the owner reacts. So the **destructive tier only** (prod
+data import over real balances/audit, the CUT-3 token swap, deleting old-bot data) executes via the
+**reversible-equivalent path the plan already specifies** — shadow-first / restored-snapshot DB, the
+**N=7d rollback window** (Q-D15), the declared-loss **reverse-import valve** (F-1/F-2). This adds **no
+pause** (not a gate); it just keeps a reaction window open. Owner may veto the rider for straight
+destructive execution.
+
+**Scope.** Q-0241 governs the **rebuild program**. For the **live production bot**, the Q-0213
+`*Delete`/`*Restore` ask-first brake and prod-data safety still stand until the owner generalizes this.
+Merge=deploy still requires **CI green** (never-wait ≠ bypass CI). Decisions are still recorded + flagged
+(Q-0240) so the owner's after-the-fact review has a trail.
 
 ## How the maintainer stays in control
 
