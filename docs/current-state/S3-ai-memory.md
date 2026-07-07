@@ -10,6 +10,19 @@
 > own; distinct from S4 (the docs content it produces) and S5 (its operation).*
 
 **Recently shipped (this sector):**
+- **IDEA-CONSOLIDATION PASS — today's four owner captures folded + the plan re-verified (PR #1791, 2026-07-07 — Fable 5 ultracode, 9-lane fan-out).**
+  Canonical-plan **§11b amendments A-12…A-20** + registry mints **R-16/R-17/P-5**
+  ([report](../planning/rebuild-idea-consolidation-report-2026-07-07.md)): the **role-scoped
+  authority lane** (`Lane.ROLE_SET` + channel-access role-sets, allow *and* deny-until-role —
+  landed before K6 is built, A-12); the **user-self-service automation scheduler** on K9's
+  due-queue (category B structurally reserved but compile-fenced OFF pending its own pricing
+  session; fire-time creator-ActorRef, quiet-hours + condition-poll carriers, A-13);
+  moderation **decide-at-port anchors** (A-14) + **privacy export / guild-config restore** (A-15);
+  and the §3.C re-verify hardened four norms into machinery — the **parity-depth floor** at the
+  `pending→ported` flip (A-16), the **deterministic knowledge-eval gate** for band 7 (A-17), the
+  **human verified_live lane budgeted** (~150–250 units, per-band batches, CUT-3 debt list, A-18),
+  and the **escape-hatch ratchet wired permanent** (it had no landing step anywhere, A-19);
+  N=7d affirmed with a targeted post-window checklist (A-20). 16 decisions logged ⚑ (IC-1…IC-16).
 - **THE REBUILD FINAL REVIEW RAN (PR #1778 + fix PRs #1781/#1782, 2026-07-07 — Fable 5 ultracode, the brief's A–H mandate).**
   Verdict: **the plan is ready — the new repo can start now; zero blocking work ahead of §5 step 6**
   ([the A–H report](../planning/rebuild-final-review-report-2026-07-07.md); readiness scored per

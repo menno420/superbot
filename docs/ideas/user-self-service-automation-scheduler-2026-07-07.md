@@ -136,13 +136,23 @@ back once players have spent real in-game currency on it.
 
 ## Recommended routing
 
-1. The **kernel primitive** (user-scoped `ManagedTaskSpec` trigger kind, category-A notify-only path)
-   folds in as a K9 landing when Phase-B's per-step plan for K9 (canonical plan §5 step 10) is
-   written — analogous to how §11 A-8's background-obligation landings were added.
-2. The **category-B pricing/economics design** gets its own dedicated session, separate from the K9
-   build itself, before any subsystem is allowed to declare an action "automatable." The kernel
-   primitive should ship with category B *structurally possible but gated off* (no subsystem opts in)
-   until that pricing session produces a ruling — so the K9 build doesn't stall waiting on economics
-   design, and the economics session doesn't have to rush ahead of the kernel.
+**ROUTED — the kernel primitive is folded into the plan of record (2026-07-07, same day,
+idea-consolidation session):**
 
-Until both land, this stays a capture; nothing here blocks the rebuild start.
+1. **Canonical-plan amendment [`§11b A-13`](../planning/rebuild-canonical-plan-2026-07-06.md)** +
+   registry mints **R-17** (quiet-hours/delivery-window field, condition-poll TriggerKind,
+   fire-time creator-ActorRef rule) and **P-5** (`CommandSpec.automation_eligibility`) in
+   `rebuild-amendments.yml`. Category B ships exactly as sketched here — **structurally reserved
+   but compile-fenced OFF** (an `action` declaration is a SEMANTIC_VIOLATION until the pricing
+   session's ruling Q) — and the split was verified genuinely uncoupled: the economy engine ports
+   at band 3, after K9 at step 10, so neither session can force the other. Full shape + evidence:
+   [`rebuild-idea-consolidation-report-2026-07-07.md`](../planning/rebuild-idea-consolidation-report-2026-07-07.md) §2.2.
+   One load-bearing addition the guardrail list above missed (now in A-13): user-scoped fires
+   **re-resolve K6 authority at fire time with the creator's ActorRef** — never the frozen
+   SYSTEM_ACTOR scripted bypass — so an automation can't fire in a channel its creator's roles no
+   longer allow.
+2. The **category-B pricing/economics design** still gets its own dedicated session (unchanged —
+   owner's explicit instruction). *Citation fix (2026-07-07): the operative Q-0039 lever for a
+   coins+XP unlock is the **earned-track** allowance ("milestones, no money — normal game
+   progression"), not the cosmetic-only clause cited above; and A-13 records the inverse rule —
+   automation capability is never donation/real-money purchasable.*

@@ -81,12 +81,15 @@ riders:                # R-n — soft riders (field/vocab additions; batch into 
   R-13: {desc: "G-7/G-8 residual deltas: declared refusal/denial per intent; AIProviderGatewaySpec", consumers: [ai, btd6, project_moon], source: "D"}
   R-14: {desc: "HubPanelSpec spec clarification (source: registry-filter | named entries; cross_links; governance_filter)", consumers: [games, community, utility], source: "C"}
   R-15: {desc: "Column-scoped ownership notes on StoreSpec (shared-writer columns)", consumers: [xp, fishing], source: "B"}
+  R-16: {desc: "Role-scoped authority: Lane.ROLE_SET + `role:<binding_name>` authority_ref form (prefix-classified before the dot rule; refs name a declared BindingKind.ROLE binding, never literal role IDs) + AuthorityRequest/ActorRef.role_ids + optional per-channel role-set on the channel-access policy (detail=role_not_held; NOT a 4th AccessMode); must express allow-sets AND quarantine/deny-until-role; K6/S7 fold lands R-2 + R-16 together", consumers: [channel, moderation, security, community], source: "idea-consolidation 2026-07-07 (canonical plan §11b A-12)"}
+  R-17: {desc: "ManagedTaskSpec delivery-window/quiet-hours field (skip-vs-defer x MisfirePolicy pinned at fold) + TriggerKind condition-poll kind (the live channel_inactive/setup_readiness_below/binding_missing class) + user-scoped fires carry the creator's ActorRef with fire-time K6 re-resolution (never the SYSTEM_ACTOR scripted bypass)", consumers: [automation, moderation, security], source: "idea-consolidation 2026-07-07 (canonical plan §11b A-13)"}
 
 provisional:           # P-n — held; ratify-condition recorded (FINAL-REVIEW §3.3)
   P-1: {name: EventFeedProjectionSpec, ratify_when: "second instance found (check Lane E feed-shaped plans)", note: "read-side analog of G-3; one instance today"}
   P-2: {name: "GatewayListenerSpec.catchup_policy", ratify_when: "restart-window replay need materializes", note: "high-water mark + bounded replay + dedup; merging IS deploying so restart windows recur"}
   P-3: {name: UserMemorySpec, ratify_when: "the L2/L4 ADD needing it is scheduled", note: "Q-0184 per-user product-AI-memory policy + knowledge-domain carryover"}
   P-4: {name: "IdentityScopeSpec/TransferPolicySpec", ratify_when: "the cross-server ADD needing it is scheduled", note: "answered Q-0091 cross-server identity + conservation-based transfer"}
+  P-5: {name: "CommandSpec.automation_eligibility", ratify_when: "second ported consumer declares eligibility (A-2 schema-growth ledger entry lands at the K9 build)", note: "user-self-service automation opt-in {none|notify_only|action} + min_interval_s; category B ('action') compile-fenced to SEMANTIC_VIOLATION until the dedicated pricing session mints its ruling Q (canonical plan §11b A-13)"}
 
 refuted:               # do-not-re-propose; one-line refutation (FINAL-REVIEW §3.4)
   LootTableSpec:             {reason: "4 distinct roll engines are not one family; weighted-RNG rolls stay tier-3", source: "Lane B refute"}
