@@ -31,6 +31,14 @@ only the header block is read, so a `**Subsystem:**` *example* in an idea's body
 
 Current broad captures:
 
+- [`claude-code-projects-for-the-rebuild-2026-07-07.md`](./claude-code-projects-for-the-rebuild-2026-07-07.md) —
+  **session idea (2026-07-07, Q-0089, Projects-EAP + Q-0241 PR #1776):** use the Claude Code Projects
+  early-access program (coordinator + shared memory + routines + session sidebar; the *Claude Code*
+  environment, **not** claude.ai Chat/Cowork) as the rebuild's orchestration layer — prove it on
+  reversible canonical-plan §5 steps 1–4 in this repo, then let it coordinate the `superbot-next` build.
+  Composes with **Q-0241** (never-wait autonomy + live-test-in-server + silence=consent). Open
+  considerations: cloud memory vs. our repo-as-source-of-truth; overlap with our hand-rolled claim/
+  babysitting/cron tooling.
 - [`supersede-banner-integrity-checker-2026-07-06.md`](./supersede-banner-integrity-checker-2026-07-06.md) —
   **session idea (2026-07-06, Q-0089, rebuild-consolidation PR #1770):** a warn-first checker for the
   hand-maintained supersede web — every `SUPERSEDED` banner's successor must resolve + link back, and

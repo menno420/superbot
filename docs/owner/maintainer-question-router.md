@@ -8706,3 +8706,55 @@ data). The owner's control point is **one review pass at the gate**, not per-dec
 **Home:** [`docs/owner/agent-decision-authority.md`](agent-decision-authority.md) (full model + the
 decide/flag/veto table); binding pointer in `.claude/CLAUDE.md` § Working agreement (Act vs. ask).
 Provenance: `.sessions/2026-07-06-fable-decision-authority-and-foundational-consolidation.md`.
+
+---
+
+## Q-0241 — Remove the owner gates from the rebuild; never-wait autonomy + live-test visibility + silence=consent (owner-directed, 2026-07-07)
+
+**Owner directive (in-session):** *"we should get rid of the owner gates/blockers, especially since we
+now also have the option to let all commands be used by an agent in a live bot session, it should just
+build everything in logical order and live test it so I can see the results in a server, but it should
+never wait for me, if I don't say something about it it should be considered done."* → **Applied
+directly** (the in-session owner is the live reviewer — the Q-0106 exception — so the rule change ships
+now with this provenance Q, not as a proposal). Extends **Q-0240** (decide-and-flag) into
+**decide-and-proceed**.
+
+**Decision.** For the **rebuild program** (the coordinator building `superbot-next` + porting the bot),
+the owner's control model changes from *approval-before-execution* to *reaction-after-visibility*:
+
+1. **No owner gates.** The rebuild's **G1 go/no-go sitting**, **G2 "owner accepts the verdict"** on
+   Phase-2.5, and every **👤 owner-gated step** (incl. step 6 "create the repo") are **retired as
+   blockers.** The coordinator builds everything **in logical order** and does not pause for owner
+   sign-off between phases.
+2. **Live-test replaces owner verification.** Each piece is **exercised live in a real server** (an
+   agent can now drive all commands — slash, prefix, components — in a live bot session), so the owner
+   *sees results in a server* instead of reading a verdict and blessing it. Live-test-green is the
+   coordinator's own gate; it never routes the "does it work?" question up.
+3. **Silence = consent = done.** The coordinator never waits for the owner. **If the owner says nothing
+   about a piece, it is considered accepted and done.** The owner's control point is *reacting to what he
+   sees* (a message stops or redirects it); absence of a message is approval.
+
+**The one flagged rider (decide-and-flag, vetoable — not a gate).** The owner's model ("if I don't say
+something it's done" ⇒ *if I do say something, act on it*) only has teeth while the thing he reacts to is
+**still reversible when he reacts.** So for the **destructive tier only** — production data import over
+real balances/audit, the CUT-3 token swap, deleting old-bot data — the coordinator **still never waits**,
+but executes via the **reversible-equivalent path the plan already specifies**: shadow-first / restored-
+snapshot DB, the **N=7d rollback window** (Q-D15), and the declared-loss **reverse-import valve**
+(F-1/F-2). This adds **zero pause** — it is not a gate — it just keeps a reaction window open so
+"say-something-to-undo" is possible. **Veto available:** if the owner wants zero retained reversibility
+(straight destructive execution), he says so and the rider drops.
+
+**Scope (flagged decision).** Q-0241 governs **the rebuild program**. For the **live production bot**
+today, the Q-0213 ask-first `*Delete`/`*Restore` brake and prod-data safety **still stand** until the
+owner generalizes this — because the rebuild targets a fresh/shadow environment he watches, whereas prod
+carries live user data. The owner can extend Q-0241 to all work at any time.
+
+**What stays true.** Merge=deploy still requires **CI green** (never-wait ≠ bypass CI); the born-red
+session card / auto-merge machinery is unchanged; decisions are still **recorded + flagged** on the run
+report (Q-0240) so the owner's after-the-fact review has a trail to skim.
+
+**Home:** [`docs/owner/agent-decision-authority.md`](agent-decision-authority.md) § "Q-0241 — the
+rebuild override"; amendment stamp on
+[`../planning/rebuild-canonical-plan-2026-07-06.md`](../planning/rebuild-canonical-plan-2026-07-06.md)
+§1/§4/§5 (G1/G2/👤 retired); binding pointer in `.claude/CLAUDE.md` § Working agreement (Act vs. ask).
+Provenance: `.sessions/2026-07-07-projects-eap-and-full-autonomy-q0241.md`.

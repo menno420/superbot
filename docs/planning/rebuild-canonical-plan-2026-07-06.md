@@ -14,6 +14,19 @@
 > [test-guild design](rebuild-test-guild-design-2026-07-06.md) ·
 > [Phase-2.5 runnable procedure](rebuild-phase-2.5-procedure-2026-07-06.md).
 
+> **⚠ AMENDMENT — owner directive Q-0241 (2026-07-07): the owner gates are retired.** The **G1
+> go/no-go sitting** (§1, §4, §5 step 5), **G2 "owner accepts the verdict"** on Phase-2.5 (§4), and every
+> **👤 owner-gated step** in §5 (notably step 6 "create the repo") are **no longer blockers.** The
+> coordinator builds everything **in logical order**, **live-tests each piece in a real server** (an
+> agent drives all commands live), and **never waits for the owner — silence = consent = done.** Read
+> §1/§4/§5 as *sequencing + rationale*, not as owner stop-points; the 🔒/👤 markers are historical.
+> **Retained (flagged, vetoable):** the **destructive tier** (prod data import, CUT-3 token swap,
+> deleting old-bot data) still executes via the reversible path this plan already specifies — shadow-
+> first, N=7d rollback window (Q-D15), reverse-import valve (F-1/F-2) — which is *reversibility, not a
+> gate* (no pause). Merge=deploy still requires **CI green**. Full model:
+> [`../owner/agent-decision-authority.md`](../owner/agent-decision-authority.md) § Q-0241;
+> [`../owner/maintainer-question-router.md`](../owner/maintainer-question-router.md) Q-0241.
+
 ---
 
 ## 0. Where the program stands (verified at head, 2026-07-06)
