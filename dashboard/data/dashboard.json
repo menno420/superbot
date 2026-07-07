@@ -1,10 +1,10 @@
 {
   "meta": {
-    "generated_at": "2026-07-07T17:26:28Z",
+    "generated_at": "2026-07-07T17:50:21Z",
     "build": {
-      "commit": "6f4657c1",
-      "subject": "Merge pull request #1800 from menno420/claude/rebuild-plan-consolidation-c34c0b",
-      "committed_at": "2026-07-07T17:26:28Z"
+      "commit": "a886bc6b",
+      "subject": "Merge pull request #1803 from menno420/claude/reconcile-1800",
+      "committed_at": "2026-07-07T17:50:21Z"
     },
     "counts": {
       "functions": 43,
@@ -3148,6 +3148,14 @@
       "self_initiated": false
     },
     {
+      "file": "2026-07-07-reconcile-band1800.md",
+      "date": "2026-07-07",
+      "title": "Session — thirty-seventh Q-0107 reconciliation pass (band-#1800)",
+      "status": "complete",
+      "run_type": "routine",
+      "self_initiated": true
+    },
+    {
       "file": "2026-07-07-rebuild-plan-review-and-automation-idea.md",
       "date": "2026-07-07",
       "title": "2026-07-07 — Rebuild plan review (owner Q&A) + user-automation idea capture",
@@ -3575,14 +3583,6 @@
       "file": "2026-07-03-foundational-mechanics-ultracode-brief.md",
       "date": "2026-07-03",
       "title": "2026-07-03 — Prepare two parallel ultracode session prompts (foundational-mechanics brainstorm)",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-07-03-foundational-design-opus-brief.md",
-      "date": "2026-07-03",
-      "title": "2026-07-03 — Prepare the Opus-4.8 foundational-DESIGN overnight prompt",
       "status": "complete",
       "run_type": "",
       "self_initiated": false
