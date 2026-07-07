@@ -123,6 +123,16 @@ jobs:
         continue-on-error: true
         run: python3 scripts/check_session_slug_unique.py
 
+      # Amendment-registry integrity (rebuild Gate-V P-9 / spec 01 §3.7). ADVISORY for now
+      # (continue-on-error): enforces the registry's own header rules — per-family next-free
+      # contiguous IDs, no refuted-name reuse, in-spec spec_refs resolve in the spec_corpus.
+      # Pure stdlib, pre-pip. Promote to a hard gate once Phase-B minting traffic proves it
+      # (the Q-0239-tail pattern). Disposable (Q-0105): drop this step + tools/check_amendments.py
+      # if it misfires across sessions.
+      - name: Amendment-registry integrity (check_amendments · advisory)
+        continue-on-error: true
+        run: python3 tools/check_amendments.py
+
       # Born-red session merge-gate (owner directive Q-0133). On a PR, if this
       # session ADDED a `.sessions/` card, the merge is HELD until that card's
       # `> **Status:**` badge is a ready token (`complete`). The card is created
