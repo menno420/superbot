@@ -186,21 +186,34 @@ def site_data_json() -> Response:
 # single owner of routing, and only these named files are ever served.
 # ===========================================================================
 
-_V2_FILES = {
-    "index.html": "text/html",
-    "app.js": "application/javascript",
-    "app.css": "text/css",
+# Asset name → (absolute path, media type), precomputed from LITERAL names at
+# import time so the request parameter never reaches a filesystem path (the
+# lookup key is the whole sanitization — a miss is a 404, and the served Path
+# object was built from the literal, not from the request).
+_V2_ASSETS = {
+    name: (V2_DIR / name, media)
+    for name, media in (
+        ("index.html", "text/html"),
+        ("app.js", "application/javascript"),
+        ("app.css", "text/css"),
+    )
 }
-_DS_FILES = {
-    "tokens.css": "text/css",
-    "components.css": "text/css",
-    "ds.js": "application/javascript",
-    "styleguide.js": "application/javascript",
+_DS_ASSETS = {
+    name: (DS_DIR / name, media)
+    for name, media in (
+        ("tokens.css", "text/css"),
+        ("components.css", "text/css"),
+        ("ds.js", "application/javascript"),
+        ("styleguide.js", "application/javascript"),
+    )
 }
-_CONSOLE_FILES = {
-    "index.html": "text/html",
-    "console.js": "application/javascript",
-    "console.css": "text/css",
+_CONSOLE_ASSETS = {
+    name: (CONSOLE_DIR / name, media)
+    for name, media in (
+        ("index.html", "text/html"),
+        ("console.js", "application/javascript"),
+        ("console.css", "text/css"),
+    )
 }
 
 
@@ -214,19 +227,21 @@ def site_v2() -> FileResponse:
 @app.get("/v2/{asset}")
 def v2_asset(asset: str) -> Response:
     """v2 SPA assets (explicit whitelist — no directory serving)."""
-    media = _V2_FILES.get(asset)
-    if media is None:
+    entry = _V2_ASSETS.get(asset)
+    if entry is None:
         return Response(status_code=404)
-    return FileResponse(V2_DIR / asset, media_type=media)
+    path, media = entry
+    return FileResponse(path, media_type=media)
 
 
 @app.get("/ds/{asset}")
 def ds_asset(asset: str) -> Response:
     """Program design-system assets shared by every program site."""
-    media = _DS_FILES.get(asset)
-    if media is None:
+    entry = _DS_ASSETS.get(asset)
+    if entry is None:
         return Response(status_code=404)
-    return FileResponse(DS_DIR / asset, media_type=media)
+    path, media = entry
+    return FileResponse(path, media_type=media)
 
 
 @app.get("/design", response_class=HTMLResponse)
@@ -256,10 +271,11 @@ def console_asset(asset: str) -> Response:
             {"available": False, "reason": "console.json not exported yet"},
             status_code=404,
         )
-    media = _CONSOLE_FILES.get(asset)
-    if media is None:
+    entry = _CONSOLE_ASSETS.get(asset)
+    if entry is None:
         return Response(status_code=404)
-    return FileResponse(CONSOLE_DIR / asset, media_type=media)
+    path, media = entry
+    return FileResponse(path, media_type=media)
 
 
 # Legacy page routes — the earlier server-rendered Jinja front-end, kept as a

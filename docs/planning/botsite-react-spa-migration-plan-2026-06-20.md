@@ -1,7 +1,15 @@
-<!-- badge: plan -->
+<!-- badge: historical -->
 # Plan — make the live bot-site the React design-system app (kill the porting step)
 
-> **Status:** `plan` · **Sector:** S5 (web tier) · **Created:** 2026-06-20 · **Size:** 2–3 PRs
+> **Status:** `historical` — **superseded 2026-07-07 by botsite v2 on the program design system**
+> (the last-Fable-day design session, brief
+> [`website-design-fable-brief-2026-07-07.md`](website-design-fable-brief-2026-07-07.md)): the owner's
+> "improved own version" ask was fulfilled as a **no-build vanilla SPA** (`botsite/site/v2/` on
+> `botsite/ds/`), keeping the iterate-cheaply property this React path would have traded away. The
+> §9 count-honesty goal shipped in v2 (unique-vs-registered counts labeled); the React
+> `design-system/` library remains the Claude-Design working surface only. Original plan below,
+> unchanged.
+> **Original status:** `plan` · **Sector:** S5 (web tier) · **Created:** 2026-06-20 · **Size:** 2–3 PRs
 > **Provenance:** owner-requested 2026-06-20, follow-up to the SPA-wiring work (PR #1196) and the
 > plain-language explainer ([`docs/owner/website-explained.md`](../owner/website-explained.md)).
 > **Related:** [`website-two-site-split-plan`](website-two-site-split-plan-2026-06-19.md) ·
