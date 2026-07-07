@@ -82,3 +82,8 @@ Instructions = Q-0241 model + the reversibility rider). If accepted, this promot
 `docs/planning/` note wiring the coordinator onto canonical-plan §5. Feedback the EAP asks for
 (use-case fit, coordinator judgment, reliability, memory, proactivity, scheduling, sidebar states) maps
 onto exactly the rebuild phases, so we'd generate high-signal feedback as a byproduct.
+
+**Update, 2026-07-07:** access went live (was invite-only above) — see
+`docs/planning/projects-eap-activation-plan-2026-07-07.md` for the concrete activation plan,
+review rubric, and Anthropic feedback-reply draft under the EAP's free-through-Friday-7/10
+window.
