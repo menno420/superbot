@@ -505,22 +505,25 @@ every `DECIDED:` as *also commit it to a doc*, not chat-only.
   stuck. No need to open sessions to audit. It labels red-by-design vs. broken every report;
   unlabeled red = a coordinator miss, call it. Cheapest owner habit: one same-day visit on a ⚠ +
   the 09:00 roll-up.
-- **▸ Consent walls (the one latency-critical thing).** Auto mode's safety layer walls
-  *destructive* or *new-external-publish* actions (a `git push` publishing first content to a
-  public repo; a branch delete). **Corrected 2026-07-07 — the step-7 wall falsified the earlier
-  "an in-chat owner go-ahead clears it" model:** a chat "go ahead" is **not** sufficient; the
-  classifier denied the push *and* the GitHub-API route as a bypass. The real authorization lever
-  is a **Settings → Permissions allow rule** (for pushes: `Bash(git push:*)`). Consent hierarchy
-  observed: plan docs < coordinator dispatch < in-chat owner "yes" < **a settings rule** — only
-  the last actually authorizes. **Tempo fix:** set the rule at **Project level** if that scope
-  exists, so every future session inherits it — otherwise each kernel-band session walls one by
-  one. An allow-rule beats switching auto mode off (keeps every other guardrail up); the broad
-  push-allow is bounded by branch protection on `main` (step 8) + the session's repo scope + the
-  PR/CI merge gates, so allowing push ≠ allowing merge-to-prod. **Still open:** whether that rule
-  scopes per-session or per-Project (owner sets it and reports). This whole
-  discover-the-permission friction is a flagged Anthropic-feedback item (activation-plan §4):
-  granting a permission correctly is not self-explanatory. Treat ⚠ consent lines as the sole
-  moments the owner's absence is the critical path.
+- **▸ Consent walls (a real EAP limitation, not just latency).** Auto mode's safety layer
+  *hard-denies* certain actions — a `git push` publishing first content to a public repo, a
+  branch delete — and cloud Projects run **auto-mode-only with no switch to a prompting mode**, so
+  there is **no in-session way to approve**: not a chat "go ahead" (denied — it also denied the
+  GitHub-API route as a bypass), not a mode toggle (doesn't exist in cloud). **Corrected twice
+  (2026-07-07) — earlier notes claiming an in-chat go-ahead or a "Settings → Permissions" UI clears
+  it were both wrong:** there is **no permissions UI** in the web app (the session's "Edit
+  environment" holds only Name / Network / Environment variables / Setup script; Project settings
+  only General / Repositories). The only documented lever is a committed **`.claude/settings.json`
+  `permissions.allow: ["Bash(git push:*)"]`** — but it's read at *session start* (useless to an
+  already-running session) and per Claude Code's docs **the auto classifier may override it
+  anyway**. So a first-publish push can be a wall an autonomous cloud session **cannot self-clear**
+  — an Anthropic-escalation item and the program's single strongest feedback finding
+  (activation-plan §4). Practical unblocks: (a) the coordinator tries `/permissions` in-session
+  (may not be wired in web); (b) do the one-time initial push from a **local** Claude Code session
+  (CLI / Remote Control *does* have a prompting mode); (c) escalate. Once repos are populated +
+  branch-protected, routine branch+PR pushes pass — it's specifically *first-publish* and
+  *destructive* verbs that wall. Treat ⚠ consent lines as the sole moments the owner's absence is
+  the critical path.
 - **▸ Load.** Scales on clean-ownership sessions (claims + self-describing PRs + write-back), not
   on head-only state. Overload tells: stale checklist · generic replies · misattributed work ·
   growing wake latency. A second Project is for a separate *decision rhythm* (the trading repo
