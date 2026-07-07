@@ -1,14 +1,14 @@
 {
   "meta": {
-    "generated_at": "2026-07-06T21:47:52Z",
+    "generated_at": "2026-07-07T08:25:26Z",
     "build": {
-      "commit": "666c802a",
-      "subject": "docs(reconcile): 36th Q-0107 pass — band-#1770",
-      "committed_at": "2026-07-06T21:47:52Z"
+      "commit": "b06fe45",
+      "subject": "feat(economy): wire the ready-but-unwired transfer() to !pay / !transfer",
+      "committed_at": "2026-07-07T08:25:26Z"
     }
   },
   "counts": {
-    "commands": 484,
+    "commands": 485,
     "features": 43,
     "games": 12
   },
@@ -3718,6 +3718,27 @@
         },
         {
           "title": "Mining & Exploration — Brainstorm & Roadmap",
+          "status": "ideas"
+        }
+      ],
+      "notes": null
+    },
+    {
+      "name": "pay",
+      "aliases": [
+        "transfer"
+      ],
+      "category": "economy",
+      "cooldown": null,
+      "permissions": "user",
+      "usage": "Send coins to another member. Usage: !pay @user <amount>",
+      "description": "Send coins to another member. Usage: !pay @user <amount>",
+      "use_cases": null,
+      "examples": [],
+      "status": "in-progress",
+      "linked_ideas": [
+        {
+          "title": "Wager / money-flow map — generated trace of game coin paths",
           "status": "ideas"
         }
       ],
