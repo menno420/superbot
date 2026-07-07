@@ -197,6 +197,23 @@ Live coordinator findings journaled by it: no scheduled-wake primitive (roll-up 
 fallback), no direct coordinator→session channel (steering relays through a worker), destructive
 git ops in dispatched sessions auto-denied by the classifier as "untrusted coordinator context."
 
+## Addendum 10 (tenth PR — consent-wall question added to §7)
+
+Owner-requested after hitting the step-7 consent wall live (first push to a public repo needs
+the owner's in-session consent; a relayed go-ahead doesn't clear it — same untrusted-context
+class). Added a new Q9 to the §7 working-relationship inquiry asking the coordinator to explain
+the consent/permission mechanic from its side: which actions need in-session consent vs.
+autonomous; per-action/session/repo/first-time; whether it recurs on every superbot-next push
+or clears once a repo has content; what the owner can pre-authorize + where + how to scope it to
+the two known repos without disabling safety broadly; the owner habit that minimizes the tempo
+tax. Renumbered "what you'd change" 9 → 10; intro updated. My advisory to the owner this turn:
+consenting is safe (kit content is *already* public as a superbot/ directory → the republish
+exposes nothing new; secret-scan clean), the wall is correct outward-facing-publish safety not a
+bug, and the durable fix (if it recurs per-session) is a *scoped* Project-settings
+pre-authorization for the two program repos, not a blanket off-switch. Watch: the wall gates
+superbot-next's first commit too (one consent covers both); the tell for a real tempo tax is if
+the *second* push (a kernel band) also stalls.
+
 ## Docs audit (Q-0104)
 
 `check_docs.py --strict` ✓ · `check_current_state_ledger.py --strict` ✓ (exit 0; #1802/#1804/
