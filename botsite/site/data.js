@@ -4086,6 +4086,26 @@ const COMMANDS = [
     "planned": []
   },
   {
+    "name": "pay",
+    "area": "economy",
+    "status": "in-progress",
+    "summary": "Send coins to another member. Usage: !pay @user <amount>",
+    "description": "Send coins to another member. Usage: !pay @user <amount>",
+    "usage": "!pay",
+    "aliases": [
+      "transfer"
+    ],
+    "permissions": "anyone",
+    "cooldown": null,
+    "examples": [],
+    "planned": [
+      {
+        "status": "idea",
+        "title": "Wager / money-flow map — generated trace of game coin paths"
+      }
+    ]
+  },
+  {
     "name": "pending",
     "area": "games",
     "status": "in-progress",
@@ -7536,7 +7556,7 @@ const CHANGELOG = [
   {
     "version": "2026.06.19",
     "date": "Jun 19, 2026",
-    "build": "666c802a",
+    "build": "b06fe45",
     "title": "New public bot website",
     "changes": [
       {
@@ -7548,7 +7568,7 @@ const CHANGELOG = [
   {
     "version": "2026.06.12",
     "date": "Jun 12, 2026",
-    "build": "666c802a",
+    "build": "b06fe45",
     "title": "Owner review inbox on the dashboard",
     "changes": [
       {
@@ -7560,7 +7580,7 @@ const CHANGELOG = [
   {
     "version": "2026.06.08",
     "date": "Jun 08, 2026",
-    "build": "666c802a",
+    "build": "b06fe45",
     "title": "Command-alias suggestions",
     "changes": [
       {

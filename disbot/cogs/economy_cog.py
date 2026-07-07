@@ -346,6 +346,75 @@ class EconomyCog(commands.Cog):
         embed.add_field(name="🏆 Level", value=str(xp_row["level"]), inline=True)
         await ctx.send(embed=embed)
 
+    # ------------------------------------------------------------------ !pay
+
+    @commands.cooldown(rate=3, per=10, type=commands.BucketType.user)
+    @commands.command(name="pay", aliases=["transfer"])
+    async def pay(
+        self,
+        ctx: commands.Context,
+        member: discord.Member = None,
+        amount: int = None,
+    ):
+        """Send coins to another member. Usage: !pay @user <amount>"""
+        if member is None or amount is None:
+            await ctx.send("Usage: `!pay @user <amount>`", delete_after=10)
+            return
+        if member.bot:
+            await ctx.send("❌ You can't pay a bot.", delete_after=10)
+            return
+        if member.id == ctx.author.id:
+            await ctx.send("❌ You can't pay yourself.", delete_after=10)
+            return
+        if amount <= 0:
+            await ctx.send("❌ Amount must be positive.", delete_after=10)
+            return
+        gid = ctx.guild.id
+        try:
+            new_from, new_to = await economy_service.transfer(
+                gid,
+                ctx.author.id,
+                member.id,
+                amount,
+                reason="gift",
+                actor_id=ctx.author.id,
+            )
+        except economy_service.InsufficientFundsError:
+            coins = await db.get_coins(ctx.author.id, gid)
+            await ctx.send(
+                f"❌ Not enough coins — you have **{coins:,}** 🪙, "
+                f"tried to send **{amount:,}** 🪙.",
+                delete_after=10,
+            )
+            return
+
+        embed = discord.Embed(
+            title="💸 Payment sent",
+            description=f"{ctx.author.mention} → {member.mention}",
+            color=ECONOMY_COLOR,
+        )
+        embed.set_author(
+            name=ctx.author.display_name,
+            icon_url=ctx.author.display_avatar.url,
+        )
+        embed.add_field(name="Amount", value=f"**{amount:,}** 🪙", inline=True)
+        embed.add_field(name="Your balance", value=f"**{new_from:,}** 🪙", inline=True)
+        embed.add_field(
+            name=f"{member.display_name}'s balance",
+            value=f"**{new_to:,}** 🪙",
+            inline=True,
+        )
+        await ctx.send(embed=embed)
+
+        log_embed = discord.Embed(
+            title="💸 Coins transferred",
+            description=(
+                f"{ctx.author.mention} paid {member.mention} **{amount:,}** 🪙"
+            ),
+            color=ECONOMY_COLOR,
+        )
+        await post_log_embed(self.bot, gid, log_embed)
+
     # ------------------------------------------------------------------ !setlogchannel
 
     @commands.command(name="setlogchannel")
