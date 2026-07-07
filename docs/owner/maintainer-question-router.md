@@ -9157,3 +9157,18 @@ separate, larger question — routed to the kit-lab program (`docs/planning/kit-
 
 **Homes:** this Q · `.claude/CLAUDE.md` § Working agreement (the rule text) ·
 `docs/AGENT_ORIENTATION.md` § "Read first" mandate (the pointer).
+
+**Addendum — the actual mechanism, in the owner's own words (same day, same conversation):**
+"I often have big ideas, and when I explain them it's often in pieces, and I don't have all the
+ideas ready at once, so I'm often relying on the agents to come up with the full pictured based
+on rough draft ideas, and the agent repeating my intent back to me in a more complete form will
+help me find out if the agent understood my intent correctly as well as gives me more ideas to
+work with and reason about." This sharpens the rule beyond error-catching: the maintainer builds
+ideas **iteratively and in fragments by design**, and relies on the agent to reason forward from
+a rough draft to its fuller shape. So the restatement is not just "did I understand" — it is
+**"here is the fuller picture I built from your fragment; does it match, and does it also give
+you something new to react to?"** Two distinct payoffs from one step: verification (catch a
+misread early) and **idea-expansion** (the filled-in picture is itself new material the
+maintainer reasons against, the same way he uses ChatGPT/Opus in the Ideas-project pipeline
+stage — `docs/owner/ai-project-workflow.md` §2). The CLAUDE.md rule text is written to this
+fuller understanding, not the narrower "confirm before acting" framing alone.
