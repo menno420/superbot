@@ -42,6 +42,8 @@
      DS-owned chrome icons; merged under any SBDATA.ICONS so data-declared
      icon names keep working. 24×24, 2px stroke, round caps (v1 vocabulary). */
   const DS_ICONS = {
+    gamepad: '<line x1="6" y1="11" x2="10" y2="11"/><line x1="8" y1="9" x2="8" y2="13"/><line x1="15" y1="12" x2="15.01" y2="12"/><line x1="18" y1="10" x2="18.01" y2="10"/><rect x="2" y="6" width="20" height="12" rx="6"/>',
+    shield: '<path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>',
     sun: '<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/>',
     moon: '<path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/>',
     menu: '<path d="M4 7h16M4 12h16M4 17h16"/>',
@@ -94,7 +96,10 @@
 
   /* ── charts (dataviz specs: thin marks, direct labels, ink-token text) ── */
 
-  /* Horizontal single-hue bar list. items: [{label, value, href?, title?}] */
+  /* Horizontal single-hue bar list. items: [{label, value, href?, title?}].
+     Rows may be links, so the container is a plain group (never role="img" —
+     interactive descendants inside a presentational role are an ARIA violation
+     and read as garbage); each row carries its own complete accessible name. */
   function barChart(items, opts) {
     opts = opts || {};
     const max = Math.max(1, ...items.map((i) => Number(i.value) || 0));
@@ -103,14 +108,14 @@
       const w = Math.max(0.5, (v / max) * 100);
       const tag = i.href ? "a" : "div";
       const href = i.href ? ` href="${esc(i.href)}"` : "";
-      return `<${tag} class="sb-bar-row"${href} title="${esc(i.title || `${i.label}: ${v}`)}">
-        <span class="lbl">${esc(i.label)}</span>
+      const name = i.title || `${i.label}: ${v}`;
+      return `<${tag} class="sb-bar-row"${href} title="${esc(name)}" aria-label="${esc(name)}">
+        <span class="lbl" aria-hidden="true">${esc(i.label)}</span>
         <span class="track" aria-hidden="true"><span class="bar" style="width:${w}%"></span></span>
-        <span class="val">${fmt.num(v)}</span>
+        <span class="val" aria-hidden="true">${fmt.num(v)}</span>
       </${tag}>`;
     }).join("");
-    const label = opts.ariaLabel || "Bar chart";
-    return `<div class="sb-bars" role="img" aria-label="${esc(label)}: ${esc(items.map((i) => `${i.label} ${i.value}`).join(", "))}">${rows}</div>`;
+    return `<div class="sb-bars" role="group" aria-label="${esc(opts.ariaLabel || "Bar chart")}">${rows}</div>`;
   }
 
   /* 12-point sparkline for stat tiles (de-emphasis wash + 2px line). */
@@ -132,19 +137,26 @@
     </svg>`;
   }
 
-  /* Status tick strip. history: ["ok"|"warn"|"info"|"danger", …] */
+  /* Status tick strip. history: ["ok"|"warn"|"info"|"danger", …].
+     The accessible name carries the SUMMARY (counts per state), so the data
+     is never hue-only for screen readers; per-day detail rides the tooltips. */
   const TICK_LABEL = { ok: "operational", warn: "degraded", info: "maintenance", danger: "outage" };
   function tickStrip(history, opts) {
     opts = opts || {};
     const days = history.length;
+    const counts = {};
     const ticks = history.map((s, i) => {
       const cls = TICK_LABEL[s] ? s : "ok";
+      counts[cls] = (counts[cls] || 0) + 1;
       const ago = days - 1 - i;
       const when = ago === 0 ? "today" : `${ago}d ago`;
       return `<span class="sb-tick t-${cls}" title="${esc(when)}: ${esc(TICK_LABEL[cls])}"></span>`;
     }).join("");
-    return `<div class="sb-ticks" role="img" aria-label="${esc(opts.ariaLabel || `status, last ${days} days`)}">${ticks}</div>
-      <div class="sb-tick-legend"><span>${days} days ago</span><span>today</span></div>`;
+    const summary = Object.entries(counts)
+      .map(([k, n]) => `${n} ${TICK_LABEL[k]}`)
+      .join(", ");
+    return `<div class="sb-ticks" role="img" aria-label="${esc(opts.ariaLabel || `status, last ${days} days`)}: ${esc(summary)}">${ticks}</div>
+      <div class="sb-tick-legend" aria-hidden="true"><span>${days} days ago</span><span>today</span></div>`;
   }
 
   /* Stat tile. {label, value, delta?: {text, dir: up|down|flat}, spark?: [..], href?} */
@@ -160,7 +172,7 @@
      SBDS.palette.register(items) with [{group, label, sub?, code?, href, keywords?}]
      SBDS.palette.open() / close(); bound to Ctrl/Cmd-K + "/" and [data-palette-open]. */
   const palette = (() => {
-    let items = [], overlay = null, input = null, list = null, sel = 0, results = [], lastFocus = null;
+    let items = [], overlay = null, input = null, listbox = null, emptyEl = null, sel = 0, results = [], lastFocus = null;
 
     function register(newItems) { items = newItems || []; }
 
@@ -169,7 +181,11 @@
       if (!q) return 1;
       const idx = hay.indexOf(q);
       if (idx < 0) return -1;
-      return 1000 - idx - hay.length * 0.001 + (item.code && item.code.toLowerCase().startsWith(q) ? 500 : 0);
+      /* prefix boost compares against the command name itself, so "warn"
+         boosts "!warn" without the user typing the bang */
+      const codeBody = (item.code || "").replace(/^!/, "").toLowerCase();
+      const boost = codeBody && codeBody.startsWith(q.replace(/^!/, "")) ? 500 : 0;
+      return 1000 - idx - hay.length * 0.001 + boost;
     }
 
     function filter(q) {
@@ -180,37 +196,60 @@
         .sort((a, b) => b.s - a.s)
         .slice(0, 40)
         .map((r) => r.it);
-      return scored;
+      /* regroup: keep score order INSIDE a group, but emit each group once
+         (in order of its best hit) so headers never repeat down the list */
+      const groups = [];
+      const byGroup = new Map();
+      scored.forEach((it) => {
+        if (!byGroup.has(it.group)) { byGroup.set(it.group, []); groups.push(it.group); }
+        byGroup.get(it.group).push(it);
+      });
+      return groups.flatMap((g) => byGroup.get(g));
     }
 
     function renderList(q) {
       results = filter(q);
       sel = 0;
       if (!results.length) {
-        list.innerHTML = `<div class="sb-empty" style="padding:28px 16px">No matches for “${esc(q)}” — try a command name, feature or page.</div>`;
+        /* the empty state lives OUTSIDE the listbox (a bare div is not a valid
+           listbox child), the combobox collapses, and the pointer dangles */
+        listbox.innerHTML = "";
+        emptyEl.innerHTML = `<div class="sb-empty" style="padding:28px 16px">No matches for “${esc(q)}” — try a command name, feature or page.</div>`;
+        input.setAttribute("aria-expanded", "false");
+        input.removeAttribute("aria-activedescendant");
+        announce(`No matches for ${q}`);
         return;
       }
+      emptyEl.innerHTML = "";
+      input.setAttribute("aria-expanded", "true");
       let html = "", lastGroup = null;
       results.forEach((r, i) => {
-        if (r.group !== lastGroup) { html += `<div class="sb-palette-group">${esc(r.group)}</div>`; lastGroup = r.group; }
+        if (r.group !== lastGroup) { html += `<div class="sb-palette-group" role="presentation">${esc(r.group)}</div>`; lastGroup = r.group; }
         html += `<button class="sb-palette-item" role="option" id="sb-pal-${i}" aria-selected="${i === sel}" data-i="${i}">
           <span class="t">${r.code ? `<code>${esc(r.code)}</code> ` : ""}${esc(r.label)}</span>
           <span class="sub">${esc(r.sub || "")}</span>
         </button>`;
       });
-      list.innerHTML = html;
-      list.querySelectorAll(".sb-palette-item").forEach((b) => {
+      listbox.innerHTML = html;
+      listbox.querySelectorAll(".sb-palette-item").forEach((b) => {
         b.addEventListener("click", () => go(Number(b.dataset.i)));
         b.addEventListener("mousemove", () => setSel(Number(b.dataset.i)));
       });
+      setSel(0); /* writes aria-selected AND aria-activedescendant every render */
+      announce(`${results.length} result${results.length === 1 ? "" : "s"}`);
     }
 
     function setSel(i) {
       sel = Math.max(0, Math.min(results.length - 1, i));
-      list.querySelectorAll(".sb-palette-item").forEach((b, j) => b.setAttribute("aria-selected", String(j === sel)));
-      const el = list.querySelector(`#sb-pal-${sel}`);
+      listbox.querySelectorAll(".sb-palette-item").forEach((b, j) => b.setAttribute("aria-selected", String(j === sel)));
+      const el = listbox.querySelector(`#sb-pal-${sel}`);
       if (el) el.scrollIntoView({ block: "nearest" });
       if (input) input.setAttribute("aria-activedescendant", `sb-pal-${sel}`);
+    }
+
+    function announce(text) {
+      const live = overlay && overlay.querySelector("[data-pal-live]");
+      if (live) live.textContent = text;
     }
 
     function go(i) {
@@ -231,13 +270,17 @@
           <div class="sb-search">${icon("search", "var(--sb-ink-4)", 16)}
             <input type="text" role="combobox" aria-expanded="true" aria-controls="sb-pal-list" aria-autocomplete="list" placeholder="Search commands, features, games, pages…" aria-label="Search the site" />
           </div>
-          <div class="sb-palette-results" id="sb-pal-list" role="listbox" aria-label="Results"></div>
-          <div class="sb-palette-foot"><span><kbd class="sb-kbd">↑↓</kbd> navigate</span><span><kbd class="sb-kbd">↵</kbd> open</span><span><kbd class="sb-kbd">esc</kbd> close</span></div>
+          <div class="sb-palette-results">
+            <div id="sb-pal-list" role="listbox" aria-label="Results"></div>
+            <div data-pal-empty></div>
+          </div>
+          <div class="sb-palette-foot"><span><kbd class="sb-kbd">↑↓</kbd> navigate</span><span><kbd class="sb-kbd">↵</kbd> open</span><span><kbd class="sb-kbd">esc</kbd> close</span><span class="sb-visually-hidden" data-pal-live aria-live="polite"></span></div>
         </div>`;
       document.body.appendChild(overlay);
       document.body.style.overflow = "hidden";
       input = overlay.querySelector("input");
-      list = overlay.querySelector(".sb-palette-results");
+      listbox = overlay.querySelector("#sb-pal-list");
+      emptyEl = overlay.querySelector("[data-pal-empty]");
       renderList("");
       input.focus();
       input.addEventListener("input", () => renderList(input.value));
@@ -254,7 +297,7 @@
     function close() {
       if (!overlay) return;
       overlay.remove();
-      overlay = input = list = null;
+      overlay = input = listbox = emptyEl = null;
       document.body.style.overflow = "";
       if (lastFocus && lastFocus.focus) lastFocus.focus();
     }
@@ -279,17 +322,17 @@
     const menuBtn = document.querySelector("[data-menu-toggle]");
     const drawer = document.querySelector("[data-drawer]");
     if (menuBtn && drawer) {
-      menuBtn.addEventListener("click", () => {
-        const open = drawer.classList.toggle("open");
+      const setMenu = (open) => {
+        drawer.classList.toggle("open", open);
         menuBtn.setAttribute("aria-expanded", String(open));
+        menuBtn.setAttribute("aria-label", open ? "Close menu" : "Open menu");
         menuBtn.innerHTML = icon(open ? "x" : "menu", "currentColor", 17);
-      });
-      drawer.addEventListener("click", (e) => {
-        if (e.target.closest("a")) {
-          drawer.classList.remove("open");
-          menuBtn.setAttribute("aria-expanded", "false");
-          menuBtn.innerHTML = icon("menu", "currentColor", 17);
-        }
+      };
+      menuBtn.setAttribute("aria-label", "Open menu");
+      menuBtn.addEventListener("click", () => setMenu(!drawer.classList.contains("open")));
+      drawer.addEventListener("click", (e) => { if (e.target.closest("a")) setMenu(false); });
+      document.addEventListener("keydown", (e) => {
+        if (e.key === "Escape" && drawer.classList.contains("open")) { setMenu(false); menuBtn.focus(); }
       });
     }
     palette.bindGlobal();

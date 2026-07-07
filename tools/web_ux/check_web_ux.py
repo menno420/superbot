@@ -94,8 +94,9 @@ TASKS: list[Task] = [
         desc="From home, learn what fishing does via the palette",
         budget=3,
         actions=[("palette", "fishing"), ("press_palette", "Enter")],
-        # Either page answers the question — the feature entry or the game page.
-        expect=("hash_prefix_any", ["#/feature/", "#/game/"]),
+        # Any fishing entity page answers the question — the feature entry, the
+        # game page, or the exact-name command page (all describe the minigame).
+        expect=("hash_prefix_any", ["#/feature/", "#/game/", "#/command/"]),
     ),
     Task(
         id="check-status",

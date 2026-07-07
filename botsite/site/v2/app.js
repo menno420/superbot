@@ -162,7 +162,7 @@
           <div class="sb-wrap">
             <span class="sb-kicker"><span class="d" aria-hidden="true"></span> AI-assisted · self-improving · open hobby project</span>
             <h1>One bot for your whole <span class="sb-grad">Discord server</span>.</h1>
-            <p class="sub">Games, moderation, economy and AI tools — ${S.fmt.num(COUNTS.commands || D.COMMANDS.length)} commands across ${S.fmt.num(COUNTS.features || D.AREAS.length)} features. Every one documented, searchable, and honest about its status.</p>
+            <p class="sub">Games, moderation, economy and AI tools — ${S.fmt.num(COUNTS.commands || D.COMMANDS.length)} registered commands across ${S.fmt.num(COUNTS.features || D.AREAS.length)} features, with ${S.fmt.num(D.COMMANDS.length)} documented here. Searchable, and honest about status.</p>
             <div class="cta-row">
               <a href="#/features" class="sb-btn sb-btn-primary sb-btn-lg">Explore features ${icon("arrow", "currentColor", 16)}</a>
               <a href="#/commands" class="sb-btn sb-btn-ghost sb-btn-lg">Browse commands</a>
@@ -176,7 +176,7 @@
           </div>
         </header>
         <section class="sb-section"><div class="sb-wrap">
-          <div class="sb-sec-head"><div><span class="sb-ey"><span class="dot">▸</span> Capabilities</span><h2>Everything it can do</h2><p>Nine areas, ${FEATURES.length || "dozens of"} features. Open any one to see its commands.</p></div><a class="sb-more" href="#/features">All features →</a></div>
+          <div class="sb-sec-head"><div><span class="sb-ey"><span class="dot">▸</span> Capabilities</span><h2>Everything it can do</h2><p>${D.AREAS.length} areas, ${FEATURES.length || "dozens of"} features. Open any one to see its commands.</p></div><a class="sb-more" href="#/features">All features →</a></div>
           <div class="sb-grid-3">${areaCards}</div>
         </div></section>
         <section class="sb-section"><div class="sb-wrap">
@@ -221,13 +221,20 @@
 
   /* ── features catalogue ──────────────────────────────────── */
   const fstate = { q: "", area: "" };
-  function featureResults() {
+  function filteredFeatures() {
     const q = fstate.q.toLowerCase();
-    const rows = FEATURES.filter((f) => {
+    return FEATURES.filter((f) => {
       if (fstate.area && f.area !== fstate.area) return false;
       if (!q) return true;
       return `${f.name} ${f.key} ${f.description} ${f.tags.join(" ")}`.toLowerCase().includes(q);
     });
+  }
+  function featureCount() {
+    return `${filteredFeatures().length} of ${FEATURES.length} features`;
+  }
+  function featureResults() {
+    const q = fstate.q.toLowerCase();
+    const rows = filteredFeatures();
     if (!rows.length) {
       return `<div class="sb-empty"><span class="ico">${icon("search", "currentColor", 20)}</span><h4>No features match</h4>Try a different search or clear the filter.<div class="act"><button class="sb-btn sb-btn-ghost sb-btn-sm" data-clear-filters>Clear filters</button></div></div>`;
     }
@@ -253,13 +260,15 @@
         <button class="sb-pill" data-f="" aria-pressed="${fstate.area === ""}">all areas</button>
         ${D.AREAS.map((a) => `<button class="sb-pill" data-f="${a.id}" aria-pressed="${fstate.area === a.id}">${esc(a.name)}</button>`).join("")}
       </div>
+      <span class="v2-count" aria-live="polite" data-count>${esc(featureCount())}</span>
       <div data-results>${featureResults()}</div>
     </div></section>${footer}</div>`;
   }
   function wireFeatures(root) {
     const qel = root.querySelector("[data-q]");
     const res = root.querySelector("[data-results]");
-    const rewire = () => { res.innerHTML = featureResults(); wireClear(root, () => { fstate.q = ""; fstate.area = ""; render(); }); };
+    const countEl = root.querySelector("[data-count]");
+    const rewire = () => { res.innerHTML = featureResults(); countEl.textContent = featureCount(); wireClear(root, () => { fstate.q = ""; fstate.area = ""; render(); }); };
     if (qel) qel.addEventListener("input", () => { fstate.q = qel.value; rewire(); });
     root.querySelectorAll("[data-f]").forEach((b) =>
       b.addEventListener("click", () => {
@@ -293,6 +302,7 @@
         <p class="tagline">${esc(f.description)}</p>
         <div class="tags">${f.tags.map((t) => `<span class="v2-tag">${esc(t)}</span>`).join("")}</div>
       </div>
+      ${D.byArea(key) ? `<p class="sb-crumb" style="margin:0 0 16px">${icon("info", "currentColor", 14)} Looking for the whole category? <a href="#/area/${esc(key)}" style="color:var(--sb-brand-ink)">Open the ${esc(key)} area →</a></p>` : ""}
       ${game ? `<div class="sb-panel"><h3>Play it</h3><div class="sb-cmdlist">${cmdRow(D.byCommand(game.command))}</div><p style="margin:12px 0 0;font-size:13px;color:var(--sb-ink-3)">Full rules on the <a href="#/game/${encodeURIComponent(game.id)}" style="color:var(--sb-brand-ink)">game page →</a></p></div>` : ""}
       ${a ? `<div class="sb-panel"><h3>Where it lives</h3>
         <p style="margin:0 0 14px;font-size:14px;color:var(--sb-ink-2)">${esc(f.name)} is part of the <strong>${esc(a.name)}</strong> area (${areaCmds.length} commands). Feature-level command mapping isn't published yet, so browse the area for everything nearby.</p>
@@ -332,21 +342,24 @@
       return `${c.name} ${c.aliases.join(" ")} ${c.summary} ${c.area}`.toLowerCase().includes(q);
     });
   }
+  function commandCount() {
+    const n = filteredCommands().length;
+    return `${n} of ${D.COMMANDS.length} commands${COUNTS.commands && COUNTS.commands !== D.COMMANDS.length ? ` (${S.fmt.num(COUNTS.commands)} registered incl. slash duplicates)` : ""}`;
+  }
   function commandResults() {
     const rows = filteredCommands();
-    const count = `<span class="v2-count" aria-live="polite">${rows.length} of ${D.COMMANDS.length} commands${COUNTS.commands && COUNTS.commands !== D.COMMANDS.length ? ` (${S.fmt.num(COUNTS.commands)} registered incl. slash duplicates)` : ""}</span>`;
     if (!rows.length) {
-      return count + `<div class="sb-empty"><span class="ico">${icon("search", "currentColor", 20)}</span><h4>No commands match</h4>Try a different search or clear a filter.<div class="act"><button class="sb-btn sb-btn-ghost sb-btn-sm" data-clear-filters>Clear filters</button></div></div>`;
+      return `<div class="sb-empty"><span class="ico">${icon("search", "currentColor", 20)}</span><h4>No commands match</h4>Try a different search or clear a filter.<div class="act"><button class="sb-btn sb-btn-ghost sb-btn-sm" data-clear-filters>Clear filters</button></div></div>`;
     }
     if (cstate.group) {
-      return count + D.AREAS.map((a) => {
+      return D.AREAS.map((a) => {
         const inArea = rows.filter((c) => c.area === a.id);
         if (!inArea.length) return "";
         return `<div class="v2-group-head"><span class="sb-tile" style="--c:${a.color};width:30px;height:30px;border-radius:8px">${icon(a.icon, undefined, 16)}</span><h3>${esc(a.name)}</h3><span class="n">${inArea.length}</span></div>
           <div class="sb-cmdlist">${inArea.map(cmdRow).join("")}</div>`;
       }).join("");
     }
-    return count + `<div class="sb-cmdlist">${rows.map(cmdRow).join("")}</div>`;
+    return `<div class="sb-cmdlist">${rows.map(cmdRow).join("")}</div>`;
   }
   function viewCommands() {
     return `<div class="sb-view"><section class="sb-section sb-section-top"><div class="sb-dots" aria-hidden="true"></div><div class="sb-wrap">
@@ -371,13 +384,17 @@
           <button class="sb-pill" data-f="" aria-pressed="${cstate.area === ""}">all</button>
           ${D.AREAS.map((a) => `<button class="sb-pill" data-f="${a.id}" aria-pressed="${cstate.area === a.id}">${esc(a.name)}</button>`).join("")}
         </div>
+        <span class="v2-count" aria-live="polite" data-count>${esc(commandCount())}</span>
         <div data-results>${commandResults()}</div>
       </div>
     </div></section>${footer}</div>`;
   }
   function wireCommands(root) {
     const res = root.querySelector("[data-results]");
-    const rewire = () => { res.innerHTML = commandResults(); wireClear(root, clearAll); };
+    const countEl = root.querySelector("[data-count]");
+    /* the live region persists across re-renders — only its TEXT changes, so
+       screen readers actually announce each filter result */
+    const rewire = () => { res.innerHTML = commandResults(); countEl.textContent = commandCount(); wireClear(root, clearAll); };
     const clearAll = () => { cstate.q = ""; cstate.area = ""; cstate.perm = ""; cstate.status = ""; render(); };
     const qel = root.querySelector("[data-q]");
     if (qel) qel.addEventListener("input", () => { cstate.q = qel.value; rewire(); });
@@ -462,12 +479,14 @@
       .map((rel) => ({ ...rel, changes: lstate.kind ? rel.changes.filter((c) => c.type === lstate.kind) : rel.changes }))
       .filter((rel) => rel.changes.length);
     if (!rels.length) return `<div class="sb-empty"><span class="ico">${icon("doc", "currentColor", 20)}</span><h4>No entries of this type yet</h4><div class="act"><button class="sb-btn sb-btn-ghost sb-btn-sm" data-clear-filters>Show everything</button></div></div>`;
+    /* no per-release build link: the data layer only carries the CURRENT
+       deploy's commit, and stamping it on every historical release would be
+       false provenance */
     return `<div class="sb-timeline">${rels.map((rel) => `
       <div class="sb-rel">
         <div class="sb-rel-aside">
           <span class="ver">v${esc(rel.version)}</span>
           <span class="when">${esc(rel.date)}</span>
-          <a class="build" href="${REPO}/commit/${esc(rel.build)}" rel="noopener">${esc(rel.build)}</a>
         </div>
         <div class="sb-rel-body">
           <span class="sb-rel-node" aria-hidden="true"></span>
@@ -513,6 +532,10 @@
     const s = D.STATUS;
     const allOk = s.systems.every((x) => x.state === "operational");
     const banner = ST[s.overall] || ST.operational;
+    /* Deliberately NO per-day history strip: the data layer only carries an
+       editorial per-deploy state, and rendering a 60-day timeline from it
+       would be a fabricated chart (the no-fake-data rule). The strip returns
+       the day a real ops feed exists. */
     const sysRows = s.systems.map((sys) => {
       const m = ST[sys.state] || ST.operational;
       return `<div class="sb-sys">
@@ -524,7 +547,6 @@
           <span class="sb-sys-state" style="color:${m.token}">${icon(m.ico, "currentColor", 13)} ${esc(m.label)}</span>
         </div>
         ${sys.note ? `<div class="sb-error" style="margin-top:12px">${icon("alert")}<span>${esc(sys.note)}</span></div>` : ""}
-        ${S.tickStrip(sys.history.map((h) => (ST[h] || ST.operational).tick), { ariaLabel: `${sys.name} status, last ${sys.history.length} days` })}
       </div>`;
     }).join("");
     return `<div class="sb-view"><section class="sb-section sb-section-top"><div class="sb-dots" aria-hidden="true"></div><div class="sb-wrap-narrow">
@@ -569,10 +591,16 @@
     features: "Features — SuperBot", commands: "Commands — SuperBot",
     games: "Games — SuperBot", changelog: "Changelog — SuperBot", status: "Status — SuperBot",
   };
+  function safeDecode(s) {
+    /* decodeURIComponent throws on malformed escapes ("100%", "%zz") — and
+       chat apps routinely truncate trailing %XX in shared links. Degrade to
+       the raw segment; the not-found views handle an unknown entity. */
+    try { return decodeURIComponent(s); } catch (e) { return s; }
+  }
   function parse() {
     const h = (location.hash || "#/").replace(/^#/, "");
     const seg = h.split("/").filter(Boolean);
-    return { name: seg[0] || "home", param: seg[1] ? decodeURIComponent(seg[1]) : null };
+    return { name: seg[0] || "home", param: seg[1] ? safeDecode(seg[1]) : null };
   }
   function setNav(name) {
     document.querySelectorAll("[data-nav]").forEach((a) => {
@@ -616,6 +644,9 @@
 
   window.addEventListener("hashchange", render);
   if (!location.hash) location.replace("#/");
+  /* the skip link must move focus, not navigate — "#app" is not a route */
+  const skip = document.querySelector(".sb-skip");
+  if (skip) skip.addEventListener("click", (e) => { e.preventDefault(); app.focus(); });
   registerPalette();
   initNavChrome();
   S.initChrome();

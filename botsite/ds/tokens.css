@@ -140,7 +140,7 @@
   --sb-sky: var(--sb-sky-400);
   --sb-amber: var(--sb-amber-400);
   --sb-pink: var(--sb-pink-400);
-  --sb-indigo: var(--sb-indigo-500);
+  --sb-indigo: var(--sb-indigo-400); /* 400-step like its siblings — 500 fell under 4.5:1 as badge text */
   --sb-rose: var(--sb-rose-400);
 
   /* status (never color-alone: pair with icon + label) */
@@ -160,9 +160,8 @@
   --sb-chart-grid: #1a2236;
   --sb-chart-axis: #2a3450;
 
-  /* focus */
+  /* focus (consumed by the global :focus-visible outline rule) */
   --sb-focus: var(--sb-g-400);
-  --sb-focus-ring: 0 0 0 2px var(--sb-bg), 0 0 0 4px var(--sb-focus);
 
   /* elevation & glow (glows are a dark-theme voice; light swaps to shadows) */
   --sb-shadow-1: 0 1px 2px rgba(0, 0, 0, 0.4);

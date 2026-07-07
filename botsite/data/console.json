@@ -1,10 +1,10 @@
 {
   "meta": {
-    "generated_at": "2026-07-07T16:22:03Z",
+    "generated_at": "2026-07-07T16:29:06Z",
     "build": {
-      "commit": "3a879c1",
-      "subject": "Merge remote-tracking branch 'origin/claude/website-design-brief-ryc3do' into claude/website-design-brief-ryc3do",
-      "committed_at": "2026-07-07T16:22:03Z"
+      "commit": "7120b79",
+      "subject": "app.py: break the {asset}->FileResponse taint (CodeQL py/path-injection x3)",
+      "committed_at": "2026-07-07T16:29:06Z"
     }
   },
   "sessions": [
@@ -506,6 +506,7 @@
       "partial": 2,
       "unknown": 9
     },
+    "open_count": 12,
     "open": [
       {
         "id": "BUG-0019",

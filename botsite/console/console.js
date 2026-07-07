@@ -19,6 +19,10 @@
   const icon = S.icon;
   const app = document.getElementById("console-app");
   const metaLine = document.getElementById("console-meta");
+  /* ONE small live region for announcements — never the whole dashboard
+     (a full-page aria-live region dumps every render into speech) */
+  const liveEl = document.querySelector("[data-console-live]");
+  const announce = (text) => { if (liveEl) liveEl.textContent = text; };
 
   const statusBadge = (st) => {
     const s = String(st || "").toLowerCase();
@@ -71,11 +75,17 @@
     const perDay = [];
     for (let i = 13; i >= 0; i--) perDay.push(sessions.filter((s2) => daysAgo(s2.date) === i).length);
 
+    /* honesty: the exported feed is capped — when the whole feed is younger
+       than 7 days, the "last 7 days" count is a floor, not a total */
+    const oldest = sessions.length ? Math.max(...sessions.map((s2) => daysAgo(s2.date))) : 0;
+    const feedSaturated = sessions.length && oldest < 7;
+    const openCount = (data.bugs && (data.bugs.open_count != null ? data.bugs.open_count : (data.bugs.open || []).length)) || 0;
+
     const statRow = `<div class="sb-statrow sb-statrow-4">
       ${S.statTile({ label: "Run reports in feed", value: String(sessions.length), spark: perDay })}
-      ${S.statTile({ label: "Sessions, last 7 days", value: String(last7.length) })}
+      ${S.statTile({ label: feedSaturated ? `Sessions, last ${oldest + 1}d (feed cap)` : "Sessions, last 7 days", value: feedSaturated ? `${last7.length}+` : String(last7.length) })}
       ${S.statTile({ label: "⚑ self-initiated in feed", value: String(flagged.length) })}
-      ${S.statTile({ label: "Open bugs", value: String((data.bugs && data.bugs.open || []).length) })}
+      ${S.statTile({ label: "Open bugs", value: String(openCount) })}
     </div>`;
 
     const sessionRows = (list) => list.slice(0, 14).map((s2) => `
@@ -107,7 +117,10 @@
 
     const bugRows = (bugs.open || []).map((b) => `
       <div class="co-bug"><span class="id">${esc(b.id || "")}</span><span>${esc(b.title || "")}</span><span style="margin-left:auto">${statusBadge(b.status)}</span></div>`).join("");
-    const bugsLane = lane(`Bugs — ${(bugs.open || []).length} open of ${bugs.total} tracked`,
+    const openTotal = bugs.open_count != null ? bugs.open_count : (bugs.open || []).length;
+    const shown = (bugs.open || []).length;
+    const bugsLane = lane(
+      `Bugs — ${openTotal} open of ${bugs.total} tracked${shown < openTotal ? ` (showing ${shown})` : ""}`,
       bugRows ? `<div class="co-buglist">${bugRows}</div>` : emptyList("No open bugs — the book is clean."));
 
     const changelog = (data.bot_changelog || []).slice(0, 5).map((e) => `
@@ -125,7 +138,9 @@
         const mode = b.getAttribute("data-rf");
         const list = mode === "flagged" ? flagged : mode === "progress" ? inProgress : sessions;
         listEl.innerHTML = sessionRows(list) || emptyList("Nothing matches this filter.");
+        announce(`${Math.min(list.length, 14)} of ${list.length} run reports shown`);
       }));
+    announce(`Console loaded — ${sessions.length} run reports, ${openCount} open bugs.`);
   }
 
   function renderUnavailable(reason) {

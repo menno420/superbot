@@ -32,6 +32,8 @@
       .sg-toc a { font-size: 13px; color: var(--sb-ink-3); padding: 6px 10px; border-radius: var(--sb-r-xs); }
       .sg-toc a:hover { color: var(--sb-ink-1); background: var(--sb-surface-soft); }
       .sg-layout { display: grid; grid-template-columns: 180px 1fr; gap: var(--sb-s-7); }
+      .sg-layout > *, .sg-spec, .sg-spec-body, .sg-spec-body > * { min-width: 0; }
+      .sg-spec-body .sb-example, .sg-spec-body .sb-table-scroll { overflow-x: auto; }
       @media (max-width: 880px) { .sg-layout { grid-template-columns: 1fr; } .sg-toc { position: static; flex-direction: row; flex-wrap: wrap; } }
     </style>
   </head>

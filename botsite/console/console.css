@@ -3,14 +3,23 @@
    ========================================================================== */
 
 .co-lanes { display: grid; grid-template-columns: repeat(2, 1fr); gap: var(--sb-s-4); margin-top: var(--sb-s-6); }
+.co-lanes > * { min-width: 0; } /* long feed/code lines must shrink the column, not widen the page */
 .co-lane-wide { grid-column: 1 / -1; }
 @media (max-width: 880px) { .co-lanes { grid-template-columns: 1fr; } }
+
+/* the console's nav carries page links without a drawer — let it wrap instead
+   of overflowing on narrow screens */
+.sb-nav-in { flex-wrap: wrap; height: auto; min-height: var(--sb-nav-h); padding: 8px 0; row-gap: 4px; }
 
 .co-session { display: flex; align-items: baseline; gap: 10px; padding: 10px 4px; border-bottom: 1px solid var(--sb-line); font-size: 13.5px; }
 .co-session:last-child { border-bottom: none; }
 .co-session .when { flex: none; font-family: var(--sb-font-mono); font-size: 11.5px; color: var(--sb-ink-4); width: 78px; }
-.co-session .t { color: var(--sb-ink-2); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.co-session .t { flex: 1 1 auto; min-width: 0; color: var(--sb-ink-2); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .co-session .end { margin-left: auto; flex: none; display: flex; gap: 6px; }
+@media (max-width: 640px) {
+  .co-session { flex-wrap: wrap; }
+  .co-session .end { margin-left: 88px; }
+}
 
 .co-buglist { display: flex; flex-direction: column; gap: 8px; }
 .co-bug { display: flex; align-items: baseline; gap: 10px; font-size: 13px; color: var(--sb-ink-2); }

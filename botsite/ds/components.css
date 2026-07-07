@@ -15,7 +15,12 @@
 
 /* ── 1. base & accessibility ─────────────────────────────── */
 *, *::before, *::after { box-sizing: border-box; }
-html { scroll-behavior: smooth; }
+/* overflow-x on body alone PROPAGATES to the viewport (so body itself never
+   clips) and `hidden` still grows scrollWidth for the decorative glows that
+   bleed past the canvas. `clip` on both truly pins the page to the viewport
+   width without creating a scroll container (position:sticky keeps working);
+   `hidden` stays as the older-browser fallback. */
+html { scroll-behavior: smooth; overflow-x: hidden; overflow-x: clip; }
 body {
   margin: 0;
   background: var(--sb-bg);
@@ -25,6 +30,7 @@ body {
   line-height: 1.6;
   -webkit-font-smoothing: antialiased;
   overflow-x: hidden;
+  overflow-x: clip;
 }
 a { color: inherit; text-decoration: none; }
 h1, h2, h3, h4 { font-family: var(--sb-font-display); margin: 0; }
@@ -32,8 +38,11 @@ button { font-family: inherit; color: inherit; }
 img, svg { max-width: 100%; vertical-align: middle; }
 ::selection { background: var(--sb-brand-tint); color: var(--sb-ink-1); }
 
-/* one focus voice everywhere — visible, token-driven, never removed */
-:focus-visible { outline: none; box-shadow: var(--sb-focus-ring); border-radius: var(--sb-r-xs); }
+/* one focus voice everywhere — visible, token-driven, never removed.
+   Outline (not box-shadow): components legitimately own box-shadow for glows,
+   so a shadow-based ring silently loses the cascade on exactly the most
+   prominent elements (cards, primary buttons, active pills). */
+:focus-visible { outline: 2px solid var(--sb-focus); outline-offset: 2px; }
 
 .sb-skip {
   position: absolute; left: -9999px; top: 0; z-index: 100;
@@ -60,6 +69,11 @@ img, svg { max-width: 100%; vertical-align: middle; }
 .sb-grid-2 { display: grid; grid-template-columns: repeat(2, 1fr); gap: var(--sb-s-4); }
 .sb-grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--sb-s-4); }
 .sb-grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: var(--sb-s-3); }
+/* grid/flex children default to min-width:auto, which lets a wide child (a
+   long code line, an unbroken title) blow the column past the viewport —
+   the root cause of most mobile horizontal overflow. Opt every layout child
+   into shrinkability once, here. */
+.sb-grid-2 > *, .sb-grid-3 > *, .sb-grid-4 > *, .sb-statrow > * { min-width: 0; }
 
 .sb-sec-head { display: flex; align-items: flex-end; justify-content: space-between; gap: var(--sb-s-4); margin-bottom: var(--sb-s-7); }
 .sb-sec-head h2 { font-size: var(--sb-text-3xl); font-weight: 800; letter-spacing: var(--sb-track-tight); }
@@ -73,7 +87,9 @@ img, svg { max-width: 100%; vertical-align: middle; }
   -webkit-mask-image: radial-gradient(ellipse 80% 60% at 50% 0%, #000 30%, transparent 75%);
   mask-image: radial-gradient(ellipse 80% 60% at 50% 0%, #000 30%, transparent 75%);
 }
-.sb-glow { position: absolute; pointer-events: none; border-radius: var(--sb-r-pill); filter: blur(22px); }
+/* decorative glows never widen the page: clamp to the viewport (the blur is
+   soft enough that the clamp is invisible on phones) */
+.sb-glow { position: absolute; pointer-events: none; border-radius: var(--sb-r-pill); filter: blur(22px); max-width: 100vw; }
 
 /* ── 3. nav ──────────────────────────────────────────────── */
 .sb-nav {
@@ -82,7 +98,8 @@ img, svg { max-width: 100%; vertical-align: middle; }
   backdrop-filter: blur(12px);
   border-bottom: 1px solid var(--sb-line);
 }
-.sb-nav-in { display: flex; align-items: center; gap: var(--sb-s-6); height: var(--sb-nav-h); }
+.sb-nav-in { display: flex; align-items: center; gap: 18px; height: var(--sb-nav-h); }
+.sb-nav-links { display: flex; align-items: center; gap: 18px; min-width: 0; }
 .sb-brand { display: flex; align-items: center; gap: 10px; font-family: var(--sb-font-display); font-weight: 800; font-size: 19px; }
 .sb-brand-tile {
   width: 30px; height: 30px; border-radius: var(--sb-r-sm); flex: none;
@@ -99,11 +116,13 @@ img, svg { max-width: 100%; vertical-align: middle; }
 
 .sb-pulse {
   width: 8px; height: 8px; border-radius: var(--sb-r-pill); flex: none;
-  background: var(--sb-ok); box-shadow: 0 0 8px var(--sb-ok);
+  background: var(--c, var(--sb-ok)); box-shadow: 0 0 8px var(--c, var(--sb-ok));
   animation: sb-pulse 2.6s infinite;
 }
+/* var() resolves per-element inside keyframes, so a warn/danger dot pulses
+   its own hue, never a hardcoded green halo */
 @keyframes sb-pulse {
-  0% { box-shadow: 0 0 0 0 color-mix(in oklab, var(--sb-ok) 50%, transparent); }
+  0% { box-shadow: 0 0 0 0 color-mix(in oklab, var(--c, var(--sb-ok)) 50%, transparent); }
   70% { box-shadow: 0 0 0 7px transparent; }
   100% { box-shadow: 0 0 0 0 transparent; }
 }
@@ -131,6 +150,11 @@ img, svg { max-width: 100%; vertical-align: middle; }
 .sb-drawer .sb-nav-link { padding: 12px 10px; border-radius: var(--sb-r-sm); font-size: var(--sb-text-md); }
 .sb-drawer .sb-nav-link[aria-current] { background: var(--sb-brand-tint); box-shadow: none; color: var(--sb-brand-ink); }
 
+/* the status chip is the first thing to go when the bar tightens — it wraps
+   the whole nav onto two lines well before the link row itself overflows */
+@media (max-width: 1180px) {
+  .sb-nav-status { display: none; }
+}
 @media (max-width: 880px) {
   .sb-nav-links, .sb-nav-status { display: none; }
   .sb-menubtn { display: inline-flex; }
@@ -180,7 +204,7 @@ img, svg { max-width: 100%; vertical-align: middle; }
   -webkit-background-clip: text; background-clip: text; color: transparent;
 }
 .sb-kicker {
-  position: relative; display: inline-flex; align-items: center; gap: 9px; white-space: nowrap;
+  position: relative; display: inline-flex; align-items: center; gap: 9px; white-space: nowrap; max-width: 100%;
   font-family: var(--sb-font-mono); font-size: 12px; letter-spacing: 0.04em; color: var(--sb-ink-3);
   background: var(--sb-surface-soft); border: 1px solid var(--sb-line);
   padding: 7px 16px; border-radius: var(--sb-r-pill);
@@ -202,7 +226,7 @@ kbd.sb-kbd {
 .sb-page-hero { position: relative; padding: var(--sb-s-2) 0 var(--sb-s-7); }
 .sb-page-hero .glow-top {
   position: absolute; top: -170px; left: 50%; transform: translateX(-50%);
-  width: 640px; height: 360px; pointer-events: none; filter: blur(24px);
+  width: 640px; max-width: 100vw; height: 360px; pointer-events: none; filter: blur(24px);
   background: radial-gradient(ellipse at center, color-mix(in oklab, var(--c, var(--sb-brand)) 22%, transparent), transparent 70%);
 }
 .sb-page-hero h1 { font-size: var(--sb-text-4xl); font-weight: 800; letter-spacing: var(--sb-track-tight); line-height: 1.05; position: relative; }
@@ -399,7 +423,11 @@ a.sb-bar-row:hover, .sb-bar-row:hover { background: var(--sb-surface-soft); }
 /* meter (severity fill on a lighter track of the same ramp) */
 .sb-meter { position: relative; height: 10px; border-radius: var(--sb-r-pill); background: var(--sb-chart-track); overflow: hidden; }
 .sb-meter .fill { position: absolute; inset: 0 auto 0 0; border-radius: var(--sb-r-pill); background: var(--sb-chart-mark); }
+/* state colors the whole bar: the unfilled track is a lighter step of the
+   same ramp (dataviz meter rule), not a neutral gray */
+.sb-meter.warn { background: var(--sb-warn-tint); }
 .sb-meter.warn .fill { background: var(--sb-warn); }
+.sb-meter.danger { background: var(--sb-danger-tint); }
 .sb-meter.danger .fill { background: var(--sb-danger); }
 
 /* ── 12. timeline (changelog) ────────────────────────────── */
@@ -458,7 +486,7 @@ a.sb-bar-row:hover, .sb-bar-row:hover { background: var(--sb-surface-soft); }
 .sb-tick-legend { display: flex; justify-content: space-between; margin-top: 7px; font-family: var(--sb-font-mono); font-size: 10.5px; color: var(--sb-ink-4); }
 
 /* ── 14. empty / error / pending lanes ───────────────────── */
-.sb-empty { text-align: center; padding: var(--sb-s-8) var(--sb-s-4); color: var(--sb-ink-4); font-size: var(--sb-text-base); }
+.sb-empty { text-align: center; padding: var(--sb-s-8) var(--sb-s-4); color: var(--sb-ink-3); font-size: var(--sb-text-base); }
 .sb-empty .ico { display: inline-grid; place-items: center; width: 44px; height: 44px; border-radius: var(--sb-r-md); background: var(--sb-surface-soft); border: 1px solid var(--sb-line-2); margin-bottom: 12px; color: var(--sb-ink-3); }
 .sb-empty h4 { font-size: var(--sb-text-md); color: var(--sb-ink-2); margin-bottom: 6px; }
 .sb-empty .act { margin-top: 14px; }
@@ -471,7 +499,7 @@ a.sb-bar-row:hover, .sb-bar-row:hover { background: var(--sb-surface-soft); }
 .sb-lane-pending .head { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
 .sb-lane-pending .head svg { width: 16px; height: 16px; stroke: var(--sb-ink-4); flex: none; }
 .sb-lane-pending h4 { font-size: var(--sb-text-md); color: var(--sb-ink-2); }
-.sb-lane-pending p { margin: 0 0 10px; font-size: 13px; line-height: 1.6; color: var(--sb-ink-4); }
+.sb-lane-pending p { margin: 0 0 10px; font-size: 13px; line-height: 1.6; color: var(--sb-ink-3); }
 .sb-lane-pending .feed {
   font-family: var(--sb-font-mono); font-size: 11.5px; color: var(--sb-ink-3);
   background: var(--sb-well); border: 1px solid var(--sb-line); border-radius: var(--sb-r-xs);
@@ -542,6 +570,12 @@ a.sb-bar-row:hover, .sb-bar-row:hover { background: var(--sb-surface-soft); }
   .sb-page-hero h1 { font-size: 34px; }
   .sb-kv-grid { grid-template-columns: 1fr; }
   .sb-detail-head { padding: var(--sb-s-6); }
+}
+@media (max-width: 640px) {
+  /* command rows shed their secondary chrome; name + summary + status stay */
+  .sb-cmdrow .v2-alias, .sb-cmdrow .end .sb-badge-neutral { display: none; }
+  .sb-kicker { white-space: normal; }
+  .sb-searchbtn .sb-kbd { display: none; } /* ⌘K means nothing on a phone */
 }
 @media (max-width: 560px) {
   .sb-grid-2, .sb-grid-3, .sb-grid-4 { grid-template-columns: 1fr; }

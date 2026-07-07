@@ -1217,21 +1217,24 @@ def build_console_subset(data: dict) -> dict:
         title = str(bug.get("title") or "").upper()
         if "PARTIALLY FIXED" in title:
             return "partial"
-        if re.search(r"[—-]\s*FIXED", title):
+        # em-dash only: the bug book's verdict convention is "… — FIXED (root)";
+        # a plain hyphen would false-match mid-title words like "quick-fixed".
+        if re.search(r"—\s*FIXED\b", title):
             return "fixed"
-        if re.search(r"[—-]\s*EXPECTED", title):
+        if re.search(r"—\s*EXPECTED\b", title):
             return "expected"
-        if re.search(r"[—-]\s*OPEN", title):
+        if re.search(r"—\s*OPEN\b", title):
             return "open"
         return "unknown"
 
     closed = {"fixed", "closed", "resolved", "wontfix", "done", "expected"}
     states = [(b, _bug_state(b)) for b in bugs]
-    open_bugs = [
+    all_open = [
         {"id": b.get("id"), "title": b.get("title"), "status": state}
         for b, state in states
         if state not in closed
-    ][:10]
+    ]
+    open_bugs = all_open[:10]  # the list is capped; open_count carries the truth
 
     sessions = [
         {field: entry.get(field) for field in CONSOLE_SESSION_FIELDS}
@@ -1248,6 +1251,7 @@ def build_console_subset(data: dict) -> dict:
         "bugs": {
             "total": len(bugs),
             "by_status": _count_states([state for _, state in states]),
+            "open_count": len(all_open),
             "open": open_bugs,
         },
         "bot_changelog": data.get("bot_changelog", []),
