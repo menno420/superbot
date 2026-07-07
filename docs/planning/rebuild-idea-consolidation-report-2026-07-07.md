@@ -204,6 +204,15 @@ disposition (vs hard-blocking CUT-3) and delegation question (may a non-owner hu
 rows?); A-17's paid milestone-run cadence; A-19's tightening of ratified §10.2(4). Silence =
 consent (Q-0241). Nothing in this pass waits.
 
+> **Addendum (same day, post-merge — owner answered live):** **Q-0243** — the category-B pricing
+> session decides via a **dedicated simulation** (automated-vs-manual expected value; the price is
+> the sim's output). **Q-0244** — slash/component verification **inherits prefix coverage** (live
+> prefix testing + pipeline-true replay = verified); the owner flags dysfunctional slash commands
+> reactively; the human lane **never blocks CUT-3**. This resolves **IC-12** (debt-list model
+> confirmed) and the A-18 delegation question (moot — no required human tier remains beyond the
+> optional Q-0234 walks), and makes **IC-13** operationally moot (the A-10 capability fact stands;
+> the requirement changed). Both recorded in the question router + the A-13/A-18 rows.
+
 ## Evidence base
 
 Nine parallel Fable-5 research lanes (2026-07-07): K6 authority shape · K9 scheduler shape ·

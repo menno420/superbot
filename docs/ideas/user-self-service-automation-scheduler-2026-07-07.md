@@ -126,7 +126,9 @@ open, and explicitly deferred to its own dedicated design session** (owner direc
 - how to verify a given price actually neutralizes the advantage rather than just taxing it (this
   needs the same kind of measured/simulated approach the rebuild already uses for layout decisions —
   a simulator or back-of-envelope model comparing automated vs. manual expected value over time, not
-  a guessed number).
+  a guessed number). **→ RULED (owner, 2026-07-07, Q-0243): this is now the binding mechanism, not
+  an aspiration — the dedicated pricing session's deliverable IS a simulation (V-3 pattern), and the
+  price/allowance curve is set from its output.**
 
 **Do not design the pricing mechanism inline in a future session touching K9 for other reasons** —
 this needs its own dedicated session per the owner's explicit instruction, precisely because getting
