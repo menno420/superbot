@@ -7,29 +7,32 @@
 > **State:** ◐ assessed · **Assessed:** 2026-06-29 · **Certified:** —
 > Source: `disbot/cogs/automod_cog.py` (`!automod` status + Help hook + pipeline stage, order 5) ·
 > `disbot/cogs/automod/listener.py` (the stage body) · `disbot/cogs/automod/schemas.py`
-> (11 SettingSpecs) · `disbot/services/automod_service.py` (detection engine + SpamTracker) ·
-> `disbot/services/automod_config.py` (read model + defaults) · `disbot/utils/settings_keys/automod.py` ·
-> folio `docs/subsystems/server-management.md`
+> (15 SettingSpecs) · `disbot/services/automod_service.py` (detection engine + SpamTracker +
+> DuplicateTracker) · `disbot/services/automod_config.py` (read model + defaults) ·
+> `disbot/utils/settings_keys/automod.py` · folio `docs/subsystems/server-management.md`
 
 > Assessed during the completion-first arc (Q-0209). Automod is **moderation's automated message-filter
-> layer**: four owner-approved rule types — spam burst (sliding window), invite-link filter, excessive
-> caps, and mass-mention — evaluated on the message pipeline (stage order 5), with per-rule exemptions
-> (roles/channels). Actions route through the audited `moderation_service` seam (`auto_delete` + `warn`
-> with `actor_id=None`, reusing moderation's escalation ladder — no second ladder). All flags default
-> **OFF** so a fresh guild is unaffected; config is the standard `!settings` widget gated by
-> `moderation.settings.configure` (automod *is* moderation's automated layer). **Owner-verified
-> 2026-07-07 (see punch #5/#6):** the spam rule is rate-only (no content-duplicate detection) and
-> keyed per-channel (a multi-channel burst never trips it) — detail in
+> layer**: six rule types — spam burst (sliding window), cross-channel spam burst, repeated/duplicate
+> content, invite-link filter, excessive caps, and mass-mention — evaluated on the message pipeline
+> (stage order 5), with per-rule exemptions (roles/channels). Actions route through the audited
+> `moderation_service` seam (`auto_delete` + `warn` with `actor_id=None`, reusing moderation's
+> escalation ladder — no second ladder). All flags default **OFF** so a fresh guild is unaffected;
+> config is the standard `!settings` widget gated by `moderation.settings.configure` (automod *is*
+> moderation's automated layer). **Punch #5/#6 SHIPPED 2026-07-07** (owner-raised gap, fixed the same
+> day): the original spam rule was rate-only (no content-duplicate detection) and keyed per-channel
+> (a multi-channel burst never tripped it) — both closed by two new rules, `automod.cross_channel_spam`
+> and `automod.duplicate`, riding the same audited seam. Detail:
 > [`../../../ideas/automod-spam-detection-gaps-2026-07-07.md`](../../../ideas/automod-spam-detection-gaps-2026-07-07.md).
-> Gaps are best-in-class
+> Remaining gaps are best-in-class
 > breadth (word-blacklist is cleanup's; no attachment/embed rules; no rule-stats view) and the live ✔.
 
 ## Rubric (server function)
 
 ### A. Functional completeness
-- [x] **Core promise delivered** — spam/invite/caps/mention detection (`automod_service.py`
-      `find_invite`/`caps_ratio`/`mention_count`/`evaluate`), exemptions short-circuit, fail-open on
-      detector/config fault (`listener.py`); SpamTracker window resets on restart by design (ADR-002).
+- [x] **Core promise delivered** — spam/cross-channel-spam/duplicate/invite/caps/mention detection
+      (`automod_service.py` `find_invite`/`caps_ratio`/`mention_count`/`evaluate`), exemptions
+      short-circuit, fail-open on detector/config fault (`listener.py`); SpamTracker/DuplicateTracker
+      windows reset on restart by design (ADR-002).
 - [ ] **Every best-in-class sub-option** — ⚠ **partial.** Four owner-approved rule types ship; **missing**
       vs Carl-bot/MEE6/Dyno: word blacklist (owned by `cleanup`), attachment/embed rules, link filters
       beyond invites, per-rule action escalation (escalation is moderation's shared ladder). → punch #1.
@@ -65,7 +68,7 @@
 ### E. Configuration
 - [x] **Settings pipeline** — `AUTOMOD_CONFIG_SCHEMA` (SubsystemSchema) registered at cog load; scalars
       via the standard `SettingsMutationPipeline` dispatch.
-- [x] **config-input widgets** — 11 SettingSpecs (master + 4 toggles + 4 thresholds + 2 exempt CSV),
+- [x] **config-input widgets** — 15 SettingSpecs (master + 6 toggles + 6 thresholds + 2 exempt CSV),
       validators tied to the config defaults (pinned by a defaults-parity test).
 - [x] **Everything configurable that should be** — master + per-rule toggles + thresholds + exempt lists;
       fixed by design: pipeline order, prefixes, spam window.
@@ -76,8 +79,9 @@
 - [x] **Discoverable in Help** — `build_help_menu_view` hook; pipeline stage registered at cog load.
 
 ### G. Tests & evidence (required for ✔)
-- [x] **Behavior tests** — `test_automod_service.py` (detectors, SpamTracker window, evaluate ordering +
-      exemptions); `test_automod_config.py` (typed load + tolerant CSV).
+- [x] **Behavior tests** — `test_automod_service.py` (detectors, SpamTracker + DuplicateTracker windows,
+      cross-channel/duplicate rule tripping incl. the "different messages never trip duplicate" case,
+      evaluate ordering + exemptions); `test_automod_config.py` (typed load + tolerant CSV).
 - [x] **Authority tests** — `test_automod_schemas.py` (every spec requires the configure capability;
       all defaults OFF).
 - [x] **Mutation-seam tests** — `test_automod_listener.py` (verdict → delete+warn+events; disabled no-op;
@@ -93,24 +97,27 @@
    mention), confirm delete + warn + mod-log, with screenshots; check false-positive rate.
 3. **Owner sign-off** — maintainer confirms "it does its job the most convenient way."
 4. **Rule-stats view** *(offline, deepening, optional)* — per-rule trigger counts to help tune thresholds.
-5. **Cross-channel spam keying** *(owner-raised 2026-07-07, higher severity)* — `SpamTracker`'s
-   `(guild_id, user_id, channel_id)` key means a burst spread across multiple channels never trips the
-   rule at all, regardless of content; add a guild-wide counter alongside the existing per-channel one.
-   Detail + design sketch: [`automod-spam-detection-gaps-2026-07-07.md`](../../../ideas/automod-spam-detection-gaps-2026-07-07.md).
-6. **Content-duplicate detection** *(owner-raised 2026-07-07)* — the spam rule is rate-only and never
-   compares message content, so it can't distinguish a burst of different messages from the same message
-   pasted repeatedly; add as its own rule (not a modification of the existing spam rule), through the
-   same audited `moderation_service` seam. Same doc as #5.
+5. ✅ **Cross-channel spam keying** *(owner-raised + SHIPPED 2026-07-07)* — `SpamTracker.
+   record_and_count_any_channel` adds a guild+user-only bucket (reusing the same sliding-window
+   mechanics via a sentinel channel key) alongside the existing per-channel one; new
+   `automod.cross_channel_spam` rule, `cross_channel_spam_enabled`/`cross_channel_spam_count`
+   settings. Detail: [`automod-spam-detection-gaps-2026-07-07.md`](../../../ideas/automod-spam-detection-gaps-2026-07-07.md).
+6. ✅ **Content-duplicate detection** *(owner-raised + SHIPPED 2026-07-07)* — new `DuplicateTracker`
+   (guild+user-keyed sliding window of normalized content) and `automod.duplicate` rule, through the
+   same audited `moderation_service` seam as every other rule; `duplicate_enabled`/`duplicate_count`
+   settings. Same doc as #5.
 
 ## Evidence
 - **Tests:** `tests/unit/services/test_automod_service.py` · `…/test_automod_config.py` ·
-  `tests/unit/cogs/test_automod_listener.py` · `…/test_automod_schemas.py` (~432 lines total)
+  `tests/unit/cogs/test_automod_listener.py` · `…/test_automod_schemas.py` (extended 2026-07-07 with
+  cross-channel-spam + duplicate-content coverage, incl. the "burst of different messages must not
+  trip duplicate" negative case)
 - **Walkthrough:** pending (punch #2)
 - **Owner sign-off:** pending (punch #3)
 
 ## Verdict
-Automod is a **structurally complete, fully-audited** filter layer — four rule types on the message
+Automod is a **structurally complete, fully-audited** filter layer — six rule types on the message
 pipeline, exemptions, fail-open discipline, and actions through the shared moderation seam + escalation
-ladder, all defaults-OFF and config-driven, with ~432 lines of tests. It is **not yet `✔ certified`**:
-the gaps are **best-in-class breadth** (#1/#4 — deliberately scoped to four rule types in v1) and the
-owner walkthrough/sign-off (#2/#3). No safety/audit/dead-end issues found.
+ladder, all defaults-OFF and config-driven. It is **not yet `✔ certified`**: the gaps are
+**best-in-class breadth** (#1/#4 — deliberately scoped) and the owner walkthrough/sign-off (#2/#3).
+No safety/audit/dead-end issues found.

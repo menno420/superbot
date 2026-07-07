@@ -44,6 +44,8 @@ DEFAULT_SPAM_ENABLED = False
 DEFAULT_INVITES_ENABLED = False
 DEFAULT_CAPS_ENABLED = False
 DEFAULT_MENTIONS_ENABLED = False
+DEFAULT_CROSS_CHANNEL_SPAM_ENABLED = False
+DEFAULT_DUPLICATE_ENABLED = False
 
 # Spam burst: N messages from one author in one channel within T seconds.
 DEFAULT_SPAM_COUNT = 5
@@ -52,6 +54,22 @@ MIN_SPAM_COUNT = 2
 MAX_SPAM_COUNT = 50
 MIN_SPAM_WINDOW_SECONDS = 1
 MAX_SPAM_WINDOW_SECONDS = 120
+
+# Cross-channel spam burst: N messages from one author across ANY channels in
+# the same guild within the same spam window (a raid pattern the per-channel
+# rule structurally cannot see, since its window is scoped per-channel).
+# Defaults lower than the per-channel count — spreading across channels is a
+# stronger raid signal than the same volume in one channel.
+DEFAULT_CROSS_CHANNEL_SPAM_COUNT = 4
+MIN_CROSS_CHANNEL_SPAM_COUNT = 2
+MAX_CROSS_CHANNEL_SPAM_COUNT = 50
+
+# Repeated/duplicate content: N messages with the same normalized content from
+# one author (any channel) within the spam window — distinct from spam burst,
+# which is pure rate and blind to what the messages actually say.
+DEFAULT_DUPLICATE_COUNT = 3
+MIN_DUPLICATE_COUNT = 2
+MAX_DUPLICATE_COUNT = 50
 
 # Excessive caps: trips when >= this percentage of the *letters* are uppercase.
 DEFAULT_CAPS_PERCENT = 70
@@ -85,10 +103,14 @@ class AutomodPolicy:
     invites_enabled: bool = DEFAULT_INVITES_ENABLED
     caps_enabled: bool = DEFAULT_CAPS_ENABLED
     mentions_enabled: bool = DEFAULT_MENTIONS_ENABLED
+    cross_channel_spam_enabled: bool = DEFAULT_CROSS_CHANNEL_SPAM_ENABLED
+    duplicate_enabled: bool = DEFAULT_DUPLICATE_ENABLED
     spam_count: int = DEFAULT_SPAM_COUNT
     spam_window_seconds: int = DEFAULT_SPAM_WINDOW_SECONDS
     caps_percent: int = DEFAULT_CAPS_PERCENT
     mentions_count: int = DEFAULT_MENTIONS_COUNT
+    cross_channel_spam_count: int = DEFAULT_CROSS_CHANNEL_SPAM_COUNT
+    duplicate_count: int = DEFAULT_DUPLICATE_COUNT
     exempt_role_ids: frozenset[int] = frozenset()
     exempt_channel_ids: frozenset[int] = frozenset()
 
@@ -100,6 +122,8 @@ class AutomodPolicy:
             or self.invites_enabled
             or self.caps_enabled
             or self.mentions_enabled
+            or self.cross_channel_spam_enabled
+            or self.duplicate_enabled
         )
 
 
@@ -180,6 +204,30 @@ async def load_policy(guild_id: int) -> AutomodPolicy:
         "mentions_count",
         DEFAULT_MENTIONS_COUNT,
     )
+    cross_channel_spam_enabled = await resolve_value(
+        guild_id,
+        SUBSYSTEM,
+        "cross_channel_spam_enabled",
+        DEFAULT_CROSS_CHANNEL_SPAM_ENABLED,
+    )
+    cross_channel_spam_count = await resolve_value(
+        guild_id,
+        SUBSYSTEM,
+        "cross_channel_spam_count",
+        DEFAULT_CROSS_CHANNEL_SPAM_COUNT,
+    )
+    duplicate_enabled = await resolve_value(
+        guild_id,
+        SUBSYSTEM,
+        "duplicate_enabled",
+        DEFAULT_DUPLICATE_ENABLED,
+    )
+    duplicate_count = await resolve_value(
+        guild_id,
+        SUBSYSTEM,
+        "duplicate_count",
+        DEFAULT_DUPLICATE_COUNT,
+    )
     exempt_roles_raw = await resolve_value(
         guild_id,
         SUBSYSTEM,
@@ -199,10 +247,14 @@ async def load_policy(guild_id: int) -> AutomodPolicy:
         invites_enabled=invites_enabled,
         caps_enabled=caps_enabled,
         mentions_enabled=mentions_enabled,
+        cross_channel_spam_enabled=cross_channel_spam_enabled,
+        duplicate_enabled=duplicate_enabled,
         spam_count=spam_count,
         spam_window_seconds=spam_window_seconds,
         caps_percent=caps_percent,
         mentions_count=mentions_count,
+        cross_channel_spam_count=cross_channel_spam_count,
+        duplicate_count=duplicate_count,
         exempt_role_ids=parse_id_csv(exempt_roles_raw),
         exempt_channel_ids=parse_id_csv(exempt_channels_raw),
     )

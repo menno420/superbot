@@ -1,9 +1,15 @@
 # Automod's spam rule is rate-only and per-channel — two related detection gaps
 
-> **Status:** `ideas` — capture only, not approved for implementation. Owner-raised 2026-07-07
-> ("I don't think there's currently a way to separate repeated messages from repeated duplicate
-> messages, and there might be more oversights related to this"), confirmed against
-> `disbot/services/automod_service.py`.
+> **Status:** `historical` — ✅ **SHIPPED same day, 2026-07-07.** Owner-raised ("I don't think
+> there's currently a way to separate repeated messages from repeated duplicate messages, and there
+> might be more oversights related to this"), confirmed against `disbot/services/automod_service.py`,
+> and fixed on the live bot rather than left for the rebuild to inherit — the owner flagged that a
+> golden-replay-driven port would otherwise faithfully reproduce the bug (see the "why fix live, not
+> just plan for it" note at the bottom). Both gaps closed: `SpamTracker.record_and_count_any_channel`
+> (cross-channel bucket) and the new `DuplicateTracker` + `automod.duplicate` rule, both through the
+> existing audited `moderation_service` seam. Tracked as punch #5/#6 on
+> [`../planning/feature-completion/units/automod.md`](../planning/feature-completion/units/automod.md),
+> now marked shipped there.
 > **Subsystem:** automod. Related: [`moderation-feature-gaps-2026-07-07.md`](./moderation-feature-gaps-2026-07-07.md)
 > (broader moderation feature parity, captured the same day — this doc is a narrower, code-verified
 > follow-on specific to the automod detection engine).
@@ -64,11 +70,23 @@ attachment/embed rules, no per-rule trigger-count view.
 3. Both should go through the same audited `moderation_service` seam the existing four rules use —
    no second escalation ladder, matching the rest of automod's design.
 
-## Recommended routing
+## Recommended routing — shipped, not deferred
 
-Feature-level, not architectural or rebuild-timing-sensitive — fits the existing automod subsystem's
-punch-list (`docs/planning/feature-completion/units/automod.md`) as additional items rather than a
-new subsystem. The per-channel-keying fix is small and isolated (one method in `automod_service.py`
-plus a new threshold setting); the duplicate-content rule is a similarly-sized, separate addition.
-Neither blocks anything else; reasonable to pick up whenever automod's punch-list is next worked, or
-sooner given the per-channel gap is a real, currently-live bypass of the only rate limit automod has.
+Originally scoped as "pick up whenever automod's punch-list is next worked." Revised same day: the
+owner pointed out the actual risk of leaving it as a plan note — the rebuild ports subsystems by
+replaying **goldens captured from the live bot's current behavior**, and the new bot is required to
+reproduce them byte-for-byte before it's allowed to merge (`red until parity`). Leaving the bug
+unfixed on the live bot would mean whatever golden gets captured for automod encodes the *buggy*
+behavior, and the new bot would then be obligated to reproduce that exact bug to pass its own parity
+gate — a plan footnote doesn't reliably prevent that, since golden-replay porting carries forward
+whatever it's given by default. The project's own existing rule already covers this case cleanly:
+"any PR that changes behavior a golden captures must re-capture the affected goldens in the same PR"
+(L-21) — so fixing it live now means the correction flows into the rebuild automatically the normal
+way, with no special-casing needed and no risk of the bug getting silently ported.
+
+Both rules shipped same day: `SpamTracker.record_and_count_any_channel` (cross-channel bucket, reusing
+the existing sliding-window mechanics via a sentinel key) and a new `DuplicateTracker` +
+`automod.duplicate` rule (guild+user-keyed normalized-content window), both through the existing
+audited `moderation_service` seam, both defaulting OFF like every other automod rule, both with test
+coverage including the negative case the owner specifically flagged (a burst of *different* messages
+must never trip the duplicate rule).

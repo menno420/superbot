@@ -1,14 +1,14 @@
 {
   "meta": {
-    "generated_at": "2026-07-07T08:25:26Z",
+    "generated_at": "2026-07-07T11:38:19Z",
     "build": {
-      "commit": "b06fe45",
-      "subject": "feat(economy): wire the ready-but-unwired transfer() to !pay / !transfer",
-      "committed_at": "2026-07-07T08:25:26Z"
+      "commit": "8bf5d3a",
+      "subject": "plan: Fable-5 ultracode brief to fold today's ideas into the rebuild plan",
+      "committed_at": "2026-07-07T11:38:19Z"
     },
     "counts": {
       "functions": 43,
-      "ideas": 201,
+      "ideas": 207,
       "bugs": 31,
       "reviews": 0,
       "reviews_open": 0,
@@ -16,9 +16,9 @@
       "env_vars": 39,
       "cogs": 55,
       "commands": 485,
-      "setting_keys": 120,
+      "setting_keys": 124,
       "setting_domains": 17,
-      "typed_settings": 100,
+      "typed_settings": 104,
       "visible_subsystems": 43,
       "synonyms": 87,
       "bot_changelog": 3
@@ -1165,11 +1165,62 @@
   ],
   "ideas": [
     {
+      "file": "automod-spam-detection-gaps-2026-07-07.md",
+      "title": "Automod's spam rule is rate-only and per-channel — two related detection gaps",
+      "status": "ideas",
+      "date": "2026-07-07",
+      "summary": "`SpamTracker` (`disbot/services/automod_service.py:56-91`) is the entirety of the \"repeated",
+      "subsystems": null
+    },
+    {
+      "file": "channel-role-scoped-authority-gap-2026-07-07.md",
+      "title": "Channel-level, role-scoped access is missing — live bot AND the frozen rebuild design",
+      "status": "ideas",
+      "date": "2026-07-07",
+      "summary": "express \"only role X in channel Y\":",
+      "subsystems": null
+    },
+    {
       "file": "claude-code-projects-for-the-rebuild-2026-07-07.md",
       "title": "Claude Code Projects (EAP) as the rebuild coordinator",
       "status": "ideas",
       "date": "2026-07-07",
       "summary": "Anthropic invited us to the **Claude Code Projects** early-access program. Use it as the",
+      "subsystems": null
+    },
+    {
+      "file": "guild-config-backup-and-data-export-gap-2026-07-07.md",
+      "title": "Two adjacent gaps: self-service guild-config backup/restore, and GDPR \"export my data\"",
+      "status": "ideas",
+      "date": "2026-07-07",
+      "summary": "The rebuild has thorough **infrastructure-level** backup/DR: S14 covers whole-database `pg_dump` /",
+      "subsystems": null
+    },
+    {
+      "file": "moderation-feature-gaps-2026-07-07.md",
+      "title": "Moderation feature gaps versus competitor bots (researched, most turned out already covered)",
+      "status": "ideas",
+      "date": "2026-07-07",
+      "summary": "The live bot already has ban/kick/timeout/warn with an escalation ladder, unban/clearwarnings/",
+      "subsystems": [
+        "moderation",
+        "security"
+      ]
+    },
+    {
+      "file": "substrate-kit-auto-drafted-handoff-2026-07-07.md",
+      "title": "Substrate-kit: auto-drafted session handoff (write-back without discipline)",
+      "status": "ideas",
+      "date": "2026-07-07",
+      "summary": "Both Phase-2.5 runs measured the same behavior: a session with a purpose-built decisions ledger,",
+      "subsystems": null
+    },
+    {
+      "file": "user-self-service-automation-scheduler-2026-07-07.md",
+      "title": "User-facing self-service automation scheduler (personal \"cron jobs\")",
+      "status": "ideas",
+      "date": "2026-07-07",
+      "summary": "Concrete examples given: \"send my rank every morning at 8am\"; \"after every 6 hours check on the",
       "subsystems": null
     },
     {
@@ -3041,9 +3092,33 @@
   "reviews": [],
   "updates": [
     {
+      "file": "2026-07-07-substrate-kit-enforcement.md",
+      "date": "2026-07-07",
+      "title": "2026-07-07 — substrate-kit: adopt installs the enforcement (the forcing functions)",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": true
+    },
+    {
+      "file": "2026-07-07-rebuild-plan-review-and-automation-idea.md",
+      "date": "2026-07-07",
+      "title": "2026-07-07 — Rebuild plan review (owner Q&A) + user-automation idea capture",
+      "status": "complete",
+      "run_type": "manual",
+      "self_initiated": true
+    },
+    {
       "file": "2026-07-07-rebuild-gate-runners-fable5.md",
       "date": "2026-07-07",
       "title": "2026-07-07 — Rebuild gate-runners: kit tail ① + Phase-2.5 A/B + check_amendments (canonical-plan §5 steps 1–3)",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": true
+    },
+    {
+      "file": "2026-07-07-rebuild-final-review-fable5.md",
+      "date": "2026-07-07",
+      "title": "2026-07-07 — Rebuild FINAL review (Fable 5, ultracode) + Projects-EAP repo prep",
       "status": "complete",
       "run_type": "",
       "self_initiated": true
@@ -3055,6 +3130,14 @@
       "status": "complete",
       "run_type": "",
       "self_initiated": false
+    },
+    {
+      "file": "2026-07-07-permission-allowlist-rediagnosis-q0242.md",
+      "date": "2026-07-07",
+      "title": "2026-07-07 — Permission-allowlist re-diagnosis (Q-0242): Q-0229's fix was unverified, and mostly unnecessary",
+      "status": "complete",
+      "run_type": "manual",
+      "self_initiated": true
     },
     {
       "file": "2026-07-07-fable5-final-review-brief-prep.md",
@@ -3486,38 +3569,6 @@
       "title": "2026-07-02 — Thirty-second Q-0107 reconciliation pass (band-#1650)",
       "status": "complete",
       "run_type": "routine",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-07-02-rebuild-strategy-and-substrate-planning.md",
-      "date": "2026-07-02",
-      "title": "2026-07-02 — Rebuild strategy + substrate-kit planning (interactive, owner-directed)",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-07-02-rebuild-execution-plan-and-memory-gate.md",
-      "date": "2026-07-02",
-      "title": "2026-07-02 — Rebuild: parallel-execution plan + AI-memory-system as the real new-repo gate",
-      "status": "complete",
-      "run_type": "manual",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-07-02-rebuild-design-spec.md",
-      "date": "2026-07-02",
-      "title": "2026-07-02 — Rebuild design spec: the \"one picture\" (docs-only, owner-gate deliverable)",
-      "status": "complete",
-      "run_type": "manual",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-07-02-rebuild-design-spec-revision.md",
-      "date": "2026-07-02",
-      "title": "2026-07-02 — Rebuild design spec: external-review revision (plain-language + verified gap-fixes)",
-      "status": "complete",
-      "run_type": "manual",
       "self_initiated": false
     }
   ],
@@ -10448,6 +10499,22 @@
           "default": false
         },
         {
+          "constant": "AUTOMOD_CROSS_CHANNEL_SPAM_ENABLED",
+          "key": "automod_cross_channel_spam_enabled",
+          "type": "bool",
+          "hint": "Delete + warn on a burst of messages from one member spread across MULTIPLE channels — the per-channel spam rule can't see this pattern since its window is scoped to one channel.",
+          "allowed_values": [],
+          "default": false
+        },
+        {
+          "constant": "AUTOMOD_DUPLICATE_ENABLED",
+          "key": "automod_duplicate_enabled",
+          "type": "bool",
+          "hint": "Delete + warn when the same message (any channel) repeats too many times — distinct from the spam rule, which is rate-only and doesn't look at what was actually said.",
+          "allowed_values": [],
+          "default": false
+        },
+        {
           "constant": "AUTOMOD_SPAM_COUNT",
           "key": "automod_spam_count",
           "type": "int",
@@ -10478,6 +10545,22 @@
           "hint": "Number of @mentions in one message before the mass-mention rule trips.",
           "allowed_values": [],
           "default": 4
+        },
+        {
+          "constant": "AUTOMOD_CROSS_CHANNEL_SPAM_COUNT",
+          "key": "automod_cross_channel_spam_count",
+          "type": "int",
+          "hint": "Messages from one member across ANY channels within the spam window before the cross-channel spam rule trips.",
+          "allowed_values": [],
+          "default": 4
+        },
+        {
+          "constant": "AUTOMOD_DUPLICATE_COUNT",
+          "key": "automod_duplicate_count",
+          "type": "int",
+          "hint": "Repeats of the same message (any channel) within the spam window before the duplicate-content rule trips.",
+          "allowed_values": [],
+          "default": 3
         },
         {
           "constant": "AUTOMOD_EXEMPT_ROLES",

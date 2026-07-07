@@ -9,15 +9,26 @@ escalation and audit stay one authority (see
 Public surface:
 
     AutomodVerdict          — (rule, reason) for a tripped rule
-    SpamTracker             — per (guild,user,channel) sliding-window counter
+    SpamTracker             — per (guild,user,channel) sliding-window counter,
+                              also used (keyed guild+user only) for the
+                              cross-channel spam rule
+    DuplicateTracker        — per (guild,user) sliding window of normalized
+                              content, for the repeated/duplicate-message rule
     find_invite(content)    — discord invite-link detector
     caps_ratio(content)     — uppercase-letter fraction (0..1)
     exceeds_caps(...)       — caps rule predicate
     mention_count(message)  — user + role (+ @everyone) mention tally
-    evaluate(message, policy, *, now, tracker) -> AutomodVerdict | None
+    evaluate(message, policy, *, now, tracker, duplicate_tracker)
+        -> AutomodVerdict | None
 
-The four rule types and their order match the owner-reviewed ``mock_automod_rules``
-exhibit: spam burst → invite links → excessive caps → mass mentions.
+The original four rule types and their order match the owner-reviewed
+``mock_automod_rules`` exhibit: spam burst → invite links → excessive caps →
+mass mentions. Two more were added 2026-07-07 (owner-raised gap: the spam rule
+is pure rate-counting and keyed per-channel, so it can neither separate a
+repeated/duplicate message from a burst of different ones, nor see a burst
+spread across multiple channels) and run right after the per-channel spam
+check: cross-channel spam burst → repeated/duplicate content → invite links →
+excessive caps → mass mentions.
 """
 
 from __future__ import annotations
@@ -61,6 +72,12 @@ class SpamTracker:
     which is harmless — a fresh window is the conservative choice).
     """
 
+    # Sentinel channel-component for the cross-channel bucket. Discord channel
+    # ids are always positive 64-bit snowflakes, so a negative value can never
+    # collide with a real channel — this lets the cross-channel rule reuse the
+    # exact same sliding-window mechanics/storage as the per-channel one.
+    _CROSS_CHANNEL_KEY = -1
+
     def __init__(self) -> None:
         self._hits: dict[tuple[int, int, int], deque[float]] = defaultdict(deque)
 
@@ -86,6 +103,26 @@ class SpamTracker:
             return 0
         return len(bucket)
 
+    def record_and_count_any_channel(
+        self,
+        guild_id: int,
+        user_id: int,
+        *,
+        window_seconds: float,
+        now: float | None = None,
+    ) -> int:
+        """Same sliding-window mechanics as :meth:`record_and_count`, but keyed
+        only on (guild, user) — catches a burst spread across multiple
+        channels, which the per-channel bucket structurally cannot see.
+        """
+        return self.record_and_count(
+            guild_id,
+            user_id,
+            self._CROSS_CHANNEL_KEY,
+            window_seconds=window_seconds,
+            now=now,
+        )
+
     def reset(self) -> None:
         """Drop all tracked windows (used by tests and on a guild leave)."""
         self._hits.clear()
@@ -98,6 +135,79 @@ _DEFAULT_TRACKER = SpamTracker()
 def default_tracker() -> SpamTracker:
     """Return the process-wide default :class:`SpamTracker`."""
     return _DEFAULT_TRACKER
+
+
+def _normalize_for_duplicate(content: str) -> str:
+    """Normalize content for duplicate comparison: casefold + collapse whitespace.
+
+    Trivial variation (extra spaces, casing) shouldn't defeat the check, but
+    this stops short of fuzzy matching — that's a deliberate v1 boundary
+    (higher false-positive risk, tracked separately).
+    """
+    return " ".join((content or "").split()).casefold()
+
+
+class DuplicateTracker:
+    """In-memory per (guild, user) sliding window of normalized message content.
+
+    Distinct from :class:`SpamTracker`: this counts how many of the messages
+    currently in the window share the *same* normalized content, independent
+    of overall message rate — a burst of five different messages and the same
+    message repeated five times look identical to a pure rate counter, but not
+    to this one. Keyed guild+user only (not per-channel) so it also catches
+    the same message copy-pasted across different channels.
+
+    State is process-local, same restart-reset rationale as ``SpamTracker``
+    (ADR-002).
+    """
+
+    def __init__(self) -> None:
+        self._hits: dict[tuple[int, int], deque[tuple[float, str]]] = defaultdict(
+            deque,
+        )
+
+    def record_and_count(
+        self,
+        guild_id: int,
+        user_id: int,
+        content: str,
+        *,
+        window_seconds: float,
+        now: float | None = None,
+    ) -> int:
+        """Record a message's normalized content and return how many messages
+        currently in the window share that same normalized content (including
+        this one). Empty/whitespace-only content never counts — a run of
+        blank messages (e.g. attachment-only posts) shouldn't trip this rule;
+        that's a different, not-yet-built rule class.
+        """
+        normalized = _normalize_for_duplicate(content)
+        ts = time.monotonic() if now is None else now
+        key = (guild_id, user_id)
+        bucket = self._hits[key]
+        bucket.append((ts, normalized))
+        cutoff = ts - window_seconds
+        while bucket and bucket[0][0] < cutoff:
+            bucket.popleft()
+        if not bucket:  # pragma: no cover - bucket always holds the just-added entry
+            del self._hits[key]
+            return 0
+        if not normalized:
+            return 0
+        return sum(1 for _, c in bucket if c == normalized)
+
+    def reset(self) -> None:
+        """Drop all tracked windows (used by tests and on a guild leave)."""
+        self._hits.clear()
+
+
+# Module-level default tracker — one per process, shared by the stage.
+_DEFAULT_DUPLICATE_TRACKER = DuplicateTracker()
+
+
+def default_duplicate_tracker() -> DuplicateTracker:
+    """Return the process-wide default :class:`DuplicateTracker`."""
+    return _DEFAULT_DUPLICATE_TRACKER
 
 
 # ---------------------------------------------------------------------------
@@ -176,25 +286,27 @@ def evaluate(
     *,
     now: float | None = None,
     tracker: SpamTracker | None = None,
+    duplicate_tracker: DuplicateTracker | None = None,
 ) -> AutomodVerdict | None:
     """Return the first tripped rule for ``message`` under ``policy``, or None.
 
     The caller is responsible only for having confirmed ``policy.enabled``.
-    Exempt channels/roles short-circuit to None.  The spam window is always
-    *recorded* (when the spam rule is on) so a later message still sees the
-    burst, even when an earlier message in the burst tripped a different rule.
+    Exempt channels/roles short-circuit to None.  Every window-based rule
+    (spam, cross-channel spam, duplicate content) is always *recorded* first
+    (when that rule is on) so a later message still sees the accumulated
+    window, even when an earlier message in the burst tripped a different rule.
     """
     if _is_exempt(message, policy):
         return None
 
     content = getattr(message, "content", "") or ""
+    guild_id = getattr(getattr(message, "guild", None), "id", 0) or 0
+    author_id = getattr(getattr(message, "author", None), "id", 0) or 0
+    channel_id = getattr(getattr(message, "channel", None), "id", 0) or 0
+    trk = tracker if tracker is not None else _DEFAULT_TRACKER
 
     # Spam burst — record first (so the window is accurate) then test.
     if policy.spam_enabled:
-        trk = tracker if tracker is not None else _DEFAULT_TRACKER
-        guild_id = getattr(getattr(message, "guild", None), "id", 0) or 0
-        author_id = getattr(getattr(message, "author", None), "id", 0) or 0
-        channel_id = getattr(getattr(message, "channel", None), "id", 0) or 0
         count = trk.record_and_count(
             guild_id,
             author_id,
@@ -208,6 +320,50 @@ def evaluate(
                 reason=(
                     f"Spam: {count} messages in "
                     f"{policy.spam_window_seconds}s (limit {policy.spam_count})"
+                ),
+            )
+
+    # Cross-channel spam burst — a raid pattern the per-channel bucket above
+    # structurally cannot see (spreading across channels never accumulates in
+    # any single per-channel bucket).
+    if policy.cross_channel_spam_enabled:
+        cross_count = trk.record_and_count_any_channel(
+            guild_id,
+            author_id,
+            window_seconds=policy.spam_window_seconds,
+            now=now,
+        )
+        if cross_count >= policy.cross_channel_spam_count:
+            return AutomodVerdict(
+                rule="automod.cross_channel_spam",
+                reason=(
+                    f"Cross-channel spam: {cross_count} messages across "
+                    f"channels in {policy.spam_window_seconds}s "
+                    f"(limit {policy.cross_channel_spam_count})"
+                ),
+            )
+
+    # Repeated/duplicate content — distinct from spam rate: trips when the
+    # same normalized content repeats, regardless of how fast it's arriving.
+    if policy.duplicate_enabled:
+        dup_trk = (
+            duplicate_tracker
+            if duplicate_tracker is not None
+            else _DEFAULT_DUPLICATE_TRACKER
+        )
+        dup_count = dup_trk.record_and_count(
+            guild_id,
+            author_id,
+            content,
+            window_seconds=policy.spam_window_seconds,
+            now=now,
+        )
+        if dup_count >= policy.duplicate_count:
+            return AutomodVerdict(
+                rule="automod.duplicate",
+                reason=(
+                    f"Repeated message: {dup_count}x in "
+                    f"{policy.spam_window_seconds}s (limit {policy.duplicate_count})"
                 ),
             )
 

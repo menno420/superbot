@@ -25,6 +25,10 @@ from core.runtime.subsystem_schema import (
 from services.automod_config import (
     DEFAULT_CAPS_ENABLED,
     DEFAULT_CAPS_PERCENT,
+    DEFAULT_CROSS_CHANNEL_SPAM_COUNT,
+    DEFAULT_CROSS_CHANNEL_SPAM_ENABLED,
+    DEFAULT_DUPLICATE_COUNT,
+    DEFAULT_DUPLICATE_ENABLED,
     DEFAULT_ENABLED,
     DEFAULT_EXEMPT_CHANNELS,
     DEFAULT_EXEMPT_ROLES,
@@ -35,10 +39,14 @@ from services.automod_config import (
     DEFAULT_SPAM_ENABLED,
     DEFAULT_SPAM_WINDOW_SECONDS,
     MAX_CAPS_PERCENT,
+    MAX_CROSS_CHANNEL_SPAM_COUNT,
+    MAX_DUPLICATE_COUNT,
     MAX_MENTIONS_COUNT,
     MAX_SPAM_COUNT,
     MAX_SPAM_WINDOW_SECONDS,
     MIN_CAPS_PERCENT,
+    MIN_CROSS_CHANNEL_SPAM_COUNT,
+    MIN_DUPLICATE_COUNT,
     MIN_MENTIONS_COUNT,
     MIN_SPAM_COUNT,
     MIN_SPAM_WINDOW_SECONDS,
@@ -47,6 +55,10 @@ from services.automod_config import (
 from utils.settings_keys import (
     AUTOMOD_CAPS_ENABLED,
     AUTOMOD_CAPS_PERCENT,
+    AUTOMOD_CROSS_CHANNEL_SPAM_COUNT,
+    AUTOMOD_CROSS_CHANNEL_SPAM_ENABLED,
+    AUTOMOD_DUPLICATE_COUNT,
+    AUTOMOD_DUPLICATE_ENABLED,
     AUTOMOD_ENABLED,
     AUTOMOD_EXEMPT_CHANNELS,
     AUTOMOD_EXEMPT_ROLES,
@@ -88,6 +100,14 @@ def _validate_caps_percent(value: object) -> None:
 
 def _validate_mentions_count(value: object) -> None:
     _bounded_int(value, MIN_MENTIONS_COUNT, MAX_MENTIONS_COUNT)
+
+
+def _validate_cross_channel_spam_count(value: object) -> None:
+    _bounded_int(value, MIN_CROSS_CHANNEL_SPAM_COUNT, MAX_CROSS_CHANNEL_SPAM_COUNT)
+
+
+def _validate_duplicate_count(value: object) -> None:
+    _bounded_int(value, MIN_DUPLICATE_COUNT, MAX_DUPLICATE_COUNT)
 
 
 def _validate_id_csv(value: object) -> None:
@@ -162,6 +182,32 @@ AUTOMOD_SETTINGS: tuple[SettingSpec, ...] = (
         validator=_validate_bool,
     ),
     SettingSpec(
+        name="cross_channel_spam_enabled",
+        value_type=bool,
+        default=DEFAULT_CROSS_CHANNEL_SPAM_ENABLED,
+        settings_key=AUTOMOD_CROSS_CHANNEL_SPAM_ENABLED,
+        capability_required=_AUTOMOD_CAPABILITY,
+        hint=(
+            "Delete + warn on a burst of messages from one member spread "
+            "across MULTIPLE channels — the per-channel spam rule can't see "
+            "this pattern since its window is scoped to one channel."
+        ),
+        validator=_validate_bool,
+    ),
+    SettingSpec(
+        name="duplicate_enabled",
+        value_type=bool,
+        default=DEFAULT_DUPLICATE_ENABLED,
+        settings_key=AUTOMOD_DUPLICATE_ENABLED,
+        capability_required=_AUTOMOD_CAPABILITY,
+        hint=(
+            "Delete + warn when the same message (any channel) repeats too "
+            "many times — distinct from the spam rule, which is rate-only "
+            "and doesn't look at what was actually said."
+        ),
+        validator=_validate_bool,
+    ),
+    SettingSpec(
         name="spam_count",
         value_type=int,
         default=DEFAULT_SPAM_COUNT,
@@ -210,6 +256,34 @@ AUTOMOD_SETTINGS: tuple[SettingSpec, ...] = (
         validator=_validate_mentions_count,
         input_hint="numeric_presets",
         presets=(4, 5, 8),
+    ),
+    SettingSpec(
+        name="cross_channel_spam_count",
+        value_type=int,
+        default=DEFAULT_CROSS_CHANNEL_SPAM_COUNT,
+        settings_key=AUTOMOD_CROSS_CHANNEL_SPAM_COUNT,
+        capability_required=_AUTOMOD_CAPABILITY,
+        hint=(
+            "Messages from one member across ANY channels within the spam "
+            "window before the cross-channel spam rule trips."
+        ),
+        validator=_validate_cross_channel_spam_count,
+        input_hint="numeric_presets",
+        presets=(3, 4, 6),
+    ),
+    SettingSpec(
+        name="duplicate_count",
+        value_type=int,
+        default=DEFAULT_DUPLICATE_COUNT,
+        settings_key=AUTOMOD_DUPLICATE_COUNT,
+        capability_required=_AUTOMOD_CAPABILITY,
+        hint=(
+            "Repeats of the same message (any channel) within the spam "
+            "window before the duplicate-content rule trips."
+        ),
+        validator=_validate_duplicate_count,
+        input_hint="numeric_presets",
+        presets=(2, 3, 5),
     ),
     SettingSpec(
         name="exempt_roles",

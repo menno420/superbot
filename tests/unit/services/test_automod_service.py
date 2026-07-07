@@ -106,6 +106,72 @@ def test_spam_tracker_separates_keys():
     assert trk.record_and_count(1, 2, 99, window_seconds=10, now=0.0) == 1
 
 
+def test_spam_tracker_cross_channel_accumulates_across_channels():
+    trk = automod_service.SpamTracker()
+    # Same guild/user, three DIFFERENT channels — the per-channel bucket
+    # would see 1 in each; the cross-channel bucket must see all three.
+    counts = [
+        trk.record_and_count_any_channel(1, 2, window_seconds=10, now=float(t))
+        for t in range(3)
+    ]
+    assert counts == [1, 2, 3]
+
+
+def test_spam_tracker_cross_channel_is_independent_of_per_channel_buckets():
+    trk = automod_service.SpamTracker()
+    # Each message records into BOTH its per-channel bucket and the
+    # cross-channel bucket, mirroring how evaluate() drives the tracker.
+    trk.record_and_count(1, 2, 100, window_seconds=10, now=0.0)
+    trk.record_and_count_any_channel(1, 2, window_seconds=10, now=0.0)
+    trk.record_and_count(1, 2, 200, window_seconds=10, now=0.0)
+    trk.record_and_count_any_channel(1, 2, window_seconds=10, now=0.0)
+    # The per-channel bucket for 100 only ever saw itself + this new one = 2;
+    # the cross-channel bucket saw all three messages regardless of channel.
+    assert trk.record_and_count(1, 2, 100, window_seconds=10, now=0.0) == 2
+    assert trk.record_and_count_any_channel(1, 2, window_seconds=10, now=0.0) == 3
+
+
+# ---------------------------------------------------------------------------
+# DuplicateTracker
+# ---------------------------------------------------------------------------
+
+
+def test_duplicate_tracker_counts_matching_content():
+    trk = automod_service.DuplicateTracker()
+    counts = [
+        trk.record_and_count(1, 2, "buy gold now", window_seconds=10, now=float(t))
+        for t in range(3)
+    ]
+    assert counts == [1, 2, 3]
+
+
+def test_duplicate_tracker_ignores_different_content():
+    trk = automod_service.DuplicateTracker()
+    trk.record_and_count(1, 2, "hello", window_seconds=10, now=0.0)
+    # Different content in the same window → its own count of 1, not 2.
+    assert trk.record_and_count(1, 2, "goodbye", window_seconds=10, now=0.0) == 1
+
+
+def test_duplicate_tracker_normalizes_case_and_whitespace():
+    trk = automod_service.DuplicateTracker()
+    trk.record_and_count(1, 2, "Buy Gold Now", window_seconds=10, now=0.0)
+    assert trk.record_and_count(1, 2, "buy   gold   now", window_seconds=10, now=0.0) == 2
+
+
+def test_duplicate_tracker_ignores_empty_content():
+    trk = automod_service.DuplicateTracker()
+    trk.record_and_count(1, 2, "", window_seconds=10, now=0.0)
+    # Blank messages never count toward a duplicate trip.
+    assert trk.record_and_count(1, 2, "   ", window_seconds=10, now=0.0) == 0
+
+
+def test_duplicate_tracker_evicts_outside_window():
+    trk = automod_service.DuplicateTracker()
+    trk.record_and_count(1, 2, "spam", window_seconds=5, now=0.0)
+    trk.record_and_count(1, 2, "spam", window_seconds=5, now=1.0)
+    assert trk.record_and_count(1, 2, "spam", window_seconds=5, now=10.0) == 1
+
+
 # ---------------------------------------------------------------------------
 # evaluate — rule ordering + exemptions
 # ---------------------------------------------------------------------------
@@ -163,4 +229,65 @@ def test_evaluate_exempt_channel_short_circuits():
 def test_evaluate_exempt_role_short_circuits():
     pol = _policy(invites_enabled=True, exempt_role_ids=frozenset({77}))
     msg = _msg(content="discord.gg/x", role_ids=(77,))
+    assert automod_service.evaluate(msg, pol) is None
+
+
+def test_evaluate_cross_channel_spam_rule_trips_across_channels():
+    trk = automod_service.SpamTracker()
+    pol = _policy(cross_channel_spam_enabled=True, cross_channel_spam_count=3)
+    verdicts = [
+        automod_service.evaluate(
+            _msg(content=f"msg {t}", channel_id=100 + t),
+            pol,
+            now=float(t),
+            tracker=trk,
+        )
+        for t in range(3)
+    ]
+    # A per-channel spam burst would never trip here — every message lands in
+    # a different channel — but the cross-channel counter must still catch it.
+    assert verdicts[0] is None and verdicts[1] is None
+    assert verdicts[2] is not None and verdicts[2].rule == "automod.cross_channel_spam"
+
+
+def test_evaluate_duplicate_rule_trips_on_repeated_content():
+    dup_trk = automod_service.DuplicateTracker()
+    pol = _policy(duplicate_enabled=True, duplicate_count=3)
+    verdicts = [
+        automod_service.evaluate(
+            _msg(content="buy gold now"),
+            pol,
+            now=float(t),
+            duplicate_tracker=dup_trk,
+        )
+        for t in range(3)
+    ]
+    assert verdicts[0] is None and verdicts[1] is None
+    assert verdicts[2] is not None and verdicts[2].rule == "automod.duplicate"
+
+
+def test_evaluate_duplicate_rule_does_not_trip_on_a_burst_of_different_messages():
+    """The owner's exact concern: different messages, even fast, must not trip
+    the duplicate rule — only repeated identical content should."""
+    dup_trk = automod_service.DuplicateTracker()
+    pol = _policy(duplicate_enabled=True, duplicate_count=3)
+    verdicts = [
+        automod_service.evaluate(
+            _msg(content=f"message number {t}"),
+            pol,
+            now=float(t),
+            duplicate_tracker=dup_trk,
+        )
+        for t in range(5)
+    ]
+    assert all(v is None for v in verdicts)
+
+
+def test_evaluate_cross_channel_spam_exempt_role_short_circuits():
+    pol = _policy(
+        cross_channel_spam_enabled=True,
+        cross_channel_spam_count=1,
+        exempt_role_ids=frozenset({77}),
+    )
+    msg = _msg(content="hi", role_ids=(77,))
     assert automod_service.evaluate(msg, pol) is None
