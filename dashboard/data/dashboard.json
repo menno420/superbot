@@ -1,14 +1,14 @@
 {
   "meta": {
-    "generated_at": "2026-07-07T23:37:15Z",
+    "generated_at": "2026-07-08T01:04:53Z",
     "build": {
-      "commit": "895e24b1",
-      "subject": "Merge pull request #1814 from menno420/claude/superbot-coordinator-kickoff-arqdye",
-      "committed_at": "2026-07-07T23:37:15Z"
+      "commit": "4c25a1fa",
+      "subject": "Merge pull request #1823 from menno420/claude/superbot-coordinator-kickoff-arqdye",
+      "committed_at": "2026-07-08T01:04:53Z"
     },
     "counts": {
       "functions": 43,
-      "ideas": 212,
+      "ideas": 213,
       "bugs": 31,
       "reviews": 0,
       "reviews_open": 0,
@@ -1237,6 +1237,14 @@
       "status": "ideas",
       "date": "2026-07-07",
       "summary": "The band-#1770 pass captured the",
+      "subsystems": null
+    },
+    {
+      "file": "session-start-staleness-banner-2026-07-07.md",
+      "title": "SessionStart staleness banner — detect a behind-origin clone before it lies to you",
+      "status": "ideas",
+      "date": "2026-07-07",
+      "summary": "The SuperBot Project coordinator's container clone was **7 merged PRs behind origin** at its",
       "subsystems": null
     },
     {
@@ -3236,6 +3244,14 @@
       "self_initiated": false
     },
     {
+      "file": "2026-07-07-projects-eap-eval-journal.md",
+      "date": "2026-07-07",
+      "title": "2026-07-07 — Projects-EAP evaluation journal (guidebook-prescribed) + seed entries",
+      "status": "complete",
+      "run_type": "manual",
+      "self_initiated": true
+    },
+    {
       "file": "2026-07-07-projects-eap-coordinator-kickoff.md",
       "date": "2026-07-07",
       "title": "2026-07-07 — Projects EAP: wiring the coordinator onto the rebuild §5 sequence",
@@ -3599,14 +3615,6 @@
       "file": "2026-07-03-rebuild-hub-navigation.md",
       "date": "2026-07-03",
       "title": "2026-07-03 — Rebuild Phase A · hub topology + navigation contract + interface presets (owner-live)",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-07-03-rebuild-conventions-freeze.md",
-      "date": "2026-07-03",
-      "title": "2026-07-03 — Rebuild Phase A · conventions freeze (owner-live, continued)",
       "status": "complete",
       "run_type": "",
       "self_initiated": false
