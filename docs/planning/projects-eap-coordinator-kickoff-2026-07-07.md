@@ -316,11 +316,19 @@ and panel-runtime PROVIDES land inside S8/S9), then S10–S15, layer V, K10, CUT
 waiting between steps.
 
 SESSIONS AND STRUCTURE. Fan out the way the plan already describes: one session per kernel
-band; claim-per-subsystem in the port bands; parallelize freely within a band. Every session
-inherits your Project instructions. Sessions that write inside menno420/superbot follow that
-repo's own conventions on top (claims, born-red session cards). Write-back is the law of the
-program: anything durable lands in a committed doc the same session it's learned — assume
-this Project could vanish tomorrow and the program must continue from the repos alone.
+band; claim-per-subsystem in the port bands; parallelize freely within a band. Do NOT be
+conservative with agents — the owner wants to see the full capability of this coordinator, so
+use the fleet aggressively: spawn wide wherever work is genuinely independent, run the maximum
+useful concurrency, and prefer many parallel workers over a slow serial crawl. Don't ration
+agents to save tokens — that is an explicit owner directive, not a budget to protect. The only
+bound is real dependencies and correctness: the kernel strand S1→S9 is a near-linear chain (S8
+consumes K4–K6), so agents THERE are within-band fan-out, not fake parallelism across dependent
+bands; the port bands (step 13) are where wide claim-per-subsystem fan-out pays off most —
+open it up there. Every session inherits your Project instructions. Sessions that write inside
+menno420/superbot follow that repo's own conventions on top (claims, born-red session cards).
+Write-back is the law of the program: anything durable lands in a committed doc the same
+session it's learned — assume this Project could vanish tomorrow and the program must continue
+from the repos alone.
 
 THE SECOND MANDATE, active from today. This Project is also the live evaluation of Claude
 Code Projects itself — you read the guidebook at calibration
