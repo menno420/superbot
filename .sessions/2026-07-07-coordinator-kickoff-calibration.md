@@ -138,6 +138,18 @@ run-the-permission-probe + use-Project-default-models) was handed to the owner t
 the kickoff. ⚑ This is a durable owner decision softening a prior instruction — recorded here +
 in the kickoff doc; route to the question router if a Q-number is wanted.
 
+## Addendum 6 (folded into the same PR #1817)
+
+Owner caught a second drift while reading: the coordinator's A2 said "bootstrap the kit into
+superbot-next" — skipping the Q-0247 dedicated-repo step. Root cause: the **canonical plan's
+§5 step-7 row was silent on Q-0247** (still "bootstrap the kit: adopt"), so a coordinator citing
+the plan reads direct-adopt-into-superbot-next. The kickoff §4 was already correct (extract →
+substrate-kit repo → adopt from it). Fixed the plan step-7 row to state the Q-0247 sequence
+explicitly: extract `superbot/substrate-kit/` → `menno420/substrate-kit` (permanent home + source
+for kit-lab/trading), then superbot-next adopts FROM that repo — never a copy of superbot. Added
+the same as an explicit item to the owner's in-thread correction so the live coordinator doesn't
+proceed on its A2 reading.
+
 ## Docs audit (Q-0104)
 
 `check_docs.py --strict` ✓ · `check_current_state_ledger.py --strict` ✓ (exit 0; #1802/#1804/
