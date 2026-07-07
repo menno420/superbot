@@ -15,6 +15,36 @@ and the build decomposition live in
 this FastAPI app with its data layer generated live from `site.json`. The earlier
 server-rendered Jinja pages (`templates/`) remain wired as a working fallback.
 
+**The v2 estate (2026-07-07, the program design session)** adds three new surfaces
+on top — all new files; the v1 design-owned files stay untouched:
+
+- **`botsite/ds/` — the program design system.** Shared foundation for every
+  program site: `tokens.css` (semantic tokens, dark-first + a full light theme),
+  `components.css` (the component library), `ds.js` (theme manager, icons,
+  dataviz-spec chart renderers, the Ctrl+K command palette). Living style guide at
+  **`/design`** — it renders every token + component from the real CSS and is the
+  system's own test surface.
+- **`botsite/site/v2/` — the v2 public site** on that system, always reachable at
+  **`/v2`**. `/` keeps serving v1 until the owner sets **`BOTSITE_FRONTEND=v2`** on
+  the Railway service (rollback = unset it). v2 adds the full 43-feature catalogue
+  with per-feature pages + area hubs, a filterable commands browser, the global
+  command palette, a real light theme, honest build provenance, and suggestion
+  links that route to the real `/submit` intake.
+- **`botsite/console/` — the program console** at **`/console`**: the owner's
+  one-glance page. Real lanes render the committed `botsite/data/console.json`
+  feed (session run reports with ⚑ self-initiated flags, ideas/bugs counters, the
+  changelog); missing feeds render as *declared* pending lanes (Q-0248 telemetry,
+  rebuild parity, Q-0251 trading) — never fake data. Regenerate the feed with
+  `python3.10 scripts/export_dashboard_data.py --targets console` (the default
+  export also writes it).
+
+The UX regression harness for all of this lives in `tools/web_ux/`
+(`check_web_ux.py` — task-success checklist with interaction budgets, nav
+coverage, perf + a11y budgets; `screenshot_pages.py` — full-page captures both
+themes × three widths). Run it before shipping front-end changes. The shipped
+state's rendered proof lives in
+[`docs/planning/website-v2-verification-2026-07-07.md`](../docs/planning/website-v2-verification-2026-07-07.md).
+
 ## The front-end — the Claude-Design SPA (what visitors see)
 
 The public front-end is the **Claude-Design single-page app** in `botsite/site/`

@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>SuperBot — one bot for your whole Discord server</title>
+    <meta name="description" content="Games, moderation, economy, AI tools and more — every SuperBot command, feature and game documented, searchable and honest about its status." />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,500;12..96,600;12..96,700;12..96,800&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="/ds/tokens.css" />
+    <link rel="stylesheet" href="/ds/components.css" />
+    <link rel="stylesheet" href="/v2/app.css" />
+    <script>
+      /* pre-paint theme (no flash): mirror of SBDS.theme.init() */
+      try { var t = localStorage.getItem("sb:theme"); if (t === "light" || t === "dark") document.documentElement.setAttribute("data-theme", t); } catch (e) {}
+    </script>
+  </head>
+  <body>
+    <a class="sb-skip" href="#app">Skip to content</a>
+    <nav class="sb-nav" aria-label="Main">
+      <div class="sb-wrap sb-nav-in">
+        <a href="#/" class="sb-brand"><span class="sb-brand-tile" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="8" width="16" height="11" rx="3"/><path d="M12 8V4M8 3v2M16 3v2"/><circle cx="9" cy="13" r="1"/><circle cx="15" cy="13" r="1"/></svg></span> SuperBot</a>
+        <span class="sb-nav-links">
+          <a href="#/features" class="sb-nav-link" data-nav="features">Features</a>
+          <a href="#/commands" class="sb-nav-link" data-nav="commands">Commands</a>
+          <a href="#/games" class="sb-nav-link" data-nav="games">Games</a>
+          <a href="#/changelog" class="sb-nav-link" data-nav="changelog">Changelog</a>
+          <a href="#/status" class="sb-nav-link" data-nav="status">Status</a>
+        </span>
+        <span class="sb-nav-spacer"></span>
+        <a href="#/status" class="sb-nav-status" data-status-chip></a>
+        <button class="sb-iconbtn sb-searchbtn" data-palette-open title="Search the site (Ctrl+K)"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4-4"/></svg> <kbd class="sb-kbd">⌘K</kbd><span class="sb-visually-hidden">Search</span></button>
+        <button class="sb-iconbtn" data-theme-toggle aria-pressed="false" title="Toggle theme"></button>
+        <a href="#" class="sb-btn sb-btn-primary sb-btn-sm v2-add" data-add-url>Add to Discord</a>
+        <button class="sb-iconbtn sb-menubtn" data-menu-toggle aria-expanded="false" aria-controls="v2-drawer" title="Menu"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg><span class="sb-visually-hidden">Menu</span></button>
+      </div>
+    </nav>
+    <div class="sb-drawer" id="v2-drawer" data-drawer>
+      <a href="#/features" class="sb-nav-link" data-nav="features">Features</a>
+      <a href="#/commands" class="sb-nav-link" data-nav="commands">Commands</a>
+      <a href="#/games" class="sb-nav-link" data-nav="games">Games</a>
+      <a href="#/changelog" class="sb-nav-link" data-nav="changelog">Changelog</a>
+      <a href="#/status" class="sb-nav-link" data-nav="status">Status</a>
+      <a href="#" class="sb-btn sb-btn-primary sb-btn-sm" data-add-url style="margin-top:10px;justify-content:center">Add to Discord</a>
+    </div>
+
+    <main id="app" tabindex="-1"></main>
+
+    <script src="/data.js"></script>
+    <script src="/ds/ds.js"></script>
+    <script src="/v2/app.js"></script>
+  </body>
+</html>

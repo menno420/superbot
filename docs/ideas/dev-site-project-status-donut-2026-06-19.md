@@ -4,6 +4,13 @@
 > maintainer came back mid-session specifically to record this so it wasn't forgotten. Source +
 > binding contracts + `current-state.md` win over this file.
 > **Subsystem:** none — this is a dev-site / workflow surface, not a bot feature.
+>
+> **Progress note (2026-07-07, PR #1802):** the *"plans & execution at a glance"* half shipped as
+> the **program console** (`/console` on the botsite service) — session run-report feed with ⚑
+> flags, ideas/bugs status counters (single-hue bars per the dataviz rules — a donut over-encodes
+> this data), deploy/changelog lane, and declared lanes for telemetry/parity/trading. Remaining
+> tail if still wanted: the per-subsystem / per-cog roll-up levels (§1) on the dev site itself,
+> reading the same `_subsystem_open_work` source.
 
 ## The ask (owner intent)
 A status graph on the **developer site** (`dashboard/`) showing **plans & execution at a glance** —

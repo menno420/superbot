@@ -28,13 +28,9 @@ if str(_BASE_DIR) not in sys.path:
 
 import data_loader  # noqa: E402  - sibling, after the sys.path shim above
 
-# The bot's public install link — the Discord "Add App" / OAuth2 authorize URL. The
-# bare ``client_id`` link uses the app's *default install settings* (scopes +
-# permissions) configured in the Discord developer portal, so it is the canonical
-# one-click invite.
-ADD_TO_DISCORD_URL = (
-    "https://discord.com/oauth2/authorize?client_id=1403818430758654132"
-)
+# The bot's public install link — single-sourced in site_data.py (stdlib) so the
+# Jinja chrome and the generated SBDATA (ADD_URL) can never drift apart.
+from site_data import ADD_TO_DISCORD_URL  # noqa: E402,F401  - sibling re-export
 
 
 def site_context(request: Request) -> dict[str, Any]:

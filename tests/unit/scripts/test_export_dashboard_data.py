@@ -575,6 +575,7 @@ def test_cli_targets_site_writes_only_site_json(mod, tmp_path):
     dash = tmp_path / "dashboard.json"
     site = tmp_path / "site.json"
     data_js = tmp_path / "data.js"
+    console = tmp_path / "console.json"
     rc = mod.main(
         [
             "--targets",
@@ -585,6 +586,8 @@ def test_cli_targets_site_writes_only_site_json(mod, tmp_path):
             str(site),
             "--data-js-output",
             str(data_js),
+            "--console-output",
+            str(console),
         ],
     )
     assert rc == 0
@@ -593,12 +596,14 @@ def test_cli_targets_site_writes_only_site_json(mod, tmp_path):
         data_js.exists()
     )  # the SPA layer is written alongside, to the redirected path
     assert not dash.exists()  # --targets site must not write the dashboard payload
+    assert not console.exists()  # --targets site must not write the console feed
 
 
-def test_cli_targets_both_writes_both(mod, tmp_path):
+def test_cli_targets_both_writes_all_three(mod, tmp_path):
     dash = tmp_path / "dashboard.json"
     site = tmp_path / "site.json"
     data_js = tmp_path / "data.js"
+    console = tmp_path / "console.json"
     rc = mod.main(
         [
             "--output",
@@ -607,14 +612,60 @@ def test_cli_targets_both_writes_both(mod, tmp_path):
             str(site),
             "--data-js-output",
             str(data_js),
+            "--console-output",
+            str(console),
         ],
     )
     assert rc == 0
-    assert dash.exists() and site.exists()
+    assert dash.exists() and site.exists() and console.exists()
     import json
 
     site_data = json.loads(site.read_text(encoding="utf-8"))
     assert set(site_data) == set(mod.SITE_TOPLEVEL_KEYS)
+    console_data = json.loads(console.read_text(encoding="utf-8"))
+    assert set(console_data) == set(mod.CONSOLE_TOPLEVEL_KEYS)
+
+
+# --- the program-console feed (console.json) --------------------------------
+
+
+def test_console_subset_whitelist_and_shapes(mod):
+    subset = mod.build_console_subset(mod.build_data())
+    # Redaction by construction: exactly the whitelisted families, nothing else.
+    assert set(subset) == set(mod.CONSOLE_TOPLEVEL_KEYS)
+    # The dev-only value families physically cannot appear.
+    assert not ({"env_usage", "settings", "access", "reviews", "cogs"} & set(subset))
+    for entry in subset["sessions"]:
+        assert set(entry) == set(mod.CONSOLE_SESSION_FIELDS)
+    assert {"total", "by_status"} <= set(subset["ideas"])
+    assert {"total", "by_status", "open"} <= set(subset["bugs"])
+    for bug in subset["bugs"]["open"]:
+        # Titles + ids only — never full bug bodies on the console feed.
+        assert set(bug) == {"id", "title", "status"}
+    assert len(subset["bugs"]["open"]) <= 10
+
+
+def test_cli_targets_console_writes_only_console(mod, tmp_path):
+    dash = tmp_path / "dashboard.json"
+    site = tmp_path / "site.json"
+    console = tmp_path / "console.json"
+    rc = mod.main(
+        [
+            "--targets",
+            "console",
+            "--output",
+            str(dash),
+            "--site-output",
+            str(site),
+            "--data-js-output",
+            str(tmp_path / "data.js"),
+            "--console-output",
+            str(console),
+        ],
+    )
+    assert rc == 0
+    assert console.exists()
+    assert not dash.exists() and not site.exists()
 
 
 def test_cli_does_not_clobber_tracked_data_js_when_redirected(mod, tmp_path):
