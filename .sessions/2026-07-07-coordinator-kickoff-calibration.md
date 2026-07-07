@@ -173,6 +173,30 @@ fan-out, not fake cross-band parallelism per the plan's own D-19 correction), th
 (step 13) are where wide claim-per-subsystem fan-out pays off. Also delivered the complete
 finalized prompt (corrections + full kickoff body) to the owner to paste.
 
+## Addendum 9 (ninth PR — coordinator live; step-8 flag + working-relationship inquiry)
+
+Coordinator accepted the program and ran an aggressive first stretch (4 parallel workers:
+step-7 extraction, evaluation-journal PR #1820 born-red, permission probe, sync/brief). Its read
+of steps 7–8 was correct (understood step 7 as making the kit's home *canonical* upstream; step-8
+gate risk symmetric). Two owner asks handled:
+
+1. **Step-8 enforcement flag.** The coordinator's probe confirmed permission prompts fail-fast
+   (don't hang — good for never-wait), children run Fable 5 (Project default = heavy model, so
+   the B8 model-allocation worry is moot), and repo *creation* is available (substrate-kit in
+   the allowlist). But the probe did NOT test branch-protection/ruleset/OIDC management — a
+   different API surface no GitHub MCP tool exposes — so step 8's *enforcement* half (making the
+   six gates required, branch protection, OIDC) is likely owner-only. Added to §5 owner-action
+   forecast + relayed as the one cheap correction.
+2. **Working-relationship inquiry (new §7).** Owner-requested question set to learn the best way
+   to work with the coordinator (finalized-outside vs. brainstorm-in-Project, context/memory
+   mechanics, coordinator-vs-child-session, steering, decisions-vs-options, load, stuck-signals).
+   Distinct from calibration (self-model not verifiable facts → confirmed by observation; doubles
+   as the write-back/memory evaluation tests). Renumbered old §7 → §8.
+
+Live coordinator findings journaled by it: no scheduled-wake primitive (roll-up on worker-timer
+fallback), no direct coordinator→session channel (steering relays through a worker), destructive
+git ops in dispatched sessions auto-denied by the classifier as "untrusted coordinator context."
+
 ## Docs audit (Q-0104)
 
 `check_docs.py --strict` ✓ · `check_current_state_ledger.py --strict` ✓ (exit 0; #1802/#1804/
