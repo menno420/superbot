@@ -129,6 +129,26 @@ execution → a tracking website. The repo's existing DNA maps onto it almost on
 | Q-0213 destructive brake | **The real-money brake** (below) |
 | botsite / dashboard export | The tracking website — generated from the strategy registry + results store, agent-deployable |
 
+### The owner's operating model (ruled Q-0251, 2026-07-07 — the founding brief's second input)
+
+- **Decision-ledger mock trades are the v1 product** — no broker execution at all: every signal
+  recorded before its outcome window (instrument, direction, size, thesis, entry/exit rules,
+  horizon), verified against market data after it closes; **git-commit timestamps make the
+  forward-test log tamper-evident** (a decision provably predates its outcome — the strongest
+  antidote to overfit, since nothing can overfit the future). The Q-0250 API-broker paper lane
+  becomes a later realism upgrade (fills/slippage), not a prerequisite.
+- **Leaderboard**: gain % per set time AND per set trade count (the owner's asks) + honesty
+  columns (max drawdown, sample size, exposure) so lucky streaks never outrank robust records.
+- **The sniper bucket**: rare-but-precise strategies (the 5-trades-no-losers class) are
+  first-class, with uncertainty-aware stats (tiny N proves the pattern class, not the edge),
+  forward-test emphasis, and **notification wiring** — a triggering setup pings the owner (the
+  bot program's notification primitives are the transport).
+- **The 3-way hybrid is an allocator, itself a backtested strategy**: active / swing / reserve
+  buckets; declared rules for weights, rebalancing, profit routing, reserve refill; **reserve
+  deployment is pre-declared** (crash/drawdown triggers, decided entry levels as standing
+  ledger entries, sniper signals) — "lucky moments" defined in advance, never hindsight.
+- **Crypto**: admissible eventually as backtest *robustness data* only, never a venue (Q-0250).
+
 ### The rigor that must be designed in from day one (cheap now, ruinous to retrofit)
 
 - **Point-in-time data** — survivorship-bias-free universes, no look-ahead (fundamentals as they
