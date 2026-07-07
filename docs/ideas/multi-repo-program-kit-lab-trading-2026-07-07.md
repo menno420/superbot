@@ -89,6 +89,17 @@ The strengthening it needs is **fitness functions, not vibes**:
    cap, and **deployable websites** it can put online and iterate on end-to-end without the owner
    in the loop. Each surface makes an improvement *externally verifiable* — the difference
    between "the loop says it improved" and "you can click the thing it improved."
+3b. **Model-for-task allocation as a standing lab benchmark (owner ruling Q-0248, same day —
+   BOTH planes: agent sessions AND runtime/product API calls incl. image gen/review + website AIs;
+   the product plane enforces through K10's task registry/profile resolver, judged by the A-17
+   eval machinery + per-call cost/latency).**
+   Every session logs `model · effort · task-class · outcome` (objective outcomes first: CI-green
+   on first push, checker findings, rework/revert rate, tokens per merged PR); the lab runs
+   paired same-task A/Bs per task class (the Phase-2.5 judge pattern) to maintain a
+   cost-quality frontier; escalation/de-escalation rules are mechanical (two red CI rounds or
+   frozen-grammar contact ⇒ escalate a tier; a cheaper tier matching outcomes for M consecutive
+   tasks ⇒ de-escalate). The telemetry starts at the kickoff session (Q-0248) and shares the
+   Q-0249 ~2-month observation window, so budget data and allocation data are one dataset.
 4. **Cross-repo friction reports close the loop.** Consumer repos (superbot-next, trading) file
    kit-friction deltas (the context-delta pattern from the collaboration model); the lab consumes
    them as its inbound work queue; fixes ship as versioned kit releases; consumers upgrade and
@@ -164,9 +175,13 @@ ships as kit-planted templates that each repo instantiates.
 
 ## Open forks for the owner (flag, not blockers)
 
-- Kit-repo timing: extract at step 7 (recommended) vs immediately vs after the port completes.
-- The lab's Railway budget cap + which extra work surfaces to provision first (bot token vs
-  website vs both).
+- ~~Kit-repo timing: extract at step 7 (recommended) vs immediately vs after the port completes.~~
+  **RATIFIED (Q-0247, 2026-07-07): extract at step 7; both repos created in the kickoff session
+  (brief: [`../planning/rebuild-kickoff-steps-6-8-brief-2026-07-07.md`](../planning/rebuild-kickoff-steps-6-8-brief-2026-07-07.md)).**
+- ~~The lab's Railway budget cap~~ **superseded by Q-0249 (2026-07-07): no caps yet — spend
+  telemetry + a ~2-month observation window first; security rails (scoped credentials, the
+  trading real-money brake) stand regardless.** Still open: which extra work surfaces to
+  provision first (bot token vs website vs both).
 - Trading: which market/asset class first (the data-vendor and broker-API choice hangs on it),
   and the initial live-execution caps when that distant gate arrives.
 - Whether the trading repo's autonomy runs under the same never-wait model from day one or
@@ -174,8 +189,10 @@ ships as kit-planted templates that each repo instantiates.
 
 ## Recommended routing
 
-Program-level; touches the rebuild plan only at the step-7 extraction note. Next concrete moves:
-(1) this doc is the durable capture; (2) when the step-6–8 kickoff session runs, it should read
-this doc and decide the kit-extraction fork in-flight (⚑); (3) the trading repo gets its own
-founding brief (a `docs/planning/` plan in this repo, or the first doc of the new repo) when the
-owner says go — its rigor list above is the skeleton.
+Program-level; touches the rebuild plan only at the step-7 extraction note. **Sequencing ratified
+same day (Q-0247)** and the kickoff is packaged:
+**[`../planning/rebuild-kickoff-steps-6-8-brief-2026-07-07.md`](../planning/rebuild-kickoff-steps-6-8-brief-2026-07-07.md)**
+(paste-ready; creates both repos, pre-decides the extraction fork ⚑, owner-input checklist).
+The trading repo gets its own founding brief when its turn comes (third, rail-before-scale) —
+its rigor list above is the skeleton. Related rulings landed after capture: Q-0248
+(model-for-task allocation discipline) and Q-0249 (budget observe-first window).
