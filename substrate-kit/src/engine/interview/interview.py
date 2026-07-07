@@ -172,8 +172,14 @@ def run_session(
             record_answer(backend, question, answers[slot], source="user")
             continue
         if autonomous and (quota is None or self_answered < quota):
-            record_answer(backend, question, f"ASSUMED: {slot}", source="assumption")
-            self_answered += 1
+            # Never downgrade an existing provisional value (e.g. an
+            # adopt-time derived answer) to a placeholder assumption — the
+            # slot already carries better content awaiting confirmation.
+            if backend.get("slots", {}).get(slot) != "provisional":
+                record_answer(
+                    backend, question, f"ASSUMED: {slot}", source="assumption"
+                )
+                self_answered += 1
             if not blocking:
                 continue
             # A provisional self-answer does NOT discharge a blocking question

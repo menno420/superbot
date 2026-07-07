@@ -87,9 +87,15 @@ synthetic payloads carry `"bot": false` (`harness/world.py:298`).
   (XP, logging, AI passive answering) are also unreachable from a second bot**, contradicting the
   wire-level idea doc's coverage claim.
 - **Slash/component interactions cannot be fabricated over real HTTP** — interaction tokens are
-  Discord-minted and no bot API invokes another application's commands. *(Asserted from API
-  knowledge, not a cited Discord doc — validate once against official docs before freezing; if it
-  falls, lane B shrinks.)*
+  Discord-minted and no bot API invokes another application's commands. *(✅ VALIDATED against
+  official Discord docs 2026-07-07, final-review session: no cross-application invocation endpoint
+  exists; interaction tokens are Discord-generated and 15-min-scoped; the outgoing-webhook path is
+  Ed25519-signed (`X-Signature-Ed25519` — unforgeable without Discord's key) and gateway delivery
+  exposes no attacker-facing HTTP surface at all; user-installable apps (`integration_types`/
+  `contexts`) and Components v2 change where commands appear, not the user-initiated invocation
+  model. Docs: docs.discord.com/developers/interactions/{receiving-and-responding,
+  application-commands} + /components/reference. The constraint is FROZEN; lane B's scope is
+  final.)*
 - **Automating a user account is a ToS-prohibited self-bot.** Never.
 - `ctx.invoke`/Context-construction bypasses skip exactly the checks under test — the repo's own
   code rejects that pattern (`bot1.py:562-572`).

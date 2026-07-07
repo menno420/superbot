@@ -15,7 +15,7 @@
 > |---|---|---|
 > | **S1 Bot product** | [`current-state/S1-bot.md`](current-state/S1-bot.md) | reaction-roles arc Carl-bot-mature; creature game + mining grid live; Essential Setup wizard cut over to primary + follow-ons (PR 2 / 3a, #1449/#1451); Project Moon (Limbus) knowledge domain + combat-mechanics rules layer (#1453…#1549); **NEW band-#1620 completion deepening — fishing coral structures (#1596…#1605), reaction-roles slim builder (#1608…#1615), XP import from other bots (#1607/#1610), server-logging depth (#1594/#1618/#1619), bot-owner permission-gate bypass (#1602) + a boot smoke-test CI guard (#1601)**; ▶ next: Project Moon Q-0086 live walk / StaticData exact-number ingest / botsite React migration |
 > | **S2 BTD6** | [`current-state/S2-btd6.md`](current-state/S2-btd6.md) | buff-uptime + data auto-seed/drift shipped; eval anchor-complete; QA-accuracy arc — interaction grounding + honest semantic-grading eval harness (#1487…#1498); **menu-layout simulator + round-range NL answer fix (#1617); owner picked Layout B — panel category-hub SHIPPED (#1621)**; ▶ live re-test (owner) / curated counter lists / decode items 3–4 |
-> | **S3 AI-Memory** | [`current-state/S3-ai-memory.md`](current-state/S3-ai-memory.md) | settle-once money-safety guard (#1454) + cross-domain routing-disjointness guard (#1470); **self-improving-workflow guards #1476/#1477/#1479/#1482/#1495**; **owner re-elevated the portable substrate-kit to top focus (fresh-rebuild vision #1589/#1590)**; **rebuild design spec shipped (#1637/#1638) + BOTH linchpins now built & measured (#1639 — Phase-0.5 golden harness `parity/` + grammar spike, verdict GO-with-amendments)**; **substrate-kit finalized (#1649 — nervous system + context-economy engine + one-step-adopt; 407 kit tests)**; **Gate V COMPLETE (#1767); Phase-2.5 A/B RAN (#1775, FAIL as-tested); owner gates RETIRED (Q-0241/#1776)**; ▶ **next: Phase-2.5 remainder** (adopt-render fix + one re-run pair) → fresh-repo build is **un-gated**; plan of record = [`planning/rebuild-canonical-plan-2026-07-06.md`](planning/rebuild-canonical-plan-2026-07-06.md); Projects-EAP as coordinator ([idea](ideas/claude-code-projects-for-the-rebuild-2026-07-07.md)) |
+> | **S3 AI-Memory** | [`current-state/S3-ai-memory.md`](current-state/S3-ai-memory.md) | settle-once money-safety guard (#1454) + cross-domain routing-disjointness guard (#1470); **self-improving-workflow guards #1476/#1477/#1479/#1482/#1495**; **owner re-elevated the portable substrate-kit to top focus (fresh-rebuild vision #1589/#1590)**; **rebuild design spec shipped (#1637/#1638) + BOTH linchpins now built & measured (#1639 — Phase-0.5 golden harness `parity/` + grammar spike, verdict GO-with-amendments)**; **substrate-kit finalized (#1649 — nervous system + context-economy engine + one-step-adopt; 407 kit tests)**; **Gate V COMPLETE (#1767); owner gates RETIRED (Q-0241/#1776); Phase-2.5 CLOSED (#1775 FAIL-as-tested → adopt-render fix + re-run pair, #1778); the FINAL review ran (#1778 — verdict: plan ready, §11 amendments folded, readiness scored)**; ▶ **next: create `superbot-next` (§5 step 6) → bootstrap the kit (step 7) → control plane (step 8)** — nothing blocks the start; plan of record = [`planning/rebuild-canonical-plan-2026-07-06.md`](planning/rebuild-canonical-plan-2026-07-06.md) (+ its §11); Projects-EAP as coordinator ([owner-sendable review](planning/projects-eap-product-review-2026-07-07.md)) |
 > | **S4 Docs system** | [`current-state/S4-docs.md`](current-state/S4-docs.md) | 36th Q-0107 pass done (band-#1770); next recon at #1800; **no PLAN-BACKLOG-THIN flag** |
 > | **S5 Operations** | [`current-state/S5-ops.md`](current-state/S5-ops.md) | merge=deploy clarity (Q-0193); loop self-fires; ▶ website rollout (owner/Hermes) |
 >
@@ -277,6 +277,19 @@ Source code and merged PRs win over anything written here.
 > auto-opens a `reconcile` issue at the boundary that fires the docs-reconciliation routine). Reset
 > this marker to the latest PR after a pass.
 
+- **#1781 · #1782 (2026-07-07, S1 runtime — the FINAL-REVIEW §6.3 live-bot fixes, shipped from the rebuild final-review session #1778)** —
+  **#1781** closed the three unguarded settlement paths as one class: the Gate-V-live-confirmed
+  **deathmatch `_DuelView` double-write** (SettleOnceMixin retrofit mirroring the bot-duel sibling),
+  the **blackjack FREE-tournament double-pay** (claim past the all-finished check; the free leg has
+  no escrow rows so the claim is its only guard), and a **third instance found during verification —
+  the RPS free-tournament payout race** (per-tournament claim via the new
+  `SettleOnceMixin.rearm_settlement()` seam); `check_consistency` **Rule 6 widened** (cogs/ root +
+  `payout_tournament`/`update_leaderboard` sinks) so the checker now catches this non-adopter class;
+  8 concurrency + 4 checker regressions. **#1782** wired the ready-but-unwired
+  `economy_service.transfer()` to **`!pay`/`!transfer`** (NOT `give` — banned token Q-0211), guard
+  rails + sibling embed idiom + regenerated command-surface artifacts, **live-exercised against real
+  local Postgres** (exact balances, exactly 2 audit rows). Both merged→deployed same day. Full
+  context: the [final-review report](planning/rebuild-final-review-report-2026-07-07.md).
 - **#1768 · #1769 · #1770 (2026-07-06, S3 rebuild — foundational consolidation → ONE canonical plan (Fable 5) + Q-0240 decide-and-flag)** —
   the band's headline: the pre-Phase-B consolidation of the scattered rebuild plan into a single
   correctly-layered source of truth, launched under Fable 5 / Ultracode. **#1768** shipped the **Fable 5
@@ -451,13 +464,6 @@ Source code and merged PRs win over anything written here.
   existing-but-fragmented surface (setup preset_select + help overlay editor + ~7 preset impls) to
   be improved + centralized onto one preset/template primitive (C-3). Open: preset exclusion =
   hide-vs-disable.
-- **#1683 (2026-07-03, workflow — cut permission prompts + endorse invocation centralizations, Q-0229/Q-0228)** —
-  broadened `.claude/settings.json` with whole-MCP-server allow entries (`mcp__Claude_Code_Remote`,
-  `mcp__github`, `mcp__codegraph`, `mcp__context7`) so tools like `send_later` stop prompting —
-  the destructive-ops `ask` brake left intact (Q-0229 diagnosis: web downgrades project-scope
-  `bypassPermissions`, so the explicit allow list is the reliable lever); and updated Q-0228 + the
-  conventions log §6 to record the owner **endorsing** the C-1…C-7 invocation-stack centralizations
-  as foundations to build toward.
 - **Older merges (#1680 … #535) → [`current-state-archive.md`](current-state-archive.md).** Recently-shipped keeps the ~20 newest; older entries are trimmed to the archive (newest-first), which `scripts/check_docs.py` soft-ratchets at 20 and `check_current_state_ledger.py` treats as present. *(Thematic grouping by date means the live/archive PR-number spans overlap slightly — the floor pointer is approximate prose, not a strict bound; the per-band pass records carry the exact moved sets.)* *(The twenty-first Q-0107 pass — band-#1320, 2026-06-22 — added the band #1294–#1320 work as seven grouped entries (fishing minigame #1296/#1298/#1299/#1301/#1303/#1304, role management #1300/#1302/#1306, help surface #1294/#1297, BTD6 answerability #1295/#1316, botsite React PR1 #1305, CI/ledger/tool-pin hygiene #1308/#1317/#1320, dependency bumps + dashboard #1307/#1309/#1311/#1312/#1313/#1314/#1315); trimmed the live ledger to 20, moving #1208-band · #1226-band · #1211-band · #1210 · #1203-band · #1209-band · #1183-band to the archive.)* *(The twentieth Q-0107 pass — band-#1290, 2026-06-22 — added the band #1265–#1291 work as six grouped entries; trimmed the live ledger to 20, moving #1186 · #1156-band · #1147-band · #1143-band · #1162-band · #1149-band to the archive.)*
 
 > Older than this: see `docs/planning/*` trackers and `docs/decisions/*` ADRs.

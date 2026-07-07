@@ -10,6 +10,22 @@
 > own; distinct from S4 (the docs content it produces) and S5 (its operation).*
 
 **Recently shipped (this sector):**
+- **THE REBUILD FINAL REVIEW RAN (PR #1778 + fix PRs #1781/#1782, 2026-07-07 — Fable 5 ultracode, the brief's A–H mandate).**
+  Verdict: **the plan is ready — the new repo can start now; zero blocking work ahead of §5 step 6**
+  ([the A–H report](../planning/rebuild-final-review-report-2026-07-07.md); readiness scored per
+  step, biggest risk = layer V is the least-built part now that Q-0241 retired the human gates).
+  Shipped with it: the **Phase-2.5 G2 close-out** (the adopt-renders-what-it-knows kit fix —
+  derived provisional slots + UNRENDERED banner + vendored bootstrap.py, 432 kit tests — plus the
+  T2/T4 **re-run pair**, results in the G2 report's addendum); **canonical-plan §11 amendments
+  A-1…A-11** (schema-growth ledger → K2, nav-completeness golden → K8, sim-runner harness/oracle
+  decomposition + `check_sim_gate` contract pointer → step 11, K7 audit-fence AST complement,
+  off-Discord surface + release-loop + background-obligation landings, setup-wizard hardening incl.
+  the G-19 freeze/widen + the draft-lane fork decision, D-17 role_menu correction); **20 stale
+  owner-gate prose sites fixed** across 6 live docs; companion C's interaction-token constraint
+  **validated against official Discord docs + frozen**; the **[Projects-EAP product
+  review](../planning/projects-eap-product-review-2026-07-07.md)** (owner-sendable); and the
+  **§6.3 live-bot fixes** #1781/#1782 (see the hub ledger). O-1…O-7 recommendations decided-and-flagged
+  in the report's decisions log.
 - **OWNER GATES RETIRED + Phase-2.5 RAN + Projects-EAP as coordinator (PRs #1775/#1776, 2026-07-07).**
   **Q-0241 (#1776)** retired the rebuild's owner gates — the coordinator builds in logical order,
   **live-tests each piece in a server**, and **never waits (silence = consent = done)**; the destructive
@@ -104,15 +120,16 @@ creds · `[owner]` needs an owner decision/action; see [`../repo-sector-map.md`]
 - **📍 READ FIRST — THE CANONICAL REBUILD PLAN (2026-07-06, PR #1770):**
   [`../planning/rebuild-canonical-plan-2026-07-06.md`](../planning/rebuild-canonical-plan-2026-07-06.md)
   — the single source of truth consolidating the whole rebuild corpus: corrected layer taxonomy
-  (AI = K10 · automation = K5+K9+K7 spread · verification = layer V), one phase arc, the canonical
-  gates (**G1** owner go/no-go sitting reading its §1 flag list · **G2** Phase-2.5 A/B), and the
+  (AI = K10 · automation = K5+K9+K7 spread · verification = layer V), one phase arc, the gate
+  census (G1/G2 **retired as blockers by Q-0241/#1776** — kept as sequencing + rationale), and the
   17-step start sequence. **Steps 1–3 executed (PR #1775, 2026-07-07):** kit tail ① shipped (427
   kit tests) · **Phase-2.5 RUN — verdict FAIL as-tested** (`adopt` deploys unrendered templates:
   orientation cost in 3/4 pairs, no measured benefit —
   [the G2 report](../planning/phase-2.5-cold-start-report-2026-07-07.md)) ·
-  `tools/check_amendments.py` built + CI-wired. ▶ next: **the adopt-renders-what-it-knows kit fix
-  + one A/B re-run pair** (the G2 remainder), and 👤 **the G1 sitting** (canonical §1 + the
-  [owner briefing](../planning/rebuild-owner-briefing-2026-07-07.md)). Companions:
+  `tools/check_amendments.py` built + CI-wired. **The G2 remainder executed 2026-07-07 (this
+  band): the adopt-renders-what-it-knows kit fix + the A/B re-run pair** — see the
+  [final-review report](../planning/rebuild-final-review-report-2026-07-07.md). The §1 flag list
+  stays the owner's *veto surface* (react anytime), not a sitting. Companions:
   [test-guild (C)](../planning/rebuild-test-guild-design-2026-07-06.md) · [Phase-2.5 procedure
   (D)](../planning/rebuild-phase-2.5-procedure-2026-07-06.md).
 - `[owner]` **▶ THE REBUILD REVIEW-THEN-PLAN PHASE IS LIVE** (owner-directed 2026-07-03): the pre-build
@@ -129,26 +146,24 @@ creds · `[owner]` needs an owner decision/action; see [`../repo-sector-map.md`]
   [`planning/rebuild-stage2-subsystem-walk-2026-07-05.md`](../planning/rebuild-stage2-subsystem-walk-2026-07-05.md)
   §7) — **L1a + L1b decided (19 rows, PR #1725, 2026-07-05)**; 34+ rows remain. `[owner]` **▶ next:
   a bug-fix + initial-implementation session against the *current* bot** (walk doc §7.1/§7.2), then
-  the walk continues at **L1c**. Still behind the Phase-3 owner gate below (no new-repo code until
-  design-spec ratification).
-- `[owner]` **🔒 THE REBUILD OWNER GATE — the Phase-2 design spec is DONE and the evidence package
-  is IN** (2026-07-02): [`rebuild-design-spec-2026-07-02.md`](../planning/rebuild-design-spec-2026-07-02.md)
-  (Fable-5 judge panel + Opus/GPT adversarial review), now backed by
+  the walk continues at **L1c**. *(Historical: this lane's "behind the Phase-3 owner gate" framing
+  was retired by Q-0241/#1776 — the rebuild is un-gated; the walk paces port bands, not the repo
+  start.)*
+- ~~**🔒 THE REBUILD OWNER GATE**~~ — **RETIRED by Q-0241/#1776 (2026-07-07).** The Phase-2 design
+  spec is DONE (2026-07-02): [`rebuild-design-spec-2026-07-02.md`](../planning/rebuild-design-spec-2026-07-02.md)
+  (Fable-5 judge panel + Opus/GPT adversarial review), backed by
   [`rebuild-linchpin-validation-2026-07-02.md`](../planning/rebuild-linchpin-validation-2026-07-02.md)
-  (#1639) — **both previously-unproven linchpins built + measured**: the Phase-0.5 golden harness
-  (`parity/` — replay-deterministic, coverage in `parity/COVERAGE.md`) and the grammar spike
-  (tier-1/2 fit 73% as-specced → 85% with six named amendments; verdict **GO with amendments**).
-  The owner ratifies the design + the backward-compat contract + the rebuild go/no-go (§10.2 lists
-  exactly what approval means); **no Phase-3 new-repo code until then.** `[offline]` remaining
-  ungated phases: Phase 0 (substrate-kit adaptive half) · Phase-0.5 telemetry sidecar capture ·
-  Phase 1 (harvest) · Phase 2.5 (cold-start proof) — see the
-  [strategy §3](../planning/fresh-rebuild-strategy-2026-07-02.md).
+  (#1639) — both previously-unproven linchpins built + measured (golden harness `parity/` +
+  grammar spike, verdict **GO with amendments**). Its §10.2 ratification list is now the
+  **decide-and-flag F-2/F-3 veto payload** in the canonical plan §1 — the owner reacts to it
+  anytime; it no longer blocks new-repo code (silence = consent). Telemetry-sidecar capture
+  (P0.5 sibling) stays open — runs before any old-repo freeze (canonical §5 step 14).
 - ~~**▶ FINALIZE THE MEMORY SUBSTRATE**~~ — **✅ DONE #1649 (2026-07-02**, the
   [handoff §5.B](../planning/rebuild-ultracode-handoff-2026-07-02.md) Fable-5 ultracode session —
-  see Recently shipped above). What remains of this lane: `[offline]` **Phase 2.5 cold-start
-  substrate-on/off A/B** (a fresh scratch repo adopted from `dist/bootstrap.py`, agent sessions
-  with vs. without the substrate — the owner-flag-2 acceptance tier that still gates Phase 3);
-  `[owner]` the *extract to a standalone repo* step + the full rebuild go/no-go. The old
+  see Recently shipped above). What remains of this lane: ~~the Phase 2.5 cold-start A/B~~ —
+  **RUN #1775 (FAIL as-tested), then the adopt-render fix + re-run pair executed 2026-07-07**;
+  it no longer gates anything (Q-0241 retired the gates, and the go/no-go sitting with them);
+  `[owner]` the *extract to a standalone repo* step (owner-paced, not blocking). The old
   "PR 2 remainder + PR 3" framing of
   [the extraction plan](../planning/portable-substrate-kit-extraction-2026-06-13.md) is fully
   subsumed and shipped.

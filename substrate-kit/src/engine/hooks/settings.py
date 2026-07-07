@@ -67,19 +67,22 @@ _SET_FILL_ROWS: tuple[tuple[str, str], ...] = (
 )
 
 
-def _set_command(config: Config, event: str) -> str:
+def _set_command(config: Config, event: str, bootstrap_path: str) -> str:
     """Return the shell command Claude Code runs for one hook event."""
-    return f"{config.interpreter} bootstrap.py hook {event}"
+    return f"{config.interpreter} {bootstrap_path} hook {event}"
 
 
-def full_settings_template(config: Config) -> str:
+def full_settings_template(config: Config, bootstrap_path: str = "bootstrap.py") -> str:
     """Return the complete ``settings.template.json`` wiring all four hooks.
 
     JSON text (2-space indent) a host merges into ``.claude/settings.json``:
     PreToolUse (matcher ``*``), SessionStart, PostToolUse (matcher
     ``Edit|Write|NotebookEdit``), and Stop, each running
-    ``<interpreter> bootstrap.py hook <event>``. Matcher-less events omit the
-    ``matcher`` key entirely (they apply unconditionally).
+    ``<interpreter> <bootstrap_path> hook <event>``. Matcher-less events omit
+    the ``matcher`` key entirely (they apply unconditionally).
+    ``bootstrap_path`` is the path the hook commands reference — adopt passes
+    the vendored/root-resolved location so staged hooks resolve inside the
+    target repo (the Phase-2.5 staged-hook failure cause).
     """
     hooks: dict[str, list[dict]] = {}
     for settings_event, cli_event, matcher in _SET_EVENTS:
@@ -87,7 +90,10 @@ def full_settings_template(config: Config) -> str:
         if matcher is not None:
             entry["matcher"] = matcher
         entry["hooks"] = [
-            {"type": "command", "command": _set_command(config, cli_event)},
+            {
+                "type": "command",
+                "command": _set_command(config, cli_event, bootstrap_path),
+            },
         ]
         hooks[settings_event] = [entry]
     return json.dumps({"hooks": hooks}, indent=2) + "\n"

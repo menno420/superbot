@@ -105,3 +105,64 @@ across arms (commit + README carried the handoff in all eight sessions).
 Canonical-plan updates riding this report: §4's G2 row → **run, verdict FAIL-as-tested (fix +
 re-run recommended)**; §5 step 2 → points here. The kit tail-① fix (Q-0223) shipped in the same
 PR (#1775), so the pre-bootstrap gate's *code* remainder is closed regardless of the A/B outcome.
+
+---
+
+## 5. Re-run addendum (2026-07-07, final-review session #1778) — the §3.3 ruling executed
+
+§3's recommended ruling ("fix adopt-renders-what-it-knows → re-run one pair") was executed the
+same day, under Q-0241 (agents run **and accept** the verdict; flagged ⚑ for owner review).
+
+**The fix, as shipped (session #1778):** `adopt` now derives every deterministically-knowable slot
+(project name, language incl. `requires-python`, verify command, docs root) and records each as a
+*provisional* interview answer before rendering — so planted docs open readable; docs still
+carrying unfilled `${...}` slots get a **loud UNRENDERED banner** naming the two commands that
+fill them (`render --live` strips it once a file fully renders); and adopt **vendors the
+single-file `bootstrap.py` into the target root**, fixing the staged-hook-paths failure. 432/432
+kit tests; re-proven live cold (adopt → `check --strict` clean).
+
+**Protocol:** fresh seed (same shape: ~130-line spendlog CLI + 6 tests), fixed-kit adopt on ON,
+T2 (build monthly report) then T4 (resume-cold: budgets + over-budget flags) per arm, same model
+(Sonnet), identical prompts, fresh contexts confined to arm dirs. M1 scripted from transcripts
+(same definition); independent Opus judge for M2/M3, instructed to score behavior and ignore
+artifact presence. Deltas honestly noted: N=1 per task; **both ON sessions failed to end cleanly
+(T2-ON never committed — the runner committed its completed work so T4 could run; T4-ON left its
+work uncommitted in the tree)** while both OFF sessions committed cleanly.
+
+**Results:**
+
+| Measure | T2 ON | T2 OFF | T4 ON | T4 OFF |
+|---|---|---|---|---|
+| M1 words-before-first-mutation | **1,700** | 549 | **3,106** | 952 |
+| M3 completion (scripted) | ✓ (27 tests) | ✓ (25 tests) | ✓ | ✓ |
+
+**Verdict (judge, quoted): FAIL — a negative result.** "Against the pass bar, ON beats OFF on
+**0 of 3, and regresses on 2 (M1 and M3)**. … The substrate arm did not merely fail to help — it
+underperformed the bare arm on exactly the dimensions the substrate exists to improve. ON read 3×
+more tool output before acting, yet wrote to **none** of its decision-ledger, session-log,
+current-state, or journal surfaces across two tasks … Mere presence of the adopted kit earned
+nothing behaviorally: its recording and handoff machinery sat unused while its orientation cost
+was fully paid."
+
+**What the re-run adds over the original FAIL — the cause moved:** the original failure was
+*inertness* (raw templates, correctly ignored). The fix removed inertness — and the sessions then
+**read** the docs (M1 rose from 1.4–2.1× to 3.1–3.3× OFF) while **still writing nothing back**
+(kit surfaces byte-identical to the adopt commit; `.substrate/state.json` still `session_count: 0`).
+So the refuted claim is now sharper: **readable orientation docs are a cost without mechanized
+write-back** — discipline-dependent recording does not happen in task-focused cold sessions,
+twice-measured.
+
+**Ruling (decided + flagged ⚑, Q-0241):**
+1. **The mechanical fix stands on its own merits** — vendored hooks, rendered docs, cold
+   `check --strict` green are prerequisites for any real adoption and are not retracted by the
+   benefit verdict.
+2. **The K0 bootstrap step keeps its "first act of the new repo" role on *invested-adoption*
+   grounds only** (the real K0 session runs the interview and lives in the repo for hundreds of
+   sessions — the regime these 20-minute task probes cannot measure), **with the unproven-benefit
+   caveat carried in the canonical plan §5 step 2**. Green-lighting on a measured cold-start
+   *benefit* is now off the table — it failed twice.
+3. **The next experiment is not another A/B of the same shape** — it is the
+   [auto-drafted-handoff idea](../ideas/substrate-kit-auto-drafted-handoff-2026-07-07.md):
+   mechanize write-back (session-close drafts the card from git diff + test state), then re-run a
+   T4-style pair to test whether continuity finally moves. The kit's checker/guard half remains
+   untested by these task shapes (unchanged limitation).

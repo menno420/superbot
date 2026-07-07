@@ -10,25 +10,31 @@ the host to install deliberately. Only an explicit ``include_claude=True``
 writes a live ``.claude/`` tree, and even then only files that are absent
 (the host opt-in stays non-destructive).
 
-Unfilled ``${slot}`` placeholders survive rendering visibly, so a
-half-onboarded adoption shows its gaps instead of going silently blank. The
-guardrail runs first: the kit refuses to adopt into its own tree. Pure
+Adopt renders what it knows (the Phase-2.5 G2 fix): before rendering, every
+deterministically-derivable slot (project name, language, verify command,
+docs root — ``engine/derive.py``) is recorded as a provisional interview
+answer, and any doc still carrying unfilled ``${slot}`` placeholders is
+planted under a loud UNRENDERED banner instead of silently inert — a cold
+session sees at a glance which prose is live and which is an unfilled slot.
+The guardrail runs first: the kit refuses to adopt into its own tree. Pure
 stdlib; every write goes through ``atomic_write_text``.
 """
 
 from __future__ import annotations
 
+import sys
 from datetime import date
 from pathlib import Path
 from typing import Any
 
 from engine.agents.agents import AGENTS, agent_document, agent_relpath
 from engine.contextpack import pack_index_skeleton
+from engine.derive import derive_slots, record_derived_slots
 from engine.hooks.settings import full_settings_template, hooks_fill_table
 from engine.lib.atomicio import atomic_write_text
 from engine.lib.config import Config
 from engine.lib.guardrail import assert_safe_target
-from engine.render import build_context, load_templates, render
+from engine.render import build_context, find_placeholders, load_templates, render
 from engine.skills.skills import SKILLS, skill_document, skill_relpath
 
 # Template filename -> planted relpath. CLAUDE.md.tmpl is deliberately absent:
@@ -57,6 +63,76 @@ _ADOPT_NEXT_STEPS = (
     "answer them and fill the planted docs in place (`bootstrap render --live`), and set "
     "the integration mode with `bootstrap mode <observe|guided|active>`."
 )
+
+# First line doubles as the removal marker `strip_unrendered_banner` keys off.
+UNRENDERED_BANNER_FIRST_LINE = (
+    "> ⚠️ **UNRENDERED SLOTS BELOW — run `python3 bootstrap.py ask`.**"
+)
+_UNRENDERED_BANNER = (
+    UNRENDERED_BANNER_FIRST_LINE + "\n"
+    "> Every `${...}` token in this file is an unfilled interview slot, not\n"
+    "> project truth. Fill: `bootstrap answer <slot> <value...>`, then\n"
+    "> `bootstrap render --live` (fills in place and removes this banner).\n"
+    "> Prose without `${...}` tokens is live guidance already.\n\n"
+)
+
+
+def with_unrendered_banner(text: str) -> str:
+    """Prepend the loud UNRENDERED banner when ``text`` has unfilled slots.
+
+    An inert-looking doc was the measured Phase-2.5 failure mode: raw
+    ``${...}`` placeholders read as non-actionable scaffolding and only cost
+    orientation. The banner names what the tokens are and the exact two
+    commands that fill them; a fully-rendered doc gets no banner.
+    """
+    if not find_placeholders(text):
+        return text
+    return _UNRENDERED_BANNER + text
+
+
+def strip_unrendered_banner(text: str) -> str:
+    """Remove the adopt-time banner (used once a file has no placeholders)."""
+    if not text.startswith(UNRENDERED_BANNER_FIRST_LINE):
+        return text
+    lines = text.split("\n")
+    index = 0
+    while index < len(lines) and lines[index].startswith(">"):
+        index += 1
+    while index < len(lines) and not lines[index].strip():
+        index += 1
+    return "\n".join(lines[index:])
+
+
+def _vendor_bootstrap(root: Path, report: list[str]) -> str:
+    """Vendor the running single-file bootstrap into ``root``; return hook path.
+
+    The staged hook commands run ``<interpreter> bootstrap.py hook <event>``
+    relative to the host repo root — in the Phase-2.5 A/B the file was never
+    there, so every staged hook pointed outside the target repo (the second
+    G2 failure cause). When adopt runs *as* the single-file ``bootstrap.py``,
+    copy it to the target root (skip-if-exists, like every plant) so those
+    commands resolve. Running from the source/pip layout there is no single
+    file to vendor: fall back to an existing root copy, else the absolute
+    path of the running entry point, else the documented bare-name contract
+    (the hooks README fill-table row covers relocation).
+    """
+    at_root = root / "bootstrap.py"
+    entry = Path(sys.argv[0]).resolve() if sys.argv and sys.argv[0] else None
+    is_bootstrap_entry = (
+        entry is not None and entry.name == "bootstrap.py" and entry.is_file()
+    )
+    if not at_root.exists() and is_bootstrap_entry and entry != at_root:
+        _adopt_plant(
+            at_root,
+            "bootstrap.py",
+            entry.read_text(encoding="utf-8"),
+            report,
+        )
+    if at_root.exists():
+        return "bootstrap.py"
+    if is_bootstrap_entry:
+        return str(entry)
+    return "bootstrap.py"
 
 
 def _adopt_dest(relpath: str, config: Config) -> str:
@@ -140,21 +216,32 @@ def adopt(
 ) -> list[str]:
     """Adopt the substrate workflow into ``root``; return the report lines.
 
-    Steps (all idempotent): (0) guardrail — refuse the kit's own tree;
-    (1) plant every ``ADOPT_PLAN`` doc rendered from the current slots,
-    skip-if-exists; (2) plant ``<sessions_dir>/README.md``; (3) plant the
-    ``project.index.json`` skeleton; (4) stage the ``.claude`` material
-    (CLAUDE.md, skills, personas, hook settings + fill-table README) under
-    ``<state_dir>``; (5) stage the CI example; (6) with ``include_claude``,
-    additionally write ``.claude/CLAUDE.md`` + ``.claude/settings.json``
-    if absent; (7) close with the next-steps line.
+    Steps (all idempotent): (0) guardrail — refuse the kit's own tree; then
+    derive what the tree can tell us (provisional slots) and vendor the
+    single-file bootstrap so hook commands resolve in-repo;
+    (1) plant every ``ADOPT_PLAN`` doc rendered from the current slots —
+    skip-if-exists, unrendered docs bannered; (2) plant
+    ``<sessions_dir>/README.md``; (3) plant the ``project.index.json``
+    skeleton; (4) stage the ``.claude`` material (CLAUDE.md, skills,
+    personas, hook settings + fill-table README) under ``<state_dir>``;
+    (5) stage the CI example; (6) with ``include_claude``, additionally
+    write ``.claude/CLAUDE.md`` + ``.claude/settings.json`` if absent;
+    (7) close with the next-steps line.
     """
     assert_safe_target(root, kit_root)
     templates = load_templates()
-    context = build_context(backend.data)
     report: list[str] = []
 
-    # (1) Plant the live docs — never clobber; unfilled ${slots} stay visible.
+    # (0b) Adopt renders what it knows: seed derivable slots (provisional,
+    # never overwriting an existing answer), then build the render context.
+    report.extend(record_derived_slots(backend, derive_slots(root, config.docs_root)))
+    bootstrap_path = _vendor_bootstrap(root, report)
+    context = build_context(backend.data)
+    # The live integration mode is state, not a slot — render it truthfully.
+    context.setdefault("integration_mode", str(backend.get("mode", "guided")))
+
+    # (1) Plant the live docs — never clobber; a doc with unfilled ${slots}
+    # is planted under the loud UNRENDERED banner (visible, never inert).
     for template_name, plan_rel in ADOPT_PLAN:
         rel = _adopt_dest(plan_rel, config)
         text = render(templates[template_name], context)
@@ -162,7 +249,7 @@ def adopt(
             # The example D-0001 records THIS adoption — stamp the real date so
             # the planted ledger is check_ledger-clean from its first commit.
             text = text.replace("- date:\n", f"- date: {date.today().isoformat()}\n")
-        _adopt_plant(root / rel, rel, text, report)
+        _adopt_plant(root / rel, rel, with_unrendered_banner(text), report)
 
     # (2) Session-log scaffolding.
     sessions_rel = f"{config.sessions_dir}/README.md"
@@ -176,7 +263,7 @@ def adopt(
 
     # (4) Stage the .claude material under <state_dir> (regenerated each run).
     state_base = root / config.state_dir
-    claude_doc = render(templates["CLAUDE.md.tmpl"], context)
+    claude_doc = with_unrendered_banner(render(templates["CLAUDE.md.tmpl"], context))
     claude_rel = f"{config.state_dir}/claude/CLAUDE.md"
     _adopt_stage(state_base / "claude" / "CLAUDE.md", claude_rel, claude_doc, report)
     for skill in SKILLS:
@@ -189,7 +276,7 @@ def adopt(
         body = render(agent["body"], context)
         document = agent_document(agent, body)
         _adopt_stage(state_base / rel, f"{config.state_dir}/{rel}", document, report)
-    settings_text = full_settings_template(config)
+    settings_text = full_settings_template(config, bootstrap_path=bootstrap_path)
     settings_rel = f"{config.state_dir}/hooks/settings.template.json"
     settings_path = state_base / "hooks" / "settings.template.json"
     _adopt_stage(settings_path, settings_rel, settings_text, report)

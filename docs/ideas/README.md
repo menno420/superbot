@@ -31,6 +31,13 @@ only the header block is read, so a `**Subsystem:**` *example* in an idea's body
 
 Current broad captures:
 
+- [`substrate-kit-auto-drafted-handoff-2026-07-07.md`](./substrate-kit-auto-drafted-handoff-2026-07-07.md) —
+  **session idea (2026-07-07, Q-0089, final-review session #1778):** the Phase-2.5 A/B measured the
+  same failure twice — sessions with a rendered ledger/session-log scaffolding in-repo still write
+  back nothing (recall isn't the bottleneck; discipline-dependent write-back doesn't happen). Make
+  the kit's session-close/Stop-hook **auto-draft** the handoff card from evidence (git diff, test
+  state, docs touched) so the agent edits a draft instead of authoring from memory; a follow-up T4
+  re-run then measures whether continuity finally moves.
 - [`claude-code-projects-for-the-rebuild-2026-07-07.md`](./claude-code-projects-for-the-rebuild-2026-07-07.md) —
   **session idea (2026-07-07, Q-0089, Projects-EAP + Q-0241 PR #1776):** use the Claude Code Projects
   early-access program (coordinator + shared memory + routines + session sidebar; the *Claude Code*

@@ -5,6 +5,13 @@
 > owner's request ("tell me everything I need to know in plain language"). Nothing here is new —
 > every statement is the plain rendering of something in the canonical plan or its companions;
 > where they disagree, they win.
+>
+> **⚠ AMENDED same day by your own Q-0241 directive (#1776):** this briefing was written hours
+> before you retired the gates. Where it says "sitting," "say go," or "gate," read: **nothing
+> waits for you anymore.** The agents build in order, test each piece live in a server, and treat
+> your silence as approval. The §4 flag list is still worth reading — but as a *veto list you can
+> react to anytime*, not a meeting you owe anyone. The in-line corrections below mark the
+> sentences this changed.
 
 ## 1. Where things stand, in one paragraph
 
@@ -12,8 +19,9 @@ All the thinking is done. Over the past week the agents inventoried everything t
 does (all ~55 features), designed the new bot's foundation in detail (14 frozen design documents),
 had that design adversarially checked by four independent review fleets (Gate V), and then folded
 everything into **one master plan** — the canonical plan. The old scattered planning documents now
-point at it. Nothing about the new repo has been *built* — that was deliberate: no new-repo code
-until you say go.
+point at it. Nothing about the new repo has been *built* yet — ~~no new-repo code until you say
+go~~ *(Q-0241: the build proceeds on its own; you watch it happen live and say something only if
+you dislike what you see)*.
 
 ## 2. What the new bot actually is (the one idea to hold on to)
 
@@ -55,8 +63,9 @@ sign-offs — the machinery that proves the new bot behaves like the old one).
 ## 4. What I decided for you, and what's left to you
 
 Per your standing instruction, all the technical calls are **made, not asked** — each with its
-reasoning in the canonical plan's decisions log. Your part is one sitting: read the plan's **§1
-flag list** (five items) and veto anything you dislike. The five, in plain terms:
+reasoning in the canonical plan's decisions log. ~~Your part is one sitting~~ *(Q-0241: no sitting
+— skim when you like)*: the plan's **§1 flag list** (five items) is your veto surface; anything
+you don't push back on counts as blessed. The five, in plain terms:
 
 1. **Your data carries over via a one-time import you review first** (recommended; alternatives
    rejected as trust-destroying).
@@ -87,15 +96,16 @@ The three steps that don't need you are being executed as you read:
 3. ✅ **The amendment bookkeeping checker exists now** — the design's change-log claimed an
    enforcer that was never built; it's built and wired into CI.
 
-## 6. What happens after you say go
+## 6. What happens from here *(was "after you say go" — Q-0241: there is no go to give)*
 
 Agents create the new repo (`superbot-next` on a fresh Railway project), install the memory kit as
 its first act, then build the eleven kernel pieces in their frozen order (~5–8 days — this part
 can't be parallelized, it's a chain), then fan out and port features band by band — settings and
 operator tools first, economy next, **games deliberately late** (the review fleet proved they
 don't block anything), AI knowledge last. Each ported feature goes green against its goldens and
-auto-merges. Your touchpoints after the go: ratify three layout-simulator results during the port,
-review the data-import dry-run, and give the final cutover nod. Realistic active-build time,
+auto-merges. Your *reaction windows* (not approvals — the work continues either way, on the
+reversible path): the three layout-simulator results during the port, the data-import dry-run
+into shadow, and the cutover week with its 7-day rollback window. Realistic active-build time,
 measured against how fast the agent fleet actually merges: **about two weeks, floor of ~1.5**.
 
 ## 7. The honest caveats
@@ -106,8 +116,9 @@ measured against how fast the agent fleet actually merges: **about two weeks, fl
   the plan widens them per band during the port rather than pretending they're complete.
 - ~15% of the surface won't fit the declarative style and stays ordinary code — counted and
   visible, not hidden.
-- The two-week estimate assumes your gate turnarounds are hours-to-a-day; the human gates are the
-  pacing item now, not the agents.
+- ~~The two-week estimate assumes your gate turnarounds are hours-to-a-day~~ *(Q-0241: no human
+  gates remain in the loop — the agents are the pacing item, plus CI.)*
 
-**Bottom line:** read the canonical plan's §1 (five flags) and §5 (the 17-step sequence). If
-nothing there bothers you, the program is ready the moment the cold-start verdict lands.
+**Bottom line:** read the canonical plan's §1 (five flags) and §5 (the 17-step sequence) whenever
+you like. The program no longer waits for anything from you — say something only if what you read,
+or what you see happen in the server, bothers you.
