@@ -461,7 +461,64 @@ how I talk to you for the rest of the program.
     materially more effective?
 ```
 
-## 8. What this does and doesn't replace
+## 8. Operating model — how to work with the coordinator (distilled from its §7 answers, 2026-07-07)
+
+The coordinator's own §7 answers, distilled to the owner's actionable habits. This is its
+*self-model* — trustworthy because it marked its unknowns honestly — but confirmed-by-observation
+only so far; the two open unknowns are flagged. The load-bearing caveat: its **memory claim (▸
+Memory below) is unverified** — until "say-it-once" is observed to hold for a few days, treat
+every `DECIDED:` as *also commit it to a doc*, not chat-only.
+
+- **▸ Mark the register (its #1 ask, and the highest-value habit).** Prefix substantive messages
+  **DECIDED / IDEA / QUESTION**. Under never-wait, an unlabeled fragment the owner meant as an
+  instruction but the coordinator reads as "input to weigh" diverges silently for hours. "I
+  prefer X" = input to weigh; "DECIDED: X" = ends deliberation. Counterpart promise: it asks in
+  one line when unsure despite the label. (This is the chat-level twin of the repo's own Q-0254
+  understand-and-reflect + idea-classification discipline.)
+- **▸ Decidedness > polish.** A finalized prompt's value is the *settled decisions* it encodes
+  (compiles straight to dispatch); a rough idea is equally good input for a different job (it
+  expands + states-back, owner corrects one sentence — Q-0254). A polished prompt on a wrong
+  assumption is *worse* than a rough one, because polish signals "don't re-derive." Polish
+  outside first: multi-part policy whose parts constrain each other. Bring raw: direction,
+  feasibility, possibility-space mapping.
+- **▸ This chat = thin control channel; decisions live here.** Dispatch · status · steering ·
+  corrections · decisions in-chat; extended brainstorming in a dedicated session (the
+  coordinator's turn is single-threaded — a long think-piece queues every child ping behind it —
+  and the chat writes nothing durable by itself). End any in-chat thinking with `DECIDED: …`.
+- **▸ Memory = the repos, not the chat.** Say-it-once sticks for days of normal traffic; if it
+  must outlive the noise, say "this goes in a doc." Degradation tell: it re-asks something
+  settled or calls a merged PR in-flight → say so bluntly; the fix is cheap re-grounding from the
+  repos, not archive-and-restart. Highest-bandwidth input, in order: **repo path + "this file
+  decides X" > "DECIDED: X because Y" > prose.** *(Unverified — see the caveat above.)*
+- **▸ Coordinator vs. session.** Names one session + expects its next action → talk to the
+  session; needs program judgment → talk to the coordinator. In-session consent is **always
+  direct** (relayed consent is untrusted).
+- **▸ Steering.** Interrupting the coordinator is free (settled at its next wake). Redirecting a
+  session *before its PR merges* beats killing it (a killed session can leave a dangling claim +
+  branch). Correction format: **what's wrong · what right looks like · patch-or-abandon.** Blunt
+  beats diplomatic.
+- **▸ Decide vs. stay-out.** Owner keeps: product feel · money/spend · external publish · taste
+  (naming/tone/what users see) · vetoes on flagged calls. Coordinator owns: implementation ·
+  sequencing inside the plan · tooling · when to parallelize.
+- **▸ Reading its state.** The status checklist is the dashboard: ✱ moving = working; ⚠ =
+  waiting-on-you (always paired with a reply + its default); blocker-reply-with-recommendation =
+  stuck. No need to open sessions to audit. It labels red-by-design vs. broken every report;
+  unlabeled red = a coordinator miss, call it. Cheapest owner habit: one same-day visit on a ⚠ +
+  the 09:00 roll-up.
+- **▸ Consent walls (the one latency-critical thing).** The classifier walls *destructive* or
+  *new-external-publish* actions and discounts the coordinator's relayed words — only the owner's
+  voice in that session's own chat clears it. Treat ⚠ consent lines as the sole moments the
+  owner's absence is the critical path; everything else tolerates it by design. **Open unknowns:**
+  whether a wall recurs per-push or clears once a repo has content (step-7/8 pushes are the live
+  experiment), and whether Project settings expose a scoped pre-authorization (the coordinator
+  can't see settings — the *owner* can, and should check). Confirmed clear: a scoped in-session
+  go-ahead ("go ahead for this session's pushes to substrate-kit and superbot-next").
+- **▸ Load.** Scales on clean-ownership sessions (claims + self-describing PRs + write-back), not
+  on head-only state. Overload tells: stale checklist · generic replies · misattributed work ·
+  growing wake latency. A second Project is for a separate *decision rhythm* (the trading repo
+  later), not for volume — the rebuild stays one Project.
+
+## 9. What this does and doesn't replace
 
 Nothing in the canonical plan changes — this is execution mechanism only. If the coordinator
 proves a poor fit (scored on the four §10 tests, by observation), the same §5 sequence runs
