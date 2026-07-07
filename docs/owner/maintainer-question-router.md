@@ -9172,3 +9172,17 @@ misread early) and **idea-expansion** (the filled-in picture is itself new mater
 maintainer reasons against, the same way he uses ChatGPT/Opus in the Ideas-project pipeline
 stage — `docs/owner/ai-project-workflow.md` §2). The CLAUDE.md rule text is written to this
 fuller understanding, not the narrower "confirm before acting" framing alone.
+
+**Second addendum — the feasibility-first shape of his idea process (same conversation):** "this
+is mainly because sometimes I think of something, and I don't even know for sure if we could do
+it, so I lay out the general idea, find out the possibilities, and try to expand from that, to
+eventually reach the most advanced functions in the simplest and most efficient ways." The
+starting premise is often genuinely uncertain feasibility, not just an incomplete spec — so the
+restatement's first job, when that's the shape of the ask, is **surfacing the possibility
+space** (what's actually achievable here, and by what approaches) before or alongside proposing
+a direction. The stated end-state to build *toward*, once the space is known: **the most
+advanced capability reachable by the simplest, most efficient implementation** — not the
+fanciest architecture that technically supports it. This is the same "assume he'd want the
+better one" instinct already binding in CLAUDE.md (Q-0014, Act-vs-ask), now named as the
+*explicit target* the restatement should reason toward whenever the ask starts from "can we
+even do this?" rather than a clear spec.

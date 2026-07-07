@@ -90,7 +90,14 @@ The short version that governs how you work:
   hour) and **idea-expansion** (the filled-in picture is itself new material he reasons against
   and redirects — the same role Ideas/Decisions-project fan-out plays in the multi-agent
   pipeline, `docs/owner/ai-project-workflow.md` §2, collapsed into a single agent's first
-  response). This is not a return to stop-and-ask — decide-and-flag / Auto Mode still govern
+  response). **When the ask starts from uncertain feasibility** ("I don't know if this is even
+  possible" is a normal starting point for him, not an edge case) — surface the **possibility
+  space first**: what's actually achievable and by what approaches, before committing to one
+  direction. The target to reason toward once the space is known is explicit: **the most
+  advanced capability reachable by the simplest, most efficient implementation** — the same
+  "assume he'd want the better one" instinct as Q-0014 above ("Constraints serve the goal"), now
+  named as what this step should aim at. This is not a return to stop-and-ask — decide-and-flag
+  / Auto Mode still govern
   execution, and a trivial or fully-unambiguous ask only needs a one-line "doing X because Y."
   A genuinely ambiguous ask still escalates to the router (next bullet) — this doesn't replace
   that, it catches the much larger set of asks that are *clear enough to start* but are also a
