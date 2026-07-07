@@ -121,13 +121,24 @@ class _Reverse:
         self._direct = direct  # only populated for the AST backend
         self._graph = graph
 
+    def _in_graph(self, mod: str) -> bool:
+        # Contract alignment with the AST backend: a module the graph doesn't
+        # know (top-level files like bot1/config — outside LAYER_PACKAGES) has
+        # no edges, it is not an error. grimp raises ModuleNotPresent instead
+        # (observed on grimp 3.15 via test_atlas), so guard before querying.
+        return mod in self._graph.modules  # type: ignore[attr-defined]
+
     def importers(self, mod: str) -> list[str]:
         if self.engine == "grimp":
+            if not self._in_graph(mod):
+                return []
             return sorted(self._graph.find_modules_that_directly_import(mod))  # type: ignore[attr-defined]
         return sorted(self._direct.get(mod, set()))
 
     def downstream(self, mod: str) -> set[str]:
         if self.engine == "grimp":
+            if not self._in_graph(mod):
+                return set()
             return set(self._graph.find_downstream_modules(mod))  # type: ignore[attr-defined]
         seen: set[str] = set()
         queue: deque[str] = deque([mod])
