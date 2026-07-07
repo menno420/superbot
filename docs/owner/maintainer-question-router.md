@@ -9065,3 +9065,26 @@ specifically for entry at a decided level."
 
 **Homes:** this Q · the capture doc Part 3 (operating-model subsection) · the future trading-repo
 founding brief (Q-0250 + Q-0251 are its two design inputs).
+
+### Q-0252 — DIRECTED: three dedicated Fable sessions, one per build, each ending in a comprehensive executable plan (2026-07-07)
+
+**Owner directive (in-session):** "prepare the repo for the 3 builds — the goal should be to use
+3 dedicated fable sessions to thoroughly research and plan for all these ideas and turn them into
+comprehensive ideas/executable plans."
+
+**Executed same day.** The launch package is
+[`docs/planning/program-three-sessions-launch-index-2026-07-07.md`](../planning/program-three-sessions-launch-index-2026-07-07.md)
+(one page: order, prerequisites, consumes/produces) pointing at three paste-ready briefs:
+session 1 = the `superbot-next` kickoff (`rebuild-kickoff-steps-6-8-brief-2026-07-07.md`);
+session 2 = the kit-lab founding brief (`kit-lab-repo-founding-brief-2026-07-07.md`);
+session 3 = the trading-repo founding brief (`trading-repo-founding-brief-2026-07-07.md`).
+
+**One flagged call (⚑, decide-and-flag):** session 1 is an *execution* session, not a
+research-and-plan session — the bot rebuild's comprehensive executable plan already exists (the
+canonical plan + §11/§11b, twice-reviewed 2026-07-07); re-planning it would re-litigate settled
+work. The genuine research-and-plan sessions are 2 (kit lab) and 3 (trading), whose builds had
+only capture-level docs. If the owner *did* want a third planning pass over the bot rebuild, say
+so and it becomes a review brief instead — but the recommendation is to spend that session
+actually starting the repo.
+
+**Homes:** this Q · the launch index + two new briefs · current-state ▶ pointer.

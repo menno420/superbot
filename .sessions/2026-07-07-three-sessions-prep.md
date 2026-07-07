@@ -1,24 +1,31 @@
 # 2026-07-07 — Three-sessions prep (Q-0252: program launch briefs)
 
-> **Status:** `in-progress`
-> **Branch:** `claude/rebuild-plan-consolidation-c34c0b` (restarted from main after #1797)
+> **Status:** `complete`
+> **Branch:** `claude/rebuild-plan-consolidation-c34c0b` (restarted from main after #1797) · **PR:** #1798
 > **Continues:** the 2026-07-07 consolidation conversation (PRs #1791–#1797)
 
-## What is about to happen
+## What happened
 
-Owner directive: prepare the repo so **three dedicated Fable sessions** can each thoroughly
-research + plan one build and produce a comprehensive executable plan. Deliverables this round:
+Owner directive **Q-0252** executed — the repo is prepared for the three dedicated Fable sessions:
 
-1. **Q-0252** router entry (the directive + the one flagged call: the bot's session is the
-   already-briefed execution kickoff, since its planning is complete — the other two get genuine
-   research-and-plan founding briefs).
-2. `docs/planning/kit-lab-repo-founding-brief-2026-07-07.md` — session 2's brief (kit repo +
-   self-improvement lab founding plan).
-3. `docs/planning/trading-repo-founding-brief-2026-07-07.md` — session 3's brief (Q-0250/Q-0251
-   as design inputs).
-4. `docs/planning/program-three-sessions-launch-index-2026-07-07.md` — the one-page launch index
-   (order, prerequisites, what each session consumes/produces) + current-state ▶ pointer.
+1. **Launch index** (`program-three-sessions-launch-index-2026-07-07.md`): one page — order
+   (1 → 2 → 3; 2 and 3 parallelizable after 1), prerequisites, consumes/produces, the standing
+   owner checklist.
+2. **Session 1 = the kickoff** (existing brief; execution, since the bot's planning is complete —
+   flagged ⚑ in Q-0252 with the reasoning).
+3. **Session 2 brief** (`kit-lab-repo-founding-brief-2026-07-07.md`): research-and-plan for the
+   kit repo + lab — internals audit, benchmark suite to runnable depth (cold-start A/B routine,
+   Q-0248 dataset, ideas-that-ship metric), the lab loop + Q-0241 rails, work surfaces
+   (program console as recommended first website), governance home, friction protocol.
+4. **Session 3 brief** (`trading-repo-founding-brief-2026-07-07.md`): research-and-plan on the
+   Q-0250/Q-0251 inputs — data stack (web research in scope), decision ledger + verifier,
+   backtest engine build-vs-adopt, statistics layer (multiple-testing + sniper small-N),
+   promotion-ladder CI gates, 3-way allocator, tracker site with DEGIRO ingestion, first build
+   band (ledger + verifier + one reference strategy end-to-end).
 
-## Close-out
+Pointer: current-state ▶ next → the launch index. Checks: `check_docs --strict` ✓.
 
-_(to be written at close)_
+## Session enders
+
+Same conversation as the main consolidation session — enders live in
+`.sessions/2026-07-07-rebuild-idea-consolidation.md`.
