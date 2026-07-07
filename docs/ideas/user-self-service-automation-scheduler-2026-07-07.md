@@ -57,12 +57,31 @@ Depending on what "check" means, this can silently become an unfair-advantage le
   A user who never has to remember to log in gets strictly more value than one who does, for the
   same amount of attention. That is the exact failure mode the owner is flagging.
 
-**Recommended default: automations are notify-only by default.** A subsystem may explicitly opt an
-action into "automatable" status only when the action is provably idempotent-and-time-bounded in a
-way that manual and automated execution produce the *same* outcome a player would get by remembering
-to log in at any point in the window (e.g., claiming a daily reward that doesn't decay is fine to
-automate; something with decay, streak bonuses, or a limited-window bonus is not, because automation
-would then reliably capture value a forgetful human player would miss).
+**Recommended default: automations are notify-only out of the box.** A subsystem may explicitly opt
+an action into "automatable" status only when the action is provably idempotent-and-time-bounded in
+a way that manual and automated execution produce the *same* outcome a player would get by
+remembering to log in at any point in the window (e.g., claiming a daily reward that doesn't decay is
+fine to automate; something with decay, streak bonuses, or a limited-window bonus is not, because
+automation would then reliably capture value a forgetful human player would miss).
+
+**Owner ruling (2026-07-07 follow-up) — category B (auto-collect) should exist, but paid-for:**
+the owner confirmed auto-collect-style automation *should* ship, not stay notify-only forever — on
+the condition that it's gated, not free. Two mechanisms named, not yet chosen between:
+
+- an **unlock cost** in a combination of coins + XP (or some other sink) to buy the *capability* —
+  pitched deliberately at "not too hard, but not free either";
+- a **free daily allowance** (e.g. one free auto-collect use per day for everyone) with the
+  allowance itself **increasable** — presumably via the same kind of spend, or through progression.
+
+This reframes the fairness question from "should this exist" to "what does it cost, and does the
+cost neutralize the advantage." The economic-sink framing (spend a real resource to buy the
+convenience) is a legitimate answer to the failure mode in category B above — but it only works if
+the price is calibrated so automation is a *quality-of-life purchase*, not a *net-positive-value
+purchase* (i.e. the coins+XP spent should roughly track the value of the attention saved, not be
+priced low enough that buying automation nets more resources than a manual player earns). Getting
+that calibration right — the exact currency mix, the price curve, whether it's a flat unlock or a
+per-use cost, how the free daily allowance scales, and whether every subsystem prices this the same
+way or each one sets its own — is real design work.
 
 ## Design sketch (for whoever picks this up)
 
@@ -92,15 +111,38 @@ would then reliably capture value a forgetful human player would miss).
    sweep, §11 A-8). Worth naming explicitly as a sibling consumer of the same due-queue, but it does
    not need the fairness guardrails above since it's operator-declared, not user-self-service.
 
-## Open question that is genuinely the owner's to make, not an agent's
+## Open question — resolved directionally, mechanism deferred
 
-Whether *any* category-B action-taking automation should ever ship, versus notify-only forever.
-The notify-only default above is a recommendation, not a ruling — this is a product-feel call
-about how much "idle game" behavior is wanted, and it should get an explicit answer once a
-subsystem actually wants to use category B (no subsystem does yet, so nothing is blocked today).
+~~Whether *any* category-B action-taking automation should ever ship, versus notify-only forever.~~
+**Resolved:** yes, category B should ship, gated behind an unlock cost (coins + XP or similar) plus
+a free daily baseline that can itself be increased (see the owner-ruling paragraph above). **Still
+open, and explicitly deferred to its own dedicated design session** (owner directive, 2026-07-07):
+
+- the exact currency mix and price (coins + XP in what ratio; flat unlock vs. per-use cost);
+- how the free daily allowance is sized and how "increasing it" is earned/bought;
+- whether pricing is set once at the kernel level or per-subsystem (a chicken-farm check and a
+  rank-ping probably don't cost the same, if either costs anything at all — notify-only ones likely
+  stay free, since category A carries no fairness risk to price against);
+- how to verify a given price actually neutralizes the advantage rather than just taxing it (this
+  needs the same kind of measured/simulated approach the rebuild already uses for layout decisions —
+  a simulator or back-of-envelope model comparing automated vs. manual expected value over time, not
+  a guessed number).
+
+**Do not design the pricing mechanism inline in a future session touching K9 for other reasons** —
+this needs its own dedicated session per the owner's explicit instruction, precisely because getting
+the economics wrong in either direction (too cheap → real advantage; too expensive → nobody uses a
+feature that was supposed to be a QoL win) is exactly the kind of mistake that's expensive to walk
+back once players have spent real in-game currency on it.
 
 ## Recommended routing
 
-Fold as a K9 landing when Phase-B's per-step plan for K9 (canonical plan §5 step 10) is written —
-analogous to how §11 A-8's background-obligation landings were added. Until then this stays a
-capture; nothing here blocks the rebuild start.
+1. The **kernel primitive** (user-scoped `ManagedTaskSpec` trigger kind, category-A notify-only path)
+   folds in as a K9 landing when Phase-B's per-step plan for K9 (canonical plan §5 step 10) is
+   written — analogous to how §11 A-8's background-obligation landings were added.
+2. The **category-B pricing/economics design** gets its own dedicated session, separate from the K9
+   build itself, before any subsystem is allowed to declare an action "automatable." The kernel
+   primitive should ship with category B *structurally possible but gated off* (no subsystem opts in)
+   until that pricing session produces a ruling — so the K9 build doesn't stall waiting on economics
+   design, and the economics session doesn't have to rush ahead of the kernel.
+
+Until both land, this stays a capture; nothing here blocks the rebuild start.
