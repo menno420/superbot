@@ -41,11 +41,19 @@ only themselves.
 **Review:** a 4-lens adversarial fleet (brief-coverage · source-truth · executability ·
 governance) ran over the shipped plan; first launch died on the 5-hour usage limit (all 4 lanes,
 opaque errors — see the session idea below), re-ran after the owner lifted it. Self-review
-before the re-run caught and fixed 3 real defects: the §4.3 upgrade flow destroyed the old
-templates before the diff needed them (fixed: dist archived at adopt/upgrade time, `upgrade`
-self-replaces); the §5.0 rubric-creation-vs-modification deadlock (fixed: KL-5 authoring PR is
-do-not-automerge, then pinned); the KL-3 marker-tightening path for pinned consumers (fixed:
-via `session_markers` config at upgrade, never mid-version).
+before the re-run caught 3 real defects (the §4.3 old-templates-destroyed-before-diff flow, the
+§5.0 rubric creation-vs-modification deadlock, the KL-3 marker-tightening path); the fleet then
+returned **26 confirmed findings — all folded**. The load-bearing ones: CODEOWNERS/required-
+check/auto-merge are repo *settings* nobody provisioned (→ §3.2 item 7 + P10, two-layer pin,
+honest advisory-until-P10 label); kit-repo **visibility** was the one unflagged assumption
+(→ KF-10/P11: public at v1.0.0, veto fallback specced); the three-way template diff was dead on
+arrival because adopt plants *rendered* docs (→ hash-based untouched-detection); the lab
+couldn't read private consumer repos for its sweeps (→ KF-11/P13 read-only scopes); B4's
+"worked around" judgment made the graded party the grader (→ D-23 non-loop grader, headline =
+revert-scan only); appending benchmark rows tripped the plan's own append-only checker (→
+append-aware rule); consumer session-close can't hot-fire routines (app tokens don't trigger —
+→ §9.1 honesty + P12); B2's product plane got an explicit defer/ingest statement; D1 gained a
+kickoff-ran-first ordering path. Decisions grew to D-24, flags to KF-11, provisioning to P13.
 
 ## Homes touched
 

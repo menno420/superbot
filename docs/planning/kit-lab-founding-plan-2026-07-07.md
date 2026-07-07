@@ -43,7 +43,7 @@ colliding with the canonical plan's F-N flags.)*
 | # | Decision (recommended, applied throughout this plan) | One-line why |
 |---|---|---|
 | KF-1 | **Releases are GitHub Releases with semver tags, first release `v1.0.0` at extraction**; each release ships `bootstrap.py` as the pinned asset + a `sha256` checksum + a machine-readable `release.json`; `CHANGELOG.md` keep-a-changelog format | consumers pin something *nameable and verifiable*; v1.0.0 because two real consumers depend on a stable adopt contract — 0.x "anything may change" would be a lie |
-| KF-2 | **Upgrades are pull-based**: consumers poll the kit repo's releases (public read, zero credentials) and land their own upgrade PRs; the lab never holds write access to consumer repos | the cheapest credential scope that satisfies Q-0249's rail; the lab's outbound duty becomes publishing `release.json` + upgrade notes, which is mechanical |
+| KF-2 | **Upgrades are pull-based**: consumers poll the kit repo's releases and land their own upgrade PRs; the lab never holds **write** access to consumer repos (read scope: KF-11) | the cheapest credential shape that satisfies Q-0249's rail; the lab's outbound duty becomes publishing `release.json` + upgrade notes, which is mechanical |
 | KF-3 | **First work surface = the program console** (adopt session 1's shell, fill its declared telemetry lane, add the kit-lab lane, move to the lab's Railway project at extraction); the **lab bot token is second** and 👤-gated (Discord app creation is an owner portal action) | the console is the owner's phone-first window into everything the lab does; a bot token has no consumer until the lab has Discord-facing experiments |
 | KF-4 | **Lab v1 = ONE fresh-session-per-fire routine, daily cadence**, under Q-0241-*shaped* rails (§6); the lab's own destructive tier is enumerated (§6.4) and executes only via reversible paths | rail before scale (owner-ratified); daily matches an inbox+benchmark workload — 2-hourly would burn spend polling an empty inbox |
 | KF-5 | **Benchmarks are mandatory-to-RUN, advisory-to-PASS** (the A-17 pattern): the cold-start A/B never blocks a release; its job is the trend line and the "make the A/B flip" goal. **B1's first firing waits for the auto-drafted-handoff build** (the ruled sequencing) | the benefit claim already failed twice — a blocking gate would deadlock releases on a metric we know is currently red; trend + flip is the honest shape |
@@ -51,6 +51,8 @@ colliding with the canonical plan's F-N flags.)*
 | KF-7 | **Friction transport = GitHub issues labeled `friction` on the kit repo**, payload = the kit's existing reflection record shape + a repo envelope; filed at consumer session-close | issues are the proven agent-visible trigger surface (the `reconcile` precedent) and need no cross-repo write credentials beyond issue-create |
 | KF-8 | **The unset numbers, set** (all revisable by data): Q-0248 escalation N = **2** confirmed review defects; de-escalation M = **3** consecutive matching tasks; rework/revert window = **14 days**; ideas "survive" = **30 days unreverted post-merge**; A/B trend claims need ≥ **3** paired runs; guard demotion at **>50% FP over ≥10 fires**, deletion candidacy at **2 clean bands with zero catches** | Q-0248/the capture left them as letters; benchmarks can't run on unset thresholds — these are seeded conservative and the data revises them |
 | KF-9 | **`tokens_out` ships as `null`-tolerated**: no programmatic token meter exists in any session surface today; the telemetry schema carries the field, sessions fill it when a meter exists, estimates are labeled estimates | honest-gap posture (no fake data — the console's own rule); blocking telemetry v1 on a meter that doesn't exist would kill the whole Q-0248/Q-0249 dataset |
+| KF-10 | **The kit repo goes PUBLIC at v1.0.0** (the kickoff creates it private; the owner flips visibility when v1.0.0 tags) — this is what makes KF-2's zero-credential pull, the §7.3 raw-URL console read, and §9.2's unauthenticated release poll real. What becomes world-readable: the kit source (already written for extraction), program law (§8), the lab's session logs + benchmark results + telemetry JSONLs. **If the owner vetoes** (keeps it private), the fallback is explicit: a read-only fine-grained PAT (`contents:read` on the kit repo) installed per consumer environment, and every "public read" in this plan reads "PAT read" | visibility was the one unflagged assumption the review caught; public is the kit's stated destiny (the OSS arc) and nothing secret lives in it — flagged because external-publish is an owner call |
+| KF-11 | **The lab gets read-only fine-grained scopes on consumer repos** (`contents:read` + `pull-requests:read`, NO write) so the B2 outcome backfill, B3 friction-rate, and B4 receipt sweeps are runnable lab-side | Q-0249's rail bans holding another repo's *prod secrets or the live bot token* — read-only code/PR visibility is neither; the alternative (consumer-side backfill shipped over the issue channel) adds ceremony to every consumer forever |
 
 ---
 
@@ -68,7 +70,12 @@ colliding with the canonical plan's F-N flags.)*
    *externally verifiable* (→ §7).
    3b. **Model-for-task allocation as a standing lab benchmark (Q-0248, both planes)** — the lab
    owns the program-wide `model · effort · task-class · outcome` dataset and runs the paired
-   same-task A/Bs per class (→ §5 B2).
+   same-task A/Bs per class (→ §5 B2). **Plane split, stated honestly:** B2 v1 covers the
+   **agent plane**; the **product plane** (per-runtime-API-call routing) is *enforced* by
+   superbot-next's K10 task registry + profile resolver and *judged* by the A-17 eval machinery
+   per the rebuild plan — the lab's role there is dataset custody: B2 ingests product-plane rows
+   (per-call `{task, provider, model, cost, latency, eval_verdict}`) into the same dataset once
+   K10 exists and emits them (a post-KL-6 lane, not a lab-v1 deliverable).
 4. **Cross-repo friction reports close the loop** — consumers file kit-friction deltas; the lab
    consumes them as its inbound queue; fixes ship as versioned releases; the A/B + friction rate
    arbitrate (→ §9).
@@ -83,18 +90,21 @@ Lab v1 is DONE when all seven hold (each with its landing band from §10):
 
 | # | Done-condition | Verifiable how | Lands |
 |---|---|---|---|
-| D1 | Kit repo is **born self-verifying**: own CI runs the 440-test suite + the dist==fresh-build byte-equality pin + the engine lint bans (no print/assert/subprocess) + `check --strict` on a scratch adoption | kit repo CI green on a no-op PR | kickoff (spec: §3.2) |
+| D1 | Kit repo is **born self-verifying**: own CI runs the 440-test suite + the dist==fresh-build byte-equality pin + the engine lint bans (no print/assert/subprocess) + `check --strict` on a scratch adoption | kit repo CI green on a no-op PR | kickoff (spec: §3.2), **else KL-1's first act** (§3.2 ordering note) |
 | D2 | **Release v1.0.0 published**: tag + `bootstrap.py` asset + sha256 + `release.json` + CHANGELOG; both existing consumers (superbot's in-tree copy, superbot-next) carry a recorded version pin | release page exists; `substrate.config.json` has `kit_version` in both consumers | KL-1 |
 | D3 | **The lab loop is live**: one daily fresh-session routine, prompt version-controlled in the kit repo, run reports flowing with `Run type: routine · lab`, console kill switch documented | ≥3 consecutive scheduled fires each shipping a real run report | KL-4 |
 | D4 | **Friction inbox operational**: the `friction` label + triage step proven on ≥1 real report (superbot files the first — it is already a consumer) | a friction issue opened, triaged, dispositioned by the loop | KL-4 |
-| D5 | **Benchmark harness pinned + B1 baseline recorded**: rubric/tasks/seeds/scoring committed outside the loop's write reach; the post-auto-draft T4 pair run; `bench/results/` index rendering | `bench/` tree exists; ≥1 row in `bench/results/cold-start/index.json` | KL-5 |
+| D5 | **Benchmark harness pinned + B1 baseline recorded**: rubric/tasks/seeds/scoring committed under the §5.0 pin (CI-check fallback from birth; ruleset-backed once P10 lands); the post-auto-draft T2→T4 sequence run; `bench/results/` index rendering | `bench/` tree exists; ≥1 row in `bench/results/cold-start/index.json` | KL-5 |
 | D6 | **Telemetry capture live**: model-usage rows + guard-fire records being written per session; the console's declared telemetry lane renders real rows | `telemetry/model-usage.jsonl` non-empty; console lane no longer "pending" | KL-3 + KL-6 |
 | D7 | **Governance home populated**: `docs/program/` with the PL-register; ≥1 consumer citing it by pointer (never a copy) | `check_docs --strict` green in the kit repo; consumer pointer paragraph live | KL-2 |
 
 **Explicitly NOT in lab v1** (the fence): a fleet of loops · the trading repo's surfaces ·
-public-OSS productization (LICENSE text choice, PyPI, CI matrix beyond 3.10 — owner-paced) ·
-the navigation-simulator oracle (a named backlog item inherited from the website brief) ·
-re-running the cold-start A/B before the auto-draft build lands (ruled sequencing).
+the Q-0248 **product plane** (K10-enforced in superbot-next; B2 ingests its rows post-KL-6, §2.1-3b) ·
+public-OSS productization (PyPI, CI matrix beyond 3.10, CONTRIBUTING/SECURITY — owner-paced;
+**note: KF-10 visibility ≠ productization** — flipping the repo public is one setting, the OSS
+polish arc stays deferred) · the navigation-simulator oracle (a named backlog item inherited
+from the website brief) · re-running the cold-start A/B before the auto-draft build lands
+(ruled sequencing).
 
 ---
 
@@ -132,17 +142,33 @@ providing at extraction:
 5. **Session gate** (dogfood): `check --strict --require-session-log` on the kit repo itself —
    the kit runs behind its own locked door from PR one.
 6. Python floor 3.10 (matrix 3.10–3.13 is productization, deferred).
+7. **Repo settings that make the gates BITE** (a CI job blocks nothing by itself): a ruleset on
+   `main` making `kit-quality` a **required status check** + "Allow auto-merge" enabled + an
+   auto-merge arming mechanism (port superbot's `auto-merge-enabler` workflow pattern, incl. its
+   `do-not-automerge`-label skip) + path-scoped required review on `bench/{rubric,tasks,seeds}`
+   once those paths exist. Settings are 👤/portal-or-API actions — provisioning row **P10**
+   (§7.2) owns them and names who arms what when.
+
+**Ordering note (the §8.3.5 pattern, applied here):** the kickoff brief specs the kit repo's CI
+as only "tests + `check --strict` on a scratch adoption" — if the kickoff runs **before** this
+plan lands, **KL-1's first act is diffing the kit repo's CI + settings against this section and
+landing the delta.** D1's Lands cell says the same.
 
 ### §3.3 Dogfooding — the kit repo runs on the kit
 
-The guardrail refuses to adopt into the kit's own tree (`guardrail.py:19-35`), which is correct
-for the *engine* but leaves the kit repo without its own workflow surfaces. Resolution (⚑ D-6):
-the kit repo **hand-plants** its own `docs/` + `.sessions/` + `.substrate/` from the templates at
-seed time (a one-time `render` into the real tree, committed), and the guardrail carve-out is
-retargeted from the phantom `examples/` (which never shipped) to nothing — the kit repo's own
-docs are ordinary committed files maintained like any consumer's, upgraded by the same
-release-diff mechanics (§4.3). This makes the kit repo consumer #0 honestly: it feels every
-planted-doc friction its consumers feel.
+The guardrail's true behavior, stated precisely (the naive reading is half-wrong): in the
+**source layout** `assert_safe_target` refuses to operate on the kit's own tree
+(`guardrail.py:19-35`), but running the **dist single-file**, `_kit_root()` resolves to the
+module *file* and the guardrail never engages (`cli.py:98-113`; `guardrail.py:26-27`) — so
+`python3 dist/bootstrap.py adopt` into the kit repo works today. Resolution (⚑ D-6): **the kit
+repo operates on itself exclusively via `dist/bootstrap.py`** (the file-valued kit_root disarms
+the guardrail *by design* — this is the explicit consumer-#0 mechanism for the seed render,
+`.substrate/` init, and session-close); the source-layout guardrail stays maximally strict; and
+the phantom `examples/` carve-out (the directory never shipped) is deleted. The seed itself is a
+**one-time committed render** (reviewable in the seed PR, unlike a live adopt) planting `docs/`
++ `.sessions/` + `.substrate/`; thereafter the kit repo's own docs are ordinary committed files
+maintained like any consumer's, upgraded by the same release-diff mechanics (§4.3). This makes
+the kit repo consumer #0 honestly: it feels every planted-doc friction its consumers feel.
 
 ### §3.4 Generalization worklist (before consumers #2/#3 adopt — band KL-1/KL-2 items)
 
@@ -175,7 +201,10 @@ Today a consumer cannot name, pin, verify, or roll back a kit version (§0). The
 - **`KIT_VERSION`** constant in `src/engine/lib/config.py`, exposed as `bootstrap.py --version`,
   stamped into the dist header line by `build_bootstrap.py`, and **written into
   `substrate.config.json` as `kit_version` by `adopt`/`upgrade`** — so both the file and the
-  install self-identify. (`Config.from_dict` already tolerates the new key.)
+  install self-identify. (Requires a new `Config` **dataclass field** — `from_dict` silently
+  *drops* unknown keys and `save_config` serializes only dataclass fields, so a bare JSON key
+  would be stripped on the next load→save round-trip; a defaulted new field is a MINOR
+  config-schema addition.)
 - **GitHub Release per version**: tag `vX.Y.Z` + assets `bootstrap.py`, `bootstrap.py.sha256`,
   and **`release.json`**:
 
@@ -201,8 +230,12 @@ Today a consumer cannot name, pin, verify, or roll back a kit version (§0). The
   `kit_version` record + the sha256 (verified at upgrade time against `release.json`).
 - The kickoff's step-7 pin note for the old superbot repo becomes concrete: superbot records
   `kit_version: 1.0.0` in a `substrate.config.json` next to its in-tree copy and thereafter
-  upgrades from releases like any consumer (its in-tree `substrate-kit/` source dir is deleted
-  when convenient — a follow-up superbot chore, not this plan's work).
+  upgrades from releases like any consumer — **this pin-file PR is a named KL-1 companion
+  deliverable** (superbot-side, like KL-2's rider PR), because §9's envelope needs its
+  `project_id` and D2 verifies on it. Honest scoping: superbot is **not an adopted install** (no
+  `.substrate/`, its own session tooling) — it participates in B2/friction **by hand** (agent-
+  authored rows/reports against the schemas) until it truly adopts; the in-tree `substrate-kit/`
+  source dir deletion stays a follow-up superbot chore.
 
 ### §4.3 The upgrade path (the today-missing half — band KL-1)
 
@@ -216,13 +249,20 @@ is therefore: download the new file as `bootstrap.py.new` → `python3 bootstrap
 
 1. Re-runs `adopt`'s staging (staged `.substrate/` artifacts always regenerate — the existing
    kit-owned channel; unchanged).
-2. **Planted-doc diff report** (the new mechanism): for each ADOPT_PLAN doc, three-way compare
-   {template@old-version (from the archived old dist's embedded `_TEMPLATES`), consumer's
-   current file, template@new-version} → emit `.substrate/upgrade-report.md` listing per-doc:
-   unchanged / template-improved-and-consumer-untouched (safe to apply with `upgrade
-   --apply-docs`) / both-diverged (manual: the report shows the template delta). **Planted docs
-   are never auto-edited without `--apply-docs`, and never when the consumer diverged** —
-   consumer-owned stays consumer-owned.
+2. **Planted-doc diff report** (the new mechanism). A raw-template compare cannot work — adopt
+   plants `with_unrendered_banner(render(template, context))` with slot substitution, banner,
+   and a stamped D-0001 date, and `render --live` keeps filling slots over the install's life,
+   so template@old never byte-matches even an untouched consumer file. Therefore:
+   **"consumer-untouched" is decided by hash, not by re-render** — `adopt`/`render --live`
+   record a sha256 of each planted/re-rendered file in `state.json`, and a doc whose current
+   hash equals its recorded hash is untouched. The report then classifies per-doc: unchanged
+   (template identical across versions) / template-improved-and-consumer-untouched (safe to
+   apply with `upgrade --apply-docs`, which re-renders template@new through the *current* slot
+   context and re-records the hash) / both-diverged (manual: the report shows the
+   template@old→new delta, both rendered through the current slot context for a readable diff).
+   **Planted docs are never auto-edited without `--apply-docs`, and never when the consumer
+   diverged** — consumer-owned stays consumer-owned. (Pre-1.0 installs have no recorded hashes:
+   the first upgrade treats every doc as diverged — honest and safe.)
 3. **State migration**: `migrate()` runs transforms keyed by `STATE_SCHEMA_VERSION`; before any
    write, `state.json` is copied to `.substrate/backup/` — which together with the archived
    dist is the **rollback path**: `upgrade --rollback` restores both (staged artifacts
@@ -267,15 +307,27 @@ bench/
     allocation/…  guards/  ideas/ # same pattern per family
 ```
 
-The `bench/` tree is **outside the lab loop's write reach for rubric/tasks/seeds**: CODEOWNERS
-requires owner (or at minimum a *separate* reviewed PR that the loop cannot self-merge — the
-`do-not-automerge` label class) on `bench/rubric/` + `bench/tasks/`. **Creation vs modification:**
-the one-time KL-5 *authoring* PR is written by the loop but labeled `do-not-automerge` so the
-owner (or at minimum a different session) reviews the rubric before the first firing depends on
-it; thereafter *any* change to rubric/tasks/seeds takes the same non-self-merge path — no
-deadlock, no self-authored-and-self-graded rubric drift. Results dirs are append-only by
-convention + checker (`check_bench_integrity.py`: an existing results file modified in a PR =
-red). *(⚑ D-9: the parity/ integrity rule, ported.)*
+The `bench/rubric/` + `bench/tasks/` + `bench/seeds/` paths are **pinned against loop
+self-modification** — but honestly, in two layers, because the naive mechanisms don't bind:
+`parity/`'s real integrity rule is *cross-repo* separation (which `bench/` can't reproduce —
+the loop holds contents-RW to its own repo), and a CODEOWNERS file blocks nothing without a
+ruleset requiring code-owner review — plus the single-identity trap: a loop PR authored via the
+owner's PAT cannot then be *approved* by the owner's identity (GitHub forbids self-approval).
+So: **layer 1 (from birth, CI-enforced):** `check_bench_integrity.py` reds any PR that touches
+`bench/rubric|tasks|seeds` unless it carries the `do-not-automerge` label — forcing every such
+change to sit for review instead of auto-merging; it also enforces results integrity
+**append-aware**: existing rows/artifacts under `bench/results/` are immutable, but appending
+new rows to an `index.json` and adding new run dirs is exactly what a benchmark run does and is
+allowed. **Layer 2 (settings-backed, P10 👤):** the kit-repo ruleset adds path-scoped required
+review on those paths (a second machine identity or the owner as reviewer). Until P10 lands the
+pin is CI-plus-label — owner-vetoable-but-advisory under silence=consent, stated plainly.
+**Creation vs modification:** the one-time KL-5 *authoring* PR is written by a lab session but
+labeled `do-not-automerge` and **the first rubric version is owner-blessed** (or at minimum
+reviewed by a non-author session) before the first firing depends on it; thereafter any
+rubric/tasks/seeds change takes the same path — no deadlock, no self-authored-and-self-graded
+rubric drift. *(⚑ D-9: the parity/ *principle* — the oracle sits outside the measured system's
+write reach — implemented with in-repo mechanisms since the kit repo has no second repo to
+hide the oracle in.)*
 
 ### §5.1 B1 — the cold-start A/B as a standing routine
 
@@ -289,9 +341,10 @@ and is the trend improving per release? (The founding challenge: it currently do
   thesis is now *the door, not the notebook*; (3) task shapes that can exercise the checker/guard
   half (a T5 *break-a-rule* task — introduce a change a kit checker should catch — is added to
   the corpus at first firing; its judge item: did the guard fire and did the session obey it?).
-- **Shape per firing:** minimum = the **T4-continuity pair** (the strongest differential) + T5;
-  full 4-task pass per MAJOR release or quarterly, whichever first. Same model both arms
-  (Sonnet-class), judge = a different, stronger model; judge model+version recorded per run
+- **Shape per firing:** minimum = the **T2→T4 continuity sequence per arm** (T4 is "continue
+  T2's work in a NEW cold session", so each arm's T2 must genuinely run first — 4 sessions
+  total) + T5; full 4-task pass per MAJOR release or quarterly, whichever first. Same model both
+  arms (Sonnet-class), judge = a different, stronger model; judge model+version recorded per run
   (drift caveat on trends).
 - **Sequencing (⚑ KF-5):** first firing happens **after the auto-drafted-handoff build**
   (band KL-5) — the ruling explicitly excludes another same-shape A/B; the baseline series
@@ -335,9 +388,11 @@ and is the trend improving per release? (The founding challenge: it currently do
   it into the JSONL, computing what it can (date, session slug). `ci_green_first_push` +
   `merged_pr` are backfilled by the lab loop's telemetry sweep (GitHub API read per PR);
   `reverted_within_window` is backfilled after 14 days by the same sweep (revert-commit scan on
-  the PR's primary files). The `📊 Model:` needle becomes a required session-log marker via each
-  repo's `session_markers` config (door, not nag) — added at upgrade time, suggested by the
-  upgrade report, never forced mid-version (a consumer's gate only tightens when it upgrades).
+  the PR's primary files). **The sweep's credentials:** KF-11's read-only consumer scopes — the
+  private consumer repos are unreadable to the lab otherwise. The `📊 Model:` needle becomes a
+  required session-log marker via each repo's `session_markers` config (door, not nag) — added
+  at upgrade time, suggested by the upgrade report, never forced mid-version (a consumer's gate
+  only tightens when it upgrades). Superbot's rows are hand-authored until it adopts (§4.2).
 - **The paired A/Bs per class:** reuse the B1 harness (`run_ab.py` with `--family allocation`):
   same real task given to two tiers in cold contexts, judge scores output quality per the
   allocation rubric, objective gates (CI/checkers on the produced diff) decide first, cost
@@ -368,15 +423,20 @@ and is the trend improving per release? (The founding challenge: it currently do
   verdict(true_positive|false_positive|accepted_risk)|null, reason|null, judge|null, outcome|null}`
 
   The kit's uniform `Finding(path, kind, message)` tuple is already the payload; the two
-  choke-point writers cover every kit guard: `cmd_check`'s finding loop and `cmd_hook`'s
-  dispatch (band KL-3). **`did_not_run` is a first-class record** (the #1770 silently-dead-guard
-  class): the substrate-gate workflow writes a run-marker; a missing marker on a merged PR
-  becomes a `did_not_run` row at the next sweep.
+  choke-point writers cover the **local** surfaces (`hook` | `check`): `cmd_check`'s finding
+  loop and `cmd_hook`'s dispatch (band KL-3). **The `ci` surface is derived, not written** — a
+  JSONL appended inside an Actions runner dies with the job, so the sweep reads the GitHub
+  Checks API instead: substrate-gate conclusions per merged PR give the CI fires (findings
+  harvested from the job log), and **`did_not_run` is a first-class record** computed the same
+  way (a merged PR with *no* substrate-gate check run = a `did_not_run` row — the #1770
+  silently-dead-guard class).
 - **Triage:** the kit gains the reasons-required allowlist mechanism it currently lacks (port of
   superbot's `*_exceptions.yml` schema: `{path, kind, reason(REQUIRED), triaged, by}`), and
   **creating an allowlist entry IS the false_positive/accepted_risk verdict event**. Grading
   separation: the session whose work triggered the fire may *propose* a verdict; confirmation
-  requires a different session (the lab loop's weekly cold triage step) or the owner.
+  requires a different party — and **when the loop's own work triggered the fire, "a later loop
+  firing" does not count as different**: confirmation comes from a consumer session or the
+  owner (the same seam as B4's non-loop grader).
 - **Computation:** per guard per band: `fires`, `fp_rate = FP/(TP+FP)` over triaged fires,
   `catches` (TP that prevented a merge or was fixed), `did_not_run` count. **Sensitivity leg**
   stays the gate-bites meta-tests (every kit checker keeps a known-bad fixture test — already
@@ -398,17 +458,26 @@ stick?
 - **Definitions (mechanical v1, ⚑ KF-8):** an idea **ships** when its entry links a merged PR in
   any program repo. It **survives** when, 30 days after merge, no revert exists (no
   revert-commit referencing the PR; the PR's primary files still contain the change per
-  `git log --follow` scan) and the idea was not re-opened. **"Worked around" is not mechanically
-  detectable** — v1 records it as a judgment column filled during the loop's monthly review
-  (honest limitation, carried openly).
+  `git log --follow` scan) and the idea was not re-opened. (This 30-day window is the plan's
+  mapping of the capture's "within N sessions"; shipping itself is unbounded in time — an idea
+  that ships late still counts, in its ship-month's cohort.) **"Worked around" is not
+  mechanically detectable, and the loop may not judge it** (it would be grading its own ideas —
+  the separation rule). v1: the headline metric uses the revert-scan **only**; the
+  `worked_around` column exists but is filled exclusively by a **non-loop grader** — the owner's
+  monthly skim or a consumer-session attestation riding the §9.3 receipts channel — and rows
+  without a non-loop verdict stay `null`, excluded from the headline.
 - **The data source (new convention + its checker in the same PR):** the kit repo's
   `docs/ideas/` entries carry YAML frontmatter — `{state, origin(lab|owner|consumer:<repo>),
   shipped_pr, shipped_repo, merged_date, outcome(open|shipped|survived|reverted|rejected)}` —
   validated by `check_idea_index.py`. Consumer-repo ships flow back via the friction/receipt
   channel (§9.3).
-- **Computation (monthly):** generated / promoted / shipped / survived counts + acceptance rate
-  = survived ÷ generated, cut by origin. Comparing lab-originated vs owner-originated acceptance
-  is the honest "is the lab inventing useful things" readout.
+- **Computation (monthly, cohort-wise — never mixed):** ideas are grouped by **generation-month
+  cohort**; a cohort is evaluated only at **≥30 days maturity** (its youngest shipped idea's
+  survive-window closed). Per mature cohort: generated / promoted / shipped / survived counts +
+  acceptance = survived ÷ generated *within the cohort*; the monthly report shows the cohort
+  series, not a running mixed ratio (which would systematically understate acceptance while
+  young ideas can't yet have survived). Comparing lab-originated vs owner-originated cohort
+  acceptance is the honest "is the lab inventing useful things" readout.
 - **Results home:** `bench/results/ideas/` + the console Ideas lane gains the outcome fields
   (exporter field-family extension, band KL-6).
 
@@ -442,9 +511,12 @@ binding skeleton:
 3. **The scope fence (the lab's STRICTLY-DOCS-ONLY analog):** **"You never grade your own
    substrate from your own warm context. Benchmark arms run as cold sessions on throwaway repos;
    judging uses the pinned rubric in a separate invocation. You are runner and builder — never
-   the graded subject, never the judge of your own fire."** Plus: never modify
-   `bench/rubric/` `bench/tasks/` `bench/seeds/` or any existing `bench/results/` file (CI
-   enforces; §5.0).
+   the graded subject, never the judge of your own fire, and never the confirmer of a
+   false-positive verdict on a guard fire your own work triggered (a consumer session or the
+   owner confirms those)."** Plus: never *merge your own change* to `bench/rubric/`
+   `bench/tasks/` `bench/seeds/` — propose it on a `do-not-automerge` PR for separate review
+   (§5.0); never edit or delete existing rows/artifacts under `bench/results/` — **appends
+   only** (`check_bench_integrity.py` enforces both).
 4. **Sync-first orient:** fetch/reset main; read the kit repo's CONSTITUTION → current-state →
    newest session log → `docs/program/` deltas → the benchmark trend index.
 5. **Inbox triage first** (the CHECK-CODEX-FIRST slot): list open `friction` issues; per report
@@ -508,7 +580,11 @@ same service).
 | P6 | **Console move at extraction**: `/console` route + `ds/` assets + a `console.json` producer move from the botsite service to the lab's project; superbot's exporter keeps producing superbot rows; the lab's producer merges program-wide feeds | lab (band KL-6) | the website brief's flagged migration hook |
 | P7 | **Discord application "Kit-Lab Bot"** + token into the lab environment; guild = the existing HQ guild first (Galaxy precedent) | 👤 portal action | agents can configure an existing app via API but cannot create one |
 | P8 | Published **name** for the kit (substrate-kit is a placeholder; swap point is `pyproject.toml`) + **LICENSE** confirmation (MIT recorded default) | 👤 | blocks nothing; v1.0.0 can ship under the placeholder |
-| P9 | superbot files the **first friction report** (proves D4 with a real consumer) | any superbot session | §9.1 |
+| P9 | superbot files the **first friction report** (proves D4 with a real consumer) — **hand-authored** against the §9.1 envelope schema (superbot is not an adopted install; its `project_id` comes from the KL-1 pin file) | any superbot session | §9.1 |
+| P10 | **Kit-repo settings that make the gates bite** (§3.2 item 7): ruleset — `kit-quality` required check + Allow-auto-merge + auto-merge-arming mechanism + path-scoped required review on `bench/{rubric,tasks,seeds}` (needs a reviewer identity ≠ the PR author's — the owner, or a second machine identity) | 👤 portal/API (the P3 PAT has no admin scope) | until this lands, §5.0's layer-1 CI-check + label is the pin — stated honestly there |
+| P11 | **Kit-repo visibility flip → public at v1.0.0** (⚑ KF-10) — or, on veto, install the read-only `contents:read` PAT per consumer environment instead | 👤 | what becomes world-readable is listed in KF-10 |
+| P12 | **Cross-repo access for the friction/receipt channel**: enable the kit repo in each consumer's workspace GitHub-App scope (consumer sessions currently cannot reach other repos — verified: cross-repo calls are refused until an admin enables them); optionally a user-PAT (ROUTINE_PAT pattern, kit-repo Issues:RW) if the owner wants friction issues to *hot-fire* the loop (app/integration-token-authored issues do not start routines — the #776/#768 evidence) | 👤 admin | without it, §9.1's outbox holds reports until access exists — D4 gates on this row |
+| P13 | **Lab read-only scopes on consumer repos** (⚑ KF-11): fine-grained PAT, `contents:read` + `pull-requests:read`, no write, into the lab environment | 👤 | powers the B2/B3/B4 sweeps (§5.2) |
 
 ### §7.3 The console's kit-lab lanes (band KL-6)
 
@@ -522,8 +598,9 @@ same service).
   code change by design).
 - The Ideas lane gains the B4 outcome fields.
 - Until the move (P6), these render from superbot's committed `console.json` (the exporter can
-  read the kit repo's published `index.json` via the release/raw URL — or the lab commits a
-  mirrored snapshot; decide at build time, smallest honest mechanism wins).
+  read the kit repo's published `index.json` via the release/raw URL **once KF-10 makes the repo
+  public — else via the P13 PAT** — or the lab commits a mirrored snapshot; decide at build
+  time, smallest honest mechanism wins).
 
 ---
 
@@ -552,11 +629,14 @@ Program-level rulings are **imported** with provenance, one block each, D-ledger
 ```
 
 Founding census (the kickoff brief's "Q-0240/41/47/48/49 class"): PL-001 ← Q-0240 ·
-PL-002 ← Q-0241 (never-wait; scope note: rebuild program + Q-0241-*shaped* rails for the lab per
-this plan §6.3) · PL-003 ← Q-0247 (sequencing/rail-before-scale) · PL-004 ← Q-0248 (allocation
-discipline) · PL-005 ← Q-0249 (observe-first budgets) · PL-006 ← Q-0120 (source-wins /
-false-green) · PL-007 ← Q-0132 (enforce-don't-exhort) · PL-008 ← Q-0105 (adopt-freely +
-kill-switch). *(⚑ D-13: Q-0243–0246/0250–0253 stay repo-local — pricing, slash-verification,
+PL-002 ← Q-0241 (**verbatim to its provenance**: never-wait, scope = the rebuild program,
+owner-extendable — the lab's rails are *not* smuggled into this block) · PL-003 ← Q-0247
+(sequencing/rail-before-scale) · PL-004 ← Q-0248 (allocation discipline) · PL-005 ← Q-0249
+(observe-first budgets) · PL-006 ← Q-0120 (source-wins / false-green) · PL-007 ← Q-0132
+(enforce-don't-exhort) · PL-008 ← Q-0105 (adopt-freely + kill-switch) · **PL-009 — the lab's
+own ruling: Q-0241-*shaped* autonomy for the kit-lab** (provenance = the owner-ratified capture
+row 5 + Q-0247 ratification + this plan §6.3/D-12 — its own chain, so law never diverges from
+provenance). *(⚑ D-13: Q-0243–0246/0250–0253 stay repo-local — pricing, slash-verification,
 trading, session logistics are not program law.)*
 
 ### §8.3 The sync/citation rule (so law is never duplicated-and-drifted)
@@ -605,10 +685,14 @@ releases; the A/B + friction rate arbitrate. Both legs mechanical enough for a r
 
 - **Transport (⚑ KF-7):** a **GitHub issue on the kit repo, label `friction`**, JSON in a fenced
   block + a one-line human summary. Filed by the consumer's session-close (best-effort,
-  fail-open — no network = the outbox file waits at `.substrate/friction-outbox/`) or its
-  routine. Issue-create needs only the consumer's own GitHub identity — no lab credentials
-  anywhere. The label can *fire* the lab loop (the `reconcile` precedent), so a hot report gets
-  same-day triage. *(PAT-authored-issue caveat applies if a consumer files from a workflow.)*
+  fail-open — the outbox at `.substrate/friction-outbox/` holds reports on **network OR
+  credential failure**, drained by the consumer's own next session-close; the lab cannot drain
+  it, it has no consumer write access). **Identity, honestly:** consumer sessions reach GitHub
+  through workspace-scoped app tokens — cross-repo issue-create works only once **P12** enables
+  the kit repo in the consumer's workspace scope; and app/integration-token-authored issues
+  **do not fire routines** (the live-verified #776/#768 evidence), so **label-fire is
+  best-effort**: the default triage SLA is the loop's daily cron (≤24 h), and hot-fire requires
+  the optional P12 user-PAT (the ROUTINE_PAT pattern, cross-repo).
 - **Consumption:** the loop's step-5 triage (three-clause bar) → disposition comment + close
   (fixed-in-vX.Y.Z / backlogged / not-a-kit-issue with reasoning). Friction **rate** (reports
   per consumer per band, open-age) is tracked in the B-family sweep — a rising rate after a
@@ -619,11 +703,15 @@ releases; the A/B + friction rate arbitrate. Both legs mechanical enough for a r
 - **Release notes:** CHANGELOG section + GitHub Release + `release.json` (§4.1) — the complete
   mechanical contract a consumer routine needs.
 - **Upgrade PRs — pull model (⚑ KF-2):** each consumer's own routine (superbot: dispatch;
-  superbot-next: its equivalent) checks the kit's latest release (unauthenticated API read),
-  compares to its pinned `kit_version`, and — when newer — lands a consumer-authored PR:
-  replace vendored `bootstrap.py` (sha256-verified) → run `upgrade` → commit the upgrade report
-  → its own CI decides. The lab holds no consumer credentials; the kit's *adoption diff*
-  (`.substrate/upgrade-report.md`, §4.3) is the PR's body evidence.
+  superbot-next: its equivalent) checks the kit's latest release — **unauthenticated once KF-10
+  makes the repo public; via the read-only PAT fallback otherwise, and note the read must run
+  where unauthenticated egress actually works (a consumer-side Actions job, or the workspace
+  MCP with the kit repo P12-enabled — a bare session `curl` to api.github.com is refused by the
+  agent proxy)** — compares to its pinned `kit_version`, and when newer lands a
+  consumer-authored PR: replace vendored `bootstrap.py` (sha256-verified) → run `upgrade` →
+  commit the upgrade report → its own CI decides. The lab holds no consumer **write**
+  credentials; the kit's *adoption diff* (`.substrate/upgrade-report.md`, §4.3) is the PR's
+  body evidence.
 - **Consumer-routine snippet:** the kit stages `.substrate/ci/upgrade-check.yml.example`
   (a scheduled check that opens/refreshes the upgrade PR) — planted like the CI example,
   installed deliberately.
@@ -642,17 +730,20 @@ ceremony beyond one PR-body line.
 Per the house norm: each band is 1–3 focused PRs; every §11-class deliverable has a **Lands-at**
 anchor so nothing evaporates. Bands run in order; KL-2/KL-3 may interleave after KL-1. The
 kickoff (session 4) is band zero and NOT this plan's work — but §3.2 is its CI spec and §12 D-1
-its seed-shape recommendation.
+its seed-shape recommendation. **Who drives:** KL-1…KL-4 are executed by owner-started (or
+superbot-dispatched) sessions in the kit repo, using this plan as the band spec — the loop does
+not exist until KL-4 authors its prompt and 👤 P4 arms it; **from KL-5 onward the armed loop
+takes over** (§6.2 step 6).
 
 | Band | Ships | PRs | Depends on |
 |---|---|---|---|
 | **KL-0** *(kickoff, session 4)* | Repos exist; kit seeded (subtree-split if cheap, else snapshot+provenance); tests moved to `substrate-kit/tests/`; CI per §3.2; superbot-next adopts; pin notes | — | Q-0247 |
-| **KL-1 Release discipline** | `KIT_VERSION` + `--version` + dist header stamp + `kit_version` in config at adopt/upgrade; CHANGELOG; `release.yml` (tag → assets + sha256 + release.json); **`upgrade` verb** (staged-regen + 3-way planted-doc report + state backup/rollback); `_ENGINE_MANIFEST` dropped; `reconciliation_prs` default → 30; **tag v1.0.0**; LICENSE file (👤 P8, default MIT) | 2–3 | KL-0 |
+| **KL-1 Release discipline** | *(First act if the kickoff pre-dated this plan: diff kit CI + settings vs §3.2, land the delta.)* `KIT_VERSION` (new Config dataclass field) + `--version` + dist header stamp + `kit_version`/planted-doc hashes in state at adopt/upgrade; CHANGELOG; `release.yml` (tag → assets + sha256 + release.json); **`upgrade` verb** (staged-regen + hash-based planted-doc report + state backup/rollback); `_ENGINE_MANIFEST` dropped; `reconciliation_prs` default → 30; **tag v1.0.0** (👤 P11 visibility flip rides it); LICENSE file (👤 P8, default MIT); **companion superbot PR: the §4.2 pin file** | 2–3 | KL-0 |
 | **KL-2 Governance home** | `docs/program/` + PL-register (8 founding blocks) + `check_program_law.py` + template pointer sections + `docs/house-style.md`; companion superbot PR: provenance riders on the origin Q-blocks | 2 (one per repo) | KL-0 |
 | **KL-3 Telemetry substrate** | Guard-fire JSONL writers at the two choke points + `did_not_run` markers; reasons-required allowlist port; `📊 Model:` run-report line + session-close harvest → `model-usage.jsonl`; the session-log checker needles; `telemetry/allocation-ladder.md` seeded | 2 | KL-1 (versioned release carries it to consumers) |
 | **KL-4 Lab loop + friction** | `docs/operations/lab-loop.md` (the §6.2 prompt, paste-ready) + routine armed (👤 P4); `friction export` verb + outbox + issue filing; `friction` label + trigger; first triage proven on superbot's report (👤 P9); `Run type: routine · lab` | 2 | KL-2 (the loop reads program law) |
-| **KL-5 Benchmark harness + auto-draft** | The **auto-drafted-handoff** build (session-close + stop-hook draft the card from git diff + verify state; drafted-vs-completed distinction in the checker) — the ruled prerequisite; `bench/` tree (rubrics, T1–T5 tasks, seed generator, `score_m1.py`, `run_ab.py`, `check_bench_integrity.py`, CODEOWNERS pin); **B1 baseline firing** (T4+T5 pair, post-auto-draft shape) recorded to `bench/results/` | 3 | KL-3 |
-| **KL-6 Console feeds + move** | Exporter: telemetry family + the kit-lab lane + B4 idea-outcome fields; the P6 console move to the lab's Railway project (with 👤 P5); B2/B3/B4 sweeps live in the loop | 2 | KL-4, KL-5 |
+| **KL-5 Benchmark harness + auto-draft** | The **auto-drafted-handoff** build (session-close + stop-hook draft the card from git diff + verify state; drafted-vs-completed distinction in the checker) — the ruled prerequisite; `bench/` tree (rubrics — **first version owner-blessed per §5.0** — T1–T5 task texts **copied in from companion D §3 + the F-5 pass bar** (superbot-resident; absolute URLs listed in `bench/README.md` so the spec survives the plan's travel), seed generator, `score_m1.py`, `run_ab.py`, `check_bench_integrity.py` (label-gate + append-aware results rule), the §3.2-item-7 pin paths); **B1 baseline firing** (T2→T4 per arm + T5, post-auto-draft shape) recorded to `bench/results/` | 3 | KL-3 |
+| **KL-6 Console feeds + move** | Exporter: telemetry family + the kit-lab lane + B4 idea-outcome fields; **the B4 ideas-frontmatter convention + `check_idea_index.py` (same PR — a convention ships with its checker)**; the P6 console move to the lab's Railway project (with 👤 P5); B2/B3/B4 sweeps live in the loop (KF-11/P13 scopes) | 2 | KL-4, KL-5 |
 
 **Depth honesty (Q-0164):** six bands ≈ 12–14 PRs of specified work — comfortably a full first
 band-cycle for a daily loop; no PLAN-BACKLOG-THIN flag. After KL-6 the loop's standing work is
@@ -689,7 +780,7 @@ productization arc (§2.2 fence) as the named next horizon.
 | D-7 ⚑ | Emoji markers / born-red / badge taxonomy = declared house style, not config | config-ify all · house style | config sprawl is the worse failure; consumers wanting different markers fork a constant |
 | D-8 ⚑ | GitHub-only for v1 (gates, releases, issues) | multi-forge abstraction | all program repos are GitHub; abstraction without a second forge is speculative |
 | D-9 ⚑ | `bench/` rubric/tasks/seeds pinned via CODEOWNERS + no-automerge; results append-only + checker | trust the loop · pin | parity/'s oracle-outside-write-reach rule, ported; twice-lost raw artifacts now committed |
-| D-10 ⚑ | B2 storage = JSONL per repo; exporter renders the console's declared JSON array | rewrite a JSON array in place | atomic appends; the lane binds to record shape, not encoding |
+| D-10 ⚑ | B2 contract refinements vs the console's declared lane: storage = JSONL per repo (exporter renders the declared JSON array) AND `outcome` = a structured object, not a scalar | rewrite a JSON array in place · keep scalar outcome | atomic appends; objective outcomes are multi-field by Q-0248's own definition; the lane binds to record shape — note both refinements on PR #1802's lane text when convenient |
 | D-11 ⚑ | Lab loop runs Sonnet-class default, Opus escalation, daily `0 6 * * *` (KF-4) | Fable/Opus default · 2-hourly | the loop's task classes are workhorse-tier per the seeded ladder; its own rows are B2 data from day one |
 | D-12 ⚑ | The lab adopts Q-0241's *shape* scoped to its own repo/surfaces; its destructive tier enumerated (§6.4) with reversible paths | full Q-0241 · owner-gated loop | Q-0241's letter covers the rebuild; the capture's row 5 prescribes the shape — enumerating the tier makes it enforceable |
 | D-13 ⚑ | Program-law census = Q-0240/41/47/48/49 + Q-0120/0132/0105 as PL-001…008; the rest stay repo-local | import everything · minimal census | law that must bind three repos vs rulings about one repo's product |
@@ -700,6 +791,10 @@ productization arc (§2.2 fence) as the named next horizon.
 | D-18 ⚑ | The console is the owner's rollup surface (absorbing the never-built weekly-rollup slot); Hermes' daily rollup remains a superbot-local concern | new rollup doc | one owner surface, phone-first, already shipped as a shell |
 | D-19 ⚑ | Bot token deferred behind the console (KF-3); HQ guild first when it lands | token-first · both-at-once | no Discord-facing lab experiment exists yet; a token with no consumer is inventory risk |
 | D-20 ⚑ | v1.0.0 may ship under the placeholder name; rename is one `pyproject.toml` swap + a MAJOR-noted release | block on naming | naming is 👤 and blocks nothing mechanical |
+| D-21 ⚑ | Kit repo flips **public at v1.0.0** (KF-10/P11) | stay private + per-consumer read PATs | public is the kit's stated OSS destiny and makes every pull/read leg credential-free; the veto fallback is specced |
+| D-22 ⚑ | Lab holds **read-only** consumer scopes (KF-11/P13) for the B2/B3/B4 sweeps | consumer-side backfill over the issue channel | read-only repo visibility is not a "prod secret" (Q-0249's rail); consumer-side backfill taxes every consumer forever |
+| D-23 ⚑ | B4's `worked_around` column is filled only by a **non-loop grader** (owner skim / consumer attestation); headline metric = revert-scan only | loop judges it | the loop grading its own ideas breaks the plan's own separation rule — the review caught this as a self-decided carve-out from the most important guard |
+| D-24 ⚑ | The bench pin is two-layer (CI label-gate from birth; P10 ruleset when armed) and honestly labeled advisory-until-P10 | claim CODEOWNERS alone binds | CODEOWNERS is inert without a ruleset, and the owner's own PAT cannot approve a PR it authored — the review refuted the one-layer story |
 
 ---
 
@@ -715,4 +810,11 @@ prior art; idea lifecycle + ⚑-line parsing; rebuild-context conventions + fail
 shipped console-shell contracts @PR #1802 head 7120b79; the re-keyed model ladder; the kit's
 reflection/episode record schemas; the two proven routine prompt bodies; template contents).
 Source beat docs twice during research (test count 440 vs "432" snapshots; `examples/` carve-out
-without an `examples/`): disk wins per Q-0120.
+without an `examples/`): disk wins per Q-0120. **A 4-lens adversarial review fleet
+(brief-coverage · source-truth · executability · governance) then ran over the shipped draft**
+and its 26 confirmed findings were folded back in — the load-bearing ones: the unprovisioned
+repo-settings machinery (→ §3.2 item 7 + P10 + the two-layer §5.0 pin), the undecided kit-repo
+visibility (→ KF-10/P11), the broken raw-template three-way diff (→ hash-based §4.3), the lab's
+missing consumer read scopes (→ KF-11/P13), the B4 self-grading carve-out (→ D-23), the
+bench-results append contradiction (→ append-aware checker), the routine-fire identity reality
+(→ §9.1/P12), the B2 product-plane scope statement (→ §2.1-3b), and the D1/KL-1 ordering gap.

@@ -20,8 +20,10 @@
   the ONE daily lab loop (9-part prompt skeleton, enumerated destructive tier, warm-session
   never-grades rule), work-surface order (console → Railway → 👤 bot token), the `docs/program/`
   PL-register governance home (cite-never-copy), the `friction`-issue protocol, and 6 build
-  bands KL-1…KL-6 (12–14 PRs). 20 decisions ⚑ (D-1…D-20) + 9 gate flags (KF-1…KF-9); zero new
-  router Q-blocks needed. The plan travels to the kit repo at extraction (kickoff = session 4).
+  bands KL-1…KL-6 (12–14 PRs). 24 decisions ⚑ (D-1…D-24) + 11 gate flags (KF-1…KF-11) + 13
+  provisioning rows (P1…P13); zero new router Q-blocks needed. A 4-lens adversarial review
+  fleet's 26 confirmed findings were folded before close (§13 lists the load-bearing ones).
+  The plan travels to the kit repo at extraction (kickoff = session 4).
 - **OWNER-RULINGS + KICKOFF-READINESS ROUND (PRs #1792–#1795, 2026-07-07, same conversation as #1791).**
   Live owner rulings recorded with landings: **Q-0243** pricing-by-simulation · **Q-0244** slash
   verification inherits prefix (never a blocker) · **Q-0245** the second account as declared
