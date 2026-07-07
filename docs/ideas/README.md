@@ -31,6 +31,12 @@ only the header block is read, so a `**Subsystem:**` *example* in an idea's body
 
 Current broad captures:
 
+- [`session-start-staleness-banner-2026-07-07.md`](./session-start-staleness-banner-2026-07-07.md) —
+  **session idea (2026-07-07, Q-0089, Projects-EAP eval-journal session):** the coordinator's
+  container clone was 7 merged PRs behind origin at first turn and nothing warned it — add a
+  cheap staleness check at session start (`git fetch` + `HEAD..origin/main` count → loud banner)
+  so a stale clone announces itself instead of silently answering from an old world. The checker
+  script is free to ship; the hook wiring is owner-gated (Q-0106).
 - [`cold-start-ab-vague-idea-task-2026-07-07.md`](./cold-start-ab-vague-idea-task-2026-07-07.md) —
   **session idea (2026-07-07, Q-0089, kit-doctrine port session, Q-0254):** the understand-and-
   reflect + guiding-questions doctrine just shipped into the kit's templates has no enforcement

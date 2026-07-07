@@ -1,6 +1,6 @@
 # docs/planning — the plan index (read this before reading any plan)
 
-> **Status:** `living-ledger` — the durable map of `docs/planning/`. **Last updated:** 2026-07-06.
+> **Status:** `living-ledger` — the durable map of `docs/planning/`. **Last updated:** 2026-07-07.
 > Source code + merged PRs win over this file; `docs/current-state.md` owns *what is live right now*;
 > [`docs/roadmap.md`](../roadmap.md) owns *cross-area sequencing*. **This page owns one thing: which
 > plan files are ACTIVE vs. HISTORICAL, and where each active plan is homed.**
@@ -119,6 +119,7 @@ The source-grounded discovery evidence — 4 Codex maps, verified against shippe
 |---|---|
 | [projects-eap-activation-plan](projects-eap-activation-plan-2026-07-07.md) | **Claude Code Projects (EAP) access went live (2026-07-07, PR #1807)** — the action layer on the product-review analysis: one Project scoped to `superbot` (repo list = `menno420/superbot` only, `superbot-next` added once it exists), a bounded in-flight stream handed to the coordinator, the free-window deadline (2026-07-10) driving urgency |
 | [projects-eap-coordinator-kickoff](projects-eap-coordinator-kickoff-2026-07-07.md) | **the paste-ready coordinator setup (2026-07-07)** — one Project (not one per band/repo, to keep shared memory unfragmented), the repo-scope sequence, the Custom Instructions block, and the kickoff message that starts canonical-plan §5 step 6 through the coordinator instead of a manually-launched session |
+| [projects-eap-evaluation-guidebook](projects-eap-evaluation-guidebook-2026-07-07.md) | **the second-mandate standing guide (2026-07-07, PR #1811)** — the coordinator-facing evaluation guidebook: journal prescription + entry template, the seven EAP feedback axes, never-perform integrity rules, the Friday 2026-07-10 evidence-package cadence. Its journal is live: [projects-eap-evaluation-log](projects-eap-evaluation-log.md) (append-only, seeded 2026-07-07 with the coordinator's onboarding observations) |
 | [**kit-lab-founding-plan**](kit-lab-founding-plan-2026-07-07.md) | **⭐ program session 2's deliverable (2026-07-07, PR #1804)** — the executable founding plan for the extracted `substrate-kit` repo + the self-improvement lab: release discipline (v1.0.0 semver · pinned dist + `release.json` · `upgrade` verb w/ rollback), the four benchmark families (cold-start A/B routine · Q-0248 allocation dataset · guard-fire telemetry · ideas-that-ship) to runnable depth, the ONE daily lab loop + rails, work surfaces (console-first), the `docs/program/` PL-register governance home, the `friction`-issue protocol, bands KL-1…KL-6. **Travels to the kit repo at extraction** (kickoff = session 4) |
 | [rebuild-owner-briefing](rebuild-owner-briefing-2026-07-07.md) | **the plain-language owner companion (2026-07-07)** — the whole program, the safety story, and the five flag items rendered for a non-coder (amended 2026-07-07: the 'one sitting' framing is retired per Q-0241 — the flag list is a react-anytime veto surface); restates nothing normative (the canonical plan wins) |
 | [**rebuild-canonical-plan**](rebuild-canonical-plan-2026-07-06.md) | **⭐ THE single source of truth (2026-07-06, PR #1770)** — the consolidated, correctly-layered plan: corrected K0–K10 + layer-V taxonomy (AI-invocation = K10; automation = the K5+K9+K7 spread; verification = layer V), the one canonical phase arc (both old vocabularies reconciled), the canonical gate list (~~G1 owner sitting · G2 Phase-2.5~~ **both RETIRED as blockers by Q-0241, #1776**), the 17-step start sequence, the flag-for-gate list (F-1…F-5, Gate-0 rows pre-filled), and the full decisions log (Q-0240 decide-and-flag). **Read this first; it states which older docs it supersedes (§9)** |
@@ -268,6 +269,9 @@ dated `historical` snapshots.
 - **New plan** → drop the file here with a `plan` badge, then **add one row to the right sector table
   above** + its folio's "Plans" list. A plan with no inbound link is invisible (and orphans
   `check_docs --strict` unless badged `historical`/`archive`).
+- **Non-`plan` companions homed here** (`reference` guides, `living-ledger` logs): a row is optional —
+  add one only while the doc is an *active program artifact* (e.g. the EAP guidebook + journal during
+  the evaluation window); otherwise inbound links from their parent plan are enough.
 - **Plan shipped/superseded** → rebadge it `historical` **in place** (keep the file + its inbound links),
   add a one-line banner to its replacement, and move its row from "Active" to "Historical" above.
 - **Verify** after editing: `python3.10 scripts/check_docs.py --strict`.
