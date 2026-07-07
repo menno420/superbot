@@ -9186,3 +9186,32 @@ fanciest architecture that technically supports it. This is the same "assume he'
 better one" instinct already binding in CLAUDE.md (Q-0014, Act-vs-ask), now named as the
 *explicit target* the restatement should reason toward whenever the ask starts from "can we
 even do this?" rather than a clear spec.
+
+**Third addendum — guiding questions, unattended-session routing, big-idea escalation, and
+graduation to kit doctrine (same conversation, following turns).** Four further owner rulings,
+each confirmed live:
+
+1. **This rule should live in the substrate-kit** ("yes this is a rule that should live on in
+   the substrate kit") — not stay pinned to superbot's local `CLAUDE.md`. **Shipped same day**:
+   ported into `substrate-kit/src/engine/templates/CONSTITUTION.md.tmpl` +
+   `collaboration-model.md.tmpl` + `question-router.md.tmpl`, dist regenerated, 440/440 kit
+   tests green (PR that lands this addendum). Superbot's own CLAUDE.md entry is now the *local
+   copy* pending superbot's own upgrade from a real kit release (§4 of the kit-lab founding
+   plan) — not removed, since extraction hasn't happened yet.
+2. **Unattended sessions map their questions to the repo too**: "unattended sessions or sessions
+   in general that have certain questions during their work should just map them to the repo
+   wherever applicable." When there is no live owner to ask, the question goes into the router
+   (or the kit's portable equivalent) instead of being skipped or silently guessed at.
+3. **Confirmed the guiding-questions filter, verbatim**: "it won't ask about small things unless
+   it's something that actually matters and is something I can work with, correct? if so this is
+   perfect" — confirmed correct. The bar is conjunctive: **matters** (not trivia, not already
+   implied) **and actionable** (something concrete he can work with), not either alone.
+4. **Big ideas get real research, not memory-only reasoning**: "certain [big] ideas should get
+   their own session wherever necessary or should just get a delegated agent researching it
+   immediately so it can be reviewed in the same session." Two escalation paths from a single
+   restatement, chosen by size: a delegated subagent research pass reviewed inline (same
+   session), or — for large enough asks — a dedicated session of its own (the program-session
+   pattern already used for the kit-lab/trading/websites founding work).
+5. **Threshold calibration deferred, explicitly**: "let it be for now, I can review how well it
+   works with a few weeks of testing." The guessed "non-trivial, non-mechanical" trigger in
+   CLAUDE.md stays as-is; no further tuning until empirical feedback arrives.

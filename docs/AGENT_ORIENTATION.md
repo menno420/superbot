@@ -447,7 +447,11 @@ Before proposing or implementing any non-trivial change:
    uncertain feasibility; this both catches a misreading before work happens
    and gives him new material (incl. the possibility space, when relevant) to
    react to — reasoning toward the most advanced capability the simplest,
-   most efficient implementation can reach.
+   most efficient implementation can reach. During brainstorming, surface the
+   one guiding question you can't derive yourself (rare, only when it matters
+   and is actionable); escalate a big/vague idea to a delegated research pass
+   or its own session rather than answering from memory alone. **Portable
+   kit doctrine now** (`substrate-kit/src/engine/templates/`), not just local.
 
 This is not a courtesy — repeated rediscovery is the main reason
 SuperBot accumulates duplicate helpers and orphan plans. The minutes

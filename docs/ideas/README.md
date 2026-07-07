@@ -31,6 +31,13 @@ only the header block is read, so a `**Subsystem:**` *example* in an idea's body
 
 Current broad captures:
 
+- [`cold-start-ab-vague-idea-task-2026-07-07.md`](./cold-start-ab-vague-idea-task-2026-07-07.md) —
+  **session idea (2026-07-07, Q-0089, kit-doctrine port session, Q-0254):** the understand-and-
+  reflect + guiding-questions doctrine just shipped into the kit's templates has no enforcement
+  (by design — not mechanically checkable). Add a **T6 vague-idea task** to the kit-lab's B1
+  cold-start A/B corpus (alongside T5's break-a-rule task) so a future kit edit or model drift
+  that silently stops following the written rule gets caught, instead of the doctrine quietly
+  rotting unnoticed.
 - [`adopt-kit-stance-classifier-2026-07-07.md`](./adopt-kit-stance-classifier-2026-07-07.md) —
   **session idea (2026-07-07, Q-0089, understand-and-reflect rule session, Q-0254):** the
   substrate-kit ships a genuine 5-stance task classifier (question/analysis/debug/review/plan —
