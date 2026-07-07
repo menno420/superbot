@@ -206,23 +206,28 @@ Today a consumer cannot name, pin, verify, or roll back a kit version (§0). The
 
 ### §4.3 The upgrade path (the today-missing half — band KL-1)
 
-New CLI verb: **`bootstrap.py upgrade`** (run from a consumer repo, with the *new* vendored file):
+New CLI verb: **`bootstrap.py upgrade`**. Ordering constraint that makes the diff possible:
+the OLD dist's templates must still exist when the diff runs, so **`adopt` and `upgrade` always
+archive the running dist to `.substrate/backup/bootstrap-<KIT_VERSION>.py` before anything
+else** — the archive exists from v1.0.0 onward, before any future overwrite. The consumer flow
+is therefore: download the new file as `bootstrap.py.new` → `python3 bootstrap.py.new upgrade`
+(it verifies sha256 vs `release.json`, archives + replaces the old vendored file itself) —
+`release.json.upgrade_steps` says exactly this.
 
 1. Re-runs `adopt`'s staging (staged `.substrate/` artifacts always regenerate — the existing
    kit-owned channel; unchanged).
 2. **Planted-doc diff report** (the new mechanism): for each ADOPT_PLAN doc, three-way compare
-   {template@old-version (from the old dist's embedded `_TEMPLATES`, located via the previous
-   vendored file at `.substrate/backup/bootstrap-<oldver>.py`), consumer's current file,
-   template@new-version} → emit `.substrate/upgrade-report.md` listing per-doc: unchanged /
-   template-improved-and-consumer-untouched (safe to apply with `upgrade --apply-docs`) /
-   both-diverged (manual: the report shows the template delta). **Planted docs are never
-   auto-edited without `--apply-docs`, and never when the consumer diverged** — consumer-owned
-   stays consumer-owned.
+   {template@old-version (from the archived old dist's embedded `_TEMPLATES`), consumer's
+   current file, template@new-version} → emit `.substrate/upgrade-report.md` listing per-doc:
+   unchanged / template-improved-and-consumer-untouched (safe to apply with `upgrade
+   --apply-docs`) / both-diverged (manual: the report shows the template delta). **Planted docs
+   are never auto-edited without `--apply-docs`, and never when the consumer diverged** —
+   consumer-owned stays consumer-owned.
 3. **State migration**: `migrate()` runs transforms keyed by `STATE_SCHEMA_VERSION`; before any
-   write, `state.json` and the old `bootstrap.py` are copied to `.substrate/backup/` — which is
-   also the **rollback path**: `upgrade --rollback` restores both (staged artifacts regenerate
-   from the restored file). State downgrade beyond that is out of contract; that is exactly what
-   makes schema changes MAJOR.
+   write, `state.json` is copied to `.substrate/backup/` — which together with the archived
+   dist is the **rollback path**: `upgrade --rollback` restores both (staged artifacts
+   regenerate from the restored file). State downgrade beyond that is out of contract; that is
+   exactly what makes schema changes MAJOR.
 
 ### §4.4 Release cadence + gate
 
@@ -264,8 +269,12 @@ bench/
 
 The `bench/` tree is **outside the lab loop's write reach for rubric/tasks/seeds**: CODEOWNERS
 requires owner (or at minimum a *separate* reviewed PR that the loop cannot self-merge — the
-`do-not-automerge` label class) on `bench/rubric/` + `bench/tasks/`. Results dirs are append-only
-by convention + checker (`check_bench_integrity.py`: an existing results file modified in a PR =
+`do-not-automerge` label class) on `bench/rubric/` + `bench/tasks/`. **Creation vs modification:**
+the one-time KL-5 *authoring* PR is written by the loop but labeled `do-not-automerge` so the
+owner (or at minimum a different session) reviews the rubric before the first firing depends on
+it; thereafter *any* change to rubric/tasks/seeds takes the same non-self-merge path — no
+deadlock, no self-authored-and-self-graded rubric drift. Results dirs are append-only by
+convention + checker (`check_bench_integrity.py`: an existing results file modified in a PR =
 red). *(⚑ D-9: the parity/ integrity rule, ported.)*
 
 ### §5.1 B1 — the cold-start A/B as a standing routine
@@ -313,7 +322,8 @@ and is the trend improving per release? (The founding challenge: it currently do
   refactor · test writing · runtime bugfix · kernel/architecture design · review/verify ·
   research · idea/planning); `outcome` is an object `{ci_green_first_push: bool, checker_findings:
   int, merged_pr: int|null, reverted_within_window: bool|null}` (null until the 14-day window
-  closes — ⚑ KF-8); `tokens_out: int|null` (⚑ KF-9 — no meter exists; null or labeled estimate).
+  closes — ⚑ KF-8; the declared lane text implies a scalar — the object is a refinement noted
+  with D-10); `tokens_out: int|null` (⚑ KF-9 — no meter exists; null or labeled estimate).
   Unknown extra fields are tolerated (the kit's forward-compat posture).
 - **Storage:** per-repo **`telemetry/model-usage.jsonl`** (append-only; JSONL because atomic
   appends beat rewriting a JSON array). The console contract names `model-usage.json → [{…}]`;
@@ -325,8 +335,9 @@ and is the trend improving per release? (The founding challenge: it currently do
   it into the JSONL, computing what it can (date, session slug). `ci_green_first_push` +
   `merged_pr` are backfilled by the lab loop's telemetry sweep (GitHub API read per PR);
   `reverted_within_window` is backfilled after 14 days by the same sweep (revert-commit scan on
-  the PR's primary files). The session-log checker gains the `📊 Model:` needle as a required
-  marker in program repos (door, not nag).
+  the PR's primary files). The `📊 Model:` needle becomes a required session-log marker via each
+  repo's `session_markers` config (door, not nag) — added at upgrade time, suggested by the
+  upgrade report, never forced mid-version (a consumer's gate only tightens when it upgrades).
 - **The paired A/Bs per class:** reuse the B1 harness (`run_ab.py` with `--family allocation`):
   same real task given to two tiers in cold contexts, judge scores output quality per the
   allocation rubric, objective gates (CI/checkers on the produced diff) decide first, cost

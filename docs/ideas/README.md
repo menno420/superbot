@@ -63,13 +63,23 @@ Current broad captures:
   auto-acting tier (names the concrete fairness failure: automating an action a forgetful human would
   otherwise miss is a balance break, not a QoL win) and ties the design to the not-yet-built K9
   durability band so it lands as a kernel extension instead of a later per-feature bolt-on.
+- [`usage-limit-aware-routines-2026-07-07.md`](./usage-limit-aware-routines-2026-07-07.md) —
+  **session idea (2026-07-07, Q-0089, kit-lab founding-plan session PR #1804):** routines and
+  multi-agent orchestrations should treat the account usage-limit error as a distinct failure
+  class — self-reschedule at the stated reset time (`limit-deferred` on the run report) instead
+  of dying silently; limit-killed lanes never count as evidence. Observed live: a 4-lane review
+  fleet returned an empty "success" when the 5-hour limit hit mid-flight. One prompt clause +
+  one orchestration rule converts silent lost firings into scheduled retries; the counter feeds
+  the Q-0248/Q-0249 spend dataset.
 - [`substrate-kit-auto-drafted-handoff-2026-07-07.md`](./substrate-kit-auto-drafted-handoff-2026-07-07.md) —
   **session idea (2026-07-07, Q-0089, final-review session #1778):** the Phase-2.5 A/B measured the
   same failure twice — sessions with a rendered ledger/session-log scaffolding in-repo still write
   back nothing (recall isn't the bottleneck; discipline-dependent write-back doesn't happen). Make
   the kit's session-close/Stop-hook **auto-draft** the handoff card from evidence (git diff, test
   state, docs touched) so the agent edits a draft instead of authoring from memory; a follow-up T4
-  re-run then measures whether continuity finally moves.
+  re-run then measures whether continuity finally moves. **→ SCHEDULED into the
+  [kit-lab founding plan](../planning/kit-lab-founding-plan-2026-07-07.md) band KL-5 (2026-07-07,
+  PR #1804)** — it is the ruled prerequisite for the standing cold-start A/B routine's first firing.
 - [`claude-code-projects-for-the-rebuild-2026-07-07.md`](./claude-code-projects-for-the-rebuild-2026-07-07.md) —
   **session idea (2026-07-07, Q-0089, Projects-EAP + Q-0241 PR #1776):** use the Claude Code Projects
   early-access program (coordinator + shared memory + routines + session sidebar; the *Claude Code*
