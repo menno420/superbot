@@ -41,7 +41,9 @@ on top — all new files; the v1 design-owned files stay untouched:
 The UX regression harness for all of this lives in `tools/web_ux/`
 (`check_web_ux.py` — task-success checklist with interaction budgets, nav
 coverage, perf + a11y budgets; `screenshot_pages.py` — full-page captures both
-themes × three widths). Run it before shipping front-end changes.
+themes × three widths). Run it before shipping front-end changes. The shipped
+state's rendered proof lives in
+[`docs/planning/website-v2-verification-2026-07-07.md`](../docs/planning/website-v2-verification-2026-07-07.md).
 
 ## The front-end — the Claude-Design SPA (what visitors see)
 

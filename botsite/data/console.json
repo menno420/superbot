@@ -1,10 +1,10 @@
 {
   "meta": {
-    "generated_at": "2026-07-07T16:29:06Z",
+    "generated_at": "2026-07-07T18:37:23Z",
     "build": {
-      "commit": "7120b79",
-      "subject": "app.py: break the {asset}->FileResponse taint (CodeQL py/path-injection x3)",
-      "committed_at": "2026-07-07T16:29:06Z"
+      "commit": "71bccaa",
+      "subject": "Merge remote-tracking branch 'origin/claude/website-design-brief-ryc3do' into claude/website-design-brief-ryc3do",
+      "committed_at": "2026-07-07T18:37:23Z"
     }
   },
   "sessions": [
@@ -134,6 +134,14 @@
       "title": "2026-07-07 — Multi-repo program capture (kit lab + trading repo + repo-start mechanics)",
       "status": "complete",
       "run_type": "",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-07-07-kit-lab-founding-plan.md",
+      "date": "2026-07-07",
+      "title": "2026-07-07 — Kit-lab founding plan (program session 2/3)",
+      "status": "complete",
+      "run_type": "manual",
       "self_initiated": false
     },
     {
@@ -479,21 +487,13 @@
       "status": "complete",
       "run_type": "",
       "self_initiated": false
-    },
-    {
-      "file": "2026-07-03-foundations-engine-room-ultracode.md",
-      "date": "2026-07-03",
-      "title": "2026-07-03 — Foundational mechanics: the engine room (PROMPT A, runtime/logic)",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
     }
   ],
   "ideas": {
-    "total": 209,
+    "total": 210,
     "by_status": {
       "historical": 22,
-      "ideas": 184,
+      "ideas": 185,
       "reference": 3
     }
   },
