@@ -23,7 +23,8 @@
 > **Retained (flagged, vetoable):** the **destructive tier** (prod data import, CUT-3 token swap,
 > deleting old-bot data) still executes via the reversible path this plan already specifies — shadow-
 > first, N=7d rollback window (Q-D15), reverse-import valve (F-1/F-2) — which is *reversibility, not a
-> gate* (no pause). Merge=deploy still requires **CI green**. Full model:
+> gate* (no pause). *The owner may veto this rider for straight destructive execution.* Merge=deploy
+> still requires **CI green**. Full model:
 > [`../owner/agent-decision-authority.md`](../owner/agent-decision-authority.md) § Q-0241;
 > [`../owner/maintainer-question-router.md`](../owner/maintainer-question-router.md) Q-0241.
 
@@ -37,9 +38,9 @@ is new-repo code:
 | Done (with anchor) | Remaining before new-repo code |
 |---|---|
 | Substrate-kit finished (#1649; 422/422 tests green under python3.10, stdlib-only, one-step `dist/bootstrap.py adopt` re-proven live in a scratch dir this session) | **Phase-2.5 cold-start A/B** — specced-but-thin, never run → [companion D](rebuild-phase-2.5-procedure-2026-07-06.md) makes it runnable |
-| Golden harness built + measured (#1639; `parity/`, 465 goldens, drives the **full real command pipeline in-process** — see §6) | **Kit tail ①** (Q-0223): the re-entrant-transaction / atomic `apply_review_verdict` fix — verified still unshipped (`substrate-kit/src/engine/lib/state.py:102-124`); lands before/with the A/B |
+| Golden harness built + measured (#1639; `parity/`, 465 goldens, drives the **full real command pipeline in-process** — see §6) | ~~**Kit tail ①**~~ ✅ **SHIPPED #1775** (`substrate-kit/src/engine/lib/state.py:112-133` — re-entrant txn + txn-wrapped `apply_review_verdict`, Q-0223). *This §0 cell was written pre-#1775; §5 step 1 is current.* |
 | Harvest + design spec (`rebuild-design-spec-2026-07-02.md`) — now **superseded-in-part**, see §9 | **The owner go/no-go sitting** (Gate G1, §4) — bless the §1 flag list |
-| Capability audit → frozen `NEW-BOT-BUILD-PLAN.md` (#1674, GO-with-amendments, fit 85.1% — re-verified live this session at 85.26%) | `tools/check_amendments.py` (S0's enforcing half — `rebuild-amendments.yml` exists and names it; the checker doesn't exist; Gate-V P-9) |
+| Capability audit → frozen `NEW-BOT-BUILD-PLAN.md` (#1674, GO-with-amendments, fit 85.1% — re-verified live this session at 85.26%) | `tools/check_amendments.py` — ✅ **BUILT #1775** (S0's enforcing half; `rebuild-amendments.yml` names it; advisory tier Q-0105). *K1 NamespaceRegistry — P-9's other half — remains unbuilt.* |
 | Phase-A Stage 1 + conventions freeze (#1679/#1680) · Stage-2 walk L1a+L1b decided (#1725; 33+ rows remain, owner-live) | Stage-2 walk continuation (owner-live; blocks *those subsystems' port plans*, not the repo start) |
 | Gate-0 grammar freeze (#1716): 14 specs → frozen L0 grammar, S0–S15 build order, owner-decision packet | Phase-B per-step plans for L1+ consumers (L0 is planned: the 14 specs + S0–S15) |
 | **Gate V complete** (`GATE-V-SYNTHESIS.md`): plan source-accurate, **Sequence C adopted**, punch-list P-1…P-9 | — |
@@ -254,7 +255,7 @@ names stay greppable here and are retired as aliases.
 | **P1 · Harvest** | Phase 1 | — | ✅ (superseded by the Capstone) |
 | **P2 · Design** | Phase 2 | Capstone → **Phase A** (Stages 1–3) → **Gate V** → **Phase B** (per-step plans) | spec ✅ (now superseded-in-part) · capstone ✅ #1674 · Phase-A Stage 1 ✅ / Stage 2 partial (L1a+L1b) · **Gate V ✅ closed 2026-07-06** · Phase B started (the Gate-0 freeze #1716 was designated the first Phase-B plan) |
 | **P2.5 · Cold-start proof** | Phase 2.5 | — | ❌ **never run** → companion D (prereq: kit tail ①) |
-| **🔒 G1 · The go/no-go sitting** | "owner approval" | "Gate 1" / "the Phase-3 gate" / "Gate-0 ratification" | ⏳ ready — this doc is the sitting's read |
+| **🔒 G1 · The go/no-go sitting** | "owner approval" | "Gate 1" / "the Phase-3 gate" / "Gate-0 ratification" | 🗑 **RETIRED as a blocker by Q-0241** (historical row; no owner sitting required) |
 | **P3 · Skeleton** | Phase 3 | Phase C (kernel half), executed as **S0–S15** | not started — **no `sb/` code exists (verified)** |
 | **P4 · Port** | Phase 4 | Phase C (port half), **re-sequenced by Sequence C** | not started |
 | **P5 · Cutover** | Phase 5 | **Migration** (its own plan) + railway plan §4–6 | not started (CUT-1/2/3, Q-0222) |
@@ -278,7 +279,7 @@ name** ("Gate-0" = the *done* grammar-freeze docs pass #1716 **and** the *open* 
 Canonical de-overload: **"Gate-0" refers only to the (done) docs pass; the owner ruling is part of
 G1.**
 
-**Two hard program gates block all new-repo code:**
+**Two hard program gates block all new-repo code:** *(⚠ both RETIRED as blockers by the Q-0241 amendment at top — kept below as historical sequencing + rationale, not as owner stop-points.)*
 
 | Gate | What it is | Who clears it | State |
 |---|---|---|---|
@@ -315,7 +316,7 @@ before step 6 touches the new repo.
 | 3 | Build **`tools/check_amendments.py`** (S0's enforcing half) + fix the #1716 ledger drift | agent | Gate-V P-9; ungated current-repo tooling |
 | 4 | Continue the **Stage-2 walk** (L1c → L5, 33+ rows) | 👤 owner-live | parallel; blocks later port bands only |
 | 5 | 👤 **The go/no-go sitting (G1):** read §1, veto/bless, stamp the rulings into the router | owner | the ONE sitting; F-2 rows land as router entries |
-| 6 | 👤 **Create the repo** (`superbot-next`; empty, private) | owner (or agent on explicit owner ask) | first irreversible-class execution — stays behind G1+G2 |
+| 6 | **Create the repo** (`superbot-next`; empty, private) | agent (coordinator) | **un-gated per the Q-0241 amendment above** — an empty private repo is reversible; no longer behind G1/G2 |
 | 7 | **Bootstrap the substrate-kit**: `python3 dist/bootstrap.py adopt` → doc skeletons, decision ledger, orientation-budget checker, namespace/seam checkers, staged hooks | agent | K0's first act; adopt re-proven live this session (17 planted + 14 staged artifacts, `check --strict` clean) |
 | 8 | **Control plane**: rulesets + OIDC, the named-gate workflows (incl. `golden-parity` born-red + `check_compat_frozen`), CODEOWNERS, branch protection; 👤 **Railway project `superbot-next`** per [railway plan §4/R-3](railway-setup-plan-2026-07-02.md) (production + shadow, config-as-code, sealed/reference variables — owner pastes secrets, region pins, backups per the Q-D14 ruling, project tokens) | agent executes; owner approves the spend + supplies secrets | PAT machinery never enters the new repo |
 | 9 | **Build the kernel S1→S9** (K0→K8 per the [S0–S15 build order](../analysis/rebuild-discovery/foundations/gate-0/phase-b-l0-build-order.md)). **Strand 1 is a near-linear chain** — S8 (K7) consumes K4+K5+K6, so S5/S6/S7 sit ON the chain (the parallel plan's "K4/K5/K6 run concurrently off-spine" is corrected here); the real parallelism lever is fan-out *within* a band. RC-12 (`member_tier`) lands before S9 wires K8 | agent fleet — one ultracode session per band | ~5–8 days; the settings-engine + panel-runtime PROVIDES (F-3.4) land inside S8/S9 |

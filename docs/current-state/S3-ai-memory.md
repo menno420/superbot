@@ -10,13 +10,23 @@
 > own; distinct from S4 (the docs content it produces) and S5 (its operation).*
 
 **Recently shipped (this sector):**
+- **OWNER GATES RETIRED + Phase-2.5 RAN + Projects-EAP as coordinator (PRs #1775/#1776, 2026-07-07).**
+  **Q-0241 (#1776)** retired the rebuild's owner gates — the coordinator builds in logical order,
+  **live-tests each piece in a server**, and **never waits (silence = consent = done)**; the destructive
+  tier stays reversible (shadow-first, N=7d rollback, reverse-import valve), not gated. **Phase-2.5
+  cold-start A/B RAN (#1775)** with 8 paired sessions + Opus judge → **verdict FAIL as-tested** (adopt
+  ships the kit inert with unrendered `${...}` templates; 0/3 measures beaten) → remainder = the
+  adopt-render fix + one re-run pair (`planning/phase-2.5-cold-start-report-2026-07-07.md`). Kit tail ①
+  (#1775) + `tools/check_amendments.py` (#1775) also shipped. **Plan of record =**
+  [`rebuild-canonical-plan-2026-07-06.md`](../planning/rebuild-canonical-plan-2026-07-06.md). New idea:
+  [Claude Code Projects (EAP) as the rebuild coordinator](../ideas/claude-code-projects-for-the-rebuild-2026-07-07.md).
 - **GATE V — verification-fleet pass COMPLETE → Phase-B under Sequence C (PRs #1750/#1751/#1756/#1757/#1759/#1767, 2026-07-06).**
   All arms A–D + the Codex evidence layer + the final **synthesis (Arm Σ, #1767,
   [`GATE-V-SYNTHESIS.md`](../analysis/rebuild-discovery/gate-v/GATE-V-SYNTHESIS.md))** are done: verdict
   **Gate V COMPLETE → proceed to Phase-B per-step planning under Sequence C** (frozen L3→L4/L5 games edge
   fabricated → games defer; audited-write atomicity a systemic contract-freeze, not a live defect; K7
-  urgency borrowed). Program-wide readiness still HOLDs on the two pre-existing owner gates (Gate-0
-  ratification, Phase-2.5 cold-start). The Arm D live-testing detail:
+  urgency borrowed). *(Readiness note: the two owner gates named here were RETIRED by Q-0241 (#1776) —
+  see the top entry; Phase-2.5 has since RUN, #1775.)* The Arm D live-testing detail:
 - **GATE V Arm D — empirical live-testing evidence pack (PR #1751, 2026-07-06).** Executed
   [`rebuild-gate-v-verification-fleet-2026-07-06.md`](../planning/rebuild-gate-v-verification-fleet-2026-07-06.md)
   §7 against the sandbox's dedicated test bot/guild + local throwaway Postgres (never
