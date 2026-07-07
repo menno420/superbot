@@ -9,6 +9,22 @@
 > S3; the docs it produces are S4.*
 
 **Recently shipped (this sector):**
+- **Thirty-seventh Q-0107 reconciliation pass** (band-#1800, issue #1801 —
+  [pass record](../planning/reconciliation-pass-2026-07-07-band1800.md)): reconciled the ledger
+  (band #1771–#1800 — seven grouped entries, headlined by the **S3 rebuild final-review → plan-review →
+  idea-consolidation → multi-repo program founding** arc: the FINAL review #1778/#1783 (verdict *plan ready*
+  → the §6.3 runtime fixes #1781/#1782), Phase-2.5 A/B run #1775, **Projects-EAP-as-coordinator + Q-0241
+  never-wait autonomy** #1776/#1777, the plan-review + owner-idea capture session #1784…#1790 (incl. the S1
+  **automod** spam-evasion/duplicate-content runtime fix #1789), and the consolidation → program-founding
+  session #1791…#1798 (owner rulings Q-0243…Q-0252 + the three-program-sessions launch index) — plus the
+  36th-pass docs PR #1772 and 5 dashboard refreshes), trimmed Recently-shipped to 20
+  (`trim_recently_shipped.py --apply`, moved 7 oldest bullets, floor recomputed), **disposed 11 open PRs** —
+  **closed the 5 Codex Gate-V evidence PRs** #1752–#1755/#1758 (evidence-consumed into the merged synthesis
+  #1767; two prior passes left them open — this pass acted per Q-0125 + the disposition-guard idea, flagged
+  for owner veto), left the 6 dependabot bumps in flight (runtime, not docs), confirmed **ROUTINE_PAT set /
+  loop self-fires** (issue #1801 authored by `menno420`), carried the forward queue intact (still deep, no
+  THIN flag — the rebuild Phase-B canonical plan + the four program sessions dominate), refreshed the
+  dashboard export (Q-0167), reset the marker #1770 → #1800.
 - **Thirty-sixth Q-0107 reconciliation pass** (band-#1770, issue #1771 —
   [pass record](../planning/reconciliation-pass-2026-07-06-band1770.md)): reconciled the ledger
   (band #1741–#1770 — four grouped entries, headlined by the **S3 rebuild foundational consolidation →
@@ -146,7 +162,7 @@
   startable slice. Companion: the still-unexecuted
   [orientation-cost-reduction plan](../planning/orientation-cost-reduction-plan-2026-06-30.md)
   (Q-0210 router archive now 3+ passes overdue — B0–B3 should run soon regardless).
-- **Next reconciliation pass due once merged PRs cross #1770** (every multiple of 30, Q-0134) —
+- **Next reconciliation pass due once merged PRs cross #1800** (every multiple of 30, Q-0134) —
   auto-triggered by `reconciliation-trigger.yml`; run by the docs-reconciliation routine, **not** a
   manual session (Q-0124).
 - Plan-band depth is healthy — **no `PLAN-BACKLOG-THIN` flag** (buildable depth well over cadence).

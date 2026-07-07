@@ -1,14 +1,14 @@
 {
   "meta": {
-    "generated_at": "2026-07-07T17:08:04Z",
+    "generated_at": "2026-07-07T17:26:28Z",
     "build": {
-      "commit": "8dc42d23",
-      "subject": "Merge pull request #1797 from menno420/claude/rebuild-plan-consolidation-c34c0b",
-      "committed_at": "2026-07-07T17:08:04Z"
+      "commit": "6f4657c1",
+      "subject": "Merge pull request #1800 from menno420/claude/rebuild-plan-consolidation-c34c0b",
+      "committed_at": "2026-07-07T17:26:28Z"
     },
     "counts": {
       "functions": 43,
-      "ideas": 208,
+      "ideas": 209,
       "bugs": 31,
       "reviews": 0,
       "reviews_open": 0,
@@ -1213,6 +1213,14 @@
       "status": "ideas",
       "date": "2026-07-07",
       "summary": "1. **Repo-start mechanics:** \"should the new session in the new repo just clone the old repo",
+      "subsystems": null
+    },
+    {
+      "file": "reconcile-open-pr-disposition-actuator-2026-07-07.md",
+      "title": "Idea: reconcile open-PR disposition actuator (guard → actuator)",
+      "status": "ideas",
+      "date": "2026-07-07",
+      "summary": "The band-#1770 pass captured the",
       "subsystems": null
     },
     {
@@ -3116,12 +3124,28 @@
       "self_initiated": false
     },
     {
+      "file": "2026-07-07-three-sessions-prep.md",
+      "date": "2026-07-07",
+      "title": "2026-07-07 — Three-sessions prep (Q-0252: program launch briefs)",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
       "file": "2026-07-07-substrate-kit-enforcement.md",
       "date": "2026-07-07",
       "title": "2026-07-07 — substrate-kit: adopt installs the enforcement (the forcing functions)",
       "status": "complete",
       "run_type": "",
       "self_initiated": true
+    },
+    {
+      "file": "2026-07-07-session1-recut-websites.md",
+      "date": "2026-07-07",
+      "title": "2026-07-07 — Session-1 re-cut: websites on the last Fable day (Q-0253)",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
     },
     {
       "file": "2026-07-07-rebuild-plan-review-and-automation-idea.md",
@@ -3559,22 +3583,6 @@
       "file": "2026-07-03-foundational-design-opus-brief.md",
       "date": "2026-07-03",
       "title": "2026-07-03 — Prepare the Opus-4.8 foundational-DESIGN overnight prompt",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-07-03-fix-prod-loss-paths.md",
-      "date": "2026-07-03",
-      "title": "2026-07-03 — Fix two confirmed prod loss paths (from the engine-room audit)",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-07-03-critical-review-rubric.md",
-      "date": "2026-07-03",
-      "title": "2026-07-03 — The critical-review rubric (owner-directed)",
       "status": "complete",
       "run_type": "",
       "self_initiated": false
