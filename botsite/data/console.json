@@ -1,10 +1,10 @@
 {
   "meta": {
-    "generated_at": "2026-07-07T15:29:24Z",
+    "generated_at": "2026-07-07T15:58:22Z",
     "build": {
-      "commit": "38f5e06",
-      "subject": "session start: claim + born-red card — program websites design session (brief 2026-07-07)",
-      "committed_at": "2026-07-07T15:29:24Z"
+      "commit": "b27b4a1",
+      "subject": "design system + botsite v2 + program console + console feed",
+      "committed_at": "2026-07-07T15:58:22Z"
     }
   },
   "sessions": [
@@ -500,59 +500,61 @@
   "bugs": {
     "total": 31,
     "by_status": {
-      "fixed": 9,
+      "expected": 1,
+      "fixed": 18,
       "open": 1,
-      "unknown": 21
+      "partial": 2,
+      "unknown": 9
     },
     "open": [
       {
-        "id": "BUG-0031",
-        "title": "building a Boathouse raises KeyError: 'boathouse' (structure never added to the build-reason map) — FIXED (root)",
-        "status": "unknown"
-      },
-      {
-        "id": "BUG-0030",
-        "title": "!dock structure command collides with !sail's dock alias → fishing cog fails to load → boot crash loop — FIXED (root)",
-        "status": "unknown"
-      },
-      {
-        "id": "BUG-0029",
-        "title": "XP level-up role grants bypass the audited role seam (no audit.action_recorded, no shared hierarchy preflight) — FIXED (root)",
-        "status": "unknown"
-      },
-      {
-        "id": "BUG-0028",
-        "title": "panel-initiated PvP deathmatch crashes on resolve (ctx=None → self.ctx.guild.id AttributeError) — FIXED (root)",
-        "status": "unknown"
-      },
-      {
-        "id": "BUG-0027",
-        "title": "born-red merge-gate silently fails open on a session-card slug collision (a partial PR auto-merged and clobbered a prior session log) — FIXED (root)",
-        "status": "unknown"
-      },
-      {
-        "id": "BUG-0026",
-        "title": "EffectiveStats.light_radius and .luck are dead stats (gear grants them, no game reads them) — FIXED (wired — owner decision Q-0208)",
-        "status": "unknown"
-      },
-      {
-        "id": "BUG-0025",
-        "title": "hero-card image stranded/lost when navigating into an image-less sub-panel (profile + XP hub) — FIXED (root)",
-        "status": "unknown"
-      },
-      {
-        "id": "BUG-0024",
-        "title": "test_generated_at_is_deterministic_not_wall_clock flaky under pytest -n auto (real-clock dependent) — FIXED (root)",
-        "status": "unknown"
-      },
-      {
-        "id": "BUG-0023",
-        "title": "public command counts differ between the bot status embed and the website (354 = 283 prefix · 71 slash vs ~280) — EXPECTED (documented); slash under-coverage = FIXED (root)",
-        "status": "unknown"
-      },
-      {
         "id": "BUG-0019",
         "title": "AI replies to messages aimed at *other* bots and claims \"you've just pinged me\" — PARTIALLY FIXED (mechanism #2 hardened; #1 awaits one owner behavior decision)",
+        "status": "partial"
+      },
+      {
+        "id": "BUG-0011",
+        "title": "Hermes gateway crash-loops on restart (Telegram 409) + periodic status=1",
+        "status": "open"
+      },
+      {
+        "id": "BUG-0010",
+        "title": "the \"in ABR\" qualifier is ignored by auto-grounding and the round-cash workflow",
+        "status": "unknown"
+      },
+      {
+        "id": "BUG-0009",
+        "title": "grounded facts, wrong assembly: lists mislabeled / badly grouped (the claim-assembly class) — PARTIALLY FIXED (MK-related family)",
+        "status": "partial"
+      },
+      {
+        "id": "BUG-0008",
+        "title": "\"420 farm\" income freelanced on the general path (keyword gap)",
+        "status": "unknown"
+      },
+      {
+        "id": "BUG-0007",
+        "title": "conversation-meta question answered with the BTD6 data refusal",
+        "status": "unknown"
+      },
+      {
+        "id": "BUG-0006",
+        "title": "conversation carryover unreachable: pronoun follow-ups never route BTD6",
+        "status": "unknown"
+      },
+      {
+        "id": "BUG-0005",
+        "title": "BUG-0003 recurrence in the model loop: the tool laundered a misread quantity ($120,743,025)",
+        "status": "unknown"
+      },
+      {
+        "id": "BUG-0004",
+        "title": "r-shorthand round projection answered with the wrong total (cumulative-from-round-1 mislabel)",
+        "status": "unknown"
+      },
+      {
+        "id": "BUG-0003",
+        "title": "\"despos\" hallucinated as Plasma Monkey Fan Club (unguarded general path)",
         "status": "unknown"
       }
     ]

@@ -196,7 +196,7 @@
   --sb-ink-1: #0b1220;
   --sb-ink-2: #313c52;
   --sb-ink-3: #5a6479;
-  --sb-ink-4: #8f98ab;
+  --sb-ink-4: #6f7990; /* ≥4:1 on both light surfaces — caption text stays readable */
 
   --sb-brand: var(--sb-g-600);
   --sb-brand-hi: var(--sb-g-700);

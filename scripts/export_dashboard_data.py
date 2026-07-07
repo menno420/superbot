@@ -1193,21 +1193,44 @@ def build_console_subset(data: dict) -> dict:
     updates = data.get("updates", []) or []
 
     def _by_status(items: list[dict]) -> dict[str, int]:
+        return _count_states(
+            [str(item.get("status") or "unknown").lower() for item in items],
+        )
+
+    def _count_states(states_list: list[str]) -> dict[str, int]:
         out: dict[str, int] = {}
-        for item in items:
-            key = str(item.get("status") or "unknown").lower()
+        for key in states_list:
             out[key] = out.get(key, 0) + 1
         return dict(sorted(out.items()))
 
-    closed = {"fixed", "closed", "resolved", "wontfix", "done"}
+    def _bug_state(bug: dict) -> str:
+        """Effective bug state: the parsed status, else the title-tail verdict.
+
+        The bug book records outcomes in the title suffix ("… — FIXED (root)")
+        and the scanner's ``status`` field is often ``unknown`` — deriving from
+        the tail keeps the console's open-bug count honest instead of listing
+        long-fixed bugs as open.
+        """
+        parsed = str(bug.get("status") or "").lower()
+        if parsed and parsed != "unknown":
+            return parsed
+        title = str(bug.get("title") or "").upper()
+        if "PARTIALLY FIXED" in title:
+            return "partial"
+        if re.search(r"[—-]\s*FIXED", title):
+            return "fixed"
+        if re.search(r"[—-]\s*EXPECTED", title):
+            return "expected"
+        if re.search(r"[—-]\s*OPEN", title):
+            return "open"
+        return "unknown"
+
+    closed = {"fixed", "closed", "resolved", "wontfix", "done", "expected"}
+    states = [(b, _bug_state(b)) for b in bugs]
     open_bugs = [
-        {
-            "id": b.get("id"),
-            "title": b.get("title"),
-            "status": str(b.get("status") or "unknown").lower(),
-        }
-        for b in bugs
-        if str(b.get("status") or "").lower() not in closed
+        {"id": b.get("id"), "title": b.get("title"), "status": state}
+        for b, state in states
+        if state not in closed
     ][:10]
 
     sessions = [
@@ -1224,7 +1247,7 @@ def build_console_subset(data: dict) -> dict:
         "ideas": {"total": len(ideas), "by_status": _by_status(ideas)},
         "bugs": {
             "total": len(bugs),
-            "by_status": _by_status(bugs),
+            "by_status": _count_states([state for _, state in states]),
             "open": open_bugs,
         },
         "bot_changelog": data.get("bot_changelog", []),

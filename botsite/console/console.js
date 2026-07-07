@@ -22,8 +22,9 @@
 
   const statusBadge = (st) => {
     const s = String(st || "").toLowerCase();
-    if (/(complete|done|ready|final|merged|shipped)/.test(s)) return `<span class="sb-badge sb-badge-ok">${icon("check", "currentColor", 11)} ${esc(s)}</span>`;
-    if (/(progress|hold)/.test(s)) return `<span class="sb-badge sb-badge-warn">${icon("clock", "currentColor", 11)} ${esc(s)}</span>`;
+    if (/(complete|done|ready|final|merged|shipped|fixed)/.test(s)) return `<span class="sb-badge sb-badge-ok">${icon("check", "currentColor", 11)} ${esc(s)}</span>`;
+    if (/(progress|hold|partial)/.test(s)) return `<span class="sb-badge sb-badge-warn">${icon("clock", "currentColor", 11)} ${esc(s)}</span>`;
+    if (/^open$/.test(s)) return `<span class="sb-badge sb-badge-danger">${icon("alert", "currentColor", 11)} open</span>`;
     return `<span class="sb-badge sb-badge-neutral">${esc(s || "—")}</span>`;
   };
 

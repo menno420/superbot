@@ -143,7 +143,16 @@
       })).sort((x, y) => y.value - x.value),
       { ariaLabel: "Commands per area" },
     );
-    const featured = FEATURES.filter((f) => !f.is_game).slice(0, 6).map(featCard).join("");
+    /* spotlight: one non-game feature per area (round-robin) so the strip shows
+       the bot's breadth, not just the alphabetically-first area */
+    const featured = (() => {
+      const pool = FEATURES.filter((f) => !f.is_game);
+      const picked = [];
+      const seen = new Set();
+      for (const f of pool) { if (!seen.has(f.area)) { seen.add(f.area); picked.push(f); } }
+      for (const f of pool) { if (picked.length >= 6) break; if (!picked.includes(f)) picked.push(f); }
+      return picked.slice(0, 6).map(featCard).join("");
+    })();
     const gameStrip = D.GAMES.slice(0, 8).map(gameCard).join("");
     const latest = D.CHANGELOG[0];
     return `
