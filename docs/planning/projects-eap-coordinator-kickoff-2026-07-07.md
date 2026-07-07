@@ -397,7 +397,8 @@ score the tests, never the coordinator's self-report).
 Owner-directed (2026-07-07): distinct from the calibration (§3, which tested *understanding*),
 this inquiry asks the coordinator to **advise the owner on how to work with it best** — where
 thinking should happen (finalized prompts outside vs. brainstorming in-Project), how its
-context/memory actually works, and when to talk to it vs. a child session. Unlike the
+context/memory actually works, when to talk to it vs. a child session, and how its
+consent/permission walls fire (Q9, grounded in the live step-7 push wall). Unlike the
 calibration, most answers are the coordinator's *self-model*, not verifiable facts — so the
 marker of a good answer is honesty about what it doesn't yet know, and the answers get
 **confirmed by observation** over the next few days (this inquiry naturally runs the product
@@ -445,9 +446,19 @@ how I talk to you for the rest of the program.
    habit on my end that keeps you unblocked without me hovering — and how do I tell "red by
    design" from "actually broken" without opening every session?
 
-9. What you'd change about me. Having worked with me across the calibration and first stretch:
-   what's the one thing about how I hand you work that, if I changed it, would make you
-   materially more effective?
+9. Consent walls and pre-authorization. You just parked step 7 on a consent wall — the first
+   push to a public repo needed my explicit go-ahead in that session, and my relayed one didn't
+   count. Explain that mechanic from your side: which classes of action require my in-session
+   consent versus which you take autonomously, and is it per-action, per-session, per-repo, or
+   first-time-only? Does the wall recur (e.g. on every push to superbot-next), or clear once a
+   repo has content? What can I pre-authorize, where (Project settings?), and how do I scope it
+   so I clear the friction on our two known repos without switching the safety off for
+   everything else? What's the one owner habit that keeps these walls from taxing the build's
+   tempo?
+
+10. What you'd change about me. Having worked with me across the calibration and first stretch:
+    what's the one thing about how I hand you work that, if I changed it, would make you
+    materially more effective?
 ```
 
 ## 8. What this does and doesn't replace
