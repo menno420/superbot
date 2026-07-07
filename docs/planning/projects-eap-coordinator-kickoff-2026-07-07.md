@@ -18,17 +18,24 @@ mentioned in `docs/current-state.md` — but that's a different program, not thi
 canonical plan's own step 9/13 language — "agent fleet, one session per band" / "agent fleet,
 claim-per-subsystem" — is precisely what one Project's coordinator is built to run.
 
-## 1. Repo scope — sequenced, because `superbot-next` doesn't exist yet
+## 1. Repo scope — create `superbot-next` yourself first
 
 A Project's repo list is chosen through GitHub connection UI (owner action), and it can only list
-repos that already exist. Do this in two passes:
+repos that already exist. Rather than have the coordinator create `superbot-next` as its first act
+(the original plan below), **create it yourself first** — it's a 30-second manual step and it lets
+the Project's repo picker offer both repos from the start, which is worth confirming works before
+depending on it:
 
-1. **Now:** create the Project scoped to **`menno420/superbot`** only (this repo — the plan, the
-   docs, the design spec all live here; it's the coordinator's *read* context).
-2. **After step 6 completes** (below): add **`menno420/superbot-next`** to the Project's repo
-   list once the coordinator has created it. From then on the Project spans both — `superbot` as
-   the what/why/how record, `superbot-next` as the write target — matching the "Projects take a
-   list of repositories" design point the idea doc originally flagged as the right fit.
+1. GitHub → New repository → name `superbot-next`, owner `menno420`, **Private**, and **do not**
+   initialize with a README/`.gitignore`/license — the plan specifies "empty, private" (§5 step 6)
+   so the substrate-kit's doc-skeleton bootstrap (step 7) starts from a truly blank repo.
+2. Create the Project and select **both** `menno420/superbot` and `menno420/superbot-next` in the
+   repo picker.
+
+(Original two-pass plan, if you'd rather have the coordinator do it: create the Project scoped to
+`menno420/superbot` only, let the coordinator create `superbot-next` as §5 step 6, then add it to
+the Project's repo list afterward. Functionally equivalent — the only difference is who clicks
+"create repository" and whether the multi-repo picker gets exercised on day one.)
 
 ## 2. Custom Instructions — paste into Project Settings → Custom Instructions
 
@@ -80,22 +87,23 @@ Read docs/planning/rebuild-canonical-plan-2026-07-06.md in menno420/superbot in 
 §5 (the start sequence) and §8 (decisions log). Steps 1-3 are already done (kit tail, Phase-2.5,
 check_amendments.py — all merged). Step 4 (the Stage-2 walk) is owner-live and continuing in
 parallel elsewhere — it blocks later port bands (step 13), not repo start, so don't wait on it.
-Step 5 (the go/no-go sitting) is retired per Q-0241 in the plan's amendment banner.
+Step 5 (the go/no-go sitting) is retired per Q-0241 in the plan's amendment banner. Step 6
+(create menno420/superbot-next) is already done — the repo exists, empty and private, and is
+already in this Project's scope.
 
-Start at step 6: create an empty, private GitHub repo menno420/superbot-next. Once it exists,
-tell me directly (not just in a status report) so I can add it to this Project's repo list —
-until I do, you'll need to read/write it via direct GitHub API/git rather than as a connected
-Project repo.
-
-Then continue in order: step 7 (bootstrap the substrate-kit via
-python3 dist/bootstrap.py adopt — the kit itself lives in menno420/superbot's substrate-kit/),
-step 8 (control plane: rulesets, OIDC, named-gate workflows, CODEOWNERS, branch protection —
-flag the Railway project setup since it needs secrets only I can supply), then the kernel bands
-(steps 9-12) and beyond per the plan.
+Start at step 7: bootstrap the substrate-kit via python3 dist/bootstrap.py adopt (the kit itself
+lives in menno420/superbot's substrate-kit/) inside menno420/superbot-next. Then continue in
+order: step 8 (control plane: rulesets, OIDC, named-gate workflows, CODEOWNERS, branch
+protection — flag the Railway project setup since it needs secrets only I can supply), then the
+kernel bands (steps 9-12) and beyond per the plan.
 
 Set up whatever routines make sense for a build this size (nightly CI/dependency sweeps, a
 morning status roll-up) once there's something worth checking on.
 ```
+
+(If you went with the coordinator-creates-it variant of §1 instead, use the original wording:
+start at step 6 with "create an empty, private GitHub repo menno420/superbot-next, then tell me
+directly so I can add it to this Project's repo list" before step 7.)
 
 ## 4. What this does and doesn't replace
 
