@@ -1287,8 +1287,16 @@ Current broad captures:
   first (no approval needed), extract later. → **GRADUATED 2026-06-13 to an approved executable
   plan:** [`../planning/portable-substrate-kit-extraction-2026-06-13.md`](../planning/portable-substrate-kit-extraction-2026-06-13.md)
   (10 review rounds + owner approval; entry point PR 1a).
-- [`autonomous-improvement-loop-vision-2026-06-12.md`](./autonomous-improvement-loop-vision-2026-06-12.md) —
-  **maintainer vision (2026-06-12, voice):** the north-star — agents continuously improve
+- [`multi-repo-program-kit-lab-trading-2026-07-07.md`](./multi-repo-program-kit-lab-trading-2026-07-07.md) —
+  **maintainer vision (2026-07-07, live drop, captured strengthened):** the program frame above
+  the rebuild — three repos on one substrate: `superbot-next` (the plan of record) · **the
+  substrate-kit as its own repo = the autonomous self-improvement lab** (fitness functions —
+  the Phase-2.5 A/B as standing benchmark, ideas-that-ship as the acceptance metric; own work
+  surfaces: test-bot token, Railway project with caps, deployable sites) · **a trading-research
+  repo** (backtest-decides-strategy, falsification promotion ladder, real-money brake). Also
+  answers repo-start mechanics: fresh-from-kit + old repo attached read-only as the oracle,
+  never clone-as-base. Kit extraction rides the step-7 second-consumer moment → **discuss/plan
+  lane** (the step-6–8 kickoff session reads this and decides the extraction fork ⚑).
   the bot, chain session→session autonomously (idea → revised plan → implement), gate
   agent-*generated* features behind correctness (bugs/UX first), and use **Hermes as the
   independent reviewer** (a non-Claude "different mind" that critiques plans + implementations,
