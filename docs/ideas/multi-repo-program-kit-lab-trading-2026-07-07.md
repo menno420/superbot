@@ -182,8 +182,12 @@ ships as kit-planted templates that each repo instantiates.
   telemetry + a ~2-month observation window first; security rails (scoped credentials, the
   trading real-money brake) stand regardless.** Still open: which extra work surfaces to
   provision first (bot token vs website vs both).
-- Trading: which market/asset class first (the data-vendor and broker-API choice hangs on it),
-  and the initial live-execution caps when that distant gate arrives.
+- ~~Trading: which market/asset class first (the data-vendor and broker-API choice hangs on it)~~
+  **RULED (Q-0250, 2026-07-07): stocks-first — US large-cap tech (the owner's domain; crypto
+  suggestion withdrawn); point-in-time universe rule (never the owner's current holdings); paper
+  lane on an API broker (DEGIRO has no official API); DEGIRO integrates read-only at the tracker
+  as the owner's manual benchmark lane.** Still open: the initial live-execution caps when that
+  distant gate arrives.
 - Whether the trading repo's autonomy runs under the same never-wait model from day one or
   starts owner-gated until the falsification ladder has proven itself on paper trades.
 

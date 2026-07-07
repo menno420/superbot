@@ -1,17 +1,28 @@
 # 2026-07-07 — Trading-repo market ruling (Q-0250: stocks-first)
 
-> **Status:** `in-progress`
-> **Branch:** `claude/rebuild-plan-consolidation-c34c0b` (restarted from main after #1795)
+> **Status:** `complete`
+> **Branch:** `claude/rebuild-plan-consolidation-c34c0b` (restarted from main after #1795) · **PR:** #1796
 > **Continues:** the 2026-07-07 consolidation conversation (PRs #1791–#1795)
 
-## What is about to happen
+## What happened
 
-The owner answered the trading repo's "which market first" fork: he trades **stocks only**
-(DEGIRO; mostly US large-cap tech — Intel, Nvidia), doesn't want back into crypto. Record
-**Q-0250** (stocks-first; point-in-time universe rule as the selection-bias guard; paper lane via
-an API broker since DEGIRO has no official API; DEGIRO stays the owner's manual venue, integrated
-read-only via transaction-export ingestion at the tracker) + update the capture doc's open fork.
+Recorded **Q-0250** — the owner's answer to the trading repo's "which market first" fork:
 
-## Close-out
+- **Stocks-first, US large-cap tech** (his actual domain: DEGIRO, Intel/Nvidia-class); the crypto
+  proving-ground suggestion is withdrawn — owner preference wins and the technical case supports
+  it (mega-cap data is cheap/clean; survivorship bias is a broad-universe problem; the
+  falsification ladder proves out fine on liquid large caps).
+- Three binding riders: **point-in-time universe rule** (never "the stocks I hold now" — the
+  selection-bias guard; his picks become watchlist inputs, not the universe); the **automated
+  paper lane rides an API broker** (DEGIRO has no official API; unofficial clients are
+  ToS-violating and brittle); **DEGIRO integrates read-only at the tracker** via transaction
+  export — the owner's real portfolio becomes a benchmark lane beside the strategies' paper
+  portfolios.
+- Capture-doc fork closed (only the distant live-cap numbers remain open there).
 
-_(to be written at close)_
+Checks: `check_docs --strict` ✓.
+
+## Session enders
+
+Same conversation as the main consolidation session — enders live in
+`.sessions/2026-07-07-rebuild-idea-consolidation.md`.
