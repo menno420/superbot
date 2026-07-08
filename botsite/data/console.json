@@ -1,19 +1,35 @@
 {
   "meta": {
-    "generated_at": "2026-07-07T18:37:23Z",
+    "generated_at": "2026-07-08T00:53:42Z",
     "build": {
-      "commit": "71bccaa",
-      "subject": "Merge remote-tracking branch 'origin/claude/website-design-brief-ryc3do' into claude/website-design-brief-ryc3do",
-      "committed_at": "2026-07-07T18:37:23Z"
+      "commit": "ec482f0e",
+      "subject": "docs: EAP auto-mode permission-boundary probe report (#1830)",
+      "committed_at": "2026-07-08T00:53:42Z"
     }
   },
   "sessions": [
     {
+      "file": "2026-07-08-eap-permission-probe.md",
+      "date": "2026-07-08",
+      "title": "2026-07-08 — EAP auto-mode permission-boundary probe",
+      "status": "complete",
+      "run_type": "manual",
+      "self_initiated": false
+    },
+    {
       "file": "2026-07-07-website-design-system-fable.md",
       "date": "2026-07-07",
       "title": "2026-07-07 — Program websites: design system + botsite v2 + console shell (Fable session 1/4)",
-      "status": "in-progress",
+      "status": "complete",
       "run_type": "",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-07-07-understand-and-reflect-rule.md",
+      "date": "2026-07-07",
+      "title": "2026-07-07 — Understand-and-reflect workflow rule (owner-directed in-session)",
+      "status": "complete",
+      "run_type": "manual",
       "self_initiated": false
     },
     {
@@ -97,9 +113,41 @@
       "self_initiated": true
     },
     {
+      "file": "2026-07-07-projects-eap-kickoff-repo-first.md",
+      "date": "2026-07-07",
+      "title": "2026-07-07 — Kickoff doc: owner creates `superbot-next` first",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-07-07-projects-eap-eval-journal.md",
+      "date": "2026-07-07",
+      "title": "2026-07-07 — Projects-EAP evaluation journal (guidebook-prescribed) + seed entries",
+      "status": "complete",
+      "run_type": "manual",
+      "self_initiated": true
+    },
+    {
+      "file": "2026-07-07-projects-eap-coordinator-kickoff.md",
+      "date": "2026-07-07",
+      "title": "2026-07-07 — Projects EAP: wiring the coordinator onto the rebuild §5 sequence",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
       "file": "2026-07-07-projects-eap-and-full-autonomy-q0241.md",
       "date": "2026-07-07",
       "title": "2026-07-07 — Claude Code Projects EAP for the rebuild + Q-0241 (remove owner gates, never-wait)",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-07-07-projects-eap-activation.md",
+      "date": "2026-07-07",
+      "title": "2026-07-07 — Claude Code Projects EAP: access granted, activation window",
       "status": "complete",
       "run_type": "",
       "self_initiated": false
@@ -137,6 +185,14 @@
       "self_initiated": false
     },
     {
+      "file": "2026-07-07-kit-understand-and-reflect.md",
+      "date": "2026-07-07",
+      "title": "2026-07-07 — Port understand-and-reflect + guiding-questions into the substrate-kit",
+      "status": "complete",
+      "run_type": "manual",
+      "self_initiated": false
+    },
+    {
       "file": "2026-07-07-kit-lab-founding-plan.md",
       "date": "2026-07-07",
       "title": "2026-07-07 — Kit-lab founding plan (program session 2/3)",
@@ -156,6 +212,14 @@
       "file": "2026-07-07-fable5-final-review-brief-prep.md",
       "date": "2026-07-07",
       "title": "2026-07-07 — Prepare Fable-5 ultracode brief for the final rebuild-plan review + Projects-EAP repo prep",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-07-07-coordinator-kickoff-calibration.md",
+      "date": "2026-07-07",
+      "title": "2026-07-07 — SuperBot Project coordinator: kickoff revision + calibration exchange design",
       "status": "complete",
       "run_type": "",
       "self_initiated": false
@@ -423,77 +487,13 @@
       "status": "complete",
       "run_type": "",
       "self_initiated": false
-    },
-    {
-      "file": "2026-07-03-rebuild-hub-navigation.md",
-      "date": "2026-07-03",
-      "title": "2026-07-03 — Rebuild Phase A · hub topology + navigation contract + interface presets (owner-live)",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-07-03-rebuild-conventions-freeze.md",
-      "date": "2026-07-03",
-      "title": "2026-07-03 — Rebuild Phase A · conventions freeze (owner-live, continued)",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-07-03-prep-fable5-final-review.md",
-      "date": "2026-07-03",
-      "title": "2026-07-03 — Prepare (not execute) a Fable-5 ultracode final-judgment prompt",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-07-03-phase-a-final-judgment.md",
-      "date": "2026-07-03",
-      "title": "2026-07-03 — Phase-A final judgment (Fable-5 ultracode)",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-07-03-permission-allowlist-and-endorse.md",
-      "date": "2026-07-03",
-      "title": "2026-07-03 — Permission allowlist fix + Q-0228 centralization endorsement (owner-live)",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-07-03-owner-ideas-release-loop-websites.md",
-      "date": "2026-07-03",
-      "title": "2026-07-03 — Capture 2 owner ideas: release→test→verify loop + websites cutover-role",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-07-03-oracle-and-verification-strategy.md",
-      "date": "2026-07-03",
-      "title": "2026-07-03 — New-feature oracle resolved + verification-fleet gate & repo-as-artifact strategy",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-07-03-layout-success-simulator.md",
-      "date": "2026-07-03",
-      "title": "2026-07-03 — Unified layout-success simulator (owner-directed capture)",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
     }
   ],
   "ideas": {
-    "total": 210,
+    "total": 213,
     "by_status": {
       "historical": 22,
-      "ideas": 185,
+      "ideas": 188,
       "reference": 3
     }
   },
