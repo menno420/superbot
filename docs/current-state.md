@@ -16,7 +16,7 @@
 > | **S1 Bot product** | [`current-state/S1-bot.md`](current-state/S1-bot.md) | reaction-roles arc Carl-bot-mature; creature game + mining grid live; Essential Setup wizard cut over to primary + follow-ons (PR 2 / 3a, #1449/#1451); Project Moon (Limbus) knowledge domain + combat-mechanics rules layer (#1453…#1549); **NEW band-#1620 completion deepening — fishing coral structures (#1596…#1605), reaction-roles slim builder (#1608…#1615), XP import from other bots (#1607/#1610), server-logging depth (#1594/#1618/#1619), bot-owner permission-gate bypass (#1602) + a boot smoke-test CI guard (#1601)**; ▶ next: Project Moon Q-0086 live walk / StaticData exact-number ingest / botsite React migration |
 > | **S2 BTD6** | [`current-state/S2-btd6.md`](current-state/S2-btd6.md) | buff-uptime + data auto-seed/drift shipped; eval anchor-complete; QA-accuracy arc — interaction grounding + honest semantic-grading eval harness (#1487…#1498); **menu-layout simulator + round-range NL answer fix (#1617); owner picked Layout B — panel category-hub SHIPPED (#1621)**; ▶ live re-test (owner) / curated counter lists / decode items 3–4 |
 > | **S3 AI-Memory** | [`current-state/S3-ai-memory.md`](current-state/S3-ai-memory.md) | settle-once money-safety guard (#1454) + cross-domain routing-disjointness guard (#1470); **self-improving-workflow guards #1476/#1477/#1479/#1482/#1495**; **owner re-elevated the portable substrate-kit to top focus (fresh-rebuild vision #1589/#1590)**; **rebuild design spec shipped (#1637/#1638) + BOTH linchpins now built & measured (#1639 — Phase-0.5 golden harness `parity/` + grammar spike, verdict GO-with-amendments)**; **substrate-kit finalized (#1649 — nervous system + context-economy engine + one-step-adopt; 407 kit tests)**; **Gate V COMPLETE (#1767); owner gates RETIRED (Q-0241/#1776); Phase-2.5 CLOSED (#1775 FAIL-as-tested → adopt-render fix + re-run pair, #1778); the FINAL review ran (#1778 — verdict: plan ready, §11 amendments folded, readiness scored); the idea-consolidation pass folded today's four owner captures + hardened the §3.C risks into machinery (#1791 — §11b A-12…A-20, registry mints R-16/R-17/P-5)**; ▶ **next: the FOUR program sessions — launch index READY: [`planning/program-three-sessions-launch-index-2026-07-07.md`](planning/program-three-sessions-launch-index-2026-07-07.md)** (Q-0252/Q-0253: ① websites on Fable TODAY (last Fable day) → ②/③ kit-lab + trading founding plans → ④ `superbot-next` kickoff — **now routed through the "SuperBot" Projects coordinator** (Project created 2026-07-07, both repos in scope, `superbot-next` owner-created public-until-flip; handoff protocol incl. the calibration exchange: [`planning/projects-eap-coordinator-kickoff-2026-07-07.md`](planning/projects-eap-coordinator-kickoff-2026-07-07.md)); paste-ready prompts in each brief; owner checklist inside) — nothing blocks the start; plan of record = [`planning/rebuild-canonical-plan-2026-07-06.md`](planning/rebuild-canonical-plan-2026-07-06.md) (+ its §11/§11b); Projects-EAP as coordinator ([owner-sendable review](planning/projects-eap-product-review-2026-07-07.md)) |
-> | **S4 Docs system** | [`current-state/S4-docs.md`](current-state/S4-docs.md) | 38th Q-0107 pass done (band-#1830); next recon at #1860; **no PLAN-BACKLOG-THIN flag** |
+> | **S4 Docs system** | [`current-state/S4-docs.md`](current-state/S4-docs.md) | 39th Q-0107 pass done (band-#1860); next recon at #1890; **no PLAN-BACKLOG-THIN flag** |
 > | **S5 Operations** | [`current-state/S5-ops.md`](current-state/S5-ops.md) | merge=deploy clarity (Q-0193); loop self-fires; ▶ website rollout (owner/Hermes) |
 >
 > **Honest caveat (cross-sector, carried):** much buildable depth is substantial runtime work — but
@@ -38,7 +38,21 @@
 >
 > Cross-cutting: **Community Spotlight** (side-lane **#613**/**#614** + hotfixes **#615**/**#617**) was hardened in the review session (canonical `utils/db/xp.py` read, `member_count` crash fix, first tests) and **Q-0044 is executed**: the Q-0025 `scripts/new_subsystem.py` scaffold was built and used to register Spotlight as a `community`-hub child (**#626**, 2026-06-09 — execution-plan Lane 1; merged, verified live), and the `!hub`/`!server` aliases were **dropped same day** (kept `!spotlight`/`!activity`). Also decided: BTD6 data-refresh automation = **manual-dispatch workflow** (Q-0049 — **built same day in #633**, execution-plan Lane 5: `workflow_dispatch`-only, opens a reviewable PR, never pushes to main); mining descent lights **permanent, owner-confirmed** (Q-0050); the five product-vision questions (Q-0038–Q-0042) got their **draft-answer session** (Q-0051) **and the maintainer marked all five up same day (Lane 6, PR #631, structured choices)**: Q-0038 server-scoped clans, Q-0039 cosmetic-only donations (no bot-side billing), Q-0041 YouTube-first/dual-opt-in/voice-deferred, Q-0042 staged-Someday website — all approved as drafted; **Q-0040 adjusted: the AI dungeon master picks quests/rewards/difficulty from bounded, hard-capped menus** (not pure narration, not free-form authority). Posture decisions only — every lane still needs its own plan/promotion + the AI per-exposure lift; conclusions routed to the four roadmap drafts + router §21. Full repo review: [`audits/repo-review-2026-06-09.md`](audits/repo-review-2026-06-09.md) · agent-memory system review (did the orientation/memory system work in practice?): [`audits/agent-memory-system-review-2026-06-09.md`](audits/agent-memory-system-review-2026-06-09.md).
 >
-> **Last updated:** 2026-07-08 — **thirty-eighth Q-0107 reconciliation pass (band-#1830, issue #1832
+> **Last updated:** 2026-07-08 — **thirty-ninth Q-0107 reconciliation pass (band-#1860, issue #1862
+> — [pass record](planning/reconciliation-pass-2026-07-08-band1860.md));** reconciled band #1831–#1861
+> (six grouped entries — the band is **entirely docs/tooling**, zero `disbot/` runtime: the **EAP-evaluation
+> Anthropic-feedback email + permission-probe arc** #1834…#1861 that dominated the band — headline: the
+> auto-mode first-publish push wall is **`git push`-transport-specific**, the GitHub Contents API bootstraps
+> a fresh repo prompt-free (#1847, likely unblocks rebuild step 7), the email refined to two-part/two-reviewer
+> form with every claim audited to a verifiable test, campaign self-audit graded coordinator recall ≈0.98;
+> plus the S1 **server-management Wave-2 audit → docs truth refresh** #1844/#1850/#1851, the S5 **per-repo
+> settings ledger** #1843/#1848/#1849, the S4 **grooming waves** (idea→plan + friction→guard) #1845/#1846/#1854/#1855,
+> the 38th-pass docs PR #1833, and 3 dashboard refreshes #1835/#1836/#1841), trimmed Recently-shipped to 20,
+> **disposed the open-PR set** — 6 dependabot dep-bumps #1761–#1766 left in flight (runtime, not this
+> docs-only lane), no stale session PR; confirmed ROUTINE_PAT set / loop self-fires (issue #1862 authored by
+> `menno420`), forward queue still deep (no THIN flag — the rebuild Phase-B canonical plan + the live SuperBot
+> Project program dominate), refreshed the dashboard export, marker #1830 → #1861.
+> Earlier: 2026-07-08 — **thirty-eighth Q-0107 reconciliation pass (band-#1830, issue #1832
 > — [pass record](planning/reconciliation-pass-2026-07-08-band1830.md));** reconciled band #1801–#1830
 > (five grouped entries — the **entirely docs-only** SuperBot Project coordinator arc that dominated the
 > band: the Projects-EAP coordinator going live → kickoff/calibration rewrite #1811…#1823, the evaluation
@@ -294,15 +308,55 @@ Source code and merged PRs win over anything written here.
 > get it from live GitHub. The newest merge a session sees may not be added yet; that
 > lag is expected (the next session reconciles). A merged PR tagged "pending" is the bug.
 >
-> **Last reconciliation pass:** PR #1830 (2026-07-08, thirty-eighth Q-0107 cadence pass, band-#1830 —
-> [the pass record + next-band queue](planning/reconciliation-pass-2026-07-08-band1830.md); marker reset
-> to the latest merged PR **#1830**). The next
-> **docs-only review + planning reconciliation** is due once merged PRs cross #1860 (every
+> **Last reconciliation pass:** PR #1861 (2026-07-08, thirty-ninth Q-0107 cadence pass, band-#1860 —
+> [the pass record + next-band queue](planning/reconciliation-pass-2026-07-08-band1860.md); marker reset
+> to the latest merged PR **#1861**). The next
+> **docs-only review + planning reconciliation** is due once merged PRs cross #1890 (every
 > multiple of **30** — Q-0107 cadence raised 10→20 on 2026-06-12, then 20→30 on 2026-06-14 per
 > Q-0134; `check_reconciliation_due.py` flags it, and `.github/workflows/reconciliation-trigger.yml`
 > auto-opens a `reconcile` issue at the boundary that fires the docs-reconciliation routine). Reset
 > this marker to the latest PR after a pass.
 
+- **#1834 · #1837 · #1838 · #1839 · #1840 · #1842 · #1847 · #1852 · #1853 · #1856 · #1858 · #1859 · #1861 (2026-07-07/08, S3 rebuild / EAP-evaluation — the Anthropic-feedback email + permission-probe arc)** —
+  the band's headline: the coordinator kickoff continued (**#1834/#1837**) and the EAP evaluation produced
+  the owner's **Friday Anthropic feedback email**, refined across the band with **every claim audited to a
+  verifiable test** (**#1838** compaction + verifiability audit → **#1840** two-layer clear-path flagship
+  (classifier-vs-credential) → **#1853** refresh + forward-only Project custom instructions → **#1856**
+  two-part / two-author / two-reviewer restructure → **#1858** Part-2 first-person agent narrative). The
+  **permission-probe** thread hardened the central finding: the auto-mode first-publish push wall is
+  **`git push`-transport-specific** — the **GitHub Contents API bootstraps a fresh empty public repo
+  prompt-free** (**#1847** — both `substrate-kit` + `superbot-next` seeded, likely unblocking rebuild step 7),
+  with the clear-path (**#1839**) and standing-grant-row (**#1842**) addenda. **#1852** = the EAP-direction
+  handoff; **#1859** = the campaign self-audit (coordinator same-day recall graded **≈0.98 precision / ~1.0
+  event-level recall** vs git ground truth, 6 friction entries logged); **#1861** = the projects-testing
+  Anthropic-feedback close-out. Docs-only throughout (no `disbot/`).
+- **#1844 · #1850 · #1851 (2026-07-08, S1 — server-management subsystem audit → Wave-2 docs truth refresh)** —
+  the owner's campaign Wave-2 over the server-management subsystem: **#1844** ran the audit; **#1851**
+  shipped the **docs truth refresh** (findings F1–F5 reconciled in `docs/subsystems/server-management.md`);
+  **#1850** added the **W2-F6 AST write-boundary invariant** for the reaction-role tables (a new checker +
+  tests — tooling/tests only, no `disbot/` runtime).
+- **#1843 · #1848 · #1849 (2026-07-08, S5/ops — per-repo settings ledger: forward-only Project experiment)** —
+  a readable per-repo settings ledger so future sessions **read state, not guess**: **#1843** captured the
+  forward-only Project experiment idea + the ledger plan; **#1848** shipped **Phase 1** — the `superbot-next`
+  General settings captured from the owner's screen recording (frames extracted via a dev-only
+  `imageio-ffmpeg`) into [`operations/repo-settings-state.md`](operations/repo-settings-state.md); **#1849**
+  corrected it (new repos are **bare** + the full auto-mode API capability map). Phase 2 (a generator that
+  auto-maintains the rows) stays queued.
+- **#1845 · #1846 · #1854 · #1855 (2026-07-08, S4/workflow — grooming waves: idea→plan + friction→guard)** —
+  the campaign's grooming lanes, all idea-lifecycle / self-improvement: **#1845** (lane C) promoted the
+  **usage-limit-aware routines** idea → a 2-PR plan + roadmap S5 horizon; **#1846** (lane B) shipped the
+  **supersede-banner integrity checker** (`scripts/check_supersede_integrity.py` + a warn-first `check_docs`
+  soft check, 16 tests); **#1854** groomed the #1846 follow-ons; **#1855** closed the "green-by-skip" gap by
+  wiring **`check_plan_homing --strict` as an always-run pre-setup gate** in `code-quality.yml` so the
+  docs-only fast path can no longer land an unhomed plan (Q-0194 friction→guard).
+- **#1833 (2026-07-08, workflow — thirty-eighth Q-0107 reconciliation pass, band-#1830)** —
+  the 38th docs-only reconciliation + planning pass
+  ([pass record](planning/reconciliation-pass-2026-07-08-band1830.md)): reconciled band #1801–#1830,
+  trimmed Recently-shipped to 20, disposed the open-PR set (6 dependabot bumps in flight), confirmed the
+  control-plane, refreshed the dashboard export, reset the marker #1800 → #1830.
+- **#1835 · #1836 · #1841 (2026-07-07/08, docs — dashboard-data refreshes, Q-0167)** —
+  three per-source-merge refreshes keeping the committed `dashboard/data/dashboard.json` export fresh as the
+  EAP-email / settings-ledger / grooming arc landed.
 - **#1807 · #1810 · #1811 · #1812 · #1813 · #1814 · #1816 · #1817 · #1818 · #1819 · #1820 · #1821 · #1822 · #1823 · #1825 · #1826 · #1827 · #1828 · #1829 · #1830 (2026-07-07/08, S3 rebuild — the SuperBot Project coordinator kickoff → live calibration → EAP-evaluation arc)** —
   the band's headline: the **Claude Code Projects (EAP) coordinator went live** and ran the rebuild
   program's first stretch. **#1807/#1810** stood up the early-access / repo-first kickoff (owner creates
@@ -414,74 +468,7 @@ Source code and merged PRs win over anything written here.
   panel-runtime / findings-engine landing steps added) plus the test-guild design + runnable Phase-2.5
   package. (Ledger drift caught here 2026-07-06: the Gate-0 `tools/check_amendments.py` enforcer named in
   the #1716 entry was never shipped — the canonical plan's §5 step 3 builds it.)
-- **#1750 · #1751 · #1756 · #1757 · #1759 · #1767 (2026-07-06, S3 rebuild — Gate V verification-fleet pass (Arms A–D + Codex + synthesis), Q-0234)** —
-  the multi-agent verification-fleet pass between Phase A and Phase B, over the frozen rebuild plan. **#1750**
-  documented the **verification-fleet launch pad** (corrected review prompts, multi-Codex arm, dedicated
-  live-testing arm); **#1751** ran **Arm D — the empirical live-testing evidence pack** ([`planning/LIVE-VERIFIED-EVIDENCE-PACK.md`](planning/LIVE-VERIFIED-EVIDENCE-PACK.md),
-  exercising every shared primitive incl. the PvP wager engine service-layer against the real test guild +
-  throwaway Postgres, never production); **#1756** documented the **verified Codex C2–C5 + Agent-Mode
-  evidence corrections**; **#1757** shipped **Arm A** (architecture & core-readiness review); **#1759**
-  took the fleet to **COMPLETE** (verify C1 re-run + Arm A Ultracode review — all arms sound); **#1767**
-  reconciled it into the **final synthesis (Arm Σ)** ([`analysis/rebuild-discovery/gate-v/GATE-V-SYNTHESIS.md`](analysis/rebuild-discovery/gate-v/GATE-V-SYNTHESIS.md)):
-  **Gate V COMPLETE → proceed to Phase-B per-step planning under Sequence C** (the frozen L3→L4/L5 games
-  edge is fabricated — games can defer; audited-write atomicity is a systemic contract-freeze not a live
-  defect; K7's urgency is borrowed). **Readiness note (updated 2026-07-07):** Q-0241 (#1776) retired both
-  owner gates as blockers (silence=consent; live-test-in-server), and Phase-2.5 has since RUN (#1775,
-  verdict FAIL as-tested — adopt-render fix + one re-run pair remain). *(The five raw Codex sub-report PRs remain OPEN as the
-  evidence layer — C1 #1758 + C2–C5 #1752/#1753/#1754/#1755 — their verified corrections are folded into
-  the #1756/#1759 docs; disposition below.)*
-- **#1743 · #1744 · #1745 · #1747 · #1748 (2026-07-05/06, S5/CI — CI-followups arc: watchdogs + AST guards + ruff, no `disbot/` runtime)** —
-  the completion of the CI-setup follow-ups handoff ([`planning/ci-followups-handoff-2026-07-05.md`](planning/ci-followups-handoff-2026-07-05.md)),
-  all tooling/CI (no runtime): **#1743** fixed the `check_ci_coverage` self-silencing watchdog + homed the
-  handoff; **#1744** added the **CodeQL stuck-scan watchdog** (`check_codeql_coverage.py`) + the shared
-  idempotent `scripts/lib/owner_alert.py` issue opener (A10, Q-0089) + granted `issues: write`; **#1745**
-  executed the **ruff migration (A3)** — ruff replaces black + isort, taking the python merge gate from
-  **5 tools → 3** and removing two-thirds of the formatter pin-drift surface (the #1074/#1315/#1556 drift
-  class); **#1747** added the **`check_audit_seam`** AST guard (per-function audit-seam reachability, the
-  #1728 save-fixes bug class as a CI signal; advisory); **#1748** completed the arc with the 2nd AST guard
-  **`check_deferred_recovery`** (deferred-mutation-without-persisted-deadline) + tail cleanup (dropped
-  dormant `check_doc_freshness`, wired the slug-unique advisory). All advisory/`continue-on-error` with
-  triaged allowlists + gate-bites meta-tests.
-- **#1746 · #1749 · #1760 (2026-07-06, docs — dashboard-data refreshes, Q-0167)** —
-  three per-source-merge **dashboard-data refreshes** keeping the committed `dashboard/data/dashboard.json`
-  export fresh as the CI-arc + Gate V + consolidation work landed.
-- **#1713 · #1716 · #1725 · #1735 (2026-07-04/05, S3 rebuild — Gate-0 grammar-freeze → Phase-B L0 build-order + Stage-2 subsystem walk)** —
-  the Phase-A/B bridge after the foundational-design session (#1708). The **Gate-0 grammar-freeze**
-  (#1713 prep brief → #1716 consolidation, docs/spec only — the fresh-repo `sb/` package does not
-  exist yet): the 14 shipped design specs folded into one authoritative **frozen L0 manifest-grammar**,
-  an **amendment registry** (`rebuild-amendments.yml`; its named enforcer `tools/check_amendments.py`
-  was NOT shipped — ledger drift caught 2026-07-06 (#1770), the canonical plan's §5 step 3 builds it;
-  G-9…G-24), closed pending
-  cross-spec wiring (`ActorRef.member_tier`/RC-12, spec-02 absorbing 04's authority contracts,
-  `WorkflowContext.test_mode`, the `ChannelEmitter` egress port), register resolution (19
-  RATIFY-DEFAULT rows frozen · 12 OWNER-ONLY + L-21 rendered into an owner-decision packet), the L-24
-  presentation riders, and the **16-step Phase-B L0 build-order** (S0–S15) — under
-  `analysis/rebuild-discovery/foundations/gate-0/`. The owner-led **Stage-2 subsystem walk** (#1725 —
-  `planning/rebuild-stage2-subsystem-walk-2026-07-05.md`, a 52-row index mapping all 58 live
-  `disbot/cogs/` extensions to 43 BUILD-PLAN + 9 ADD rows, an explicit owner disposition per
-  command/listener/task/panel, 4 reconciliation findings). Plus #1735 — next-session prep (bank the
-  save-fixes findings + assess substrate-kit priority).
-- **#1728 · #1730 (2026-07-05, S1 runtime — Stage-2 "save-fixes" 8 current-bot bug fixes + CodeQL log-injection hardening)** —
-  the **only runtime change** in the band: the Stage-2 walk's **Class-A backport** (#1728 — 8
-  owner-decided "fix now" bugs that harden the *current* production bot and lock accepted rebuild
-  contracts into executable form, deliberately refusing Class-C new-design items): AI-scalar → typed-policy
-  projection made transactional/non-silent · `bot_spam`→`bot-spam` dead-greeting typo · audit trail on
-  5 high-privilege admin mutations (cog load/unload/reload · restart · log-level) · `/moderation` now
-  honours the configured `moderator_role` · raid-lockdown slowmode + cleanup toggles routed through the
-  audited `ChannelLifecycleService` seam · 3 missing role guild-teardown tables cleaned on guild-leave ·
-  proof-channel unlock deadline persisted + boot reconcile sweep (restart-safe); plus zero-risk dead-code
-  deletions + §7.4 unit coverage. #1730 — CodeQL follow-up hardening the AI-projection drift log against
-  log injection.
-- **#1736 · #1737 · #1739 (2026-07-05, S5/CI — CI-setup redesign: brief → divergence analysis → Phase-A hard merge gates)** —
-  the CI-setup redesign arc (#1736 brief → #1737 best-possible-CI-for-current-bot + fresh-repo divergence
-  analysis, `planning/ci-setup-redesign-2026-07-05.md`, shipping `check_workflow_concurrency` advisory).
-  **#1739 Phase-A** promoted three should-gate-but-didn't invariants to **hard merge gates** by adding
-  them to the already-required `code-quality` context (reversible, no branch-protection change):
-  `check_architecture --mode strict` (layer boundaries — previously only a local Stop hook),
-  `check_tool_pins` (formatter-pin drift, reached `main` in #1315), `check_workflow_concurrency` (the
-  #1275 head-run-cancel race) + flipped `codeql.yml` to `cancel-in-progress: false`; each verified green
-  on `main` first. Remainder proposed as router Q-0238(C)/Q-0239.
-- **Older merges (#1740 … #535) → [`current-state-archive.md`](current-state-archive.md).** Recently-shipped keeps the ~20 newest; older entries are trimmed to the archive (newest-first), which `scripts/check_docs.py` soft-ratchets at 20 and `check_current_state_ledger.py` treats as present. *(Thematic grouping by date means the live/archive PR-number spans overlap slightly — the floor pointer is approximate prose, not a strict bound; the per-band pass records carry the exact moved sets.)* *(The twenty-first Q-0107 pass — band-#1320, 2026-06-22 — added the band #1294–#1320 work as seven grouped entries (fishing minigame #1296/#1298/#1299/#1301/#1303/#1304, role management #1300/#1302/#1306, help surface #1294/#1297, BTD6 answerability #1295/#1316, botsite React PR1 #1305, CI/ledger/tool-pin hygiene #1308/#1317/#1320, dependency bumps + dashboard #1307/#1309/#1311/#1312/#1313/#1314/#1315); trimmed the live ledger to 20, moving #1208-band · #1226-band · #1211-band · #1210 · #1203-band · #1209-band · #1183-band to the archive.)* *(The twentieth Q-0107 pass — band-#1290, 2026-06-22 — added the band #1265–#1291 work as six grouped entries; trimmed the live ledger to 20, moving #1186 · #1156-band · #1147-band · #1143-band · #1162-band · #1149-band to the archive.)*
+- **Older merges (#1767 … #535) → [`current-state-archive.md`](current-state-archive.md).** Recently-shipped keeps the ~20 newest; older entries are trimmed to the archive (newest-first), which `scripts/check_docs.py` soft-ratchets at 20 and `check_current_state_ledger.py` treats as present. *(Thematic grouping by date means the live/archive PR-number spans overlap slightly — the floor pointer is approximate prose, not a strict bound; the per-band pass records carry the exact moved sets.)* *(The twenty-first Q-0107 pass — band-#1320, 2026-06-22 — added the band #1294–#1320 work as seven grouped entries (fishing minigame #1296/#1298/#1299/#1301/#1303/#1304, role management #1300/#1302/#1306, help surface #1294/#1297, BTD6 answerability #1295/#1316, botsite React PR1 #1305, CI/ledger/tool-pin hygiene #1308/#1317/#1320, dependency bumps + dashboard #1307/#1309/#1311/#1312/#1313/#1314/#1315); trimmed the live ledger to 20, moving #1208-band · #1226-band · #1211-band · #1210 · #1203-band · #1209-band · #1183-band to the archive.)* *(The twentieth Q-0107 pass — band-#1290, 2026-06-22 — added the band #1265–#1291 work as six grouped entries; trimmed the live ledger to 20, moving #1186 · #1156-band · #1147-band · #1143-band · #1162-band · #1149-band to the archive.)*
 
 > Older than this: see `docs/planning/*` trackers and `docs/decisions/*` ADRs.
 

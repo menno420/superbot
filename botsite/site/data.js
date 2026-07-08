@@ -7726,7 +7726,7 @@ const CHANGELOG = [
   {
     "version": "2026.06.19",
     "date": "Jun 19, 2026",
-    "build": "ec482f0e",
+    "build": "e9988b3b",
     "title": "New public bot website",
     "changes": [
       {
@@ -7738,7 +7738,7 @@ const CHANGELOG = [
   {
     "version": "2026.06.12",
     "date": "Jun 12, 2026",
-    "build": "ec482f0e",
+    "build": "e9988b3b",
     "title": "Owner review inbox on the dashboard",
     "changes": [
       {
@@ -7750,7 +7750,7 @@ const CHANGELOG = [
   {
     "version": "2026.06.08",
     "date": "Jun 08, 2026",
-    "build": "ec482f0e",
+    "build": "e9988b3b",
     "title": "Command-alias suggestions",
     "changes": [
       {
@@ -9131,9 +9131,9 @@ const FEATURES = [
 ];
 
 const BUILD = {
-  "commit": "ec482f0e",
-  "subject": "docs: EAP auto-mode permission-boundary probe report (#1830)",
-  "committed_at": "2026-07-08T00:53:42Z"
+  "commit": "e9988b3b",
+  "subject": "Merge pull request #1861 from menno420/claude/projects-testing-anthropic-feedback-5xqamy",
+  "committed_at": "2026-07-08T16:20:05Z"
 };
 
 const COUNTS = {
