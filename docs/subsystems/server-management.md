@@ -224,6 +224,7 @@ reusable so a web companion is *possible* later, but do not start web work now.
 `docs/planning/server-management-implementation-plan-2026-06-05.md`,
 `docs/planning/server-management-pr14-hub-plan.md` (PR14 hub plan),
 `docs/planning/production-readiness/server-management-production-readiness-map-2026-06-12.md` (dated production-readiness audit),
+`docs/analysis/server-management-audit-2026-07-08.md` (dated contract-vs-code audit — 6 LOW findings, 0 RISKY),
 `docs/setup-platform/resource-provisioning-overview.md`, `docs/capability-authority.md`,
 `docs/server-logging.md`.
 
