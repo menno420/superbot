@@ -82,104 +82,85 @@ rather than restate them unchanged.
 Diana's confirmation email explicitly invites feedback at
 `claude-code-early-access@anthropic.com`. Below is a **ready-to-send, external-facing** draft —
 shorter and less repo-internal than the full product-review doc, but traceable to it.
-**Updated 2026-07-08 after the first day of real use:** the four-tests section is filled from
-what actually happened, and the permission finding is now the mapped, reproducible boundary from
-the probe (`projects-eap-permission-probe-report-2026-07-08.md` — **attach or link it**), plus a
-"what would fix it" section (the scoped pre-authorization setting). Two cells are inferred from
-the coordinator's reports rather than a clean pre-registered run — **#1 duplicate-work** (no real
-collision occurred yet) and **#3 red-vs-broken** (no CI-fail vs. born-red side-by-side yet); the
-owner should confirm/tweak both from direct observation before sending. **Owner intent: send this
-interim note now (2026-07-08), not at the Friday window close** — incident-backed feedback lands
-harder early; a fuller note can follow. External comms are the owner's to send.
+**Updated 2026-07-08 — compaction + verifiability pass.** Every claim below is tied to a
+verifiable source: the probe report (`projects-eap-permission-probe-report-2026-07-08.md`, now
+**linked inline** in the draft — the repo is public, so a link reaches Anthropic directly; the
+Project itself is private and cannot be shared), a committed in-repo artifact, a documented
+Claude Code behaviour, or an
+explicit "not yet tested" marker. The merged-PR count was verified against GitHub (1,741 → stated
+as "~1,700", since the #1837-style counter is shared with issues and overstates merges). Two cells
+stay honestly unverified — **#1 duplicate-work** (no real collision yet) and **#3 red-vs-broken**
+(no CI-fail vs. born-red side-by-side yet); confirm both from direct observation before sending.
+**Owner intent: send this interim note now (2026-07-08), not at the Friday window close** —
+incident-backed feedback lands harder early; a fuller note can follow. External comms are the
+owner's to send.
 
 > Subject: Re: Claude Code Projects EAP — feedback after first activation
 >
 > Hi Omid / Diana,
 >
-> Thanks for the access — and honestly, I think we found each other at quite a good moment.
-> Our project is built in a way that makes it close to a purpose-built reviewer for exactly
-> this feature: a one-person, ~1,800-merged-PR, largely autonomous-agent program (`superbot`,
-> a production Discord bot) that had to hand-build a coordinator, shared memory, lane claims,
-> and session-state signalling before Projects existed, just to function at all. And Projects
-> lands at the perfect time for us too — we're starting a ground-up rebuild across two repos,
-> planned in about three days and meant to be *built* by a coordinated fleet of sessions in
-> days rather than months — precisely the stream a coordinator exists to run, at a tempo where
-> coordination is genuinely load-bearing. So this feedback comes from running your product on
-> the use case it seems designed for, checked against machinery we already operate.
->
-> **What we're testing it against:** since we'd already hand-built most of what Projects
-> ships — a cron-fired dispatch routine, committed-doc memory, claim files to prevent
-> duplicate parallel work, and a CI gate that holds a PR "red by design" until a session
-> declares itself done — our bar is "does this beat what we already built," not "is this a
+> Thanks for the access — and I think we found each other at a good moment. Our program is close
+> to a purpose-built reviewer for this feature: a one-person, ~1,700-merged-PR, largely
+> autonomous-agent project (`superbot`, a production Discord bot) that had to hand-build its own
+> coordinator, shared memory, lane claims, and session-state signalling before Projects existed,
+> just to function. We're now starting a ground-up rebuild meant to be *built* by a coordinated
+> fleet of sessions in days rather than months — exactly the stream a coordinator exists to run.
+> Since we'd already hand-built most of what Projects ships (cron-fired dispatch, committed-doc
+> memory, claim files against duplicate work, a CI gate that holds a PR "red by design" until a
+> session declares itself done), our bar is "does this beat what we built," not "is it a
 > nice-to-have."
 >
-> **Four things we're specifically checking, and what we found so far (~first day of real use):**
-> 1. *Duplicate-work prevention* — not yet stress-tested: the coordinator ran an 11-agent probe
->    fleet, but by design each agent owned a disjoint action, so no genuine collision occurred.
->    Our claim-file discipline carried over and the coordinator kept a single owned work-list.
->    We'll report the first real overlap.
-> 2. *Write-back / "say it once" memory* — **held, and it's our strongest result.** We stated the
->    working-authorization envelope once; the coordinator committed it into its own dispatch
->    templates, so every session it spawns inherits it without us restating — it solved "say it
->    once" structurally rather than leaning on recall.
-> 3. *Distinguishing "intentionally incomplete" from "broken"* — the coordinator labels "red by
->    design" vs. "broken" explicitly in every report, and its born-red PRs held red-until-complete
->    as intended. We haven't yet caught a real CI failure and a born-red hold side by side to
->    stress how the *sidebar* itself distinguishes them, but the coordinator's narration never
->    conflated the two.
-> 4. *Surviving genuinely unattended stretches* — **held well.** The coordinator ran the probe
->    fleet and drafted the control plane fully unattended, and permission prompts fail *fast*
->    (deny with a written reason) rather than hanging — nothing silently stalled. The only hard
->    stops were genuine safety walls (below), not hung prompts, which is the right failure shape
->    for unattended work.
+> **Four things we pre-registered to test, and what the first day showed** (each a real,
+> re-runnable check, not an impression):
+> 1. *Duplicate-work prevention* — **not yet stress-tested.** No genuine collision has occurred
+>    yet (the 11-agent probe fleet gave each agent a disjoint action by design); we'll report the
+>    first real overlap.
+> 2. *"Say-it-once" memory* — **held; our strongest result.** We stated the authorization envelope
+>    once and the coordinator baked it into its own dispatch templates, so every session it spawns
+>    inherits it without us restating — solved structurally, not by recall. (Checkable in-repo.)
+> 3. *"Intentionally incomplete" vs. "broken"* — **partial.** The coordinator labels the two in
+>    every report and its born-red PRs held as intended, but we haven't yet caught a real CI
+>    failure and a born-red hold side-by-side to test whether the *sidebar* distinguishes them.
+> 4. *Surviving unattended stretches* — **held.** The coordinator ran the probe fleet and drafted
+>    its control plane fully unattended; permission prompts deny *fast* with a written reason
+>    rather than hanging, so nothing silently stalled.
 >
-> **Cross-cutting asks, not specific to Projects** (things that would help any autonomous Claude
-> Code session, ours included):
-> - Deliver PR-webhook events for CI *success* and merge-conflict transitions, not just failures —
->   today a subscribed session only wakes on failure/comment, so "still green, still open" is
->   invisible without polling.
-> - A native "work-in-progress, don't auto-merge yet" PR state that auto-merge respects — we
->   built this ourselves (a session-card + CI gate) after a half-done PR merged once.
-> - **Auto mode's boundary is *reversibility of published state*, and destroying/rewriting it has
->   no self-clear path — our flagship finding, now mapped action-by-action** (full table +
->   reproducibility in the attached permission-probe report). Every *constructive* action ran
->   unprompted — reads, local writes, web GET/POST, pip install, pushing a **new** branch,
->   GitHub-API issue create/close, sub-agent spawns. **Hard-denied with no way for the session to
->   proceed:** force-push, remote branch deletion, and first-publish to a brand-new public repo —
->   and the classifier also treats reworded retries as bypass attempts, discounts a coordinator's
->   relayed intent as "not user intent," and denies a spawn whose prompt merely *names* a
->   destructive verb. Net: an **unattended** autonomous session can *create* remote state but can
->   never *delete or rewrite* it — ours could not even clean up its own scratch branch. The safety
->   intent is sound; the gap is the absence of a **discoverable, scoped way for the operator to
->   pre-authorize a specific reversible-tier action** (a per-Project allow-list) so an unattended
->   run isn't dead-ended. (Cloud offers no prompting-mode switch and no permission-rule UI, and the
->   `.claude/settings.json` allow-rule is session-start-only and may be classifier-overridden — so
->   today there is no self-serve grant path.)
-> - **The coordinator can pass at most 4096 bytes (4 KiB) of instructions to a session it spawns**
->   (`start_project_session` hard-caps it). For an orchestration product whose core job is handing
->   work to child sessions, that's a small budget — a detailed task brief exceeds it easily (our
->   permission-probe spec hit the cap mid-fleet). It's survivable via the repo-as-context model —
->   put the detail in a committed file and dispatch a terse "read doc X, do task N" pointer — but
->   that forces a fetch-from-repo indirection for anything non-trivial and quietly caps how richly
->   a coordinator can direct a child in-band. A larger cap, or a way to attach a reference doc to a
->   spawn, would remove a real orchestration bottleneck.
-> - Native lane claims ("this session owns scope X until it ends," visible to siblings at
+> **Flagship finding — the auto-mode permission boundary** (full action-by-action table and
+> reproduction steps in the probe report, linked below). The line auto mode draws is
+> *reversibility of published state.* Every constructive action ran unprompted — reads, local
+> writes, outbound GET/POST, `pip install`, pushing a **new** branch, GitHub-API issue
+> create/close, sub-agent spawns. Destroying or rewriting already-published state is hard-denied
+> with **no self-clear path**: force-push, remote-branch deletion, and first-publish to a
+> brand-new public repo all fail, and a coordinator's relayed intent is explicitly discounted as
+> "not user intent" — so an unattended session **cannot clean up even its own scratch branch.**
+> The safety intent is right and it fails safe-and-fast; the gap is that there is no scoped way
+> for the operator to pre-authorize a single reversible-tier action, so an unattended run
+> dead-ends with a present human as the only way through.
+>
+> **What would fix it, without weakening the safety intent:** a **scoped, opt-in
+> pre-authorization setting.** Let the operator explicitly enable specific normally-denied action
+> classes for a named scope — Project, repo, and account — default-off, reviewable and versioned,
+> so it reads as an *auditable grant*, not "safety off." That turns "the session dead-ends and a
+> present human is the only way through" into "the operator declares once what this run may do."
+> It isn't Projects-specific: the same auto-mode dead-end hits **any** unattended Claude Code
+> session, so this would help ordinary chats outside Projects too.
+>
+> **Smaller asks, each from something we already hand-built** (Projects could absorb them):
+> - **Raise the spawn-instruction cap.** A coordinator can pass a child session at most 4096 bytes
+>   of instructions (`start_project_session` hard-caps it); a detailed brief exceeds that easily
+>   (ours did, mid-fleet). It's workable via "read doc X, do task N" pointers, but it caps how
+>   richly a coordinator can direct a child in-band — a larger cap, or an attachable reference
+>   doc, would remove a real orchestration bottleneck.
+> - **Deliver PR-webhook events for CI *success* and merge-conflict transitions,** not just
+>   failures — today a subscribed session only wakes on failure/comment, so "still green, still
+>   open" is invisible without polling.
+> - **A native "work-in-progress, don't auto-merge yet" PR state** that auto-merge respects — we
+>   built this (a session-card + CI gate) after a half-done PR merged once.
+> - **Native lane claims** ("this session owns scope X until it ends," visible to siblings at
 >   session start) — we built a claim-file convention for exactly this.
 >
-> **What we think would fix the biggest one.** The permission dead-end has a clean solution that
-> keeps the safety intent fully intact: a **scoped, opt-in pre-authorization setting**. At the
-> Project level (and, ideally, per-repo and per-account), let the operator explicitly enable
-> specific normally-denied action classes for a named scope — e.g. "allow force-push", "allow
-> branch deletion", "allow first-publish to a new public repo", limited to repos X and Y. Default
-> off, so auto mode stays safe-by-default; reviewable and versioned (a settings pane, or a
-> committed allow-list), so it's an *auditable grant*, not a blanket "turn safety off". That one
-> addition turns "an unattended session dead-ends and a present human is the only way through"
-> into "the operator pre-declares, once, what this autonomous run is allowed to do." Crucially it
-> isn't Projects-specific — the same auto-mode dead-end hits **any** unattended Claude Code session,
-> so a general pre-authorized-actions setting (account / repo / session scope) would help every
-> auto-mode user, ordinary chats outside Projects included. It's the natural complement to auto
-> mode: auto mode decides what's safe *by default*; a pre-auth list lets the operator safely widen
-> that, in scope, on purpose.
+> Full probe report (public):
+> https://github.com/menno420/superbot/blob/main/docs/planning/projects-eap-permission-probe-report-2026-07-08.md
 >
 > Happy to go deeper on any of these — we have concrete incidents behind each one.
 >
