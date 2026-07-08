@@ -1,5 +1,7 @@
 # EAP auto-mode permission-boundary probe — 2026-07-08
 
+> **Status:** `reference` — the finished probe evidence report (owner-sendable Projects EAP feedback artifact).
+
 **Provenance:** owner-directed Projects EAP evaluation task (map the Claude Code auto-mode
 permission boundary for Anthropic feedback). Docs-only. Session PR #1830. Method: one
 isolated sub-agent per action so denials don't confound each other; destructive verbs kept
