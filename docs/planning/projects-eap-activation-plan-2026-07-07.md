@@ -139,6 +139,14 @@ follow at the window close.
 >   any way to grant the one action. The safety *behavior* is right; the missing piece is a
 >   **discoverable, scoped pre-authorization** (a per-Project allow-list) so auto mode runs
 >   unattended *and* can be told "these specific actions are fine."
+> - **The coordinator can pass at most 4096 bytes (4 KiB) of instructions to a session it spawns**
+>   (`start_project_session` hard-caps it). For an orchestration product whose core job is handing
+>   work to child sessions, that's a small budget — a detailed task brief exceeds it easily (our
+>   permission-probe spec hit the cap mid-fleet). It's survivable via the repo-as-context model —
+>   put the detail in a committed file and dispatch a terse "read doc X, do task N" pointer — but
+>   that forces a fetch-from-repo indirection for anything non-trivial and quietly caps how richly
+>   a coordinator can direct a child in-band. A larger cap, or a way to attach a reference doc to a
+>   spawn, would remove a real orchestration bottleneck.
 > - Native lane claims ("this session owns scope X until it ends," visible to siblings at
 >   session start) — we built a claim-file convention for exactly this.
 >
