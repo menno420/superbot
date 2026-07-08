@@ -36,3 +36,20 @@ doc that actually carries the banner. Warn-first (Q-0105 header, disposable), pr
 "Enforce, don't exhort" (Q-0132/Q-0194) applied to the one docs-drift class that reconciliation
 passes keep re-finding by hand. The supersede convention is now load-bearing — the canonical plan
 is only "the single source of truth" while the losers visibly point at it.
+
+## Follow-ups (tracked 2026-07-08, grooming pass on PR #1846)
+
+Two future-conditional follow-ons from the implementing session, recorded here (the idea's
+lifecycle home) with explicit triggers so a later session can act on evidence, not memory:
+
+- **Promote to `--strict`.** *Trigger:* after **~5 sessions / reconciliation passes of clean
+  warn output** (the Q-0105 proving period — no false positives, and no Q-0120 false-green
+  where visible banner drift passed). Then: run `check_supersede_integrity.py --strict` in the
+  `check_docs --strict` session-close/CI path and drop the "unverified" header clause. If the
+  warn period instead shows noise, the header's own instruction applies — delete the checker.
+- **Extend scope to `.sessions/` and mid-doc banners.** *Trigger:* **if warn-period output (or
+  a reconciliation pass) shows real supersede drift in `.sessions/` cards or in mid-doc
+  section-level banners** — both intentionally out of scope today (see the checker header:
+  only header-block banners under `docs/` count). Don't extend speculatively: mid-doc
+  `SUPERSEDED` markers (e.g. `docs/btd6/`) are section-level by convention and a naive
+  extension would be all noise.
