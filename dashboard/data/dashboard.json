@@ -1,14 +1,14 @@
 {
   "meta": {
-    "generated_at": "2026-07-08T16:20:05Z",
+    "generated_at": "2026-07-08T16:35:43Z",
     "build": {
-      "commit": "e9988b3b",
-      "subject": "Merge pull request #1861 from menno420/claude/projects-testing-anthropic-feedback-5xqamy",
-      "committed_at": "2026-07-08T16:20:05Z"
+      "commit": "56d27f44",
+      "subject": "Merge pull request #1863 from menno420/claude/reconcile-band1860",
+      "committed_at": "2026-07-08T16:35:43Z"
     },
     "counts": {
       "functions": 43,
-      "ideas": 218,
+      "ideas": 219,
       "bugs": 31,
       "reviews": 0,
       "reviews_open": 0,
@@ -1194,6 +1194,14 @@
       "status": "ideas",
       "date": "2026-07-08",
       "summary": "Live-tree ground-truth tests (`test_check_plan_homing.py::test_live_repo_plans_are_all_homed`,",
+      "subsystems": null
+    },
+    {
+      "file": "reconcile-cross-lane-stale-runtime-pr-escalation-2026-07-08.md",
+      "title": "Idea — reconcile pass: escalate cross-lane-orphaned runtime PRs",
+      "status": "ideas",
+      "date": "2026-07-08",
+      "summary": "The 6 dependabot dep-bump PRs **#1761–#1766** have now been recorded \"**left in flight — runtime, not this",
       "subsystems": null
     },
     {
@@ -3212,6 +3220,14 @@
       "self_initiated": false
     },
     {
+      "file": "2026-07-08-reconcile-band1860.md",
+      "date": "2026-07-08",
+      "title": "2026-07-08 — Thirty-ninth Q-0107 reconciliation pass (band-#1860)",
+      "status": "complete",
+      "run_type": "routine",
+      "self_initiated": true
+    },
+    {
       "file": "2026-07-08-reconcile-band1830.md",
       "date": "2026-07-08",
       "title": "Session — thirty-eighth Q-0107 reconciliation pass (band-#1830)",
@@ -3647,14 +3663,6 @@
       "file": "2026-07-06-fable5-newrepo-start-brief.md",
       "date": "2026-07-06",
       "title": "2026-07-06 — Fable 5 Ultracode launch brief: finalize the new-repo-start method",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-07-06-fable-decision-authority-and-foundational-consolidation.md",
-      "date": "2026-07-06",
-      "title": "2026-07-06 — Fable decision authority (Q-0240) + foundational-consolidation brief revision",
       "status": "complete",
       "run_type": "",
       "self_initiated": false
