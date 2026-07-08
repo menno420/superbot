@@ -283,6 +283,19 @@ least-privilege scoping (DB perms, OpenAI spend cap, fine-grained PAT), not by r
 the owner is the authority on his own setup; don't escalate a security warning past what the
 evidence supports.
 
+## Addendum 15 (fifteenth PR — drop the secrets item from the feedback entirely)
+
+Owner's final call on the secrets thread: *"I don't think the feedback should mention that at
+all, it's unrelated and not a problem, we should focus on actual problems we encounter with the
+Project like the permission gap."* Correct editorial judgment — the sealed-secret item was a
+generic infra observation, not a problem the program actually hit, and padding the Anthropic
+feedback with a non-issue dilutes the real, incident-backed findings. **Removed the §4 sealed-
+secret bullet outright** (not just re-softened). The feedback draft now carries only lived
+problems: the auto-mode permission gap (headline), CI-webhook event gaps, the born-red PR hold,
+native lane claims. Net lesson across addenda 13→15: I escalated a security warning past the
+evidence, then over-corrected into a tangent bullet; the owner cut it. Feedback stays incident-
+backed only.
+
 ## Docs audit (Q-0104)
 
 `check_docs.py --strict` ✓ · `check_current_state_ledger.py --strict` ✓ (exit 0; #1802/#1804/
