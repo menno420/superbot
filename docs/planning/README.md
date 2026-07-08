@@ -1,6 +1,6 @@
 # docs/planning — the plan index (read this before reading any plan)
 
-> **Status:** `living-ledger` — the durable map of `docs/planning/`. **Last updated:** 2026-07-07.
+> **Status:** `living-ledger` — the durable map of `docs/planning/`. **Last updated:** 2026-07-08.
 > Source code + merged PRs win over this file; `docs/current-state.md` owns *what is live right now*;
 > [`docs/roadmap.md`](../roadmap.md) owns *cross-area sequencing*. **This page owns one thing: which
 > plan files are ACTIVE vs. HISTORICAL, and where each active plan is homed.**
@@ -86,6 +86,8 @@ sectors ([`repo-sector-map.md`](../repo-sector-map.md)); the live `Now/Next/Late
 | [web-tier-centralization-proposal](web-tier-centralization-proposal-2026-06-19.md) | web-CI matrix consolidation (`dashboard-ci` + `botsite-ci` → one matrix); **owner-greenlight gated** | tracked in [website-split-next-steps §2a](../operations/website-split-next-steps-2026-06-19.md) |
 | [botsite-react-spa-migration](botsite-react-spa-migration-plan-2026-06-20.md) | make the live bot-site **be** the `design-system/` React app so Claude Design edits land with **no porting** (2–3 PRs); **owner-decision gated** (build-in-CI vs Railway-build; cutover timing) | follow-up to PR #1196 · [website-explained](../owner/website-explained.md) · `design-system/README` |
 | [loop-health-gh-fallback](loop-health-gh-fallback-plan-2026-06-20.md) | 1 PR; **ungated, self-merge on green**; `urllib` REST fallback so `check_loop_health.py` verifies the ROUTINE_PAT row in-container (Q-0135) instead of SKIPping | `loop-health-gh-unavailable-fallback` |
+| [usage-limit-aware-routines](usage-limit-aware-routines-plan-2026-07-08.md) | 2 PRs, **ungated** — routines/orchestrations treat the account usage-limit error as a distinct failure class (`limit-deferred` token + `send_later` re-arm at the stated reset; limit-killed lanes never count as evidence) + a stdlib deferral counter feeding the Q-0248/Q-0249 spend dataset | [`usage-limit-aware-routines`](../ideas/usage-limit-aware-routines-2026-07-07.md) |
+| [per-repo-settings-state-ledger](per-repo-settings-state-ledger-2026-07-08.md) | owner-raised (2026-07-08, EAP-email thread) — a durable per-repo settings ledger (rulesets · merge gate · tokens · auto-mode capability facts) so sessions **read** repo state instead of guessing; Phase 1 (capture doc) shippable now, Phase 2 auto-generate, Phase 3 dev-site surface | [`forward-only-project-quality-experiment`](../ideas/forward-only-project-quality-experiment-2026-07-08.md) |
 | [voice-music-architecture-review](voice-music-architecture-review-2026-06-20.md) | the **Q-0041-required** voice/music decision pack (legal · infra · architecture fit · permissions · cost); **no playback code** — owner makes the go/no-go + legal-lane call to lift the gate | tracked under Q-0041 · `voice-mode-planning-capture` |
 
 ### Dashboard / control-API / website — the cross-cutting initiative
