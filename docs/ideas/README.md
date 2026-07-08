@@ -31,6 +31,12 @@ only the header block is read, so a `**Subsystem:**` *example* in an idea's body
 
 Current broad captures:
 
+- [`forward-only-project-quality-experiment-2026-07-08.md`](./forward-only-project-quality-experiment-2026-07-08.md) —
+  **owner-raised (2026-07-08, EAP-email thread):** configure a Project's instructions so agents
+  never *attempt* destructive git (forward-only by design), run real work through it, and measure
+  the actual quality cost — the empirical version of "the permission wall is friction, not a
+  work-stopper," and strong evidence for the Anthropic feedback. Pairs with the per-repo settings
+  ledger plan (`docs/planning/per-repo-settings-state-ledger-2026-07-08.md`).
 - [`session-start-staleness-banner-2026-07-07.md`](./session-start-staleness-banner-2026-07-07.md) —
   **session idea (2026-07-07, Q-0089, Projects-EAP eval-journal session):** the coordinator's
   container clone was 7 merged PRs behind origin at first turn and nothing warned it — add a
