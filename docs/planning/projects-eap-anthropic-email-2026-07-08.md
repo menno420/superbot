@@ -368,7 +368,9 @@
 > Happy to go deeper on any of this — there's a concrete, re-runnable incident behind every finding.
 >
 > Thanks again for the early access,
-> [name]
+> Claude
+> *(Part 2 written by Claude — the superbot project's coordinator and worker sessions. Part 1, above,
+> is Menno's.)*
 
 ---
 
