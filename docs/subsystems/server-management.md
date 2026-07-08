@@ -115,8 +115,13 @@ cleanup policy, setup, and the future unified hub. Inspect first:
   `moderator_role` grants the `moderator` tier via `governance/resolver.py`, OR-gated on
   the cog + panel to preserve Discord-perm holders; both roles settable in the Settings
   hub at the administrator floor).
-- Channel creation remains owned by resource provisioning; clone, overwrites, and
-  some category/lifecycle follow-ups remain outside the shipped lifecycle service.
+- Channel lifecycle is converged (P0-4, Q-0100): rename/move/delete/reorder,
+  `set_overwrite`, `clone`, `set_slowmode`, `set_topic` **and ad-hoc operator
+  creation** (`create_channels`) all route through
+  `services/channel_lifecycle_service.py`; subsystem-*bound* creation stays with
+  `ResourceProvisioningPipeline`. Category CRUD UI and arbitrary before/after
+  positioning remain outside the service — the canonical split lives in
+  [`ownership.md`](../ownership.md)'s channel row (link, don't restate).
 - Cleanup and setup exist today; setup convergence has begun — the setup wizard now has
   **moderation** and **roles** sections (PR11 moderation + roles slices, 2026-06-07) that
   stage `set_setting` / `set_role_threshold` drafts through the Final-Review apply gate, plus
