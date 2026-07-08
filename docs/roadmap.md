@@ -689,6 +689,17 @@ sector" (Q-0137); under-planned before — populated here.*
   activates once dispatch is **wired + calibrated**.
 - **Quick-win** — [backup-dump integrity check](ideas/backup-integrity-check-2026-06-13.md): a
   `CREATE TABLE`-count gate in `backup-db.yml` so a silent empty dump never uploads as a "backup".
+- **Next — usage-limit-aware routines**
+  ([plan](planning/usage-limit-aware-routines-plan-2026-07-08.md), structured 2026-07-08 from the
+  2026-07-07 idea): every routine prompt + orchestration treats the account usage-limit error as
+  its own failure class — `limit-deferred` + `send_later` re-arm at the stated reset, limit-killed
+  lanes never counted as evidence — plus a stdlib deferral counter for the Q-0248/Q-0249 spend
+  dataset. 2 PRs, ungated.
+- **Next — per-repo settings state ledger**
+  ([plan](planning/per-repo-settings-state-ledger-2026-07-08.md), owner-raised 2026-07-08): a
+  durable, ideally auto-generated per-repo settings ledger (rulesets · merge gate · token map ·
+  auto-mode capability facts) sessions read at orientation instead of guessing repo state. Phase 1
+  (capture doc) shippable now.
 - **Later** — `ROUTINE_PAT` expiry monitoring · a Neon read-only role for DB-level checks · Hermes
   Docker backend + SSH-key hardening · security/authority tracking as Hermes gains write scope
   (Q-0117/Q-0121) · **BUG-0011** Hermes gateway restart crash-loop ([bug book](health/bug-book.md)).
