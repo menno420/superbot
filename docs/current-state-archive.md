@@ -86,6 +86,73 @@
 
 ## Recently shipped — archived (newest first)
 
+- **#1750 · #1751 · #1756 · #1757 · #1759 · #1767 (2026-07-06, S3 rebuild — Gate V verification-fleet pass (Arms A–D + Codex + synthesis), Q-0234)** —
+  the multi-agent verification-fleet pass between Phase A and Phase B, over the frozen rebuild plan. **#1750**
+  documented the **verification-fleet launch pad** (corrected review prompts, multi-Codex arm, dedicated
+  live-testing arm); **#1751** ran **Arm D — the empirical live-testing evidence pack** ([`planning/LIVE-VERIFIED-EVIDENCE-PACK.md`](planning/LIVE-VERIFIED-EVIDENCE-PACK.md),
+  exercising every shared primitive incl. the PvP wager engine service-layer against the real test guild +
+  throwaway Postgres, never production); **#1756** documented the **verified Codex C2–C5 + Agent-Mode
+  evidence corrections**; **#1757** shipped **Arm A** (architecture & core-readiness review); **#1759**
+  took the fleet to **COMPLETE** (verify C1 re-run + Arm A Ultracode review — all arms sound); **#1767**
+  reconciled it into the **final synthesis (Arm Σ)** ([`analysis/rebuild-discovery/gate-v/GATE-V-SYNTHESIS.md`](analysis/rebuild-discovery/gate-v/GATE-V-SYNTHESIS.md)):
+  **Gate V COMPLETE → proceed to Phase-B per-step planning under Sequence C** (the frozen L3→L4/L5 games
+  edge is fabricated — games can defer; audited-write atomicity is a systemic contract-freeze not a live
+  defect; K7's urgency is borrowed). **Readiness note (updated 2026-07-07):** Q-0241 (#1776) retired both
+  owner gates as blockers (silence=consent; live-test-in-server), and Phase-2.5 has since RUN (#1775,
+  verdict FAIL as-tested — adopt-render fix + one re-run pair remain). *(The five raw Codex sub-report PRs remain OPEN as the
+  evidence layer — C1 #1758 + C2–C5 #1752/#1753/#1754/#1755 — their verified corrections are folded into
+  the #1756/#1759 docs; disposition below.)*
+- **#1743 · #1744 · #1745 · #1747 · #1748 (2026-07-05/06, S5/CI — CI-followups arc: watchdogs + AST guards + ruff, no `disbot/` runtime)** —
+  the completion of the CI-setup follow-ups handoff ([`planning/ci-followups-handoff-2026-07-05.md`](planning/ci-followups-handoff-2026-07-05.md)),
+  all tooling/CI (no runtime): **#1743** fixed the `check_ci_coverage` self-silencing watchdog + homed the
+  handoff; **#1744** added the **CodeQL stuck-scan watchdog** (`check_codeql_coverage.py`) + the shared
+  idempotent `scripts/lib/owner_alert.py` issue opener (A10, Q-0089) + granted `issues: write`; **#1745**
+  executed the **ruff migration (A3)** — ruff replaces black + isort, taking the python merge gate from
+  **5 tools → 3** and removing two-thirds of the formatter pin-drift surface (the #1074/#1315/#1556 drift
+  class); **#1747** added the **`check_audit_seam`** AST guard (per-function audit-seam reachability, the
+  #1728 save-fixes bug class as a CI signal; advisory); **#1748** completed the arc with the 2nd AST guard
+  **`check_deferred_recovery`** (deferred-mutation-without-persisted-deadline) + tail cleanup (dropped
+  dormant `check_doc_freshness`, wired the slug-unique advisory). All advisory/`continue-on-error` with
+  triaged allowlists + gate-bites meta-tests.
+- **#1746 · #1749 · #1760 (2026-07-06, docs — dashboard-data refreshes, Q-0167)** —
+  three per-source-merge **dashboard-data refreshes** keeping the committed `dashboard/data/dashboard.json`
+  export fresh as the CI-arc + Gate V + consolidation work landed.
+- **#1713 · #1716 · #1725 · #1735 (2026-07-04/05, S3 rebuild — Gate-0 grammar-freeze → Phase-B L0 build-order + Stage-2 subsystem walk)** —
+  the Phase-A/B bridge after the foundational-design session (#1708). The **Gate-0 grammar-freeze**
+  (#1713 prep brief → #1716 consolidation, docs/spec only — the fresh-repo `sb/` package does not
+  exist yet): the 14 shipped design specs folded into one authoritative **frozen L0 manifest-grammar**,
+  an **amendment registry** (`rebuild-amendments.yml`; its named enforcer `tools/check_amendments.py`
+  was NOT shipped — ledger drift caught 2026-07-06 (#1770), the canonical plan's §5 step 3 builds it;
+  G-9…G-24), closed pending
+  cross-spec wiring (`ActorRef.member_tier`/RC-12, spec-02 absorbing 04's authority contracts,
+  `WorkflowContext.test_mode`, the `ChannelEmitter` egress port), register resolution (19
+  RATIFY-DEFAULT rows frozen · 12 OWNER-ONLY + L-21 rendered into an owner-decision packet), the L-24
+  presentation riders, and the **16-step Phase-B L0 build-order** (S0–S15) — under
+  `analysis/rebuild-discovery/foundations/gate-0/`. The owner-led **Stage-2 subsystem walk** (#1725 —
+  `planning/rebuild-stage2-subsystem-walk-2026-07-05.md`, a 52-row index mapping all 58 live
+  `disbot/cogs/` extensions to 43 BUILD-PLAN + 9 ADD rows, an explicit owner disposition per
+  command/listener/task/panel, 4 reconciliation findings). Plus #1735 — next-session prep (bank the
+  save-fixes findings + assess substrate-kit priority).
+- **#1728 · #1730 (2026-07-05, S1 runtime — Stage-2 "save-fixes" 8 current-bot bug fixes + CodeQL log-injection hardening)** —
+  the **only runtime change** in the band: the Stage-2 walk's **Class-A backport** (#1728 — 8
+  owner-decided "fix now" bugs that harden the *current* production bot and lock accepted rebuild
+  contracts into executable form, deliberately refusing Class-C new-design items): AI-scalar → typed-policy
+  projection made transactional/non-silent · `bot_spam`→`bot-spam` dead-greeting typo · audit trail on
+  5 high-privilege admin mutations (cog load/unload/reload · restart · log-level) · `/moderation` now
+  honours the configured `moderator_role` · raid-lockdown slowmode + cleanup toggles routed through the
+  audited `ChannelLifecycleService` seam · 3 missing role guild-teardown tables cleaned on guild-leave ·
+  proof-channel unlock deadline persisted + boot reconcile sweep (restart-safe); plus zero-risk dead-code
+  deletions + §7.4 unit coverage. #1730 — CodeQL follow-up hardening the AI-projection drift log against
+  log injection.
+- **#1736 · #1737 · #1739 (2026-07-05, S5/CI — CI-setup redesign: brief → divergence analysis → Phase-A hard merge gates)** —
+  the CI-setup redesign arc (#1736 brief → #1737 best-possible-CI-for-current-bot + fresh-repo divergence
+  analysis, `planning/ci-setup-redesign-2026-07-05.md`, shipping `check_workflow_concurrency` advisory).
+  **#1739 Phase-A** promoted three should-gate-but-didn't invariants to **hard merge gates** by adding
+  them to the already-required `code-quality` context (reversible, no branch-protection change):
+  `check_architecture --mode strict` (layer boundaries — previously only a local Stop hook),
+  `check_tool_pins` (formatter-pin drift, reached `main` in #1315), `check_workflow_concurrency` (the
+  #1275 head-run-cancel race) + flipped `codeql.yml` to `cancel-in-progress: false`; each verified green
+  on `main` first. Remainder proposed as router Q-0238(C)/Q-0239.
 - **#1712 · #1719 (2026-07-04, workflow — 34th Q-0107 reconciliation pass + open-PR review/merge sweep)** —
   the **thirty-fourth Q-0107 docs-only reconciliation pass** (band-#1710,
   [pass record](planning/reconciliation-pass-2026-07-04-band1710.md), #1712) and the **open-PR review +

@@ -39,6 +39,12 @@ Current broad captures:
   ("tree drift, probably not your diff"), a `push:main` leg that opens a culprit issue (a
   push-main failure names its own culprit — no bisect), and running the stdlib live-tree docs
   guards on the docs-only fast path to close the introduction vector.
+- [`reconcile-cross-lane-stale-runtime-pr-escalation-2026-07-08.md`](./reconcile-cross-lane-stale-runtime-pr-escalation-2026-07-08.md) —
+  **reconcile-pass idea (2026-07-08, Q-0089, thirty-ninth Q-0107 pass, band-#1860):** the 6 dependabot
+  dep-bumps #1761–#1766 have been "left in flight — not my lane" by **four consecutive** reconciliation
+  passes; correct each time, but the aggregate is a cross-lane orphan (docs lane can't merge, execution
+  lane hasn't). Adds a cross-pass memory step that escalates a runtime PR deferred ≥3 passes into a loud
+  one-line owner/dispatch hand-off, so "not my lane" stops becoming "no lane forever."
 - [`claim-remote-visibility-scan-2026-07-08.md`](./claim-remote-visibility-scan-2026-07-08.md) —
   **session idea (2026-07-08, Q-0089, grooming wave-1 lane C, #1845):** claims only become visible
   to siblings via the open PR — `check_lane_overlap.py` reads the *local* claims dir, so a claim on
