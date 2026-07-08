@@ -25,9 +25,12 @@ end-to-end (docs/tooling only, no `disbot/` changes):
   on findings while the guard is unverified; the promotion note is in the test).
 - **Idea lifecycle:** idea file re-badged `historical` ✅ IMPLEMENTED; `docs/ideas/README.md`
   index annotated.
-- **Drift fix on sight (Q-0166):** homed `docs/planning/per-repo-settings-state-ledger-2026-07-08.md`
-  in the planning README index — it landed unindexed in #1843 and turned
-  `test_check_plan_homing::test_live_repo_plans_are_all_homed` red for every branch cut from main.
+- **Drift fix on sight (Q-0166):** `docs/planning/per-repo-settings-state-ledger-2026-07-08.md`
+  landed unindexed in #1843 and turned `test_check_plan_homing::test_live_repo_plans_are_all_homed`
+  red for every branch cut from main; this session homed it in the planning README. Mid-session,
+  the parallel #1848 session (settings-ledger Phase 1) homed it independently on main — on merge-in
+  this session yielded to that richer entry and removed its own now-duplicate row (net effect here:
+  the diagnosis + the interim unblock; the surviving index row is #1848's).
 
 Ground truth at ship time: the checker detects 6 header-banner docs + 5 disposition rows across
 `docs/`, zero findings (verified detection is real, not vacuous — Q-0120).
