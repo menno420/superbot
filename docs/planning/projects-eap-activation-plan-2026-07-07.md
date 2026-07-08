@@ -88,7 +88,10 @@ verifiable source: the probe report (`projects-eap-permission-probe-report-2026-
 Project itself is private and cannot be shared), a committed in-repo artifact, a documented
 Claude Code behaviour, or an
 explicit "not yet tested" marker. The merged-PR count was verified against GitHub (1,741 → stated
-as "~1,700", since the #1837-style counter is shared with issues and overstates merges). Two cells
+as "~1,700", since the #1837-style counter is shared with issues and overstates merges). The flagship now reflects the clear-path follow-up (PR #1839): the
+auto-mode classifier is operator-clearable in-session, but a second wall — the cloud environment's
+git credential — 403s destructive remote git ops regardless, so the email separates the two as
+independent walls. Two cells
 stay honestly unverified — **#1 duplicate-work** (no real collision yet) and **#3 red-vs-broken**
 (no CI-fail vs. born-red side-by-side yet); confirm both from direct observation before sending.
 **Owner intent: send this interim note now (2026-07-08), not at the Friday window close** —
@@ -125,25 +128,33 @@ owner's to send.
 >    its control plane fully unattended; permission prompts deny *fast* with a written reason
 >    rather than hanging, so nothing silently stalled.
 >
-> **Flagship finding — the auto-mode permission boundary** (full action-by-action table and
-> reproduction steps in the probe report, linked below). The line auto mode draws is
-> *reversibility of published state.* Every constructive action ran unprompted — reads, local
-> writes, outbound GET/POST, `pip install`, pushing a **new** branch, GitHub-API issue
-> create/close, sub-agent spawns. Destroying or rewriting already-published state is hard-denied
-> with **no self-clear path**: force-push, remote-branch deletion, and first-publish to a
-> brand-new public repo all fail, and a coordinator's relayed intent is explicitly discounted as
-> "not user intent" — so an unattended session **cannot clean up even its own scratch branch.**
-> The safety intent is right and it fails safe-and-fast; the gap is that there is no scoped way
-> for the operator to pre-authorize a single reversible-tier action, so an unattended run
-> dead-ends with a present human as the only way through.
+> **Flagship finding — the auto-mode permission boundary, in two layers** (full table + the
+> clear-path follow-up in the linked report). Auto mode's line is *reversibility of published
+> state*: every constructive action ran unprompted — reads, local writes, outbound GET/POST,
+> `pip install`, pushing a **new** branch, GitHub-API issue create/close, sub-agent spawns —
+> while destroying or rewriting published state (force-push, remote-branch deletion,
+> first-publish to a new public repo) is denied. We separated that denial into **two independent
+> walls.** (1) The **auto-mode classifier** discounts a coordinator's relayed intent as "not user
+> intent," so an *unattended* session can't self-clear — but a *present* operator's direct
+> in-session grant *does* clear it, at a surprisingly low bar (a generic "I give you explicit
+> permission," answering a request that named the operation and target, sufficed). (2) Even then,
+> the **cloud environment's git credential** rejects the destructive push server-side (`HTTP
+> 403`), and no in-session grant clears that — so a cloud session **cannot delete a published ref
+> at all**, operator present or not; our coordinator still cannot remove its own scratch branch
+> without a human who has full git rights. The safety intent is right and it fails safe-and-fast;
+> the friction is that an unattended run has no scoped way to pre-clear even a reversible-tier
+> action ahead of time.
 >
 > **What would fix it, without weakening the safety intent:** a **scoped, opt-in
 > pre-authorization setting.** Let the operator explicitly enable specific normally-denied action
 > classes for a named scope — Project, repo, and account — default-off, reviewable and versioned,
-> so it reads as an *auditable grant*, not "safety off." That turns "the session dead-ends and a
-> present human is the only way through" into "the operator declares once what this run may do."
-> It isn't Projects-specific: the same auto-mode dead-end hits **any** unattended Claude Code
-> session, so this would help ordinary chats outside Projects too.
+> so it reads as an *auditable grant*, not "safety off." That turns "an unattended run dead-ends"
+> into "the operator declares once what this run may do." **Both layers have to move together for
+> it to bite:** pre-auth clears the classifier ahead of time (layer 1), but the grant only
+> actually unblocks the operation if the session's git credential also carries the matching scope
+> (layer 2) — today it doesn't, so even a cleared classifier still 403s. And it isn't
+> Projects-specific: the same dead-end hits **any** unattended Claude Code session, so this would
+> help ordinary chats outside Projects too.
 >
 > **Smaller asks, each from something we already hand-built** (Projects could absorb them):
 > - **Raise the spawn-instruction cap.** A coordinator can pass a child session at most 4096 bytes
