@@ -134,3 +134,49 @@ product review's analysis — confirm, contradict, or deepen it with lived examp
   server (GitHub auto-merge) is not · expected: auto-merge that respects Projects' existing per-session
   working→ready→done sidebar state, collapsing the whole dance to one server-honored signal · weight:
   friction (a missing native primitive we hand-built around) · reproducible: yes
+- 2026-07-08 ~11:15Z · axis: use-case fit · observed: **claims blind window at simultaneous
+  multi-session start** — the three Wave-1 lanes launched together; at orientation lane C saw
+  zero sibling claims/branches/PRs because claims only travel via pushed branches and
+  `check_lane_overlap.py` reads only the local claims dir (`scripts/check_lane_overlap.py:47`);
+  the window closed only by re-scanning after its own claim push (anti-collision record in
+  `.sessions/2026-07-08-grooming-wave1-usage-limit.md`, PR #1845; idea filed:
+  `docs/ideas/claim-remote-visibility-scan-2026-07-08.md`) · expected: sibling-lane visibility
+  at spawn time — a coordinator-passed lane roster in the brief, or a remote `origin/claude/*`
+  claim scan · weight: friction · reproducible: yes (launch N sessions simultaneously; each
+  orients before any sibling's first push)
+- 2026-07-08 · axis: use-case fit · observed: (coordinator-reported) **GitHub MCP
+  `list_pull_requests` token blowout at ~6 open PRs** — one un-paginated list call over the
+  campaign's open-PR set returned full PR bodies + metadata and blew the coordinator's per-call
+  context budget mid-campaign, exactly when PR polling mattered most · expected:
+  orchestration-sized defaults (minimal_output, small perPage) or a slim list variant
+  · weight: friction · reproducible: yes (list a repo with several verbose-bodied open PRs)
+- 2026-07-08 · axis: reliability/completion · observed: **adjacent-lane CI-churn merge
+  latency** — every merge to main triggers pr-auto-update to merge main into all open PRs,
+  restarting each one's required Code Quality run; with 10+ merges landing 11:10–14:59Z the
+  queue serialized. Git-verified ready→merged latencies: #1850 ~22–30 min (main-merges at
+  12:05/12:14 restarted its CI), and a much longer tail — #1844 flipped complete 11:36 →
+  merged 13:46 (~2h10m), #1846 ~11:46 → 14:13 (~2h28m), #1854 12:29 → 14:33, #1855 12:46 →
+  14:59. The coordinator's in-flight estimate (~25 min) matched the typical case but
+  understated the tail ~5× · expected: a merge queue / batched auto-update instead of
+  restart-per-landing · weight: friction · reproducible: yes (any burst of parallel PRs)
+- 2026-07-08 · axis: use-case fit · observed: (worker-reported; consistent with the documented
+  credential-layer 403 in the clear-path entry above) **direct `api.github.com` calls from
+  worker bash hit the agent-proxy 403 wall**, so CI-status polling during the campaign had to
+  run MCP-only (`pull_request_read get_check_runs` etc.) — slower and token-priced vs. one curl
+  · expected: read-only GitHub API GETs allowed through the proxy, or a documented allowlist
+  · weight: friction · reproducible: yes
+- 2026-07-08 · axis: reliability/completion · observed: (coordinator-reported) **subagents are
+  not wakeable by their own background children** — a worker that spawned background children
+  did not resume when they completed; the coordinator had to send two explicit resume messages
+  to collect results that were already done · expected: child completion wakes the waiting
+  parent (the documented "you will be notified when it completes" contract) · weight: friction
+  · reproducible: unknown (two occurrences this campaign)
+- 2026-07-08 · axis: memory · observed: the campaign self-audit probe
+  (`docs/eap/campaign-self-audit-2026-07-08.md`, this entry's sibling PR) graded the
+  coordinator's from-context recollection of the whole 7-PR campaign against git: ≈0.98
+  precision / ~1.0 event-level recall — 52/53 checkable claims confirmed (down to a
+  double-underscored claim filename and a 12s CI run time), the single error (16 vs 15 unit
+  tests) inherited verbatim from the worker's own report, not confabulated · expected: n/a
+  (win worth recording; caveat — same-day, pre-compression context retention, NOT durable
+  Project memory; re-probe post-compression) · weight: helped · reproducible: yes (re-run the
+  probe after a compression event)
