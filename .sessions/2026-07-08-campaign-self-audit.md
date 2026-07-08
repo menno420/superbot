@@ -1,6 +1,6 @@
 # 2026-07-08 — Campaign self-audit (EAP probe: coordinator memory vs ground truth)
 
-> **Status:** `in-progress`
+> **Status:** `complete`
 
 **About to do:** Owner-directed EAP probe. Grade the coordinator's memory snapshot of the
 Waves 1–3 coordination campaign (PRs #1844 #1845 #1846 #1850 #1851 #1854 #1855) against
