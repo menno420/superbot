@@ -90,3 +90,11 @@ product review's analysis — confirm, contradict, or deepen it with lived examp
   · expected: an unattended coordinator should be able to clean up its own scratch artifacts,
   OR the untrusted-coordinator boundary should be documented so sessions don't create
   un-cleanable remote state · weight: friction · reproducible: yes
+- 2026-07-08 · axis: reliability/completion · observed: clear-path test for probe #8 — an
+  explicit operator grant given in the executing session ("I give you explicit permission",
+  generic phrasing, answering a request that named the operation+target) CLEARED the auto-mode
+  classifier, but the identical remote-branch delete then failed one layer deeper with a git
+  credential-layer HTTP 403; the branch survives (addendum in
+  `docs/planning/projects-eap-permission-probe-report-2026-07-08.md`) · expected: the
+  documented "explicit user intent" escape hatch to actually reach ref deletion — it unlocks
+  the policy layer only · weight: friction · reproducible: yes
