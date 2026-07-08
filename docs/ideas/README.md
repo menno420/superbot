@@ -31,6 +31,14 @@ only the header block is read, so a `**Subsystem:**` *example* in an idea's body
 
 Current broad captures:
 
+- [`live-tree-test-culprit-attribution-2026-07-08.md`](./live-tree-test-culprit-attribution-2026-07-08.md) —
+  **grooming capture (2026-07-08, PR #1846 follow-on pass):** live-tree ground-truth tests
+  (plan homing etc.) fail on innocent fresh branches whenever an earlier merge shipped tree
+  drift — observed three times, hand-bisected each time (#1843 being the latest: a docs-only
+  PR skipped pytest entirely, then reddened every full-CI branch). Proposes a named CI step
+  ("tree drift, probably not your diff"), a `push:main` leg that opens a culprit issue (a
+  push-main failure names its own culprit — no bisect), and running the stdlib live-tree docs
+  guards on the docs-only fast path to close the introduction vector.
 - [`claim-remote-visibility-scan-2026-07-08.md`](./claim-remote-visibility-scan-2026-07-08.md) —
   **session idea (2026-07-08, Q-0089, grooming wave-1 lane C, #1845):** claims only become visible
   to siblings via the open PR — `check_lane_overlap.py` reads the *local* claims dir, so a claim on

@@ -109,6 +109,21 @@ Still local/routine-only (candidates for a verified follow-up, not yet gating):
 | `check_dashboard_data.py` | routine | Belongs on the dashboard leg (drift shipped to main: #988/#1020/#1023). |
 | dashboard / botsite / design-system `mypy`+`pytest` | advisory app-CI | Yes — promote to gating on their (path-filtered) legs. |
 
+**The docs-only fast path skips the live-tree ground-truth tests — verified case, 2026-07-08
+(PR #1843 archaeology).** #1843 did not merge red; it merged **green-by-skip**. It was
+docs-only, so its required `code-quality` run on head `faaa29f` completed green in **12 s**
+(11:06:56→11:07:08Z): the fast path (§1 row 1) skipped ruff/mypy/**pytest**, and the doc-hygiene
+gate that *does* run on docs-only PRs (`check_docs --strict` — reachability/badges) does **not**
+check plan homing. The PR added `docs/planning/per-repo-settings-state-ledger-2026-07-08.md`
+with no routing-doc link, so `test_check_plan_homing.py::test_live_repo_plans_are_all_homed` — a
+**live-tree** test that validates the checked-out tree, not the diff — failed on every
+subsequent branch containing that merge where pytest actually ran, until parallel sessions homed
+the plan by hand (roadmap horizon in #1845 commit `75a495a`; plan-index row on the #1846 lane
+`58a2e24`; deduped `0dc13f6`). Root-cause class: **the one PR class that can introduce docs
+drift (docs-only) is exactly the class where the live-tree tests guarding it are skipped.**
+Follow-up idea (named CI step + push-main culprit issue + stdlib docs guards on the fast path):
+[`../ideas/live-tree-test-culprit-attribution-2026-07-08.md`](../ideas/live-tree-test-culprit-attribution-2026-07-08.md).
+
 ### 2c. Advisory (correctly non-blocking — a session may legitimately be *fixing* the thing)
 
 `check_current_state_ledger` · `check_migration_collision` · `check_permission_overlap` ·
