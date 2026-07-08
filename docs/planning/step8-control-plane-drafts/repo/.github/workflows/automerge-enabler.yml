@@ -1,0 +1,65 @@
+# Carries over from the current repo (design-spec §6 "Carries over"): GitHub-native
+# auto-merge armed on green at PR-open. This is the ONLY bespoke machinery beyond the
+# native enabler — everything else (the actual merge) is server-side GitHub auto-merge,
+# which cannot "forget" a deferred merge.
+#
+# Token posture: default GITHUB_TOKEN, scoped below. No PAT. Known limitation (accepted,
+# meta/token-posture.md §3): the merge lands attributed to github-actions, so the push to
+# main does not trigger other workflows — the required checks already ran on the PR, which
+# is the gate; the on-main `gates` runs (push-triggered when a human merges, scheduled
+# every 6h as the merge-race backstop, DECISIONS.md D-22) provide freshness.
+#
+# Carve-out: a PR labelled `do-not-automerge` is never armed (Q-0114 pattern carried over),
+# and — because a label applied AFTER arming must actually stop the merge — the `labeled`
+# event DISARMS an already-armed PR via `gh pr merge --disable-auto` (GITHUB_TOKEN with
+# pull-requests: write can call the disablePullRequestAutoMerge mutation). Removing the
+# label re-arms. Window caveat (accepted, meta/token-posture.md §3): between the label
+# click and the disarm job finishing, a green check set can still merge; the label is a
+# brake, not a transaction.
+# Fork PRs are skipped: GITHUB_TOKEN is read-only there and this repo's writers push
+# branches, not forks.
+name: automerge-enabler
+
+on:
+  pull_request:
+    types: [opened, ready_for_review, labeled, unlabeled]
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  enable:
+    if: >-
+      !github.event.pull_request.draft &&
+      github.event.pull_request.head.repo.full_name == github.repository &&
+      !contains(github.event.pull_request.labels.*.name, 'do-not-automerge') &&
+      (github.event.action == 'opened' ||
+       github.event.action == 'ready_for_review' ||
+       (github.event.action == 'unlabeled' && github.event.label.name == 'do-not-automerge'))
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - name: Arm native auto-merge (squash — linear history is ruleset-enforced)
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_URL: ${{ github.event.pull_request.html_url }}
+        run: gh pr merge --auto --squash "$PR_URL"
+
+  disable:
+    if: >-
+      github.event.action == 'labeled' &&
+      github.event.label.name == 'do-not-automerge' &&
+      github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - name: Disarm auto-merge (do-not-automerge applied after arming)
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_URL: ${{ github.event.pull_request.html_url }}
+        # Tolerate "not armed" (label applied before any arming) — anything else is loud.
+        run: |
+          gh pr merge --disable-auto "$PR_URL" || {
+            echo "::warning::disable-auto failed — auto-merge was likely not armed; verify on the PR"
+          }

@@ -1,0 +1,18 @@
+{
+  "_doc": [
+    "A-19: pinned baseline for the escape-hatch ratchet (check_escape_hatches, runs INSIDE the",
+    "manifest-validate gate; CODEOWNERS-protected via /gates/). Invariant: every compiled surface",
+    "unit is tier-1/2 or a tier-3 registration with a non-empty justification; domain/<x>/ui/",
+    "modules unreachable from a registered ref fail compile. This file pins per-subsystem tier-3",
+    "COUNTS + the repo total (counts, not share -- share is gameable by denominator stuffing).",
+    "Any rise fails CI unless the same PR updates this baseline WITH a ledger entry (what grew,",
+    "why, the rejected tier-2 alternative). Reductions auto-tighten one-way: when the measured",
+    "count drops below the baseline, CI fails until the baseline is lowered to match.",
+    "At CUT-3 this baseline stamps as the permanent year-two ceiling (canonical plan SS11b A-19)."
+  ],
+  "schema_version": 1,
+  "repo_total": 0,
+  "per_subsystem": {},
+  "stamped_as_ceiling": false,
+  "ledger": []
+}

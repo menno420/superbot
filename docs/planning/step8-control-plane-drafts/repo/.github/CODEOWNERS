@@ -1,0 +1,21 @@
+# CODEOWNERS — design-spec §6: "the surfaces where a wrong merge is expensive" map to
+# owner review. Under Q-0241 (never-wait) this file ROUTES review (auto review-request =
+# the owner's reaction surface) — the ruleset does NOT require code-owner approval, because
+# a single-owner repo whose PRs are opened by/for the owner cannot self-approve and a
+# blocking rule would brick auto-merge. Flip `require_code_owner_review` to true in
+# meta/ruleset.json if the owner vetoes this posture (DECISIONS.md D-3 ⚑).
+
+# Spec §6 verbatim set
+/sb/spec/                   @menno420
+/sb/namespace/              @menno420
+/sb/kernel/workflow/        @menno420
+/parity/                    @menno420
+/docs/compat-contract.md    @menno420
+
+# A-19: the escape-hatch ratchet baseline (plus the other gate-owned pinned baselines that
+# share its threat model: the A-2 schema-growth ledger and the architecture rules/budget).
+/gates/                     @menno420
+
+# The control plane itself — workflows, this file. A silent edit here is a silent gate
+# removal (DECISIONS.md D-4).
+/.github/                   @menno420

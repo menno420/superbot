@@ -1,0 +1,299 @@
+# parity/parity.yml — the acceptance-oracle dashboard (design-spec SS6 gate 5; A-16 depth schema)
+#
+# SEMANTICS (spec SS6, canonical plan SS11b A-16 -- binding):
+#   * status: pending | ported.
+#       pending -> the subsystem's goldens are expected-red; it is REPORTED by the
+#                  golden-parity gate, never failing. Every subsystem is born pending.
+#       ported  -> its goldens MUST replay green (hard failure on any regression).
+#   * ONE-WAY DOOR: ported -> pending is rejected by the gate (green is a one-way door).
+#   * Flipping pending -> ported is the port PR's deliberate LAST commit, and requires
+#     the A-16 depth floor (below).
+#
+# DEPTH SCHEMA (A-16 -- present from birth, enforced by check_parity_depth inside the
+# golden-parity gate; DB-free -- reads golden JSON + manifest.snapshot.json + this file):
+#   depth.declared.{events,tables,settings}: manifest-declared surface counts. null until
+#     the subsystem's manifest compiles (the manifest is the denominator-setter -- exact,
+#     never heuristic). MUST be non-null at the pending -> ported flip.
+#   depth.covered.{events,tables,settings}: surfaces exercised by >= 1 golden.
+#   depth.exempt: per-surface exemption rows: {surface: "<kind>:<id>", reason: "<class>: ..."}.
+#     Reason must start with an allowed reason class (below) -- never a bare "flaky".
+#   FLOOR AT THE FLIP: covered + exempt == declared for every kind (100%-or-exempt).
+#   COUNT-RATCHET AFTER THE FLIP: covered counts never decrease; newly declared surfaces
+#     arrive covered-or-exempt in the same PR.
+#
+# ALLOWED EXEMPT REASON CLASSES (draft set -- phase 2 aligns these with the old repo's
+# parity/goldens/_sweep_skips.json / COVERAGE.md reason classes; DECISIONS.md D-14):
+#   requires-live-discord | nondeterministic-external | deprecated-surface | owner-exempt
+#
+# GOLDENS never live in this repo: see parity/goldens-source.lock (pinned read-only
+# external oracle, menno420/superbot). Import of the harness itself = plan SS5 step 11.
+# This file doubles as the owner's live port-progress dashboard.
+schema_version: 1
+subsystems:
+  admin:
+    status: pending
+    depth:
+      declared: {events: null, tables: null, settings: null}
+      covered: {events: 0, tables: 0, settings: 0}
+      exempt: []
+  server_management:
+    status: pending
+    depth:
+      declared: {events: null, tables: null, settings: null}
+      covered: {events: 0, tables: 0, settings: 0}
+      exempt: []
+  moderation:
+    status: pending
+    depth:
+      declared: {events: null, tables: null, settings: null}
+      covered: {events: 0, tables: 0, settings: 0}
+      exempt: []
+  economy:
+    status: pending
+    depth:
+      declared: {events: null, tables: null, settings: null}
+      covered: {events: 0, tables: 0, settings: 0}
+      exempt: []
+  inventory:
+    status: pending
+    depth:
+      declared: {events: null, tables: null, settings: null}
+      covered: {events: 0, tables: 0, settings: 0}
+      exempt: []
+  treasury:
+    status: pending
+    depth:
+      declared: {events: null, tables: null, settings: null}
+      covered: {events: 0, tables: 0, settings: 0}
+      exempt: []
+  ticket:
+    status: pending
+    depth:
+      declared: {events: null, tables: null, settings: null}
+      covered: {events: 0, tables: 0, settings: 0}
+      exempt: []
+  mining:
+    status: pending
+    depth:
+      declared: {events: null, tables: null, settings: null}
+      covered: {events: 0, tables: 0, settings: 0}
+      exempt: []
+  fishing:
+    status: pending
+    depth:
+      declared: {events: null, tables: null, settings: null}
+      covered: {events: 0, tables: 0, settings: 0}
+      exempt: []
+  creature:
+    status: pending
+    depth:
+      declared: {events: null, tables: null, settings: null}
+      covered: {events: 0, tables: 0, settings: 0}
+      exempt: []
+  farm:
+    status: pending
+    depth:
+      declared: {events: null, tables: null, settings: null}
+      covered: {events: 0, tables: 0, settings: 0}
+      exempt: []
+  xp:
+    status: pending
+    depth:
+      declared: {events: null, tables: null, settings: null}
+      covered: {events: 0, tables: 0, settings: 0}
+      exempt: []
+  karma:
+    status: pending
+    depth:
+      declared: {events: null, tables: null, settings: null}
+      covered: {events: 0, tables: 0, settings: 0}
+      exempt: []
+  role:
+    status: pending
+    depth:
+      declared: {events: null, tables: null, settings: null}
+      covered: {events: 0, tables: 0, settings: 0}
+      exempt: []
+  channel:
+    status: pending
+    depth:
+      declared: {events: null, tables: null, settings: null}
+      covered: {events: 0, tables: 0, settings: 0}
+      exempt: []
+  cleanup:
+    status: pending
+    depth:
+      declared: {events: null, tables: null, settings: null}
+      covered: {events: 0, tables: 0, settings: 0}
+      exempt: []
+  automod:
+    status: pending
+    depth:
+      declared: {events: null, tables: null, settings: null}
+      covered: {events: 0, tables: 0, settings: 0}
+      exempt: []
+  image_moderation:
+    status: pending
+    depth:
+      declared: {events: null, tables: null, settings: null}
+      covered: {events: 0, tables: 0, settings: 0}
+      exempt: []
+  games:
+    status: pending
+    depth:
+      declared: {events: null, tables: null, settings: null}
+      covered: {events: 0, tables: 0, settings: 0}
+      exempt: []
+  community:
+    status: pending
+    depth:
+      declared: {events: null, tables: null, settings: null}
+      covered: {events: 0, tables: 0, settings: 0}
+      exempt: []
+  community_spotlight:
+    status: pending
+    depth:
+      declared: {events: null, tables: null, settings: null}
+      covered: {events: 0, tables: 0, settings: 0}
+      exempt: []
+  welcome:
+    status: pending
+    depth:
+      declared: {events: null, tables: null, settings: null}
+      covered: {events: 0, tables: 0, settings: 0}
+      exempt: []
+  counters:
+    status: pending
+    depth:
+      declared: {events: null, tables: null, settings: null}
+      covered: {events: 0, tables: 0, settings: 0}
+      exempt: []
+  security:
+    status: pending
+    depth:
+      declared: {events: null, tables: null, settings: null}
+      covered: {events: 0, tables: 0, settings: 0}
+      exempt: []
+  blackjack:
+    status: pending
+    depth:
+      declared: {events: null, tables: null, settings: null}
+      covered: {events: 0, tables: 0, settings: 0}
+      exempt: []
+  casino:
+    status: pending
+    depth:
+      declared: {events: null, tables: null, settings: null}
+      covered: {events: 0, tables: 0, settings: 0}
+      exempt: []
+  btd6:
+    status: pending
+    depth:
+      declared: {events: null, tables: null, settings: null}
+      covered: {events: 0, tables: 0, settings: 0}
+      exempt: []
+  project_moon:
+    status: pending
+    depth:
+      declared: {events: null, tables: null, settings: null}
+      covered: {events: 0, tables: 0, settings: 0}
+      exempt: []
+  deathmatch:
+    status: pending
+    depth:
+      declared: {events: null, tables: null, settings: null}
+      covered: {events: 0, tables: 0, settings: 0}
+      exempt: []
+  rps_tournament:
+    status: pending
+    depth:
+      declared: {events: null, tables: null, settings: null}
+      covered: {events: 0, tables: 0, settings: 0}
+      exempt: []
+  counting:
+    status: pending
+    depth:
+      declared: {events: null, tables: null, settings: null}
+      covered: {events: 0, tables: 0, settings: 0}
+      exempt: []
+  chain:
+    status: pending
+    depth:
+      declared: {events: null, tables: null, settings: null}
+      covered: {events: 0, tables: 0, settings: 0}
+      exempt: []
+  leaderboard:
+    status: pending
+    depth:
+      declared: {events: null, tables: null, settings: null}
+      covered: {events: 0, tables: 0, settings: 0}
+      exempt: []
+  proof_channel:
+    status: pending
+    depth:
+      declared: {events: null, tables: null, settings: null}
+      covered: {events: 0, tables: 0, settings: 0}
+      exempt: []
+  utility:
+    status: pending
+    depth:
+      declared: {events: null, tables: null, settings: null}
+      covered: {events: 0, tables: 0, settings: 0}
+      exempt: []
+  general:
+    status: pending
+    depth:
+      declared: {events: null, tables: null, settings: null}
+      covered: {events: 0, tables: 0, settings: 0}
+      exempt: []
+  four_twenty:
+    status: pending
+    depth:
+      declared: {events: null, tables: null, settings: null}
+      covered: {events: 0, tables: 0, settings: 0}
+      exempt: []
+  help:
+    status: pending
+    depth:
+      declared: {events: null, tables: null, settings: null}
+      covered: {events: 0, tables: 0, settings: 0}
+      exempt: []
+  diagnostic:
+    status: pending
+    depth:
+      declared: {events: null, tables: null, settings: null}
+      covered: {events: 0, tables: 0, settings: 0}
+      exempt: []
+  ux_lab:
+    status: pending
+    depth:
+      declared: {events: null, tables: null, settings: null}
+      covered: {events: 0, tables: 0, settings: 0}
+      exempt: []
+  ai:
+    status: pending
+    depth:
+      declared: {events: null, tables: null, settings: null}
+      covered: {events: 0, tables: 0, settings: 0}
+      exempt: []
+  settings:
+    status: pending
+    depth:
+      declared: {events: null, tables: null, settings: null}
+      covered: {events: 0, tables: 0, settings: 0}
+      exempt: []
+  logging:
+    status: pending
+    depth:
+      declared: {events: null, tables: null, settings: null}
+      covered: {events: 0, tables: 0, settings: 0}
+      exempt: []
+
+# A-16(3): kernel/governance-owned surfaces (~11 of 28 live event prefixes) get their own
+# K-band-golden coverage home so they never silently escape every band's floor.
+kernel_governance:
+  status: pending
+  depth:
+    declared: {events: null, tables: null, settings: null}
+    covered: {events: 0, tables: 0, settings: 0}
+    exempt: []

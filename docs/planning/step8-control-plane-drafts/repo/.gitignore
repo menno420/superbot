@@ -1,0 +1,8 @@
+# Local artifacts only — every committed gate input is explicit, never generated-in-place
+# without the drift check (run_manifest_validate) seeing it.
+.oracle/
+__pycache__/
+.pytest_cache/
+.venv/
+.mypy_cache/
+.ruff_cache/

@@ -1,0 +1,22 @@
+# A-2: the schema-growth ledger (Q-0219 second-consumer rule, mechanically enforced;
+# checked INSIDE the manifest-validate gate). Every field added to the manifest grammar's
+# declaration schema (sb/spec/ dataclasses) mints a same-PR entry here:
+#   field · the >= 2 consuming manifest paths · the rejected tier-3 alternative.
+# The checker diffs the compiled snapshot's schema-field inventory against this ledger --
+# no entry, or < 2 consumers, fails the build (enforce-don't-exhort, Q-0132).
+#
+# The Gate-0 FROZEN L0 grammar's field set is the starting inventory and is exempt by
+# construction: at S3 (first compile) the compiler emits the frozen set as
+# `frozen_baseline` entries here in the same PR -- growth is measured from the freeze,
+# not from zero. Born empty because no grammar is compiled yet (pre-kernel).
+schema_version: 1
+fields: []
+# entry shape:
+# - field: "SubsystemManifest.automation_eligibility"     # dataclass.field
+#   status: frozen_baseline | ledgered                    # frozen set vs post-freeze growth
+#   consumers:                                            # >= 2 required for `ledgered`
+#     - "sb/manifest/economy.py"
+#     - "sb/manifest/farm.py"
+#   rejected_tier3_alternative: "one-line: why a registered handler was worse"
+#   pr: 0
+#   date: "YYYY-MM-DD"

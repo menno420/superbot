@@ -1,0 +1,29 @@
+{
+  "_doc": [
+    "Pinned external oracle (design-spec SS6): the parity goldens + capture harness live in",
+    "menno420/superbot and STAY there -- outside this repo's write reach -- so neither bot can",
+    "silently rewrite its own acceptance oracle. This repo consumes them READ-ONLY at the exact",
+    "commit pinned below. Bumping `ref` is an explicit, reviewed PR to THIS file (parity/ is",
+    "CODEOWNERS-protected), and must point at a superbot commit whose golden change was itself",
+    "an explicit, reviewed superbot PR (see superbot parity/README.md, 'The integrity rule').",
+    "The golden-parity gate reads this lock from day 0; the actual fetch+replay arms at plan",
+    "SS5 step 11 when parity/run.py (the in-repo replay runner) lands. check_compat_frozen",
+    "cross-checks that sb/namespace/legacy_reservations.json declares the same extraction ref."
+  ],
+  "schema_version": 1,
+  "repo": "menno420/superbot",
+  "ref": "4c25a1fabe63bb790f91e04f9925632913fcd249",
+  "ref_date": "2026-07-07",
+  "visibility_at_pin": "public",
+  "fetch": {
+    "method": "git init + git fetch https://github.com/menno420/superbot.git <ref> --depth 1 + checkout into .oracle/ (ignored, never committed)",
+    "auth": "none required while superbot is public; if superbot flips private, switch to a GitHub App installation token (meta/token-posture.md SS4) -- never a PAT"
+  },
+  "paths": {
+    "goldens": "parity/goldens/",
+    "sweep_skips": "parity/goldens/_sweep_skips.json",
+    "harness": "parity/harness/",
+    "coverage": "parity/COVERAGE.md"
+  },
+  "compat_extraction_note": "sb/namespace/legacy_reservations.json (lands at S4) must carry extracted_from == this ref; run_check_compat_frozen.py enforces the match so the compat pins and the goldens always describe the same oracle snapshot."
+}

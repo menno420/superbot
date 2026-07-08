@@ -1,0 +1,61 @@
+# The layer table + budgets for the `architecture` gate — encoded verbatim from
+# design-spec §1.1 (import rules), §1.5 (complexity budget), §1.6 (lazy-import ban).
+# tools/check_architecture.py (lands with S1, "from commit 1" of sb/ code) reads THIS file;
+# the docs render the layer table FROM this file, so doc and checker cannot drift.
+# Errors, not warnings — the grandfathered-warnings pattern of the current repo starts at zero.
+schema_version: 1
+
+layers:
+  # package -> {may_import: [...], must_not_import: [...]}; "stdlib" and "discord",
+  # "asyncpg", "sdk" are environment tokens, sb-relative names are packages.
+  sb/spec:
+    may_import: [stdlib]
+    must_not_import: ["*"]            # dependency-free leaf
+  sb/namespace:
+    may_import: [stdlib]
+    must_not_import: ["*"]            # second leaf: validates compiled snapshots, pure data
+  sb/kernel/observability:
+    may_import: [stdlib, prometheus_client_lazy_with_fallback]
+    must_not_import: ["*"]            # cross-cutting leaf
+  sb/adapters/db:
+    may_import: [asyncpg, sb/spec, sb/kernel/observability]
+    must_not_import: ["*"]            # nothing else touches SQL
+  sb/kernel/*:                        # events lifecycle authority workflow settings interaction help diagnostics
+    may_import: [sb/spec, sb/namespace, sb/kernel/observability, adapter_ports_it_defines, discord]
+    must_not_import: [sb/domain, sb/manifest, adapters_internals]
+  sb/kernel/ai:
+    may_import: [sb/spec, sb/namespace, sb/kernel/observability, sb/kernel/events, sb/kernel/settings, db_port]
+    must_not_import: [sb/domain, sb/manifest, sb/kernel/interaction, adapters_internals]  # nothing above it, ever
+  sb/domain/*:
+    may_import: [sb/spec, sb/namespace, kernel_facades, declared_sibling_domains_only]
+    must_not_import: [sb/adapters, sb/manifest, undeclared_domains, discord]
+  sb/domain/*/ui:
+    may_import: [parent_domain_set, discord, kernel_interaction_renderer_contract]
+    must_not_import: [adapters_internals, sb/manifest, other_domains]
+  sb/manifest:
+    may_import: [sb/spec, sb/namespace, sb/domain]   # handler registration only
+    must_not_import: [sb/kernel, sb/adapters, discord]
+  sb/adapters:
+    may_import: [stdlib, discord, asyncpg, sdk, sb/spec, kernel_ports]
+    must_not_import: [sb/domain, sb/manifest]
+  sb/app:
+    may_import: ["*"]
+    must_not_import: []
+
+zero_tolerance:
+  - "kernel never imports domains"
+  - "kernel/ai never imports anything above itself"
+
+complexity_budget:                     # spec §1.5(2) — hard budget, required check
+  cognitive_per_function: 15
+  lines_per_function: 80
+  lines_per_module: 500
+  exceptions: []                       # starts EMPTY (nothing exists to grandfather);
+                                       # each entry: {symbol, measured, justification, ledger_link}
+                                       # two-way ratchet: check fails if a measured value improves
+                                       # past its entry without the entry tightening.
+
+lazy_import_ban:                       # spec §1.6 — function-body imports are a build failure
+  allowlist: []                        # shrink-only; each entry names the cycle it breaks with an
+                                       # inline justification the checker verifies; any entry at all
+                                       # is a standing CI warning nagging for a graph fix.

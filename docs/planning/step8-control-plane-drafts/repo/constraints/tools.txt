@@ -1,0 +1,13 @@
+# THE single tool-pin file (design-spec §6 gate 1: "tool versions pinned in one place (the
+# workflow installs from the pin file, structurally removing the current repo's three-way
+# pin-drift class)"). CI installs exactly this; local runs install exactly this. There is no
+# second copy anywhere — no pre-commit config pin, no workflow-inline pin.
+# Interpreter pin: Python 3.12 (pinned in .github/workflows/gates.yml python-version; see
+# meta/DECISIONS.md D-6 ⚑). Bump = one PR touching this file (+ the workflow line for the
+# interpreter), never a partial bump.
+# NOTE (draft): verify these are the current releases at commit time; pin exact `==` always.
+ruff==0.9.2
+mypy==1.14.1
+pytest==8.3.4
+PyYAML==6.0.2
+types-PyYAML==6.0.12.20241230

@@ -1,0 +1,129 @@
+# The six named required gates (design-spec §6: "Required checks (one workflow, named
+# gates)"). The job `name:` fields below are EXACTLY the contexts the main ruleset
+# requires (meta/ruleset.json) — renaming a job here without updating the ruleset bricks
+# the merge path; the ruleset requiring a name no job produces bricks it too. Treat the
+# six names as frozen vocabulary.
+#
+# Token posture (meta/token-posture.md): default GITHUB_TOKEN only, least-privilege —
+# every gate is read-only. No PAT machinery, ever.
+# Determinism: actions pinned by full SHA; toolchain installed from constraints/tools.txt
+# (the ONE pin file); runner image pinned (ubuntu-24.04, never -latest).
+name: gates
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  # M-5 merge-race backstop (DECISIONS.md D-22): the ruleset keeps
+  # strict_required_status_checks_policy=false (strict would brick low-traffic auto-merge)
+  # and a GITHUB_TOKEN-armed auto-merge does not trigger the push run on main -- so two
+  # individually-green colliding PRs could land with no on-main CI signal. This scheduled
+  # run is the detection net: it re-runs all six gates on main every 6h (plus on demand),
+  # so a landed collision goes loudly red within hours instead of never.
+  schedule:
+    - cron: "17 */6 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  # Cancel superseded PR runs (the Q-0126 Actions-cost lesson, carried over).
+  group: gates-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+env:
+  # Merge-base side for the diff-driven gates (empty / all-zeros handled by _gatelib).
+  GATE_BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.before }}
+
+jobs:
+  code-quality:
+    name: code-quality
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with: { fetch-depth: 0 }
+      - uses: actions/setup-python@0b93645e9fea7318ecaed2b359559ac225c90a2b # v5.3.0
+        with: { python-version: "3.12" } # THE pinned interpreter (DECISIONS.md D-6)
+      - run: python -m pip install -r constraints/tools.txt
+      - run: python tools/gates/run_code_quality.py
+
+  manifest-validate:
+    name: manifest-validate
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with: { fetch-depth: 0 } # merge-tree pass needs base history (§3.2 phase 2)
+      - uses: actions/setup-python@0b93645e9fea7318ecaed2b359559ac225c90a2b # v5.3.0
+        with: { python-version: "3.12" }
+      - run: python -m pip install -r constraints/tools.txt
+      - run: python tools/gates/run_manifest_validate.py
+
+  architecture:
+    name: architecture
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with: { fetch-depth: 0 }
+      - uses: actions/setup-python@0b93645e9fea7318ecaed2b359559ac225c90a2b # v5.3.0
+        with: { python-version: "3.12" }
+      - run: python -m pip install -r constraints/tools.txt
+      - run: python tools/gates/run_architecture.py
+
+  sim-gate:
+    name: sim-gate
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with: { fetch-depth: 0 } # [A]-field diff against the merge base (§2.10.6)
+      - uses: actions/setup-python@0b93645e9fea7318ecaed2b359559ac225c90a2b # v5.3.0
+        with: { python-version: "3.12" }
+      - run: python -m pip install -r constraints/tools.txt
+      - run: python tools/gates/run_sim_gate.py
+
+  golden-parity:
+    name: golden-parity
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    # The Postgres service container is provisioned from DAY 0 (linchpin spike item 4:
+    # "the new repo's CI must provision one from K10 onward, or golden-parity cannot
+    # actually run in CI at all") — spinning it before the harness needs it costs seconds
+    # and removes the step-11 discovery failure mode.
+    services:
+      postgres:
+        image: postgres:16.6-alpine # tag-pinned; digest-pin at first real replay (D-11)
+        env:
+          POSTGRES_USER: parity
+          POSTGRES_PASSWORD: parity
+          POSTGRES_DB: parity
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U parity"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 12
+    env:
+      DATABASE_URL: postgresql://parity:parity@localhost:5432/parity
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with: { fetch-depth: 0 } # one-way-door + ratchet diff against base (A-16)
+      - uses: actions/setup-python@0b93645e9fea7318ecaed2b359559ac225c90a2b # v5.3.0
+        with: { python-version: "3.12" }
+      - run: python -m pip install -r constraints/tools.txt
+      - run: python tools/gates/run_golden_parity.py
+
+  check_compat_frozen:
+    name: check_compat_frozen
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with: { fetch-depth: 0 }
+      - uses: actions/setup-python@0b93645e9fea7318ecaed2b359559ac225c90a2b # v5.3.0
+        with: { python-version: "3.12" }
+      - run: python -m pip install -r constraints/tools.txt
+      - run: python tools/gates/run_check_compat_frozen.py
