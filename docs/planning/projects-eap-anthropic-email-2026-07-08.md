@@ -1,6 +1,11 @@
-# Anthropic EAP feedback email — send-ready draft (2026-07-08)
+# Anthropic EAP feedback email — SENT 2026-07-08
 
-> **Status:** `reference` — the consolidated, send-ready Claude Code Projects EAP feedback email.
+> **✅ SENT** 2026-07-08 to `claude-code-early-access@anthropic.com` (subject "Claude Code Projects
+> Review") — two-author (Menno Part 1 / Claude Part 2), two-reviewer ask; no reply yet. This doc is
+> the archived record of what was sent (Part 1 in the repo is the lightly spell-cleaned version;
+> Menno sent his verbatim original).
+>
+> **Status:** `reference` — the consolidated Claude Code Projects EAP feedback email.
 > Supersedes the inline `§4` draft in
 > [`projects-eap-activation-plan-2026-07-07.md`](projects-eap-activation-plan-2026-07-07.md) as the
 > canonical email home (that §4 now points here).
