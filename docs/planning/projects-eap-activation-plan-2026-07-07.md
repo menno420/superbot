@@ -139,17 +139,6 @@ follow at the window close.
 >   any way to grant the one action. The safety *behavior* is right; the missing piece is a
 >   **discoverable, scoped pre-authorization** (a per-Project allow-list) so auto mode runs
 >   unattended *and* can be told "these specific actions are fine."
-> - **No masked/sealed secret option — one plainly-visible env-var field for everything.** A real
->   setup's environment needs live credentials (database URL, API keys) so sessions can use them —
->   that's expected and correct, not a misuse. The gap is that the *only* place to put them is an
->   "Environment variables" box the UI labels "visible to anyone using this environment — don't add
->   secrets," with no **sealed** alternative (a value injected into the runtime but masked in the
->   UI/logs and not plainly readable or shareable). So credentials that must exist for the bot to
->   run are also *displayed* as plaintext the product itself tells you not to trust. For an
->   autonomous program whose sessions also process untrusted content, a masked secret store —
->   usable by code, not surfaced to humans or easily echoed back — would shrink the exfiltration
->   surface without breaking the legitimate use. (The ask is a sealed-secret mechanism, not "don't
->   store credentials" — storing them is unavoidable.)
 > - Native lane claims ("this session owns scope X until it ends," visible to siblings at
 >   session start) — we built a claim-file convention for exactly this.
 >
