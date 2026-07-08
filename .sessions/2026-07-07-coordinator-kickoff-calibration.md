@@ -312,6 +312,27 @@ own docs-only PR (`docs/planning/projects-eap-permission-probe-report-2026-07-08
 journal pointer + email-ready summary). Only owner-parked item remaining: the step-7 publish
 session (auto-mode first-publish wall).
 
+## Addendum 17 (seventeenth PR — probe complete; reconcile §4/§8 with the authoritative report)
+
+The permission-boundary probe finished and shipped its authoritative report (coordinator's PR
+#1830, `docs/planning/projects-eap-permission-probe-report-2026-07-08.md`). Boundary rule: cloud
+auto mode allows all **constructive** actions unprompted (reads, writes, web GET/POST, pip
+install, **new**-branch push, API issue create/close, sub-agent spawns) and **hard-denies
+destroying/rewriting published state** with no self-clear path (force-push, remote branch delete,
+first-publish to a new public repo). Reworded retries = bypass; coordinator context discounted;
+spawn-naming-a-destructive-verb denied. **My last-turn "attendance-gated" inference was WRONG** —
+the Allow/Deny prompt I saw was the *spawn* surfacing (spawns are allowed), not the delete
+clearing; the report supersedes it. Reconciled the two consumer docs with the report as the single
+source of truth: rewrote the activation-plan §4 email bullet (accurate boundary + two no-go
+classes + points at the report) and the kickoff §8 consent-wall bullet (retired the three
+superseded corrections, pointed at the report). Owner action flagged by the coordinator: the
+scratch branch `test/permprobe-0708` is un-deletable by any agent (the finding itself) — delete
+in the UI or, better, say "delete branch test/permprobe-0708" in the probe session to fill the
+open cell (does explicit *user* naming clear a destroy?) + clean up. Noted that this doubles as a
+step-7 feasibility signal (both are no-go classes). Did NOT run the Q-0124 recon (routine's job;
+#1833 already ran it). Meta-lesson (3rd correction of this bullet): stop hand-summarizing a moving
+target — point at the instrument's report and let it be canonical.
+
 ## Docs audit (Q-0104)
 
 `check_docs.py --strict` ✓ · `check_current_state_ledger.py --strict` ✓ (exit 0; #1802/#1804/
