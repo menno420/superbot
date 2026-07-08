@@ -98,3 +98,12 @@ product review's analysis — confirm, contradict, or deepen it with lived examp
   `docs/planning/projects-eap-permission-probe-report-2026-07-08.md`) · expected: the
   documented "explicit user intent" escape hatch to actually reach ref deletion — it unlocks
   the policy layer only · weight: friction · reproducible: yes
+- 2026-07-08 · axis: use-case fit · observed: the standing-grant permission-probe row (re-run
+  probe tests #7/#8 with a standing owner authorization in the Project's custom instructions,
+  no sub-agent layer) landed in a coordinator session with NO Bash tool — its only execution
+  path is spawned workers, exactly the layer the protocol excludes — so the row was NOT
+  ATTEMPTED: zero attempts, zero classifier interactions (neither ALLOW nor DENY; addendum in
+  `docs/planning/projects-eap-permission-probe-report-2026-07-08.md`, PR #1842); the dispatch
+  layer had no visibility into the target session's toolset · expected: spawn-time capability
+  introspection (or a session-type toolset manifest) so protocols premised on direct shell
+  access route to a session type that has one · weight: friction · reproducible: yes
