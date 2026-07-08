@@ -2,6 +2,10 @@
 
 > **Status:** `ideas` — session idea (2026-07-07, Q-0089, kit-lab founding-plan session PR #1804).
 > **Subsystem:** agent workflow / routine fleet (S5) · kit-lab loop (the founding plan §6).
+> **PROMOTED → plan (2026-07-08, grooming wave-1 lane C, PR #1845):**
+> [`../planning/usage-limit-aware-routines-plan-2026-07-08.md`](../planning/usage-limit-aware-routines-plan-2026-07-08.md)
+> — 2-PR structure (conventions PR · counter PR), ungated. This capture stays for provenance;
+> the plan is the buildable spec.
 
 ## The observed failure
 
