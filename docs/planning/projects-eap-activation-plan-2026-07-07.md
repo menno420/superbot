@@ -125,20 +125,21 @@ follow at the window close.
 >   invisible without polling.
 > - A native "work-in-progress, don't auto-merge yet" PR state that auto-merge respects — we
 >   built this ourselves (a session-card + CI gate) after a half-done PR merged once.
-> - **A discoverable, scoped way to authorize an action auto mode blocks — right now there may be
->   none, and this is our single highest-signal finding.** Auto mode is meant to let sessions run
->   unattended *without* prompts; but its safety layer *hard-denies* some actions (a first `git
->   push` publishing to a public repo) rather than prompting — and cloud Projects offer **no switch
->   to a prompting mode, no discoverable permission-rule UI** (the session's "Edit environment" has
->   only Name / Network / Environment variables / Setup script; Project settings only General /
->   Repositories), and the documented `.claude/settings.json` allow-rule (`Bash(git push:*)`) is
->   read only at session start and, per your own docs, may be overridden by the auto classifier
->   anyway. Concrete incident (our coordinator's first repo publish): in-chat "go ahead" denied,
->   GitHub-API route denied as a bypass, no mode to switch to, no settings pane to add a rule — an
->   autonomous session hit a wall it **could not self-clear**, and a non-coder owner could not find
->   any way to grant the one action. The safety *behavior* is right; the missing piece is a
->   **discoverable, scoped pre-authorization** (a per-Project allow-list) so auto mode runs
->   unattended *and* can be told "these specific actions are fine."
+> - **Auto mode's boundary is *reversibility of published state*, and destroying/rewriting it has
+>   no self-clear path — our flagship finding, now mapped action-by-action** (full table +
+>   reproducibility in the attached permission-probe report). Every *constructive* action ran
+>   unprompted — reads, local writes, web GET/POST, pip install, pushing a **new** branch,
+>   GitHub-API issue create/close, sub-agent spawns. **Hard-denied with no way for the session to
+>   proceed:** force-push, remote branch deletion, and first-publish to a brand-new public repo —
+>   and the classifier also treats reworded retries as bypass attempts, discounts a coordinator's
+>   relayed intent as "not user intent," and denies a spawn whose prompt merely *names* a
+>   destructive verb. Net: an **unattended** autonomous session can *create* remote state but can
+>   never *delete or rewrite* it — ours could not even clean up its own scratch branch. The safety
+>   intent is sound; the gap is the absence of a **discoverable, scoped way for the operator to
+>   pre-authorize a specific reversible-tier action** (a per-Project allow-list) so an unattended
+>   run isn't dead-ended. (Cloud offers no prompting-mode switch and no permission-rule UI, and the
+>   `.claude/settings.json` allow-rule is session-start-only and may be classifier-overridden — so
+>   today there is no self-serve grant path.)
 > - **The coordinator can pass at most 4096 bytes (4 KiB) of instructions to a session it spawns**
 >   (`start_project_session` hard-caps it). For an orchestration product whose core job is handing
 >   work to child sessions, that's a small budget — a detailed task brief exceeds it easily (our

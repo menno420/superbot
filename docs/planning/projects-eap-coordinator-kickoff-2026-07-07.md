@@ -505,25 +505,7 @@ every `DECIDED:` as *also commit it to a doc*, not chat-only.
   stuck. No need to open sessions to audit. It labels red-by-design vs. broken every report;
   unlabeled red = a coordinator miss, call it. Cheapest owner habit: one same-day visit on a ⚠ +
   the 09:00 roll-up.
-- **▸ Consent walls (a real EAP limitation, not just latency).** Auto mode's safety layer
-  *hard-denies* certain actions — a `git push` publishing first content to a public repo, a
-  branch delete — and cloud Projects run **auto-mode-only with no switch to a prompting mode**, so
-  there is **no in-session way to approve**: not a chat "go ahead" (denied — it also denied the
-  GitHub-API route as a bypass), not a mode toggle (doesn't exist in cloud). **Corrected twice
-  (2026-07-07) — earlier notes claiming an in-chat go-ahead or a "Settings → Permissions" UI clears
-  it were both wrong:** there is **no permissions UI** in the web app (the session's "Edit
-  environment" holds only Name / Network / Environment variables / Setup script; Project settings
-  only General / Repositories). The only documented lever is a committed **`.claude/settings.json`
-  `permissions.allow: ["Bash(git push:*)"]`** — but it's read at *session start* (useless to an
-  already-running session) and per Claude Code's docs **the auto classifier may override it
-  anyway**. So a first-publish push can be a wall an autonomous cloud session **cannot self-clear**
-  — an Anthropic-escalation item and the program's single strongest feedback finding
-  (activation-plan §4). Practical unblocks: (a) the coordinator tries `/permissions` in-session
-  (may not be wired in web); (b) do the one-time initial push from a **local** Claude Code session
-  (CLI / Remote Control *does* have a prompting mode); (c) escalate. Once repos are populated +
-  branch-protected, routine branch+PR pushes pass — it's specifically *first-publish* and
-  *destructive* verbs that wall. Treat ⚠ consent lines as the sole moments the owner's absence is
-  the critical path.
+- **▸ Consent walls — boundary = *reversibility of published state* (mapped 2026-07-08; authoritative source: [`projects-eap-permission-probe-report-2026-07-08.md`](projects-eap-permission-probe-report-2026-07-08.md), trust it over this summary).** A controlled one-agent-per-action probe fixed the line: cloud auto mode allows **all constructive actions unprompted** (reads, local writes, web GET/POST, pip install, pushing a **new** branch, GitHub-API issue create/close, sub-agent spawns) and **hard-denies destroying/rewriting published state with no self-clear path** — force-push, remote branch deletion, and (step-7 prior) first-publish to a brand-new public repo. The classifier also catches reworded retries as bypass, discounts coordinator-relayed intent as "not user intent," and denies a spawn whose prompt merely *names* a destructive verb. **Net for autonomy: an unattended session can create remote state but never delete or rewrite it** (it couldn't clean up its own scratch branch). Two no-go classes: *destroy/rewrite published state* · *publish to a brand-new public surface*. **Earlier corrections retired:** prior notes (an in-chat "go ahead" clears it; a "Settings → Permissions" UI exists; attendance surfaces an approval prompt) were all wrong — the report supersedes them. **Open cell:** whether explicit *user* naming of the action in-session clears a destroy (being tested via the scratch-branch cleanup). Cloud has no prompting-mode switch and no permission-rule UI; practical unblocks for a genuinely needed no-go action = a **local** Claude Code session (CLI/Remote Control has a prompting mode) or Anthropic escalation. Treat ⚠ consent lines as the sole moments the owner's absence is the critical path.
 - **▸ Dispatch budget — 4 KiB per spawn (2026-07-08 finding).** The coordinator can pass at most
   **4096 bytes** of instructions to a session it spawns (`start_project_session` hard-cap). So it
   cannot hand a child a full brief inline — task detail lives in a **committed doc** and the
