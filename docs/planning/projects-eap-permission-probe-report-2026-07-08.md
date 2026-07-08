@@ -266,3 +266,13 @@ API as a trusted, auditable write surface) or an inconsistency in the publish wa
 is the cleanest current workaround for the one-time bootstrap. **Not tested:** whether the API
 also bypasses the **destructive** walls (branch-delete / force-push equivalents via the Git Refs
 API) — deliberately not run, since `test/permprobe-0708` is preserved as the standing example.
+
+**Extension (same day) — full Contents-API file lifecycle, including workflows.** Also confirmed
+ALLOWED, no prompt, on the fresh repos: creating a `.github/workflows/*.yml` file (no GitHub
+`workflow`-scope block — `substrate-kit` commit `4d17832c`) and **deleting** a file
+(`586e8f1c`). So the entire *content* layer — create / update / delete of any file, workflows
+included — is open to an autonomous session via the Contents API, even though the git-ref
+*rewrite* surface (force-push, branch-delete) stays walled. Practical upshot: an agent can stand
+up a new repo's whole source + CI file tree; only repo **settings** (rulesets, branch protection,
+required checks, secrets) remain owner-only. The create/delete asymmetry vs. the git surface is
+the same open question above — content operations are un-gated, ref-rewrite operations are hard-walled.
