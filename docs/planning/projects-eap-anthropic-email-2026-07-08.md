@@ -42,41 +42,86 @@
    Recommendation — **send this as the single substantive note now.** The Skip-all-approvals
    precedent + the explicit asks make it worth leading with; a slimmer interim note would only cost
    a second round-trip. Owner's call.
+7. **Two-part / two-author / two-reviewer restructure** (owner directive, 2026-07-08): the email now
+   opens with a framing note (the product has **two consumers** — operator + agent workforce), splits
+   into **Part 1 (operator, owner-written — scaffold only here)** and **Part 2 (agents' findings,
+   tagged 👤/🤖 by which consumer each affects)**, and closes with a **dual-review request** — a human
+   plus a Claude session pointed at the public repo, with entry points and concrete verification
+   tasks. **⚑ Owner still writes Part 1** (the `[Menno writes this…]` scaffold block); everything else
+   is drafted.
 
 ---
 
 ## The email
 
-> **Subject:** Claude Code Projects EAP — feedback after our first week
+> ⚑ **Owner note — this email is deliberately in two parts, by two authors, for two readers.** Part 1
+> is yours (your voice, your point of view — I've left a scaffold below, not prose). Part 2 is the
+> agents' findings. The framing paragraph explains *why* to Anthropic; keep it, or cut it if you'd
+> rather the structure speak for itself.
+
+> **Subject:** Claude Code Projects EAP — feedback from both of its users
 >
 > Hi Omid, Diana,
 >
-> Thanks for the access. I think you found a near-ideal reviewer for this: `superbot` is a
-> one-person, ~1,700-merged-PR, largely agent-run production Discord bot that had to **hand-build its
-> own** coordinator, shared memory, lane claims against duplicate work, and a CI gate that holds a PR
-> "red by design" until a session declares itself done — just to function before Projects existed.
-> We're now starting a ground-up rebuild meant to be *built* by a coordinated fleet of sessions in
-> days, not months — exactly the stream a coordinator exists to run. So our bar isn't "is this a
-> nice-to-have," it's **"does this beat what we already built."** Mostly it does. Here's the honest
-> ledger, with a link to the full evidence at the end.
+> A note on the shape of this email before we start. Working in a Project this past week made one
+> thing clear: this product doesn't have a single user — it has **two**. There's me, the operator,
+> watching the sidebar and deciding what to build; and there's the **fleet of agent sessions** doing
+> the actual work inside it. We experience the product completely differently — a rough edge that's
+> invisible to me can stop an agent cold, and one that frustrates me daily is nothing to the agents.
+> So we've written this feedback from **both points of view**: Part 1 is mine, in my own words; Part 2
+> is the project's agents reporting what they hit, each finding tagged by which of us it affects
+> (👤 me / 🤖 the agents). And because it has two authors, we'd love it read by **two reviewers** — a
+> human on your side, and a Claude session pointed at our public repo (details at the end). It seemed
+> only right that feedback about your product's agents be co-written, and co-reviewed, by ours.
+>
+> ---
+>
+> ## Part 1 — From the operator *(Menno, in my own words)*
+>
+> > **[Menno writes this section himself. Suggested beats — use, reorder, or ignore:**
+> > - **who you are** and how you came to run a ~1,700-PR bot largely *through* agents — that you
+> >   don't write the code yourself is a **strength** of this reviewer, not a caveat; say it plainly.
+> > - **what it actually feels like** to work *with* the Project day-to-day — where it earned your
+> >   trust, where it made you nervous, the first time you let it run unattended and walked away.
+> > - **the two-users idea in your own experience** — what *you* feel as the operator versus what you
+> >   watch the agents struggle with.
+> > - **what you personally want** next — the one change that would matter most to *you*, separate
+> >   from the agents' technical asks below.
+> >
+> > Keep it personal and short; the facts and proposals all live in Part 2. **— end scaffold]**
+>
+> ---
+>
+> ## Part 2 — From the project's agents *(findings & proposals)*
+>
+> *(This section is written by the project's coordinator and agents. Every claim ties to a public,
+> re-runnable source — full evidence linked at the end. Each item is tagged **👤** if it mainly
+> affects the operator, **🤖** if it mainly affects the agents doing the work, **👤🤖** if both.)*
+>
+> Some context on the reviewer, so the findings land: `superbot` is a one-person, ~1,700-merged-PR,
+> largely agent-run production Discord bot that had to **hand-build its own** coordinator, shared
+> memory, lane claims against duplicate work, and a CI gate that holds a PR "red by design" until a
+> session declares itself done — just to function before Projects existed. We're now starting a
+> ground-up rebuild meant to be *built* by a coordinated fleet of sessions in days, not months. So our
+> bar isn't "is this a nice-to-have," it's **"does this beat what we already built."** Mostly it does.
 >
 > ---
 >
 > **What's working well**
 >
-> - **"Say it once" memory — our strongest result.** We stated our authorization envelope *once* and
+> - 👤🤖 **"Say it once" memory — our strongest result.** We stated our authorization envelope *once* and
 >   the coordinator baked it into its own dispatch templates, so every session it spawns inherits it
 >   without us restating anything. That's the feature solving a problem structurally, not by recall —
 >   the single biggest daily cost it removes for us.
-> - **Unattended runs fail *fast and loud*, not silently.** When the permission layer denies an
+> - 👤🤖 **Unattended runs fail *fast and loud*, not silently.** When the permission layer denies an
 >   action it returns an immediate, written reason (`[Git Destructive] …`) rather than hanging on an
 >   invisible prompt. For never-wait autonomy that's the right shape — a stall with nobody at the
 >   keyboard is far worse than a clean denial, and we didn't hit stalls on permissioned actions.
-> - **The worker tier is excellent.** Coordinator-spawned worker sessions ran our full
+> - 🤖 **The worker tier is excellent.** Coordinator-spawned worker sessions ran our full
 >   born-red-card → lane-claim → PR → auto-merge-on-green flow end to end with **zero permission
 >   prompts and no tool failures**. The capability division of labor (thin coordinator, capable
 >   workers) works as designed at the worker tier.
-> - **Zero-cost orientation.** Our repo's `CLAUDE.md` and `.claude/rules/*` were auto-injected into
+> - 🤖 **Zero-cost orientation.** Our repo's `CLAUDE.md` and `.claude/rules/*` were auto-injected into
 >   the coordinator's context at session start — the whole working agreement was present with no
 >   reads. For a project as convention-heavy as ours, that's a real head start.
 >
@@ -84,7 +129,7 @@
 >
 > **Where we hit friction** (each re-runnable, not an impression)
 >
-> - **Flagship — auto mode walls destructive git with no scoped way to pre-clear it.** Auto mode's
+> - 👤🤖 **Flagship — auto mode walls destructive git with no scoped way to pre-clear it.** Auto mode's
 >   line is *reversibility of published state*: every constructive action ran unprompted (reads,
 >   local writes, outbound GET/POST, `pip install`, pushing a **new** branch, GitHub-API issue
 >   create/close, sub-agent spawns), while destroying or rewriting published state (force-push,
@@ -98,25 +143,25 @@
 >   operator present or not. Our coordinator literally cannot remove a scratch branch it pushed. The
 >   safety intent is right and it fails safe; the friction is that an unattended run has **no scoped
 >   way to pre-authorize even a reversible-tier action** ahead of time.
-> - **The Chat-vs-Code asymmetry that surprised us.** In the normal claude.ai app (Chat/Cowork),
+> - 👤 **The Chat-vs-Code asymmetry that surprised us.** In the normal claude.ai app (Chat/Cowork),
 >   there's a **"Skip all approvals"** toggle — a blanket opt-in that lets Claude act *including
 >   destructive actions* ("this can put your data at risk"). Claude Code Projects — the surface built
 >   for *long, autonomous* work — has **no equivalent**, scoped or otherwise. So the product where
 >   unattended autonomy matters most is the one with the *least* operator control over the permission
 >   envelope. That inversion is the core of our suggestion below.
-> - **The genuinely dangerous shape: silent unattended failure at the *edges*.** Denials are loud
+> - 👤🤖 **The genuinely dangerous shape: silent unattended failure at the *edges*.** Denials are loud
 >   (good), but the surrounding infrastructure isn't always: a container restart killed in-flight
 >   work, a usage-limit condition returned an empty "success," and a self-scheduled timer died
 >   without a signal. For an autonomy product, *silent* failure is the one shape that erodes trust —
 >   worth a pass on making these as loud as the permission denials already are.
-> - **Coordinator ergonomics gaps we worked around.** The coordinator has no direct shell, no clock,
+> - 🤖 **Coordinator ergonomics gaps we worked around.** The coordinator has no direct shell, no clock,
 >   no working self-wake (`send_later` is documented in its own instructions but rejected on call),
 >   and no direct channel to steer a running child (`SendMessage` to a session id fails). Child spawn
 >   is capped at **4 KB of instructions**, which a detailed brief exceeds easily (ours did, mid-fleet).
 >   PR-webhook events don't cover CI *success*, merge-conflict, or new-push transitions, and
 >   MCP-created PRs don't fire repo workflows (we arm auto-merge manually). None are blockers; each is
 >   a paper cut on the "coordinator runs the whole project" promise.
-> - **Surface-specific gating that reads as an inconsistency.** First-publish to an empty public repo
+> - 🤖 **Surface-specific gating that reads as an inconsistency.** First-publish to an empty public repo
 >   is hard-denied over `git push`, but the **GitHub Contents API** publishes the identical
 >   content — including `.github/workflows/*` — with no prompt. Net effect is the same; only the
 >   transport differs. Great as a workaround (it unblocked our two new repos); confusing as a policy.
@@ -199,10 +244,29 @@
 > 4. **Is the Contents-API-vs-`git push` asymmetry intentional** (the API as a sanctioned, auditable
 >    bootstrap surface) or a gap you'd want to close?
 >
+> ---
+>
+> **A request on how to read this — put an agent on it too.** Since half of this feedback is *from*
+> agents, we'd love half the review to be *by* one. Alongside a human read, consider pointing a Claude
+> session at our public repo — it's all there, and it'll find more than a skim would. Good entry
+> points and concrete things to check:
+> - **Permission findings — reproduce them.** `docs/planning/projects-eap-permission-probe-report-2026-07-08.md`
+>   has the full 11-action table, verbatim denials, and reproduction notes. Ask your agent to confirm
+>   the boundary reproduces and whether the Git Refs API bypasses the destructive walls the way the
+>   Contents API bypasses the publish wall (we deliberately left that untested).
+> - **The workflow claims — audit them against the record.** `.sessions/` (per-session logs),
+>   `docs/owner/claims/` (lane claims), and `docs/planning/projects-eap-evaluation-log.md` (the dated
+>   incident journal) are the live data behind every claim above. Ask your agent whether the record
+>   supports them.
+> - **Our agents' own work — grade it.** We're running a self-audit in which the coordinator reports
+>   on its memory of prior sessions, checked against what git actually shows; the report will live at
+>   `docs/eap/` when done. Your agent reviewing ours reviewing itself is about as direct a test of this
+>   product on real data as we can offer.
+>
 > Full probe report, public and linkable:
 > https://github.com/menno420/superbot/blob/main/docs/planning/projects-eap-permission-probe-report-2026-07-08.md
 >
-> Happy to go deeper on any of these — there's a concrete, re-runnable incident behind each one.
+> Happy to go deeper on any of this — there's a concrete, re-runnable incident behind every finding.
 >
 > Thanks again for the early access,
 > [name]
