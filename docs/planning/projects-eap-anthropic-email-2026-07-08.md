@@ -33,7 +33,12 @@
 4. **⚑ Flag for the owner — the "Projects can't replace direct management" critique** is included as
    one measured paragraph (marked below). It's fair and evidence-backed, but it's the sharpest thing
    in the note. **Owner call: keep, soften, or cut before sending.**
-5. **Send-timing recommendation (flag):** the prior plan was "interim note now, fuller note later."
+5. **Merge-lifecycle worked example added** (owner insight, 2026-07-08): our born-red gate + early
+   auto-merge is a workaround-on-a-workaround (arm early so agents don't forget the trailing merge;
+   red-gate so early-arming doesn't merge a half-done PR). Root cause: *actions stored in agent
+   context are forgettable; actions handed to the server aren't.* Clean fix: wire Projects' existing
+   per-session working→ready→done sidebar state to auto-merge. Folded into the smaller-asks section.
+6. **Send-timing recommendation (flag):** the prior plan was "interim note now, fuller note later."
    Recommendation — **send this as the single substantive note now.** The Skip-all-approvals
    precedent + the explicit asks make it worth leading with; a slimmer interim note would only cost
    a second round-trip. Owner's call.
@@ -159,12 +164,25 @@
 > **Smaller asks, each from something we already hand-built** (so we know they're worth having):
 > - **Raise the 4 KB spawn-instruction cap**, or allow an attachable reference doc.
 > - **Deliver PR-webhook events for CI success and merge-conflict transitions**, not just failures.
-> - **A native "work-in-progress, don't-auto-merge-yet" PR state** that auto-merge respects (we built
->   a session-card + CI gate for exactly this after a half-done PR merged once).
 > - **Native lane claims** — "this session owns scope X until it ends," visible to siblings at start
 >   (we built a claim-file convention for it).
 > - **Spawn-time capability introspection** — a coordinator should see a target session's toolset
 >   *before* dispatching, so a task needing a shell doesn't land in a shell-less session.
+>
+> **One worked example of the "we hand-built a workaround" pattern — merge lifecycle.** This one is
+> worth spelling out because the workaround is visibly fixing a problem it created, which is usually a
+> sign the platform should absorb it. To get autonomous sessions to reliably land their own PRs, we
+> arrange for auto-merge to be **armed early** in the session (because an agent reliably does setup
+> steps that are on the critical path to its work) rather than at the end (a trailing step agents
+> reliably *forget* — the merge intention lives only in the session's context, which ends). But arming
+> early risks merging a *half-finished* PR, so we added a CI gate that holds every PR "red by design"
+> until the session flips a status marker as its last act — a workaround on top of a workaround. The
+> underlying insight is simple and general: **an action stored only in an agent's context is
+> forgettable; an action handed to the server is not.** Arming early works precisely because GitHub's
+> auto-merge is server-side and survives the session ending. The clean fix is one you're most of the
+> way to: Projects already tracks a per-session **working → ready-for-review → done** state in the
+> sidebar. If **auto-merge respected that state**, the entire early-arm + red-gate + end-flip dance
+> collapses to a single server-honored signal the sidebar already needs — no workaround required.
 >
 > ---
 >
