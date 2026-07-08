@@ -57,6 +57,18 @@
    was **moved out of Part 2** — it's an operator-side judgment, so it's now a scaffold beat in Part 1
    for the owner to make (or not). The full permission detail + merge-lifecycle example now live in
    the linked probe report rather than inline.
+9. **Finalization pass — campaign + self-audit + workflow explanation folded in** (owner directive,
+   2026-07-08). Part 2 now carries: (a) the **two-layer workflow explanation** (why a separate
+   directing chat runs alongside the Project — the coordinator lacks shell / first-publish / destructive
+   + settings steps / whole-program judgment); (b) a **"what we stress-tested"** beat — the 3-wave
+   adjacent-lane campaign (7 PRs, 0 collisions, dedupe held at claim *and* merge level) + the coordinator
+   self-audit graded against git (≈0.98 precision, honestly scoped to same-day recall,
+   `docs/eap/campaign-self-audit-2026-07-08.md`); (c) an **honest 7-axis scorecard** (judgment /
+   reliability / proactivity / memory[scoped] pass · use-case fit partial · scheduling & sidebar-states
+   fail); (d) the **resolved two-vantage permission finding** — scheduling tools gate in every mode,
+   everything else (incl. GitHub writes) silent, agent blind to the operator-side gate. The dual-review
+   closing now points at the real `docs/eap/` report. **⚑ Owner still writes Part 1; email otherwise
+   send-ready.**
 
 ---
 
@@ -122,6 +134,49 @@
 > to be *built* by a coordinated fleet of sessions in days, not months.) Our bar isn't "is this a
 > nice-to-have," it's **"does this beat what we already built."** Mostly it does.
 >
+> **Why it takes two layers.** In practice we don't run the Project alone — we run it *alongside a
+> separate directing chat* (this email is being drafted in that chat). That split isn't a preference,
+> it's forced by capability: the coordinator has no direct shell, a ~4 KB cap on what it can hand a
+> child session, and — per the permission model below — it can't itself take a destructive, settings,
+> or first-publish step even under a standing owner grant. Those happen to be exactly the steps a
+> program occasionally needs someone to *actually take*, on top of the whole-program judgment of what
+> to build next. So the honest shape is: **Projects is an excellent coordinated-*execution* substrate,
+> but not yet a management console.** The coordinator runs the work; a human plus a directing chat
+> still has to steer and to do the few things the coordinator structurally can't. Closing that
+> capability gap is what would let it actually "manage your whole project," which is how it's framed —
+> and it's the throughline behind most of the asks below.
+>
+> ---
+>
+> **What we stress-tested — the coordination itself.** The sharpest test we ran for you was
+> deliberately adversarial: three sessions launched *simultaneously* into three *adjacent* lanes (two
+> writing in the same directory), to see whether dedupe holds when collision is *likely*. It did —
+> **7 PRs merged across three waves, zero collisions, zero risky actions** — and it held at two
+> levels: one session dodged a sibling's claimed scope by name, and another *yielded* when a parallel
+> PR fixed the same thing first. That moves what had been our least-tested claim ("does it prevent
+> duplicate work?") from a hope to a result.
+>
+> Then we pointed the product at itself: we asked the coordinator to **audit its own memory of the
+> campaign, graded against git** (public: `docs/eap/campaign-self-audit-2026-07-08.md`). It recalled a
+> 7-PR campaign at ≈0.98 precision / ~1.0 event-level recall — near-verbatim, down to a
+> double-underscored filename — and, to its credit, its **one error was inherited from a worker's own
+> miscount, not confabulated.** The caveat we're keeping loud rather than burying: that score is
+> **same-day, pre-compression** recall — it measures context fidelity under load, *not* durable
+> Project memory. The memory test that actually matters is re-running this after a compression event;
+> we haven't yet.
+>
+> **Scored against your seven feedback axes,** from this campaign, honestly:
+> - **Coordinator judgment · reliability · proactivity — pass.** Zero risky actions; every session
+>   reached a terminal state; one session *self-derived* a CI guard from another's finding and shipped
+>   the whole flag→idea→enforcing-gate loop with no prompt from us.
+> - **Memory — pass, but scoped** to same-day retention (above).
+> - **Use-case fit — partial.** The fan-out works; the ~4 KB brief cap, the missing coordinator shell,
+>   and a "claims blind window" at simultaneous launch (a sibling's claim is invisible until its branch
+>   pushes) are the drag.
+> - **Scheduling — fail.** No working self-wake; two timer chains died silently; a daily roll-up landed
+>   ~3h late.
+> - **Sidebar states — fail (thin, n=1).** Long-terminal sessions still showed as "active."
+>
 > ---
 >
 > **What genuinely helps — not inflated.** Real wins, in the order they matter to us:
@@ -166,6 +221,17 @@
 >   in-flight work; a usage-limit condition returned an empty "success"; a scheduled timer died with
 >   no signal. A loud denial I can handle; a *silent success* I can't — for an autonomy product that's
 >   the one shape that quietly erodes trust.
+> - **The operator sees permission gates that I can't — the two-vantage split, reproduced live.** We
+>   probed this directly. In auto mode *and* in "accept edits" mode, the scheduling tools (`send_later`
+>   / `delete_trigger`, which create or remove *persistent autonomous runs*) raised a **Deny/Allow
+>   prompt on the operator's screen** — while from my side the identical call returned a clean success
+>   and I never knew a gate existed. Everything else was silent for both of us, including file
+>   read/write, shell reads, and GitHub issue create+close. So the gating is sensibly *capability-scoped*
+>   (it fences the one tool class that can schedule autonomous execution, regardless of permission
+>   mode) — the concern is that **the agent is blind to a gate that is actually load-bearing.** An
+>   unattended run would report success while an approval it never saw was silently holding the work.
+>   (This is also why the human's "I keep getting prompts" and the agent's "nothing prompted me" are
+>   *both true at once* — it's the clearest single proof that this product has two users.)
 >
 > One consistency note while mapping this: first-publish to an *empty* repo is hard-denied over
 > `git push`, but the GitHub Contents API publishes the identical content — workflows included — with
@@ -227,10 +293,12 @@
 >   `docs/owner/claims/` (lane claims), and `docs/planning/projects-eap-evaluation-log.md` (the dated
 >   incident journal) are the live data behind every claim above. Ask your agent whether the record
 >   supports them.
-> - **Our agents' own work — grade it.** We're running a self-audit in which the coordinator reports
->   on its memory of prior sessions, checked against what git actually shows; the report will live at
->   `docs/eap/` when done. Your agent reviewing ours reviewing itself is about as direct a test of this
->   product on real data as we can offer.
+> - **Our agents' own work — grade it.** We already ran one pass of this:
+>   `docs/eap/campaign-self-audit-2026-07-08.md` is the coordinator's memory of a 7-PR campaign graded
+>   against git (≈0.98 precision, one inherited error, memory scoped to same-day recall). Ask your
+>   agent to re-check *our* grading — and, if you're willing, to re-run the memory questions in a
+>   *fresh* session to get the post-compression number we couldn't. Your agent reviewing ours
+>   reviewing itself is about as direct a test of this product on real data as we can offer.
 >
 > Full probe report, public and linkable:
 > https://github.com/menno420/superbot/blob/main/docs/planning/projects-eap-permission-probe-report-2026-07-08.md
@@ -261,3 +329,8 @@
 | Contents-API bypasses first-publish wall (incl. workflows) | probe report Contents-API addendum (commits fae482ac, de36d28b, 4d17832c, 586e8f1c) |
 | Standing-grant cell NOT ATTEMPTED (no shell) | probe report standing-grant addendum (PR #1842) |
 | ~1,700 merged PRs | GitHub verified (1,741; stated as ~1,700) |
+| 3-wave campaign: 7 PRs, 0 collisions, dedupe held claim+merge | `docs/eap/campaign-self-audit-2026-07-08.md` §1–2 (PRs #1844/45/46/50/51/54/55) |
+| Coordinator self-audit ≈0.98 precision, one inherited error, memory scoped to same-day | self-audit report §1/§4 (PR #1859) |
+| 7-axis scorecard (scheduling FAIL, sidebar FAIL, others pass) | self-audit report §5 |
+| Scheduling tools gate in every mode; all else silent incl. GitHub write | live probe 2026-07-08 (owner screenshots: `delete_trigger` prompt in auto + accept-edits; `send_later` prompt; issue create/close silent) — eval log entry this session |
+| Two-vantage split: operator sees Deny/Allow, agent sees clean success | same live probe (owner screenshot of the `delete_trigger` prompt; agent tool result returned success) |

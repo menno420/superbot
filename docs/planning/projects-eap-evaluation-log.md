@@ -180,3 +180,22 @@ product review's analysis — confirm, contradict, or deepen it with lived examp
   (win worth recording; caveat — same-day, pre-compression context retention, NOT durable
   Project memory; re-probe post-compression) · weight: helped · reproducible: yes (re-run the
   probe after a compression event)
+- 2026-07-08 · axis: reliability/completion · observed: **live permission-mode probe (owner at
+  the keyboard, screenshots captured).** In BOTH auto mode and "accept edits" mode, the Claude
+  Code Remote **scheduling tools** (`send_later`/`create_trigger` and `delete_trigger`) raised a
+  client-side **Deny/Allow prompt on the operator's screen**, while every other action tested was
+  silent for both parties: file read, file write (Write), bash read (`git status`), GitHub MCP
+  **read** (`get_me`), and GitHub MCP **write** (issue create + close, #1860). So the gate is
+  **capability-scoped** (it fences the one tool class that creates persistent autonomous
+  execution/Routines) and is **orthogonal to permission mode** — auto mode does not auto-approve
+  it · expected: n/a (coherent design; recording the exact boundary) · weight: neutral
+  · reproducible: yes (owner screenshots, auto + accept-edits)
+- 2026-07-08 · axis: use-case fit · observed: the **two-vantage split, reproduced live** — the
+  same `delete_trigger` call returned a clean success to the agent (no denial in the tool result)
+  while the operator saw a Deny/Allow gate that was actually load-bearing (the delete only ran
+  after the operator clicked Allow). The agent is **structurally blind to a gate the human sees**,
+  so an unattended run would "report success" while an unseen approval silently held the work.
+  This is the clearest single proof of the "two consumers" thesis: the human's "I keep getting
+  prompts" and the agent's "nothing prompted me" are both true at once · expected: the agent to
+  at least know a gate exists (a surfaced "awaiting operator approval" state) so unattended
+  success reporting isn't false · weight: friction · reproducible: yes (owner screenshots)
