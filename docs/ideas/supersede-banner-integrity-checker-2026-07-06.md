@@ -1,7 +1,11 @@
 # Supersede-banner integrity checker (2026-07-06)
 
-> **Status:** `ideas` — session idea (Q-0089), from the rebuild-consolidation session (PR #1770).
-> Not approved for implementation.
+> **Status:** `historical` — ✅ **IMPLEMENTED 2026-07-08 (PR #1846, Wave-1 lane B).**
+> Shipped as `scripts/check_supersede_integrity.py` (warn-first, Q-0105 header) + a soft-check
+> delegation in `scripts/check_docs.py` (findings surface on every session-close run) + unit
+> tests (`tests/unit/scripts/test_check_supersede_integrity.py`). Promotion to
+> `check_docs --strict` stays pending per the warn-first plan below.
+> *(Originally: session idea Q-0089, from the rebuild-consolidation session, PR #1770.)*
 
 ## The problem
 
