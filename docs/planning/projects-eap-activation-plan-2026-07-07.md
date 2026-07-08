@@ -1,5 +1,9 @@
 # Claude Code Projects EAP — activation plan (access live, 2026-07-07)
 
+> **▶ Next-session handoff (2026-07-08):** to keep directing the program and finishing the §4 email,
+> start from [`eap-email-and-direction-handoff-2026-07-08.md`](eap-email-and-direction-handoff-2026-07-08.md)
+> — it carries the live state (Task A running), the findings inventory, and the open decisions.
+
 > **Status:** `plan` — supersedes the "next lifecycle step" of
 > `docs/ideas/claude-code-projects-for-the-rebuild-2026-07-07.md` now that access is real, not
 > hypothetical. **Provenance:** owner-forwarded email (Omid Mogasemi's invite → Diana Liu's
