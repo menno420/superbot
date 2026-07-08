@@ -38,6 +38,12 @@ ratchets):
     doc, unless it cites a regen command, is marked generated, or carries
     ``<!-- count-ok -->``. The drift class the 2026-06-16 architecture review
     found; a nudge to cite/de-number, not a CI failure.
+  - **supersede-integrity** — delegates to ``scripts/check_supersede_integrity.py``
+    (warn-first, Q-0105, added 2026-07-08): every header ``SUPERSEDED`` banner's
+    successor must resolve and link back, a fully-superseded doc may not keep its
+    ``plan`` badge, and supersede-marked disposition-table rows must point at
+    stamped docs. Once proven across sessions, promote its findings into the
+    strict list (or delete the sibling script per its own header if unreliable).
 
 Pure stdlib (no third-party imports) so CI can run it on every PR — including
 docs-only PRs — without installing anything.
@@ -462,6 +468,42 @@ def print_inventory_count_report() -> None:
     print()
 
 
+def print_supersede_integrity_report() -> None:
+    """Soft report of supersede-banner drift (never fails CI, never raises).
+
+    Delegates to the sibling ``scripts/check_supersede_integrity.py`` (warn-first
+    guard, Q-0105, added 2026-07-08 — see its header for the delete-if-unreliable
+    clause). Failure-tolerant on purpose: a bug in the young checker must never
+    redden this load-bearing gate. Promotion path once proven: fold its findings
+    into the strict violations list in ``main()``.
+    """
+    try:
+        import importlib.util
+
+        script = Path(__file__).resolve().parent / "check_supersede_integrity.py"
+        spec = importlib.util.spec_from_file_location(
+            "check_supersede_integrity", script
+        )
+        if spec is None or spec.loader is None:
+            return
+        mod = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(mod)
+        findings = mod.check()
+    except Exception as exc:  # noqa: BLE001 — soft check must never fail the gate
+        print(f"  ⚠ supersede-integrity soft check skipped ({exc})\n")
+        return
+    if not findings:
+        return
+    print(
+        f"  ⚠ {len(findings)} supersede-banner drift finding(s) — "
+        "banner → successor resolves → successor links back → badge not `plan`. "
+        "(soft — not a CI failure; details: scripts/check_supersede_integrity.py)",
+    )
+    for f in findings:
+        print(f"      {f}")
+    print()
+
+
 def census() -> tuple[int, int, dict[str, int]]:
     """Return ``(total_docs, top_level_count, counts_by_badge)``.
 
@@ -586,6 +628,7 @@ def main(argv: list[str] | None = None) -> int:
 
     print_census()
     print_inventory_count_report()
+    print_supersede_integrity_report()
 
     violations = (
         check_badges()

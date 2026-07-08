@@ -124,10 +124,12 @@ Current broad captures:
   considerations: cloud memory vs. our repo-as-source-of-truth; overlap with our hand-rolled claim/
   babysitting/cron tooling.
 - [`supersede-banner-integrity-checker-2026-07-06.md`](./supersede-banner-integrity-checker-2026-07-06.md) —
-  **session idea (2026-07-06, Q-0089, rebuild-consolidation PR #1770):** a warn-first checker for the
+  ✅ **IMPLEMENTED 2026-07-08 (PR #1846**; was: session idea 2026-07-06, Q-0089, rebuild-consolidation
+  PR #1770**):** a warn-first checker for the
   hand-maintained supersede web — every `SUPERSEDED` banner's successor must resolve + link back, and
   a superseded doc may not keep its `plan` badge (the "design-spec header stayed stale 4 days" /
-  "phantom handoff §F" drift classes, mechanized).
+  "phantom handoff §F" drift classes, mechanized). Shipped as `scripts/check_supersede_integrity.py`
+  + a `check_docs.py` soft check + unit tests; `--strict` promotion pending (Q-0105 warn-first).
 - [`reconcile-band-anchor-guard-2026-07-06.md`](./reconcile-band-anchor-guard-2026-07-06.md) —
   **session idea (2026-07-06, Q-0089, 35th reconciliation pass PR #1742):** a warn-only checker that
   fails when the three/four hand-edited band-number anchors in `current-state.md` (the marker, the S4
