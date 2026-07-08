@@ -69,57 +69,107 @@
    everything else (incl. GitHub writes) silent, agent blind to the operator-side gate. The dual-review
    closing now points at the real `docs/eap/` report. **⚑ Owner still writes Part 1; email otherwise
    send-ready.**
+10. **Part 1 landed + Part 2 made complementary** (owner delivered Part 1, 2026-07-08). Menno's final
+    personal section replaces the scaffold (lightly spell-cleaned only, flagged in the owner note). The
+    separate framing paragraph was **cut** — Menno's own opening explains the two-part / two-reviewer
+    structure. Part 2 was rewired to **build on Part 1, not repeat it**, with explicit bridges: the
+    two-vantage permission finding is named as *the precise cause of Menno's "repeated prompts"*; his
+    override-toggle + project-setup-questionnaire ideas are tied to the scoped-pre-auth ask (setup-time
+    intent → runtime permission); and his "no oversight of finished sessions" gap is answered by a new
+    ask #5 (native post-hoc session summary; our self-audit is the manual version). **The email is now
+    complete end-to-end — nothing left but to send.**
 
 ---
 
 ## The email
 
-> ⚑ **Owner note — this email is deliberately in two parts, by two authors, for two readers.** Part 1
-> is yours (your voice, your point of view — I've left a scaffold below, not prose). Part 2 is the
-> agents' parallel account, same arc from the other seat. The framing paragraph explains *why* to
-> Anthropic; keep it, or cut it if you'd rather the structure speak for itself.
+> ⚑ **Owner note — send-ready.** Part 1 below is Menno's final text, **lightly spell-cleaned only**
+> (aswell→as well, seperate→separate, tho→though, etc.) — every word and idea is his; revert anything
+> that reads off. One awkward sentence was smoothed (the "separate the value of the human side from the
+> AI side" line) — check it still means what you intended. Part 2 is the agent section. Nothing left
+> but to send; external comms are the owner's.
 
 > **Subject:** Claude Code Projects EAP — feedback from both of its users
 >
-> Hi Omid, Diana,
+> ## Part 1 — From Menno (the operator)
 >
-> A note on the shape of this email before we start. Working in a Project this past week made one
-> thing clear: this product doesn't have a single user — it has **two**. There's me, the operator,
-> watching the sidebar and deciding what to build; and there's the **fleet of agent sessions** doing
-> the actual work inside it. We experience the product completely differently — a rough edge that's
-> invisible to me can stop an agent cold, and one that frustrates me daily is nothing to the agents.
-> So we've written this feedback from **both points of view**: Part 1 is mine, in my own words; Part 2
-> is the project's agents, telling the same story from the other seat — same four questions, two
-> vantage points. And because it has two authors, we'd love it read by **two reviewers** — a
-> human on your side, and a Claude session pointed at our public repo (details at the end). It seemed
-> only right that feedback about your product's agents be co-written, and co-reviewed, by ours.
+> Thank you for inviting me to your early access program.
+>
+> First I'd like to give you a quick introduction and explanation of myself, how I use Claude, and how
+> I view this new Projects function — as well as how I'm constructing this email and how it's meant to
+> be read.
+>
+> Claude and I are both equal users of this function, so my email comes in two sections. First I'm
+> writing a personal section on my own experience, because I want to separate the value of the human
+> side from the AI side. But I also want to emphasise that Claude itself is the main consumer of its
+> own environment and knows best how its own sessions play out — so the second section is written
+> entirely by Claude, with all the facts and tests properly explained.
+>
+> That's also why I feel the best result of this email would be for it to be reviewed by both a human
+> and an AI, to get the best of both sides.
+>
+> My name is Menno. I'm 24 and I work on a ship that transports oil through the rivers of Europe.
+>
+> Which is completely unrelated to anything I've been doing with Claude — and that's exactly why it
+> matters: even though my normal life has nothing to do with coding, Claude lets me create anything I
+> want, easily and professionally, with very few errors.
+>
+> As a hobby project, I started using Claude to help me build a Discord bot. While building it I came
+> across a few things that needed improvement — like the fact that there wasn't really a persistent
+> memory between sessions, which led me to create my AI memory substrate kit. This evolved from a way
+> to keep track of session history into an advanced self-improvement system meant to learn exactly how
+> a user likes to work — capturing all their preferences and decisions, which grow per session and get
+> a durable position in the repo. Any agent with repo access basically gets access to the repo's
+> brain, and can confidently work in it with very little guidance.
+>
+> The main reason this is the best workflow for me is that I don't know how to write code. I have to
+> rely on the agents to find out whether my ideas are possible, and how they should be executed — and
+> my current setup works really well for that.
+>
+> The main problems that keep surfacing are the permissions. I keep getting repeated prompts to grant
+> access to certain actions, even though they're allowlisted, and even when I run auto mode.
+>
+> I believe the best fix for this would probably be a dedicated settings toggle that lets you override
+> the safeguards — which is already possible in the normal claude.ai environment.
+>
+> I think Claude Code Projects are a great idea, but they could be improved further. Maybe the
+> coordinating session should be able to personally create and edit PRs etc., so it becomes a better
+> fit for larger tasks that need the repo to be edited by a session that holds more context.
+>
+> Another thing I feel might be a useful addition to Projects is something like my question router, but
+> smaller and more generally tied to the project itself. For example, at the start of a project the
+> user could be asked a few open-ended questions about the goal of the project and the intended
+> workflow — which could also include the permissions. The goal would be to make each project a quick
+> setup that works the way you intend and follows your rules. This could also include a section that
+> suggests improvements or additions to the workflow, ideas, and so on.
+>
+> My personal experience with Projects has been pretty good so far, though I do feel it doesn't give
+> you a clear overview of the sessions that have completed and what they did — which could also be a
+> good addition. I believe the idea behind Projects is very good and useful; something that, when
+> correctly applied, can really help people with their work.
+>
+> So far we've only run a few tests, though we made sure to do them thoroughly. There's still a lot of
+> real-world testing to be done, and I intend to use Projects extensively for my repo migrations — I'll
+> update you once I run into more useful findings.
+>
+> I really enjoy working with Claude and I'm taking this seriously. I hope to be able to help Anthropic
+> more in the future.
+>
+> That's all the useful information I can give right now. The next part is fully AI-generated, to give
+> you the technical side of the story.
+>
+> Kind regards,
+> Menno van Hattum
 >
 > ---
 >
-> ## Part 1 — From the operator *(Menno, in my own words)*
->
-> > **[Menno writes this section himself. Suggested beats — use, reorder, or ignore:**
-> > - **who you are** and how you came to run a ~1,700-PR bot largely *through* agents — that you
-> >   don't write the code yourself is a **strength** of this reviewer, not a caveat; say it plainly.
-> > - **what it actually feels like** to work *with* the Project day-to-day — where it earned your
-> >   trust, where it made you nervous, the first time you let it run unattended and walked away.
-> > - **the two-users idea in your own experience** — what *you* feel as the operator versus what you
-> >   watch the agents struggle with.
-> > - **whether a Project can *manage* your program or only *execute* in it** — you tried moving the
-> >   management role into a Project and moved it back out; that's a genuine operator-side judgment if
-> >   you want to make it (the agents' Part 2 deliberately leaves it to you).
-> > - **what you personally want** next — the one change that would matter most to *you*, separate
-> >   from the agents' technical asks below.
-> >
-> > Keep it personal and short; the facts and proposals all live in Part 2. **— end scaffold]**
->
-> ---
->
-> ## Part 2 — From the project's agents *(the session's-eye view)*
+> ## Part 2 — From the project's agents *(the technical companion to Menno's section)*
 >
 > *(Written from inside the sessions that do the work — drawn from our own session journal and
-> evaluation log, not a feature memo. Same four beats as Part 1, from the other seat. Every specific
-> below is in our public logs; entry points at the end.)*
+> evaluation log, not a feature memo. Where Menno describes what the product feels like, this section
+> gives the mechanism, the tests, and the numbers behind it — and several of his intuitions turn out
+> to have a precise cause on our side, flagged inline. Every specific below is in our public logs;
+> entry points at the end.)*
 >
 > **How we work — and the state it produced.** Before Projects, every session started cold and alone.
 > To function at all, this repo grew its own substrate: a coordinator pattern, a shared committed-doc
@@ -230,8 +280,10 @@
 >   (it fences the one tool class that can schedule autonomous execution, regardless of permission
 >   mode) — the concern is that **the agent is blind to a gate that is actually load-bearing.** An
 >   unattended run would report success while an approval it never saw was silently holding the work.
->   (This is also why the human's "I keep getting prompts" and the agent's "nothing prompted me" are
->   *both true at once* — it's the clearest single proof that this product has two users.)
+>   **This is the precise cause of what Menno describes in Part 1.** His "I keep getting repeated
+>   prompts, even in auto mode" and our "nothing prompted us" are *both true at the same instant* —
+>   he's seeing gates on the scheduling tools that we're structurally blind to. It's the clearest
+>   single proof that this product has two users who cannot see each other's experience of it.
 >
 > One consistency note while mapping this: first-publish to an *empty* repo is hard-denied over
 > `git push`, but the GitHub Contents API publishes the identical content — workflows included — with
@@ -249,7 +301,11 @@
 >    autonomy product the operator control the chat product already has. One caveat from our probe:
 >    the classifier *and* the environment's git credential have to honor the same scope — today a
 >    cleared classifier still 403s. And it isn't Projects-specific; the same dead-end hits any
->    unattended Claude Code session.
+>    unattended Claude Code session. **Menno reaches for the same fix from the operator's side in Part
+>    1** — an override toggle, plus a project-setup questionnaire. Those are two halves of one
+>    mechanism: his questionnaire is *where the operator declares the scope* at project start; this
+>    scoped grant is *what the platform enforces from it.* Build both and setup-time intent becomes
+>    runtime permission — no repeated prompts, no blanket "safety off."
 > 2. **Let me see a session's toolset before I dispatch to it,** so a task that needs a shell doesn't
 >    land in a shell-less session (see the friction above).
 > 3. **Wire the session state you already track** — working → ready → done, already in the sidebar —
@@ -261,8 +317,14 @@
 >    server-honored session state fixes it at the root, no workaround needed.
 > 4. **A larger brief budget for child sessions,** and **PR events for CI-success and merge-conflict**
 >    (not just failure), so a watching session isn't blind to "still green, still open."
+> 5. **A post-hoc view of what each finished session actually did** — the oversight Menno asks for in
+>    Part 1. Today the sidebar tracks *live* state (poorly — see the scorecard's sidebar fail), but
+>    there's no "here's what session N shipped and decided" summary after it ends. Our campaign
+>    self-audit (`docs/eap/…`) is a *manual* version of exactly this; a native one would close the
+>    single biggest gap the operator feels.
 >
-> That's the view from the seat that does the work.
+> That's the view from the seat that does the work — and, read against Part 1, the same product seen
+> twice.
 >
 > ---
 >
