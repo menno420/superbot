@@ -37,9 +37,13 @@ point (see the critique below).
 
 ## The email — your main deliverable with the owner
 
-- **Lives in:** `docs/planning/projects-eap-activation-plan-2026-07-07.md` **§4** ("email 1" draft).
-  A polished full draft was also delivered in chat this session; §4 carries the two-layer flagship +
-  the honest "friction, not a work-stopper" framing.
+- **Canonical (2026-07-08 refresh):** `docs/planning/projects-eap-anthropic-email-2026-07-08.md` —
+  adds the claude.ai **"Skip all approvals"** precedent as the value anchor, restructures into
+  positives / negatives / what-we-tried / value / **explicit asks-back** (test cases? workarounds?
+  is-it-intentional?), and carries a verifiability appendix. **Send from this doc.**
+- **Prior draft (provenance only):** `docs/planning/projects-eap-activation-plan-2026-07-07.md` **§4**
+  ("email 1"); it carries the two-layer flagship + the "friction, not a work-stopper" framing that
+  the refresh builds on.
 - **Discipline (owner-set, treat as binding):**
   - **Every claim maps to a verifiable source** — the probe report, a committed artifact, a
     documented Claude Code behaviour, or an explicit "not yet tested" marker. No naked assertions.

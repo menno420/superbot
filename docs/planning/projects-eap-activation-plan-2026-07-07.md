@@ -83,6 +83,13 @@ rather than restate them unchanged.
 
 ## 4. Feedback to send back to Anthropic — draft reply
 
+> **▶ Canonical email now lives in
+> [`projects-eap-anthropic-email-2026-07-08.md`](projects-eap-anthropic-email-2026-07-08.md)**
+> (2026-07-08 refresh — adds the claude.ai "Skip all approvals" precedent as the value anchor,
+> restructures into positives / negatives / what-we-tried / value / explicit asks-back, and adds the
+> "test cases? workarounds? is-it-intentional?" questions). The draft below is the prior version,
+> kept for provenance; send from the newer doc.
+
 Diana's confirmation email explicitly invites feedback at
 `claude-code-early-access@anthropic.com`. Below is a **ready-to-send, external-facing** draft —
 shorter and less repo-internal than the full product-review doc, but traceable to it.
