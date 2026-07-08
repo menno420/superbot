@@ -52,6 +52,12 @@ Current broad captures:
   the actual quality cost — the empirical version of "the permission wall is friction, not a
   work-stopper," and strong evidence for the Anthropic feedback. Pairs with the per-repo settings
   ledger plan (`docs/planning/per-repo-settings-state-ledger-2026-07-08.md`).
+- [`agent-readable-external-reviewer-entrypoint-2026-07-08.md`](./agent-readable-external-reviewer-entrypoint-2026-07-08.md) —
+  **session idea (2026-07-08, Q-0089, EAP email two-reviewer session):** add a stable top-level
+  `EXTERNAL-REVIEWER-START-HERE.md` (or `docs/eap/README.md`) written for an external agent reviewer
+  arriving cold with no injected `CLAUDE.md` — states what the repo is, links the evidence, lists
+  concrete verification tasks. The external mirror of `AGENT_ORIENTATION.md`; makes the email's "put a
+  Claude session on it" ask easy to act on.
 - [`session-start-capability-self-probe-2026-07-08.md`](./session-start-capability-self-probe-2026-07-08.md) —
   **session idea (2026-07-08, Q-0089, EAP-email-refresh session):** a cheap read-only session-start
   self-probe that records which tools a session actually has (shell, git write, self-wake timer,
