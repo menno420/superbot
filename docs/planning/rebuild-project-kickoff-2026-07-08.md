@@ -51,7 +51,8 @@ docs/planning/rebuild-project-kickoff-2026-07-08.md. Source and merged PRs win o
 
 THE GOAL, IN ORDER (canonical plan §5 steps 7–13):
 1. Populate menno420/substrate-kit FIRST — extract superbot/substrate-kit/ into it as its permanent
-   home (the kit every future repo adopts from). This is done via the GitHub Contents API.
+   home (the kit every future repo adopts from). The repo is already seeded, so push the kit contents
+   via a normal branch + PR (forward-only git).
 2. THEN superbot-next adopts FROM substrate-kit via `python3 dist/bootstrap.py adopt` — fresh from the
    kit, NEVER a copy of superbot: doc skeletons, decision ledger, orientation/namespace/seam checkers,
    staged hooks.
@@ -65,12 +66,15 @@ but do not block on green parity or human sign-off — those come later, one sub
 port bands. Get the source tree built.
 
 FORWARD-ONLY GIT — never attempt anything destructive (it prompts or hard-fails and wastes the run):
-- To create the FIRST files in an empty/new repo, use the GitHub Contents API (create_or_update_file),
-  NOT `git push` — first-publish via git push is walled. This is how you populate substrate-kit and
-  seed superbot-next.
-- Once a repo is non-empty, use fresh branches + PRs + squash-merge; rely on auto-delete-on-merge.
-- NEVER force-push, delete a remote branch, amend or rebase a pushed commit, or first-publish via git
-  push. Treat the absence of these as normal, not a blocker.
+- Both target repos (substrate-kit, superbot-next) are **already seeded** with an initial commit —
+  they are NOT empty — so use normal forward-only git for all work in them: fresh branch → PR →
+  squash-merge, relying on auto-delete-on-merge. (Access is not the constraint; the coordinator has
+  all three repos.)
+- The ONLY thing ever walled is the *first* commit to a *genuinely empty* repo. Both repos are past
+  that, so it does not apply here. If you ever do hit a truly empty repo, seed its first file via the
+  GitHub Contents API (`create_or_update_file`), after which normal branch pushes work.
+- NEVER force-push, delete a remote branch, amend or rebase a pushed commit. Treat the absence of
+  these as normal, not a blocker.
 - Do NOT create scheduled Routines / triggers mid-run — they raise an approval prompt that stalls an
   unattended session. Drive the work by dispatching and monitoring worker sessions directly.
 
@@ -100,8 +104,8 @@ Start by reading superbot's docs/planning/rebuild-project-kickoff-2026-07-08.md,
 plan it points to (docs/planning/rebuild-canonical-plan-2026-07-06.md §5) and the S0–S15 build order.
 Then execute steps 7–13, in order, forward-only:
 
-1. Populate substrate-kit first (extract superbot/substrate-kit/ into it via the Contents API — its
-   permanent home).
+1. Populate substrate-kit first (extract superbot/substrate-kit/ into it — its permanent home; the
+   repo is already seeded, so use a normal branch + PR).
 2. Have superbot-next adopt from substrate-kit (python3 dist/bootstrap.py adopt — fresh from the kit,
    not a copy of superbot).
 3. Build the kernel bands K0→K8 (S1→S9), then K9 + strand-3 (S10–S15), then the layer-V files, then
