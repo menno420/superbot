@@ -1,10 +1,10 @@
 {
   "meta": {
-    "generated_at": "2026-07-08T01:04:53Z",
+    "generated_at": "2026-07-08T00:53:42Z",
     "build": {
-      "commit": "4c25a1fa",
-      "subject": "Merge pull request #1823 from menno420/claude/superbot-coordinator-kickoff-arqdye",
-      "committed_at": "2026-07-08T01:04:53Z"
+      "commit": "ec482f0e",
+      "subject": "docs: EAP auto-mode permission-boundary probe report (#1830)",
+      "committed_at": "2026-07-08T00:53:42Z"
     },
     "counts": {
       "functions": 43,
@@ -3140,6 +3140,14 @@
   "reviews": [],
   "updates": [
     {
+      "file": "2026-07-08-eap-permission-probe.md",
+      "date": "2026-07-08",
+      "title": "2026-07-08 — EAP auto-mode permission-boundary probe",
+      "status": "complete",
+      "run_type": "manual",
+      "self_initiated": false
+    },
+    {
       "file": "2026-07-07-website-design-system-fable.md",
       "date": "2026-07-07",
       "title": "2026-07-07 — Program websites: design system + botsite v2 + console shell (Fable session 1/4)",
@@ -3607,14 +3615,6 @@
       "file": "2026-07-03-rebuild-planning-phase-doc.md",
       "date": "2026-07-03",
       "title": "2026-07-03 — Document the rebuild review-then-plan phase (process + next-session goal)",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-07-03-rebuild-hub-navigation.md",
-      "date": "2026-07-03",
-      "title": "2026-07-03 — Rebuild Phase A · hub topology + navigation contract + interface presets (owner-live)",
       "status": "complete",
       "run_type": "",
       "self_initiated": false

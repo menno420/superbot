@@ -9,6 +9,20 @@
 > S3; the docs it produces are S4.*
 
 **Recently shipped (this sector):**
+- **Thirty-eighth Q-0107 reconciliation pass** (band-#1830, issue #1832 —
+  [pass record](../planning/reconciliation-pass-2026-07-08-band1830.md)): reconciled the ledger
+  (band #1801–#1830 — five grouped entries, headlined by the **entirely docs-only SuperBot Project
+  coordinator arc**: the Projects-EAP coordinator going live → kickoff/calibration rewrite #1811…#1823,
+  the evaluation guidebook #1820, and the EAP findings for the owner's Friday Anthropic feedback
+  #1821…#1830 (headline: the auto-mode first-publish push wall is likely **un-self-clearable in cloud
+  Projects** — 11-test probe #1830) — plus the **Q-0254 understand-and-reflect kit-doctrine graduation**
+  #1806/#1809, the **website-design + kit-lab program briefs** #1802/#1804, the 37th-pass docs PRs
+  #1801/#1803, and 3 dashboard refreshes), trimmed Recently-shipped to 20
+  (`trim_recently_shipped.py --apply`, floor recomputed), disposed the open-PR set (6 dependabot bumps
+  #1761–#1766 left in flight — runtime, not docs; no stale session PR), confirmed **ROUTINE_PAT set /
+  loop self-fires** (issue #1832 authored by `menno420`), carried the forward queue intact (still deep,
+  no THIN flag — the rebuild Phase-B canonical plan + the live SuperBot Project program dominate),
+  refreshed the dashboard export (Q-0167), reset the marker #1800 → #1830.
 - **Thirty-seventh Q-0107 reconciliation pass** (band-#1800, issue #1801 —
   [pass record](../planning/reconciliation-pass-2026-07-07-band1800.md)): reconciled the ledger
   (band #1771–#1800 — seven grouped entries, headlined by the **S3 rebuild final-review → plan-review →
@@ -162,7 +176,7 @@
   startable slice. Companion: the still-unexecuted
   [orientation-cost-reduction plan](../planning/orientation-cost-reduction-plan-2026-06-30.md)
   (Q-0210 router archive now 3+ passes overdue — B0–B3 should run soon regardless).
-- **Next reconciliation pass due once merged PRs cross #1800** (every multiple of 30, Q-0134) —
+- **Next reconciliation pass due once merged PRs cross #1860** (every multiple of 30, Q-0134) —
   auto-triggered by `reconciliation-trigger.yml`; run by the docs-reconciliation routine, **not** a
   manual session (Q-0124).
 - Plan-band depth is healthy — **no `PLAN-BACKLOG-THIN` flag** (buildable depth well over cadence).
