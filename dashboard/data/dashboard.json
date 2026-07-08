@@ -1,10 +1,10 @@
 {
   "meta": {
-    "generated_at": "2026-07-08T15:45:55Z",
+    "generated_at": "2026-07-08T19:56:27Z",
     "build": {
-      "commit": "7f7628e1",
-      "subject": "Close-out: rebuild-direction handoff + mark EAP email sent (#1868)",
-      "committed_at": "2026-07-08T15:45:55Z"
+      "commit": "1e944280",
+      "subject": "Merge pull request #1869 from menno420/bot/dashboard-refresh",
+      "committed_at": "2026-07-08T19:56:27Z"
     },
     "counts": {
       "functions": 43,
