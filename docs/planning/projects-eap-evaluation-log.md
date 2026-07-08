@@ -116,3 +116,12 @@ product review's analysis — confirm, contradict, or deepen it with lived examp
   path" — either way this is the cleanest current workaround for the one-time bootstrap and
   plausibly unblocks the wider rebuild workflow for these repos · weight: capability (a real
   unblock) · reproducible: yes
+- 2026-07-08 · axis: use-case fit · observed: the normal claude.ai Chat/Cowork surface exposes a
+  global **"Skip all approvals"** toggle (owner screenshot — "Claude will work and use your
+  connectors without pausing for approval. This can put your data at risk."), i.e. a blanket opt-in
+  to act *including* destructive actions; Claude Code Projects — the surface built for long
+  autonomous work — has NO equivalent, scoped or otherwise, and auto mode walls destructive git even
+  when the prompt names it. The product where unattended autonomy matters most has the LEAST operator
+  control over the permission envelope · expected: a scoped, opt-in, default-off, versioned per-scope
+  pre-authorization in Code — strictly safer than Chat's blanket toggle — so unattended runs can be
+  pre-cleared for named action classes · weight: friction · reproducible: yes

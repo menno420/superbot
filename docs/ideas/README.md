@@ -44,6 +44,12 @@ Current broad captures:
   the actual quality cost — the empirical version of "the permission wall is friction, not a
   work-stopper," and strong evidence for the Anthropic feedback. Pairs with the per-repo settings
   ledger plan (`docs/planning/per-repo-settings-state-ledger-2026-07-08.md`).
+- [`session-start-capability-self-probe-2026-07-08.md`](./session-start-capability-self-probe-2026-07-08.md) —
+  **session idea (2026-07-08, Q-0089, EAP-email-refresh session):** a cheap read-only session-start
+  self-probe that records which tools a session actually has (shell, git write, self-wake timer,
+  spawn types) — turns late/expensive "this session has no Bash tool" discoveries (the standing-grant
+  `NOT ATTEMPTED` row; the phantom `send_later`) into free up-front ones. The self-serve version of
+  the email's spawn-time-capability-introspection ask.
 - [`session-start-staleness-banner-2026-07-07.md`](./session-start-staleness-banner-2026-07-07.md) —
   **session idea (2026-07-07, Q-0089, Projects-EAP eval-journal session):** the coordinator's
   container clone was 7 merged PRs behind origin at first turn and nothing warned it — add a

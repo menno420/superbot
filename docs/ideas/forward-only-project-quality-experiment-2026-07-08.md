@@ -1,6 +1,10 @@
 # Idea — Forward-only Project: measure the quality cost of forbidding destructive actions
 
-> **Status:** `ideas` · raised by the owner 2026-07-08 (EAP-email thread) · EAP-evaluation-adjacent
+> **Status:** `ideas` (setup shipped, awaiting run) · raised by the owner 2026-07-08 (EAP-email
+> thread) · EAP-evaluation-adjacent
+> · **Setup shipped:** the paste-in Custom Instructions live in
+> [`docs/planning/forward-only-project-custom-instructions-2026-07-08.md`](../planning/forward-only-project-custom-instructions-2026-07-08.md).
+> Remaining: owner creates the fresh Project + pastes the block; then the *results* observations note.
 > **Provenance:** owner directive — "if we genuinely don't need these to do our work, create a
 > fresh project with better-scoped instructions so it does not even think about doing any
 > destructive actions… show what happens if we try to prevent it and how it affects the quality
