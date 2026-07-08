@@ -9,6 +9,10 @@
 > [`rebuild-kickoff-steps-6-8-brief-2026-07-07.md`](rebuild-kickoff-steps-6-8-brief-2026-07-07.md) ·
 > [`projects-eap-coordinator-kickoff-2026-07-07.md`](projects-eap-coordinator-kickoff-2026-07-07.md).
 
+> **▶ Directing this run:** the management-layer handoff for the session that reads the coordinator's
+> status reports and guides the owner through the owner-only steps is
+> [`rebuild-direction-handoff-2026-07-08.md`](rebuild-direction-handoff-2026-07-08.md).
+
 ## Scope
 
 **In scope (autonomous build):** canonical plan **§5 steps 7–13** — populate `substrate-kit`, then
