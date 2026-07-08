@@ -116,3 +116,21 @@ product review's analysis — confirm, contradict, or deepen it with lived examp
   path" — either way this is the cleanest current workaround for the one-time bootstrap and
   plausibly unblocks the wider rebuild workflow for these repos · weight: capability (a real
   unblock) · reproducible: yes
+- 2026-07-08 · axis: use-case fit · observed: the normal claude.ai Chat/Cowork surface exposes a
+  global **"Skip all approvals"** toggle (owner screenshot — "Claude will work and use your
+  connectors without pausing for approval. This can put your data at risk."), i.e. a blanket opt-in
+  to act *including* destructive actions; Claude Code Projects — the surface built for long
+  autonomous work — has NO equivalent, scoped or otherwise, and auto mode walls destructive git even
+  when the prompt names it. The product where unattended autonomy matters most has the LEAST operator
+  control over the permission envelope · expected: a scoped, opt-in, default-off, versioned per-scope
+  pre-authorization in Code — strictly safer than Chat's blanket toggle — so unattended runs can be
+  pre-cleared for named action classes · weight: friction · reproducible: yes
+- 2026-07-08 · axis: reliability/completion · observed: (owner insight) our born-red-gate + arm-auto-
+  merge-early workflow is a self-correcting workaround stack — auto-merge is armed EARLY because
+  agents reliably do setup steps on the critical path but reliably FORGET the trailing end-of-session
+  merge (the #778 failure: the merge intention lives only in ephemeral session context); a CI "red by
+  design" gate is then added so early-arming can't merge a half-done PR, and the session flips it as
+  its last act. Root cause: an action stored only in agent context is forgettable, one handed to the
+  server (GitHub auto-merge) is not · expected: auto-merge that respects Projects' existing per-session
+  working→ready→done sidebar state, collapsing the whole dance to one server-honored signal · weight:
+  friction (a missing native primitive we hand-built around) · reproducible: yes
