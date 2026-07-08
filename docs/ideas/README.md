@@ -31,6 +31,13 @@ only the header block is read, so a `**Subsystem:**` *example* in an idea's body
 
 Current broad captures:
 
+- [`claim-remote-visibility-scan-2026-07-08.md`](./claim-remote-visibility-scan-2026-07-08.md) —
+  **session idea (2026-07-08, Q-0089, grooming wave-1 lane C, #1845):** claims only become visible
+  to siblings via the open PR — `check_lane_overlap.py` reads the *local* claims dir, so a claim on
+  an un-merged sibling branch (and any lane in the pre-first-push window of a simultaneous-start
+  wave) is invisible to the tool. Add a `--remote` mode that scans recent `origin/claude/*` refs for
+  claim files not on main, plus a "re-scan once right after your own claim push" protocol line — the
+  parallel-wave race window closed at the claim's native (git-ref) layer.
 - [`forward-only-project-quality-experiment-2026-07-08.md`](./forward-only-project-quality-experiment-2026-07-08.md) —
   **owner-raised (2026-07-08, EAP-email thread):** configure a Project's instructions so agents
   never *attempt* destructive git (forward-only by design), run real work through it, and measure
@@ -97,7 +104,8 @@ Current broad captures:
   of dying silently; limit-killed lanes never count as evidence. Observed live: a 4-lane review
   fleet returned an empty "success" when the 5-hour limit hit mid-flight. One prompt clause +
   one orchestration rule converts silent lost firings into scheduled retries; the counter feeds
-  the Q-0248/Q-0249 spend dataset.
+  the Q-0248/Q-0249 spend dataset. **→ PROMOTED to a plan (2026-07-08, grooming lane C, #1845):**
+  [`usage-limit-aware-routines-plan`](../planning/usage-limit-aware-routines-plan-2026-07-08.md).
 - [`substrate-kit-auto-drafted-handoff-2026-07-07.md`](./substrate-kit-auto-drafted-handoff-2026-07-07.md) —
   **session idea (2026-07-07, Q-0089, final-review session #1778):** the Phase-2.5 A/B measured the
   same failure twice — sessions with a rendered ledger/session-log scaffolding in-repo still write
