@@ -333,6 +333,21 @@ step-7 feasibility signal (both are no-go classes). Did NOT run the Q-0124 recon
 #1833 already ran it). Meta-lesson (3rd correction of this bullet): stop hand-summarizing a moving
 target — point at the instrument's report and let it be canonical.
 
+## Addendum 18 (eighteenth PR — email currency pass + "what would fix it" section)
+
+Owner: review the email for currency + add a small "what would fix this" section (project-level
+pre-authorization setting, also useful for chats outside Projects) + send the full email in chat.
+Done: (1) filled the four bracketed test cells from first-day reality (#2 memory = strongest
+result: envelope baked into dispatch templates; #4 unattended = held, prompts fail-fast not hang;
+#1 dedupe + #3 red-vs-broken = honestly marked not-yet-stress-tested, flagged for owner to verify
+from direct observation); (2) permission bullet already current from the probe report (PR #1834);
+(3) added the **"What we think would fix the biggest one"** section — a scoped opt-in
+pre-authorization setting (project + per-repo + per-account), default-off, auditable, and
+explicitly **also useful for non-Project Claude Code sessions** (the auto-mode dead-end isn't
+Projects-specific); (4) refreshed the meta-note (brackets filled; attach the probe report; two
+cells owner-verify; send interim now). Full email pasted in chat for the owner to send (external
+comms are his).
+
 ## Docs audit (Q-0104)
 
 `check_docs.py --strict` ✓ · `check_current_state_ledger.py --strict` ✓ (exit 0; #1802/#1804/

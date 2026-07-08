@@ -81,12 +81,16 @@ rather than restate them unchanged.
 
 Diana's confirmation email explicitly invites feedback at
 `claude-code-early-access@anthropic.com`. Below is a **ready-to-send, external-facing** draft —
-shorter and less repo-internal than the full product-review doc, but traceable to it. Fill in
-the bracketed examples from what actually happened — the coordinator's evaluation journal
-([guidebook](projects-eap-evaluation-guidebook-2026-07-07.md) §2/§5) feeds them. **Owner
-intent (2026-07-07 evening): send ~tomorrow, after first real coordinator use** — interim,
-incident-backed feedback beats waiting for the Friday deadline; a second, fuller note can
-follow at the window close.
+shorter and less repo-internal than the full product-review doc, but traceable to it.
+**Updated 2026-07-08 after the first day of real use:** the four-tests section is filled from
+what actually happened, and the permission finding is now the mapped, reproducible boundary from
+the probe (`projects-eap-permission-probe-report-2026-07-08.md` — **attach or link it**), plus a
+"what would fix it" section (the scoped pre-authorization setting). Two cells are inferred from
+the coordinator's reports rather than a clean pre-registered run — **#1 duplicate-work** (no real
+collision occurred yet) and **#3 red-vs-broken** (no CI-fail vs. born-red side-by-side yet); the
+owner should confirm/tweak both from direct observation before sending. **Owner intent: send this
+interim note now (2026-07-08), not at the Friday window close** — incident-backed feedback lands
+harder early; a fuller note can follow. External comms are the owner's to send.
 
 > Subject: Re: Claude Code Projects EAP — feedback after first activation
 >
@@ -109,14 +113,25 @@ follow at the window close.
 > declares itself done — our bar is "does this beat what we already built," not "is this a
 > nice-to-have."
 >
-> **Four things we're specifically checking, and what we found:**
-> 1. *Duplicate-work prevention* — [what happened when two sessions/tasks overlapped]
-> 2. *Write-back / "say it once" memory* — [whether a requirement stated once actually carried
->    into a fresh session without restating]
-> 3. *Distinguishing "intentionally incomplete" from "broken"* — [what the sidebar/coordinator
->    showed for a deliberately in-progress PR vs. a CI failure]
-> 4. *Surviving genuinely unattended stretches* — [whether a session ran 20+ minutes with no one
->    at the keyboard without stalling on a permission prompt]
+> **Four things we're specifically checking, and what we found so far (~first day of real use):**
+> 1. *Duplicate-work prevention* — not yet stress-tested: the coordinator ran an 11-agent probe
+>    fleet, but by design each agent owned a disjoint action, so no genuine collision occurred.
+>    Our claim-file discipline carried over and the coordinator kept a single owned work-list.
+>    We'll report the first real overlap.
+> 2. *Write-back / "say it once" memory* — **held, and it's our strongest result.** We stated the
+>    working-authorization envelope once; the coordinator committed it into its own dispatch
+>    templates, so every session it spawns inherits it without us restating — it solved "say it
+>    once" structurally rather than leaning on recall.
+> 3. *Distinguishing "intentionally incomplete" from "broken"* — the coordinator labels "red by
+>    design" vs. "broken" explicitly in every report, and its born-red PRs held red-until-complete
+>    as intended. We haven't yet caught a real CI failure and a born-red hold side by side to
+>    stress how the *sidebar* itself distinguishes them, but the coordinator's narration never
+>    conflated the two.
+> 4. *Surviving genuinely unattended stretches* — **held well.** The coordinator ran the probe
+>    fleet and drafted the control plane fully unattended, and permission prompts fail *fast*
+>    (deny with a written reason) rather than hanging — nothing silently stalled. The only hard
+>    stops were genuine safety walls (below), not hung prompts, which is the right failure shape
+>    for unattended work.
 >
 > **Cross-cutting asks, not specific to Projects** (things that would help any autonomous Claude
 > Code session, ours included):
@@ -150,6 +165,21 @@ follow at the window close.
 >   spawn, would remove a real orchestration bottleneck.
 > - Native lane claims ("this session owns scope X until it ends," visible to siblings at
 >   session start) — we built a claim-file convention for exactly this.
+>
+> **What we think would fix the biggest one.** The permission dead-end has a clean solution that
+> keeps the safety intent fully intact: a **scoped, opt-in pre-authorization setting**. At the
+> Project level (and, ideally, per-repo and per-account), let the operator explicitly enable
+> specific normally-denied action classes for a named scope — e.g. "allow force-push", "allow
+> branch deletion", "allow first-publish to a new public repo", limited to repos X and Y. Default
+> off, so auto mode stays safe-by-default; reviewable and versioned (a settings pane, or a
+> committed allow-list), so it's an *auditable grant*, not a blanket "turn safety off". That one
+> addition turns "an unattended session dead-ends and a present human is the only way through"
+> into "the operator pre-declares, once, what this autonomous run is allowed to do." Crucially it
+> isn't Projects-specific — the same auto-mode dead-end hits **any** unattended Claude Code session,
+> so a general pre-authorized-actions setting (account / repo / session scope) would help every
+> auto-mode user, ordinary chats outside Projects included. It's the natural complement to auto
+> mode: auto mode decides what's safe *by default*; a pre-auth list lets the operator safely widen
+> that, in scope, on purpose.
 >
 > Happy to go deeper on any of these — we have concrete incidents behind each one.
 >
