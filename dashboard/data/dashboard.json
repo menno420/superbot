@@ -1,10 +1,10 @@
 {
   "meta": {
-    "generated_at": "2026-07-08T00:53:42Z",
+    "generated_at": "2026-07-08T03:19:20Z",
     "build": {
-      "commit": "ec482f0e",
-      "subject": "docs: EAP auto-mode permission-boundary probe report (#1830)",
-      "committed_at": "2026-07-08T00:53:42Z"
+      "commit": "65d1d5da",
+      "subject": "Merge pull request #1834 from menno420/claude/superbot-coordinator-kickoff-arqdye",
+      "committed_at": "2026-07-08T03:19:20Z"
     },
     "counts": {
       "functions": 43,
@@ -3140,6 +3140,14 @@
   "reviews": [],
   "updates": [
     {
+      "file": "2026-07-08-reconcile-band1830.md",
+      "date": "2026-07-08",
+      "title": "Session — thirty-eighth Q-0107 reconciliation pass (band-#1830)",
+      "status": "complete",
+      "run_type": "routine",
+      "self_initiated": false
+    },
+    {
       "file": "2026-07-08-eap-permission-probe.md",
       "date": "2026-07-08",
       "title": "2026-07-08 — EAP auto-mode permission-boundary probe",
@@ -3607,14 +3615,6 @@
       "file": "2026-07-03-rebuild-stage1-global-review.md",
       "date": "2026-07-03",
       "title": "2026-07-03 — Rebuild Phase A · Stage 1: the global plan review (owner-live)",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-07-03-rebuild-planning-phase-doc.md",
-      "date": "2026-07-03",
-      "title": "2026-07-03 — Document the rebuild review-then-plan phase (process + next-session goal)",
       "status": "complete",
       "run_type": "",
       "self_initiated": false
