@@ -524,6 +524,13 @@ every `DECIDED:` as *also commit it to a doc*, not chat-only.
   branch-protected, routine branch+PR pushes pass — it's specifically *first-publish* and
   *destructive* verbs that wall. Treat ⚠ consent lines as the sole moments the owner's absence is
   the critical path.
+- **▸ Dispatch budget — 4 KiB per spawn (2026-07-08 finding).** The coordinator can pass at most
+  **4096 bytes** of instructions to a session it spawns (`start_project_session` hard-cap). So it
+  cannot hand a child a full brief inline — task detail lives in a **committed doc** and the
+  dispatch is a terse pointer ("read X, do task N"). This is *why* briefs must be committed and the
+  coordinator points children at the plan rather than restating it (it reinforces the
+  repo-as-context model, but as a hard limit, not a preference); an over-long dispatch simply
+  fails. Also an activation-plan §4 feedback item.
 - **▸ Load.** Scales on clean-ownership sessions (claims + self-describing PRs + write-back), not
   on head-only state. Overload tells: stale checklist · generic replies · misattributed work ·
   growing wake latency. A second Project is for a separate *decision rhythm* (the trading repo

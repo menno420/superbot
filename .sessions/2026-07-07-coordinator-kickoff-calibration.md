@@ -296,6 +296,22 @@ native lane claims. Net lesson across addenda 13→15: I escalated a security wa
 evidence, then over-corrected into a tangent bullet; the owner cut it. Feedback stays incident-
 backed only.
 
+## Addendum 16 (sixteenth PR — 4 KiB dispatch-instruction cap finding + probe fleet running)
+
+New EAP finding, flagged convergently by me (from the owner's screenshot) and the coordinator
+(from dispatching the permission-probe): **`start_project_session` caps a spawned session's
+instructions at 4096 bytes.** The permission-probe directive exceeded it; the coordinator
+compressed it (all 11 tests + rails + taxonomy + report spec preserved, only prose squeezed) and
+dispatched successfully. For an orchestration product whose job is handing briefs to child
+sessions, 4 KiB is tight — it forces the repo-as-context model (detail in committed docs, terse
+"read X do task N" dispatches) as a hard limit, not a preference. Captured as an activation-plan
+§4 email bullet + a kickoff §8 operating-model "▸ Dispatch budget" note. The permission-probe
+fleet is running (manifest-by-number, scratch-branch-only, cleanup-as-data-point, gotcha-last-
+isolated, six priors cited not re-triggered); its report lands separately as the coordinator's
+own docs-only PR (`docs/planning/projects-eap-permission-probe-report-2026-07-08.md` + evaluation-
+journal pointer + email-ready summary). Only owner-parked item remaining: the step-7 publish
+session (auto-mode first-publish wall).
+
 ## Docs audit (Q-0104)
 
 `check_docs.py --strict` ✓ · `check_current_state_ledger.py --strict` ✓ (exit 0; #1802/#1804/
