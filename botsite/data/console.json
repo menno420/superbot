@@ -1,19 +1,195 @@
 {
   "meta": {
-    "generated_at": "2026-07-08T00:53:42Z",
+    "generated_at": "2026-07-08T16:20:05Z",
     "build": {
-      "commit": "ec482f0e",
-      "subject": "docs: EAP auto-mode permission-boundary probe report (#1830)",
-      "committed_at": "2026-07-08T00:53:42Z"
+      "commit": "e9988b3b",
+      "subject": "Merge pull request #1861 from menno420/claude/projects-testing-anthropic-feedback-5xqamy",
+      "committed_at": "2026-07-08T16:20:05Z"
     }
   },
   "sessions": [
+    {
+      "file": "2026-07-08-wave1-lane-b-supersede-checker.md",
+      "date": "2026-07-08",
+      "title": "Session — Wave-1 lane B: supersede-banner integrity checker",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-07-08-w2-f6-reaction-role-write-boundary.md",
+      "date": "2026-07-08",
+      "title": "2026-07-08 — W2-F6: reaction-role write-boundary invariant suite",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-07-08-w2-a1-server-management-docs-refresh.md",
+      "date": "2026-07-08",
+      "title": "2026-07-08 — Wave-2 lane A1: server-management docs truth refresh (audit F1–F5)",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-07-08-repo-settings-ledger-phase1.md",
+      "date": "2026-07-08",
+      "title": "2026-07-08 — Settings ledger Phase 1 (captured from the owner's recording)",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-07-08-reconcile-band1830.md",
+      "date": "2026-07-08",
+      "title": "Session — thirty-eighth Q-0107 reconciliation pass (band-#1830)",
+      "status": "complete",
+      "run_type": "routine",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-07-08-permprobe-standing-grant-row.md",
+      "date": "2026-07-08",
+      "title": "2026-07-08 — Permission probe: standing-grant row (not-attempted record)",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-07-08-permprobe-clearpath-addendum.md",
+      "date": "2026-07-08",
+      "title": "2026-07-08 — Permission-probe clear-path addendum (test #8, explicit operator intent)",
+      "status": "complete",
+      "run_type": "manual",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-07-08-ledger-correction-api-caps.md",
+      "date": "2026-07-08",
+      "title": "2026-07-08 — Ledger correction: new repos are bare + full API capability map",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-07-08-grooming-wave1-usage-limit.md",
+      "date": "2026-07-08",
+      "title": "2026-07-08 — Grooming wave-1 lane C: usage-limit-aware routines → plan",
+      "status": "complete",
+      "run_type": "manual",
+      "self_initiated": true
+    },
+    {
+      "file": "2026-07-08-groom-pr1846-followons.md",
+      "date": "2026-07-08",
+      "title": "2026-07-08 — Grooming: PR #1846 follow-ons (Wave-2, coordinator-dispatched)",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-07-08-forward-only-and-settings-plan.md",
+      "date": "2026-07-08",
+      "title": "2026-07-08 — Capture: forward-only Project experiment + per-repo settings ledger",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-07-08-email-two-layer-flagship.md",
+      "date": "2026-07-08",
+      "title": "2026-07-08 — Email flagship: fold in the two-layer clear-path finding",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-07-08-email-compaction-verifiability.md",
+      "date": "2026-07-08",
+      "title": "2026-07-08 — Anthropic feedback email: compaction + verifiability audit",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
     {
       "file": "2026-07-08-eap-permission-probe.md",
       "date": "2026-07-08",
       "title": "2026-07-08 — EAP auto-mode permission-boundary probe",
       "status": "complete",
       "run_type": "manual",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-07-08-eap-email-two-part-two-reviewer.md",
+      "date": "2026-07-08",
+      "title": "Session — EAP email: two-part / two-author / two-reviewer restructure",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-07-08-eap-email-refresh-forward-only-project.md",
+      "date": "2026-07-08",
+      "title": "Session — EAP email refresh + forward-only Project instructions",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-07-08-eap-email-finalize.md",
+      "date": "2026-07-08",
+      "title": "Session — Finalize the Anthropic EAP email",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-07-08-eap-email-agent-narrative.md",
+      "date": "2026-07-08",
+      "title": "Session — EAP email: Part 2 as a parallel agent narrative",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-07-08-eap-direction-handoff.md",
+      "date": "2026-07-08",
+      "title": "2026-07-08 — EAP email + direction handoff doc",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-07-08-docs-fast-path-plan-homing-gate.md",
+      "date": "2026-07-08",
+      "title": "2026-07-08 — Docs-only fast path: enforce plan homing (from #1854 finding)",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-07-08-campaign-self-audit.md",
+      "date": "2026-07-08",
+      "title": "2026-07-08 — Campaign self-audit (EAP probe: coordinator memory vs ground truth)",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-07-08-audit-server-management.md",
+      "date": "2026-07-08",
+      "title": "2026-07-08 — Audit: server-management contract-vs-code audit (docs-only)",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-07-08-api-publish-finding.md",
+      "date": "2026-07-08",
+      "title": "2026-07-08 — Finding: GitHub-API publish bypasses the git-push first-publish wall",
+      "status": "complete",
+      "run_type": "",
       "self_initiated": false
     },
     {
@@ -311,189 +487,13 @@
       "status": "complete",
       "run_type": "",
       "self_initiated": false
-    },
-    {
-      "file": "2026-07-06-codeql-stuck-scan-watchdog.md",
-      "date": "2026-07-06",
-      "title": "2026-07-06 — Verify PR #1743 + CodeQL stuck-scan watchdog",
-      "status": "complete",
-      "run_type": "manual",
-      "self_initiated": true
-    },
-    {
-      "file": "2026-07-06-ci-arc-completion.md",
-      "date": "2026-07-06",
-      "title": "2026-07-06 — CI-arc completion: 2nd AST guard + tail cleanup",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": true
-    },
-    {
-      "file": "2026-07-06-ast-guard-audit-seam.md",
-      "date": "2026-07-06",
-      "title": "2026-07-06 — AST guard: check_audit_seam (audit-seam coverage checker)",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": true
-    },
-    {
-      "file": "2026-07-05-save-fixes-implementation.md",
-      "date": "2026-07-05",
-      "title": "2026-07-05 — Stage-2 \"save fixes\" implementation (queued current-bot bug fixes)",
-      "status": "complete",
-      "run_type": "manual",
-      "self_initiated": true
-    },
-    {
-      "file": "2026-07-05-save-fixes-codeql-followup.md",
-      "date": "2026-07-05",
-      "title": "2026-07-05 — Save-fixes follow-up: CodeQL log-injection hardening",
-      "status": "complete",
-      "run_type": "manual",
-      "self_initiated": true
-    },
-    {
-      "file": "2026-07-05-rebuild-stage2-subsystem-walk.md",
-      "date": "2026-07-05",
-      "title": "2026-07-05 — Rebuild Phase-A Stage-2 subsystem walk (owner-led)",
-      "status": "complete",
-      "run_type": "manual",
-      "self_initiated": true
-    },
-    {
-      "file": "2026-07-05-next-session-prep.md",
-      "date": "2026-07-05",
-      "title": "2026-07-05 — Next-session prep + docs banking (owner-directed)",
-      "status": "complete",
-      "run_type": "manual",
-      "self_initiated": true
-    },
-    {
-      "file": "2026-07-05-ci-watchdog-fix.md",
-      "date": "2026-07-05",
-      "title": "2026-07-05 — CI watchdog self-silencing fix + next-agent handoff",
-      "status": "complete",
-      "run_type": "manual",
-      "self_initiated": true
-    },
-    {
-      "file": "2026-07-05-ci-setup-redesign.md",
-      "date": "2026-07-05",
-      "title": "2026-07-05 — CI-setup redesign (best-possible CI: current bot + fresh repo)",
-      "status": "complete",
-      "run_type": "manual",
-      "self_initiated": true
-    },
-    {
-      "file": "2026-07-05-ci-setup-brief.md",
-      "date": "2026-07-05",
-      "title": "2026-07-05 — CI-setup redesign brief (owner-directed prep)",
-      "status": "complete",
-      "run_type": "manual",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-07-05-ci-phase-a-gating.md",
-      "date": "2026-07-05",
-      "title": "2026-07-05 — CI Phase-A: make the should-gate invariants actually block merges",
-      "status": "complete",
-      "run_type": "manual",
-      "self_initiated": true
-    },
-    {
-      "file": "2026-07-04-review-open-prs.md",
-      "date": "2026-07-04",
-      "title": "2026-07-04 — Open-PR review + merge sweep",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-07-04-reconcile.md",
-      "date": "2026-07-04",
-      "title": "2026-07-04 — Thirty-fourth Q-0107 reconciliation pass (band-#1710)",
-      "status": "complete",
-      "run_type": "routine",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-07-04-rebuild-foundational-design.md",
-      "date": "2026-07-04",
-      "title": "2026-07-04 — Rebuild foundational-DESIGN (AUDITED → Gate-0 / L0-plannable)",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-07-04-gate0-grammar-freeze.md",
-      "date": "2026-07-04",
-      "title": "2026-07-04 — Gate-0 grammar-freeze + Phase-B L0 build-order",
-      "status": "complete",
-      "run_type": "manual",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-07-04-gate0-brief-prep.md",
-      "date": "2026-07-04",
-      "title": "2026-07-04 — Prepare the Gate-0 grammar-freeze + Phase-B L0 ultracode brief",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-07-03-ultracode-quicklaunch.md",
-      "date": "2026-07-03",
-      "title": "2026-07-03 — Ultracode quick-launch prompts + durable-home verification",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-07-03-tier1-owner-decisions.md",
-      "date": "2026-07-03",
-      "title": "2026-07-03 — Tier-1 owner decisions recorded (Q-0237)",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-07-03-surface-proving-mechanics-ultracode.md",
-      "date": "2026-07-03",
-      "title": "2026-07-03 — Surface + proving foundations audit (PROMPT B, ultracode)",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-07-03-reconcile.md",
-      "date": "2026-07-03",
-      "title": "2026-07-03 — Thirty-third Q-0107 reconciliation pass (band-#1680)",
-      "status": "complete",
-      "run_type": "routine",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-07-03-rebuild-stage1-global-review.md",
-      "date": "2026-07-03",
-      "title": "2026-07-03 — Rebuild Phase A · Stage 1: the global plan review (owner-live)",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-07-03-rebuild-planning-phase-doc.md",
-      "date": "2026-07-03",
-      "title": "2026-07-03 — Document the rebuild review-then-plan phase (process + next-session goal)",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
     }
   ],
   "ideas": {
-    "total": 213,
+    "total": 218,
     "by_status": {
-      "historical": 22,
-      "ideas": 188,
+      "historical": 23,
+      "ideas": 192,
       "reference": 3
     }
   },
