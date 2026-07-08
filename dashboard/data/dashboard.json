@@ -1,10 +1,10 @@
 {
   "meta": {
-    "generated_at": "2026-07-08T05:46:32Z",
+    "generated_at": "2026-07-08T12:22:32Z",
     "build": {
-      "commit": "a4b5f7fc",
-      "subject": "Merge pull request #1835 from menno420/bot/dashboard-refresh",
-      "committed_at": "2026-07-08T05:46:32Z"
+      "commit": "e3b17a2c",
+      "subject": "Merge pull request #1839 from menno420/claude/permprobe-clearpath-0708",
+      "committed_at": "2026-07-08T12:22:32Z"
     },
     "counts": {
       "functions": 43,
@@ -3148,6 +3148,22 @@
       "self_initiated": false
     },
     {
+      "file": "2026-07-08-permprobe-clearpath-addendum.md",
+      "date": "2026-07-08",
+      "title": "2026-07-08 — Permission-probe clear-path addendum (test #8, explicit operator intent)",
+      "status": "complete",
+      "run_type": "manual",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-07-08-email-compaction-verifiability.md",
+      "date": "2026-07-08",
+      "title": "2026-07-08 — Anthropic feedback email: compaction + verifiability audit",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
       "file": "2026-07-08-eap-permission-probe.md",
       "date": "2026-07-08",
       "title": "2026-07-08 — EAP auto-mode permission-boundary probe",
@@ -3599,22 +3615,6 @@
       "file": "2026-07-03-surface-proving-mechanics-ultracode.md",
       "date": "2026-07-03",
       "title": "2026-07-03 — Surface + proving foundations audit (PROMPT B, ultracode)",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-07-03-reconcile.md",
-      "date": "2026-07-03",
-      "title": "2026-07-03 — Thirty-third Q-0107 reconciliation pass (band-#1680)",
-      "status": "complete",
-      "run_type": "routine",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-07-03-rebuild-stage1-global-review.md",
-      "date": "2026-07-03",
-      "title": "2026-07-03 — Rebuild Phase A · Stage 1: the global plan review (owner-live)",
       "status": "complete",
       "run_type": "",
       "self_initiated": false
