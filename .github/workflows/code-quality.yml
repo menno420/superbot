@@ -82,6 +82,20 @@ jobs:
       - name: Run doc hygiene (check_docs)
         run: python3 scripts/check_docs.py --strict
 
+      # Plan-homing gate — runs on EVERY PR (incl. docs-only), pure stdlib so it needs no
+      # setup, ~1s. Closes the #1843 "green-by-skip" gap: the docs-only fast path skips
+      # pytest, including the live-tree test test_live_repo_plans_are_all_homed — so the one
+      # PR class that can introduce an unhomed plan (docs-only) was exactly the class where
+      # the guard was skipped, and #1843 merged green in 12s then reddened every subsequent
+      # full-CI branch. check_docs above checks *reachability* (≥1 inbound link from
+      # anywhere); this checks *homing* (a live `plan`-badged doc must be linked from a
+      # routing doc — roadmap / current-state / plan index / a folio). See
+      # scripts/check_plan_homing.py and docs/operations/ci-what-runs-where.md §2b.
+      # Q-0194 friction→guard, wired 2026-07-08 (from the PR #1854 archaeology). Disposable
+      # (Q-0105): drop this step if it false-blocks (e.g. deliberately-parked drafts).
+      - name: Plan-homing gate (check_plan_homing)
+        run: python3 scripts/check_plan_homing.py --strict
+
       # Tool-pin drift is a HARD gate (CI-setup redesign PR #1739, decision G4). The pins must match
       # across code-quality.yml / requirements-dev.txt / .pre-commit-config.yaml (CLAUDE.md rule #3); a
       # Dependabot bump of one alone silently desynced them and reached main (#1315). tool-pins.yml runs

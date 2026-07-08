@@ -26,15 +26,21 @@ Run::
     python3.10 scripts/check_plan_homing.py --strict   # exit 1 when a live plan is unhomed
     python3.10 scripts/check_plan_homing.py --json      # machine-readable summary
 
-**Report-only by design.** An unhomed plan is a *routing* signal for the reconciliation cadence /
-a planning session, not a per-push merge blocker — so the default exit is 0 and ``--strict`` is the
-opt-in cadence gate (the pattern of ``check_plan_backlog.py``/``check_sector_map.py``). It reasons
-over docs only — never touches runtime code, never runs a bot.
+**Report-only by default; ``--strict`` is a per-PR merge gate since 2026-07-08.** The default
+exit is 0 (a routing readout for a planning session), while ``--strict`` runs as an always-on
+pre-setup step in the required ``code-quality`` job — **including the docs-only fast path**. That
+promotion (PR #1855, Q-0194 friction→guard) closes the #1843 "green-by-skip" gap: the fast path
+skips pytest, so the live-tree test ``test_live_repo_plans_are_all_homed`` never ran on exactly
+the PR class (docs-only) that can introduce an unhomed plan; #1843 merged green in 12s and
+reddened every subsequent full-CI branch until the plan was homed by hand. It reasons over docs
+only — never touches runtime code, never runs a bot.
 
-Reliability (Q-0105): **unverified — added 2026-06-20.** The "routing doc" allow-list and the
-basename link-match are heuristics; confirm the homeless list against the plan index by hand a few
-times across sessions before trusting ``--strict``, and **delete this script if it proves noisy**
-(e.g. flags deliberately-parked Someday drafts) over multiple sessions rather than working around it.
+Reliability (Q-0105): added 2026-06-20; CI-gating since 2026-07-08 (PR #1855). Verified against
+ground truth twice (the 2026-06-19 planning-map orphan set; the #1843 unhomed plan, which it
+flags and the homed fix clears). The "routing doc" allow-list and the basename link-match are
+still heuristics; **demote the CI step back to advisory (or delete this script) if it proves
+noisy** (e.g. flags deliberately-parked Someday drafts) over multiple sessions rather than
+working around it.
 
 → relates ``scripts/check_docs.py`` (reachability) · ``scripts/check_sector_map.py`` (folio homing) ·
 ``scripts/check_plan_backlog.py`` (depth) · ``docs/planning/README.md`` · ``docs/roadmap.md``.

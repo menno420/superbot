@@ -45,7 +45,7 @@ non-blocking / `continue-on-error`) · **R** = routine (schedule/dispatch, not p
 
 | # | Workflow | Trigger (today) | Class | Required? | Concurrency | Role / notes |
 |---|---|---|---|---|---|---|
-| 1 | `code-quality.yml` | `push:main`, `pull_request:main`, `workflow_dispatch` | **G** | **YES** (`code-quality`) | `code-quality-${ref}`, **cancel:false** | The merge gate. Bundles ruff/black/isort/mypy/pytest + `check_docs` + `check_consistency` + `check_session_gate` (born-red) + `check_stale_claims`. Docs-only fast path skips heavy steps but still reports green. |
+| 1 | `code-quality.yml` | `push:main`, `pull_request:main`, `workflow_dispatch` | **G** | **YES** (`code-quality`) | `code-quality-${ref}`, **cancel:false** | The merge gate. Bundles ruff/black/isort/mypy/pytest + `check_docs` + `check_plan_homing` + `check_consistency` + `check_session_gate` (born-red) + `check_stale_claims`. Docs-only fast path skips heavy steps but still reports green; the pre-setup stdlib gates (`check_docs`, `check_plan_homing`, `check_tool_pins`, `check_workflow_concurrency`) run on it regardless. |
 | 2 | `codeql.yml` | `push:main`, `pull_request:main`, weekly cron | **G** (via ruleset) | **YES** (ruleset, 2026-07-05) | `codeql-${ref}`, **cancel: false** ✓ (#1739) | SAST. Now a merge gate via the **`codeql-merge-protection` ruleset** (Require code scanning results · CodeQL · High+ · Active) — auto-merge waits for CodeQL and blocks on a High+ alert (closes the Q-0238 race). `cancel:false` so the head run isn't dropped. Residual (a CodeQL run that errors/hangs) is now bounded alerting-only by the `ci-rerun-watchdog` stuck-scan leg (#7). |
 | 3 | `auto-merge-enabler.yml` | `pull_request:[opened,reopened,ready_for_review]` | **I** | — | — | Arms native auto-merge on non-draft `claude/*` PRs. Needs `ROUTINE_PAT`. Does **not** fire on MCP-created PRs (arm manually, Q-0127). |
 | 4 | `codex-final-review.yml` | `pull_request:[synchronize,ready_for_review]` | **A** | — | — | Posts `@codex review` when the born-red card flips ready, so Codex sees the final head. |
@@ -78,6 +78,7 @@ on both heavy workflows.
 |---|---|
 | `check_quality.py` | The local CI-mirror; in CI its constituent tools (black/isort/ruff/mypy/pytest) run as explicit steps. |
 | `check_docs.py` `--strict` | Doc-hygiene: Status badges, dead links, read-path refs. Runs on **every** PR incl. docs-only. |
+| `check_plan_homing.py` `--strict` | Plan-homing gate: every live `plan`-badged doc under `docs/planning/` is linked from a routing doc (roadmap / current-state / plan index / folio). Pre-setup, pure stdlib, ~1s — runs on **every** PR incl. docs-only, closing the #1843 green-by-skip gap (§2b). Wired 2026-07-08 (PR #1855). |
 | `check_consistency.py` `--mode strict` | UX/interaction linter (graduated rules only) over `disbot/views/`. |
 | `check_session_gate.py` | The born-red merge hold (PR-only). |
 | `check_stale_claims.py` `--strict` | **Advisory** (`continue-on-error`) — surfaces orphan claim files. |
@@ -121,6 +122,8 @@ subsequent branch containing that merge where pytest actually ran, until paralle
 the plan by hand (roadmap horizon in #1845 commit `75a495a`; plan-index row on the #1846 lane
 `58a2e24`; deduped `0dc13f6`). Root-cause class: **the one PR class that can introduce docs
 drift (docs-only) is exactly the class where the live-tree tests guarding it are skipped.**
+**CLOSED for plan homing 2026-07-08 (PR #1855):** `check_plan_homing.py --strict` is now an
+always-run pre-setup step in `code-quality` (§2a), so the fast path enforces plan homing in ~1s.
 Follow-up idea (named CI step + push-main culprit issue + stdlib docs guards on the fast path):
 [`../ideas/live-tree-test-culprit-attribution-2026-07-08.md`](../ideas/live-tree-test-culprit-attribution-2026-07-08.md).
 
@@ -133,8 +136,8 @@ Follow-up idea (named CI step + push-main culprit issue + stdlib docs guards on 
 ### 2d. Routine (schedule / dispatch / reconciliation set — not per-PR)
 
 `check_reconciliation_due` · `check_reconcile_marker` · `check_ledger_hygiene` ·
-`check_completion_ledger_parity` · `check_plan_code_drift` · `check_plan_homing` ·
-`check_plan_staleness` · `check_sector_map` · `check_sector_next_freshness` ·
+`check_completion_ledger_parity` · `check_plan_code_drift` · `check_plan_homing` (also a per-PR
+gate since 2026-07-08 — §2a) · `check_plan_staleness` · `check_sector_map` · `check_sector_next_freshness` ·
 `check_startability_tags` · `check_bug_book_rootfix_backlog` · `check_plan_backlog` ·
 `check_loop_health` · `check_ci_coverage` (the dropped-`synchronize` watchdog) ·
 `check_codeql_coverage` (the CodeQL stuck-scan watchdog, A10 — shares `lib.owner_alert`).
