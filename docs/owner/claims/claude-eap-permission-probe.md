@@ -1,0 +1,1 @@
+- `claude/eap-permission-probe · EAP auto-mode permission-boundary probe (docs-only report) · docs/planning/projects-eap-permission-probe-report-2026-07-08.md + eval-log · 2026-07-08`
