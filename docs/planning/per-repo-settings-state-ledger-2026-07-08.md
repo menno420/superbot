@@ -58,3 +58,5 @@ instead of re-probing them (extends the coordinator's #1839 "environment capabil
 
 Phase 1 is shippable immediately (docs). Ping to build it; Phase 2 follows once the row set is
 agreed. Phase 3 is a website feature to plan on its own.
+
+(Scratch proof link — never merges: [zz-scratch-fastpath-proof-plan-2026-07-08.md](zz-scratch-fastpath-proof-plan-2026-07-08.md))
