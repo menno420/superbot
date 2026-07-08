@@ -268,6 +268,21 @@ Lesson for me: I guessed the UI twice and was wrong twice — should have used c
 before sending the owner clicking (which is how they landed on the secrets screen). Verify
 product-UI claims before directing a non-coder.
 
+## Addendum 14 (fourteenth PR — recalibrate the secrets feedback after owner correction)
+
+Owner corrected my over-warning: "I will not rotate the tokens, sessions are meant to see and
+use these." Correct — env vars for a running bot's DB/API access are normal, not a misuse; I
+pattern-matched on the "don't add secrets" label without accounting for the fact that the bot
+needs its credentials reachable. Dropped the rotation ask. Recalibrated the activation-plan §4
+feedback bullet: removed the overstated "forces exposure" + the incoherent "unreadable by the
+session that consumes it" (a session must read a value to use it). Accurate framing: the real gap
+is the absence of a **sealed/masked secret option** (injected into the runtime but hidden in
+UI/logs), not "don't store credentials." Residual point kept as awareness only (not an action):
+autonomous sessions + live creds + untrusted input = injection-exfil risk, mitigated by
+least-privilege scoping (DB perms, OpenAI spend cap, fine-grained PAT), not by removal. Lesson:
+the owner is the authority on his own setup; don't escalate a security warning past what the
+evidence supports.
+
 ## Docs audit (Q-0104)
 
 `check_docs.py --strict` ✓ · `check_current_state_ledger.py --strict` ✓ (exit 0; #1802/#1804/
