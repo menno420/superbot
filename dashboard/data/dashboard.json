@@ -1,10 +1,10 @@
 {
   "meta": {
-    "generated_at": "2026-07-08T16:35:43Z",
+    "generated_at": "2026-07-08T15:45:55Z",
     "build": {
-      "commit": "56d27f44",
-      "subject": "Merge pull request #1863 from menno420/claude/reconcile-band1860",
-      "committed_at": "2026-07-08T16:35:43Z"
+      "commit": "7f7628e1",
+      "subject": "Close-out: rebuild-direction handoff + mark EAP email sent (#1868)",
+      "committed_at": "2026-07-08T15:45:55Z"
     },
     "counts": {
       "functions": 43,
@@ -3236,6 +3236,22 @@
       "self_initiated": false
     },
     {
+      "file": "2026-07-08-rebuild-project-kickoff.md",
+      "date": "2026-07-08",
+      "title": "Session — Rebuild Project kickoff (Custom Instructions + startup prompt)",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-07-08-rebuild-direction-handoff.md",
+      "date": "2026-07-08",
+      "title": "Session — Close-out: rebuild-direction handoff + email marked sent",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
       "file": "2026-07-08-permprobe-standing-grant-row.md",
       "date": "2026-07-08",
       "title": "2026-07-08 — Permission probe: standing-grant row (not-attempted record)",
@@ -3316,6 +3332,14 @@
       "self_initiated": false
     },
     {
+      "file": "2026-07-08-eap-email-sign-part2.md",
+      "date": "2026-07-08",
+      "title": "Session — Sign Part 2 of the EAP email as Claude",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
       "file": "2026-07-08-eap-email-refresh-forward-only-project.md",
       "date": "2026-07-08",
       "title": "Session — EAP email refresh + forward-only Project instructions",
@@ -3327,6 +3351,14 @@
       "file": "2026-07-08-eap-email-finalize.md",
       "date": "2026-07-08",
       "title": "Session — Finalize the Anthropic EAP email",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-07-08-eap-email-assemble-part1.md",
+      "date": "2026-07-08",
+      "title": "Session — Assemble the full EAP email (Part 1 landed + Part 2 made complementary)",
       "status": "complete",
       "run_type": "",
       "self_initiated": false
@@ -3631,38 +3663,6 @@
       "file": "2026-07-06-gate-v-synthesis.md",
       "date": "2026-07-06",
       "title": "2026-07-06 — Gate V final synthesis (Arm Σ)",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-07-06-gate-v-findings-corrections.md",
-      "date": "2026-07-06",
-      "title": "2026-07-06 — Gate V evidence-findings corrections (Codex C2–C5 + Agent Mode)",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-07-06-gate-v-c1-and-arm-a-review.md",
-      "date": "2026-07-06",
-      "title": "2026-07-06 — Gate V: verify C1 re-run + Arm A Ultracode review (fleet complete)",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-07-06-gate-v-arm-d-live-testing.md",
-      "date": "2026-07-06",
-      "title": "2026-07-06 — GATE V Arm D: empirical live-testing evidence pack",
-      "status": "complete",
-      "run_type": "manual",
-      "self_initiated": true
-    },
-    {
-      "file": "2026-07-06-fable5-newrepo-start-brief.md",
-      "date": "2026-07-06",
-      "title": "2026-07-06 — Fable 5 Ultracode launch brief: finalize the new-repo-start method",
       "status": "complete",
       "run_type": "",
       "self_initiated": false
