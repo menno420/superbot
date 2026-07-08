@@ -10,6 +10,10 @@ moment, and the reasoning behind it. Read the binding docs (`architecture.md`, `
 
 ## Investigations
 
+- [`../analysis/server-management-audit-2026-07-08.md`](../analysis/server-management-audit-2026-07-08.md)
+  — server-management contract-vs-code audit (Wave-1 lane A, docs-only): runtime seams conform
+  (0 RISKY); 6 LOW findings — ownership.md/folio drift on reaction-role tables, channel-lifecycle
+  scope, server-logging v2, plus a missing reaction-role write-boundary invariant.
 - [`dashboard-autopr-conflict-rootcause-2026-06-21.md`](dashboard-autopr-conflict-rootcause-2026-06-21.md)
   — why the automated `bot/dashboard-refresh` PR conflicts (volatile generated-file metadata), the
   fixes shipped, and the carried-forward analysis of the wider "CI doesn't fire / false-`dirty`"
