@@ -286,3 +286,9 @@ product review's analysis — confirm, contradict, or deepen it with lived examp
   (multi-repo env, verified by probe session 13:55Z). · expected: setup-script failure degrades
   gracefully — skip failed steps, boot the session, surface "setup degraded" in the session
   list. · weight: blocked-me · reproducible: yes
+- 2026-07-09 ~16:36Z · axis: reliability/completion · observed: fleet-scale API pressure — the
+  shared token's GraphQL quota exhausted mid-run ("API rate limit already exceeded", 10498/5000
+  used), blocking enable_pr_auto_merge (GraphQL-only) while REST kept working; at current
+  10-Project call volume this recurs ~hourly. Manager workaround: direct REST merge on green as
+  fallback. · expected: auto-merge arming to be REST-reachable, or per-Project token quotas — a
+  10-agent fleet on one user token saturates GraphQL. · weight: friction · reproducible: yes
