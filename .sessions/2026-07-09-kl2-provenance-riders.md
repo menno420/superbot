@@ -1,6 +1,6 @@
 # 2026-07-09 — KL-2 companion: program-law provenance riders on the origin Q-blocks
 
-> **Status:** `in-progress`
+> **Status:** `complete`
 
 ## What I did
 
