@@ -77,6 +77,23 @@ _MERGE_OK_STATUSES = _READY_STATUSES | _TERMINAL_OK_STATUSES
 # part of word-tokens like `in-progress`.
 _STATUS_RE = re.compile(r"\*\*Status:\*\*\s*`?\s*([A-Za-z0-9 _-]+?)\s*`?\s*(?:[—–|]|$)")
 
+# --- Telemetry-append guard (Q-0194 friction→guard; fleet-review 2026-07-09 #3) --
+# Provenance + kill-switch (Q-0105): added 2026-07-09 because the telemetry-append
+# rule in `telemetry/README.md` ("append your session's row at close") was
+# exhortative only and already leaking — 3 rows in `telemetry/model-usage.jsonl`
+# vs ≥4 sessions carded after the lane shipped (#1884, 2026-07-09 06:41). Enforce,
+# don't exhort (Q-0132): a PR that ADDS a `.sessions/` card dated on/after the
+# floor below must also append ≥1 line to the telemetry feed in the same PR.
+# The date floor keeps the 866 pre-existing cards (and reconciliation re-badges,
+# which are modifications, not additions) from going retroactively red.
+# UNVERIFIED: confirm its output against ground truth a few times across sessions
+# before trusting it. DELETE THIS GUARD (these constants, `_card_date`,
+# `telemetry_required_cards`, `telemetry_rows_added`, the telemetry block in
+# `main()`, and its tests) if it proves unreliable over multiple sessions.
+_TELEMETRY_FILE = "telemetry/model-usage.jsonl"
+_TELEMETRY_ENFORCE_SINCE = "2026-07-09"  # ISO date — string compare is date compare
+_CARD_DATE_RE = re.compile(r"^(\d{4}-\d{2}-\d{2})-")
+
 
 def parse_status(text: str) -> str | None:
     """Return the lowercased `> **Status:** `<token>`` badge token, or None."""
@@ -166,6 +183,64 @@ def gate_session_cards(base: str | None, head: str | None) -> list[Path]:
     return _diff_session_cards(base, head, "AM")
 
 
+def _card_date(card: Path) -> str | None:
+    """ISO date from a `.sessions/YYYY-MM-DD-<slug>.md` filename, or None."""
+    m = _CARD_DATE_RE.match(card.name)
+    return m.group(1) if m else None
+
+
+def telemetry_required_cards(cards: list[Path]) -> list[Path]:
+    """Cards whose filename date is on/after the telemetry enforcement floor.
+
+    Undated filenames are skipped (fail-open — the born-red status gate still
+    applies to them; this guard only ever *adds* a requirement, never blocks a
+    card it cannot date).
+    """
+    required: list[Path] = []
+    for card in cards:
+        date = _card_date(card)
+        if date is not None and date >= _TELEMETRY_ENFORCE_SINCE:
+            required.append(card)
+    return required
+
+
+def telemetry_rows_added(base: str | None, head: str | None) -> bool | None:
+    """Did the diff append ≥1 line to ``telemetry/model-usage.jsonl``?
+
+    Returns True (rows added), False (no rows added), or None when git could not
+    answer — the same fail-open bias as `_diff_session_cards` (a gate that cannot
+    read git must not block; the README rule + session enders are the backstop).
+
+    CI diffs base..head; locally we diff origin/main...HEAD **plus** the working
+    tree vs HEAD, so a pre-push run sees a not-yet-committed row.
+    """
+    if base and head:
+        cmds = [["git", "diff", "--numstat", base, head, "--", _TELEMETRY_FILE]]
+    else:
+        cmds = [
+            ["git", "diff", "--numstat", "origin/main...HEAD", "--", _TELEMETRY_FILE],
+            ["git", "diff", "--numstat", "HEAD", "--", _TELEMETRY_FILE],
+        ]
+    answered = False
+    for cmd in cmds:
+        try:
+            result = subprocess.run(cmd, capture_output=True, text=True, cwd=REPO_ROOT)
+        except OSError:
+            continue
+        if result.returncode != 0:
+            continue
+        answered = True
+        for line in result.stdout.splitlines():
+            parts = line.split("\t")
+            if len(parts) >= 3 and parts[2].strip() == _TELEMETRY_FILE:
+                try:
+                    if int(parts[0]) > 0:
+                        return True
+                except ValueError:  # binary diff marker "-"
+                    continue
+    return False if answered else None
+
+
 def _cards_not_in(
     cards: list[Path],
     ok_statuses: set[str],
@@ -241,15 +316,39 @@ def main(argv: list[str] | None = None) -> int:
         )
         return 0
 
+    added_cards = added_session_cards(args.base, args.head)
+
+    # Telemetry-append guard (Q-0194; provenance header above): a PR that ADDS a
+    # card dated >= the floor must also append a telemetry row in the same diff.
+    telemetry_held = False
+    required = telemetry_required_cards(added_cards)
+    if required and telemetry_rows_added(args.base, args.head) is False:
+        telemetry_held = True
+
     held = merge_blocking_cards(cards)
-    if not held:
+    if not held and not telemetry_held:
         names = ", ".join(c.name for c in cards)
         print(
             f"check_session_gate: session card(s) ready — merge unblocked ✓ ({names})",
         )
         return 0
 
-    added = {p.resolve() for p in added_session_cards(args.base, args.head)}
+    if telemetry_held:
+        names = ", ".join(c.name for c in required)
+        print(
+            "check_session_gate: MERGE HELD — telemetry row missing (Q-0194 guard).\n"
+            f"  This PR adds session card(s) dated >= {_TELEMETRY_ENFORCE_SINCE} "
+            f"({names})\n"
+            f"  but appends no line to {_TELEMETRY_FILE}.\n"
+            "  Fix: append your session's one-line JSONL row (schema + field rules: "
+            "telemetry/README.md;\n"
+            "  copy the shape of the existing rows) to "
+            f"{_TELEMETRY_FILE} in this same PR.",
+        )
+        if not held:
+            return 1
+
+    added = {p.resolve() for p in added_cards}
     print("check_session_gate: MERGE HELD — session card not marked ready.")
     for card, status in held:
         rel = card.relative_to(REPO_ROOT) if card.is_relative_to(REPO_ROOT) else card

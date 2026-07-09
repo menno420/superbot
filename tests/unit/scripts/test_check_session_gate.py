@@ -91,6 +91,8 @@ def test_main_ready_card_passes(monkeypatch, capsys, tmp_path):
     card = tmp_path / "2026-06-14-x.md"
     card.write_text("# x\n\n> **Status:** `complete`\n", encoding="utf-8")
     monkeypatch.setattr(gate, "gate_session_cards", lambda base, head: [card])
+    # Pin added-cards too: unpatched it reads real git state (flaky across branches).
+    monkeypatch.setattr(gate, "added_session_cards", lambda base, head: [card])
     assert gate.main([]) == 0
     assert "merge unblocked" in capsys.readouterr().out
 
@@ -161,3 +163,122 @@ def test_require_ready_card_complete_triggers(monkeypatch, capsys, tmp_path):
     monkeypatch.setattr(gate, "added_session_cards", lambda base, head: [card])
     assert gate.main(["--require-ready-card"]) == 0
     assert "Codex final-review trigger" in capsys.readouterr().out
+
+
+# --- Telemetry-append guard (Q-0194, 2026-07-09) -----------------------------
+#
+# Provenance (Q-0105): tests for the guard added 2026-07-09; delete alongside the
+# guard if it proves unreliable over multiple sessions.
+
+
+def _ready_card(tmp_path, name):
+    card = tmp_path / name
+    card.write_text("# x\n\n> **Status:** `complete`\n", encoding="utf-8")
+    return card
+
+
+def test_card_date_parses():
+    assert gate._card_date(Path("2026-07-09-some-slug.md")) == "2026-07-09"
+    assert gate._card_date(Path("README.md")) is None
+    assert gate._card_date(Path("undated-slug.md")) is None
+
+
+def test_telemetry_required_only_on_or_after_floor(tmp_path):
+    old = _ready_card(tmp_path, "2026-07-08-old.md")
+    new = _ready_card(tmp_path, "2026-07-09-new.md")
+    undated = _ready_card(tmp_path, "no-date-slug.md")
+    assert gate.telemetry_required_cards([old, new, undated]) == [new]
+
+
+def test_main_new_card_without_telemetry_row_held(monkeypatch, capsys, tmp_path):
+    """A ready card dated >= the floor with no telemetry row in the diff holds."""
+    card = _ready_card(tmp_path, "2026-07-09-x.md")
+    monkeypatch.setattr(gate, "gate_session_cards", lambda base, head: [card])
+    monkeypatch.setattr(gate, "added_session_cards", lambda base, head: [card])
+    monkeypatch.setattr(gate, "telemetry_rows_added", lambda base, head: False)
+    assert gate.main([]) == 1
+    out = capsys.readouterr().out
+    assert "telemetry row missing" in out
+    assert "telemetry/model-usage.jsonl" in out
+
+
+def test_main_new_card_with_telemetry_row_passes(monkeypatch, capsys, tmp_path):
+    card = _ready_card(tmp_path, "2026-07-09-x.md")
+    monkeypatch.setattr(gate, "gate_session_cards", lambda base, head: [card])
+    monkeypatch.setattr(gate, "added_session_cards", lambda base, head: [card])
+    monkeypatch.setattr(gate, "telemetry_rows_added", lambda base, head: True)
+    assert gate.main([]) == 0
+    assert "merge unblocked" in capsys.readouterr().out
+
+
+def test_main_old_card_never_telemetry_held(monkeypatch, capsys, tmp_path):
+    """Cards dated before the floor are exempt — no retroactive redness."""
+    card = _ready_card(tmp_path, "2026-07-08-x.md")
+    monkeypatch.setattr(gate, "gate_session_cards", lambda base, head: [card])
+    monkeypatch.setattr(gate, "added_session_cards", lambda base, head: [card])
+    monkeypatch.setattr(gate, "telemetry_rows_added", lambda base, head: False)
+    assert gate.main([]) == 0
+
+
+def test_main_telemetry_fail_open_when_git_unanswerable(monkeypatch, capsys, tmp_path):
+    """None (git could not answer) must not block — same fail-open bias as the gate."""
+    card = _ready_card(tmp_path, "2026-07-09-x.md")
+    monkeypatch.setattr(gate, "gate_session_cards", lambda base, head: [card])
+    monkeypatch.setattr(gate, "added_session_cards", lambda base, head: [card])
+    monkeypatch.setattr(gate, "telemetry_rows_added", lambda base, head: None)
+    assert gate.main([]) == 0
+
+
+def test_main_born_red_and_telemetry_missing_prints_both(monkeypatch, capsys, tmp_path):
+    """An in-progress card missing its telemetry row reports BOTH holds at once."""
+    card = tmp_path / "2026-07-09-x.md"
+    card.write_text("# x\n\n> **Status:** `in-progress`\n", encoding="utf-8")
+    monkeypatch.setattr(gate, "gate_session_cards", lambda base, head: [card])
+    monkeypatch.setattr(gate, "added_session_cards", lambda base, head: [card])
+    monkeypatch.setattr(gate, "telemetry_rows_added", lambda base, head: False)
+    assert gate.main([]) == 1
+    out = capsys.readouterr().out
+    assert "telemetry row missing" in out
+    assert "session card not marked ready" in out
+
+
+def test_main_modified_only_card_never_telemetry_held(monkeypatch, capsys, tmp_path):
+    """Telemetry engages on ADDED cards only — a re-badge/modification is exempt."""
+    card = _ready_card(tmp_path, "2026-07-09-x.md")
+    monkeypatch.setattr(gate, "gate_session_cards", lambda base, head: [card])
+    monkeypatch.setattr(gate, "added_session_cards", lambda base, head: [])
+    monkeypatch.setattr(gate, "telemetry_rows_added", lambda base, head: False)
+    assert gate.main([]) == 0
+
+
+def test_telemetry_rows_added_real_git(tmp_path):
+    """End-to-end against a real throwaway repo: append → True, no change → False."""
+    import subprocess
+
+    def run(*args):
+        subprocess.run(args, cwd=tmp_path, check=True, capture_output=True)
+
+    run("git", "init", "-q")
+    run("git", "config", "user.email", "t@t")
+    run("git", "config", "user.name", "t")
+    tele = tmp_path / "telemetry"
+    tele.mkdir()
+    (tele / "model-usage.jsonl").write_text('{"session": "a"}\n', encoding="utf-8")
+    run("git", "add", "-A")
+    run("git", "commit", "-qm", "base")
+    base = subprocess.run(
+        ["git", "rev-parse", "HEAD"], cwd=tmp_path, capture_output=True, text=True
+    ).stdout.strip()
+    with (tele / "model-usage.jsonl").open("a", encoding="utf-8") as fh:
+        fh.write('{"session": "b"}\n')
+    run("git", "add", "-A")
+    run("git", "commit", "-qm", "append row")
+    head = subprocess.run(
+        ["git", "rev-parse", "HEAD"], cwd=tmp_path, capture_output=True, text=True
+    ).stdout.strip()
+
+    import unittest.mock
+
+    with unittest.mock.patch.object(gate, "REPO_ROOT", tmp_path):
+        assert gate.telemetry_rows_added(base, head) is True
+        assert gate.telemetry_rows_added(base, base) is False

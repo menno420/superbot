@@ -11,6 +11,9 @@ the kit repo** — `substrate-kit/telemetry/README.md` and the founding plan
 adopts and the kit's `session-close` harvest takes over. Append your session's
 row at close; `task_class` uses the 8 Q-0248 classes verbatim; `tokens_out`
 is null until a real meter exists (KF-9 — estimates must be labeled).
+**Enforced since 2026-07-09 (Q-0194 guard in `scripts/check_session_gate.py`):**
+a PR that *adds* a `.sessions/` card dated ≥ 2026-07-09 is held red in Code
+Quality until the same PR appends ≥1 row here.
 `scripts/export_dashboard_data.py` renders the feed onto the program console's
 "Model & spend telemetry" lane (field-whitelisted; capped to the newest 200).
 The `outcome` object's PR fields are backfilled by the kit-lab's telemetry
