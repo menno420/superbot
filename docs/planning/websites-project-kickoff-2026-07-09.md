@@ -3,7 +3,9 @@
 > **Status:** `plan` — paste-in Custom Instructions + startup prompt for a **third**,
 > separate Claude Code Project (distinct from the rebuild Project and from
 > `superbot`'s own sessions). Target repo: **`menno420/websites`** (owner-created
-> 2026-07-08, currently empty).
+> 2026-07-08, seeded with an intent-commit README 2026-07-09 — no longer empty).
+> **Public** (owner's deliberate choice, matching `superbot-next`/`substrate-kit` —
+> free Actions minutes + Dependabot; flip-to-private is a later checkpoint, not now).
 > **Provenance:** owner directive 2026-07-09, refined through the directing session's
 > question panel + follow-up conversation (see
 > [`rebuild-direction-handoff-2026-07-08.md`](rebuild-direction-handoff-2026-07-08.md)
@@ -75,19 +77,27 @@ project.
 
 ## Infrastructure
 
-Empty repo (`git push` first-publish is walled for agents; use the GitHub Contents
-API's `create_or_update_file` to seed the first commit, exactly like `superbot-next`
-and `substrate-kit` did — full precedent in
-[`docs/operations/repo-settings-state.md`](../operations/repo-settings-state.md)'s
-capability-facts table).
+Repo is seeded (README + intent commit) — normal branch-push git works from here,
+the first-publish wall doesn't apply anymore.
 
-**Railway**: create a new Railway project (distinct from the existing
-`reliable-grace` production project — never touch that one) via the account token
-available in your environment (owner's explicit choice: same full-access token every
-agent container already holds, not a scoped project token — informed choice,
-trade-off already surfaced and accepted). If you cannot reach the Railway API at all
-from this container, that is itself the most important finding to report — say so
-plainly rather than working around it silently.
+**Railway — read this before touching anything.** Your container carries Railway
+env vars: `RAILWAY_API_KEY` (the account token — full access, every agent container
+holds this deliberately, owner's explicit informed choice, trade-off already
+surfaced and accepted) **and also `RAILWAY_PROJECT_ID` / `RAILWAY_SERVICE_ID` /
+`RAILWAY_ENVIRONMENT_ID`, which are pre-set to the PRODUCTION project
+(`reliable-grace`) — `RAILWAY_SERVICE_ID` specifically resolves to the `worker`
+service, i.e. the live bot.** These three ambient IDs are almost certainly there for
+some other purpose (the bot's own deploy tooling expects them); they are **not** a
+hint about where to deploy this site. **Never pass the ambient
+`RAILWAY_PROJECT_ID`/`RAILWAY_SERVICE_ID`/`RAILWAY_ENVIRONMENT_ID` to any Railway
+API call.** Use `RAILWAY_API_KEY` only, to call `projectCreate` and mint your own
+fresh project/environment/service — then use *those* IDs, explicitly, for
+everything from that point on. Confirm in your first status report which IDs you
+ended up using, so this can be double-checked.
+
+If you cannot reach the Railway API at all from this container, that is itself the
+most important finding to report — say so plainly rather than working around it
+silently.
 
 **THE ONE HARD RAIL**, unchanged from the earlier draft of this plan: you hold a
 full-access Railway account token that can reach the production bot's project and
@@ -100,7 +110,8 @@ exception, not the rule.
 
 ## Owner setup (do once, before pasting the Custom Instructions)
 
-1. Repo already created: `menno420/websites` (empty).
+1. Repo already created and seeded: `menno420/websites` (public, README + intent
+   commit pushed 2026-07-09).
 2. **New Claude Code Project.** Repo list = **four repos**: `menno420/websites`
    (write, the build target), `menno420/superbot` (read — source for `dashboard/`
    and `botsite/` when step 3 starts, and for the rebuild's own data), `menno420/superbot-next`
@@ -121,30 +132,40 @@ philosophy — keep the ideas and functionality, rebuild the implementation. The
 existing sites keep running untouched until their replacements are ready; nothing
 here touches them directly except reading their source for reference later.
 
+RUN AUTONOMOUSLY, AND PRODUCE REAL, FINISHED, WORKING RESULTS. Don't stop at
+scaffolding, a local-only build, or a plan document — the deliverable at every
+milestone is something actually deployed and functioning that the owner can open in
+a browser, not a description of what would exist. If a step turns out bigger than
+expected, keep going and finish it in this run rather than handing back a partial
+result with "next steps" — the same standing instruction the bot rebuild runs under.
+
 ORIENTATION — read before building. `menno420/superbot`'s
 docs/planning/websites-project-kickoff-2026-07-09.md (this doc) is your brief.
 Also read (read-only, from `superbot`): docs/operations/repo-settings-state.md (the
 per-repo settings ledger — your readiness board's seed data), docs/planning/per-repo-settings-state-ledger-2026-07-08.md
-(that ledger's own plan, including its Phase 2/3), and `dashboard/README.md` +
-`botsite/README.md` (what the existing sites do today, for step 3 later — read now
-for context, don't build against them yet).
+(that ledger's own plan, including its Phase 2/3), docs/planning/rebuild-project-audit-checklist-2026-07-08.md
+(the correctness checklist the owner uses to judge every Project in this program —
+your readiness board is that checklist turned into a live view, so read it closely),
+and `dashboard/README.md` + `botsite/README.md` (what the existing sites do today,
+for step 3 later — read now for context, don't build against them yet).
 
 THE GOAL, IN ORDER:
 1. Adopt substrate-kit into `menno420/websites` FIRST — `python3 dist/bootstrap.py
    adopt` from `menno420/substrate-kit`, fresh-from-kit, never a copy of `superbot`.
-   The repo is currently EMPTY — seed its first file via the GitHub Contents API
-   (`create_or_update_file`), after which normal branch-push git works (this is the
-   one walled git action for agents; the Contents API bypasses it, already proven
-   working on `superbot-next` and `substrate-kit`).
-2. THEN build the control-plane / oversight site: a readiness board (per-repo —
-   superbot, superbot-next, substrate-kit, and websites itself — is the ruleset
-   configured, are the right checks required AND currently green, is CODEOWNERS
-   enforced, are secrets present, is auto-merge armed) seeded from
+   The repo is already seeded (README + intent commit), so normal branch-push git
+   works from the start — no empty-repo wall to work around here.
+2. THEN build the control-plane / oversight site — this is the non-negotiable core
+   of this Project, not a nice-to-have: a **readiness board** (per-repo — superbot,
+   superbot-next, substrate-kit, and websites itself — is the ruleset configured,
+   are the right checks required AND currently green, is CODEOWNERS enforced, are
+   secrets present, is auto-merge armed) seeded from
    docs/operations/repo-settings-state.md's data model, generalized across repos;
-   and a journal browser (session logs, decision ledgers, question-routers, PR
-   history across all repos, linked into GitHub, not narrated). Gate access behind
-   something simple — this shows internal data the owner wants private for now.
-   Pick your own stack and defaults; note your choices as you go.
+   and a **journal browser** (session logs, decision ledgers, question-routers, PR
+   history across all repos, linked into GitHub, not narrated). Together these are
+   how the owner checks a Project's working quality and progress by looking, instead
+   of asking an agent to go find out — that is this site's whole reason to exist.
+   Gate access behind something simple — this shows internal data the owner wants
+   private for now. Pick your own stack and defaults; note your choices as you go.
 3. Reworking `dashboard/` and `botsite/` into this repo (same ideas/functionality,
    rebuilt implementation) is real, wanted, in-scope work — but NOT for you to start
    autonomously on this first run. When you reach the point of starting it, stop and
@@ -156,9 +177,16 @@ FORWARD-ONLY GIT, same discipline as the rebuild Project: fresh branch → PR �
 squash-merge in your own repo; never force-push, delete a remote branch, or amend a
 pushed commit anywhere.
 
-INFRASTRUCTURE. Create a new Railway project (never the existing production
-`reliable-grace` project) and deploy through the Railway API using the account token
-available in your environment. If you can't reach it at all, report that plainly.
+INFRASTRUCTURE — READ CAREFULLY, this is a real footgun. Your container carries
+`RAILWAY_API_KEY` (the account token — use this) AND ALSO `RAILWAY_PROJECT_ID` /
+`RAILWAY_SERVICE_ID` / `RAILWAY_ENVIRONMENT_ID`, which are pre-set to the
+PRODUCTION project (`reliable-grace`) — `RAILWAY_SERVICE_ID` specifically resolves
+to the `worker` service, the live bot. Those three ambient IDs are not a hint about
+where to deploy; NEVER pass them to any Railway API call. Use `RAILWAY_API_KEY`
+alone to call `projectCreate` and mint your own fresh project, then use those new
+IDs, explicitly, for everything from that point on. State which IDs you ended up
+using in your first status report so it can be checked. If you can't reach the
+Railway API at all, report that plainly rather than working around it silently.
 
 THE ONE HARD RAIL: you hold a full-access Railway account token reaching the
 production bot's project and database too. Never call a delete/restore/destructive
@@ -178,18 +206,26 @@ explicitly call out anywhere you got stuck or worked around a limitation.
 
 ---
 
-Build the permanent new home for SuperBot's websites. Start by reading
-`menno420/superbot`'s `docs/planning/websites-project-kickoff-2026-07-09.md` — it has
-the full brief, why this repo exists, and the one hard safety rail (never touch the
-production Railway project or call a destructive mutation without asking first).
+Build the permanent new home for SuperBot's websites — run autonomously, and produce
+real, finished, working results at every milestone, not scaffolding or plans. Start
+by reading `menno420/superbot`'s `docs/planning/websites-project-kickoff-2026-07-09.md`
+— it has the full brief, why this repo exists, and two things to read carefully
+before touching anything: the Railway env-var footgun (your container's ambient
+`RAILWAY_PROJECT_ID`/`RAILWAY_SERVICE_ID` point at the live production bot — never
+use them; create your own project) and the one hard safety rail (never call a
+destructive Railway mutation without asking first).
 
-Work in `menno420/websites` (already created, currently empty — you'll need to seed
-its first commit via the Contents API). First: adopt substrate-kit into it, same way
-`superbot-next` did. Then: build a control-plane site showing per-repo readiness
-(rulesets, required checks actually green, CODEOWNERS, secrets, auto-merge) across
+Work in `menno420/websites` (already seeded with a README, so normal git push works
+from the start). First: adopt substrate-kit into it, same way `superbot-next` did.
+Then: build a control-plane site — this is the core deliverable, not optional —
+showing per-repo readiness (rulesets, required checks actually green right now, not
+just present, CODEOWNERS, secrets, auto-merge) across
 `superbot`/`superbot-next`/`substrate-kit`, plus a browser for session logs and
-decision ledgers across all three, linked into GitHub. Gate access behind something
-simple. Deploy on a new Railway project you create yourself.
+decision ledgers across all three, linked into GitHub. This is how the owner checks
+a Project's working quality and progress by looking, instead of asking an agent to
+find out — build it to actually work, wired to real live data, not a mockup. Gate
+access behind something simple. Deploy on a new Railway project you create yourself
+via the API using your account key, ignoring the ambient production IDs entirely.
 
 Reworking the two existing sites (`dashboard/`, `botsite/` in `superbot`) into this
 repo is real future work, but don't start it on this run — when you get there, stop
