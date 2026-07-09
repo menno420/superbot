@@ -1,0 +1,1 @@
+- `claude/kit-version-pin` · **substrate-kit v1.0.0 pin file (kit-lab D2 consumer half)** — add root `substrate.config.json` recording `kit_version`/`project_id` next to the in-tree `substrate-kit/` copy · `substrate.config.json` `.sessions/2026-07-09-kit-version-pin.md` · 2026-07-09 · PR opens born-red immediately
