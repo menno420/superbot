@@ -1,10 +1,10 @@
 {
   "meta": {
-    "generated_at": "2026-07-09T03:39:40Z",
+    "generated_at": "2026-07-09T06:23:59Z",
     "build": {
-      "commit": "9e351306",
-      "subject": "Merge pull request #1878 from menno420/claude/substrate-kit-planning-yescdw",
-      "committed_at": "2026-07-09T03:39:40Z"
+      "commit": "dcbcf7e",
+      "subject": "KL-6 companion: born-red session card + claim",
+      "committed_at": "2026-07-09T06:23:59Z"
     },
     "counts": {
       "functions": 43,
@@ -3188,6 +3188,38 @@
   "reviews": [],
   "updates": [
     {
+      "file": "2026-07-09-remove-intree-kit.md",
+      "date": "2026-07-09",
+      "title": "2026-07-09 — Remove the in-tree substrate-kit copy (named follow-up chore)",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-07-09-kl6-console-telemetry.md",
+      "date": "2026-07-09",
+      "title": "Session 2026-07-09 — KL-6 companion: exporter telemetry family + kit-lab console lane",
+      "status": "",
+      "run_type": "manual",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-07-09-kl2-provenance-riders.md",
+      "date": "2026-07-09",
+      "title": "2026-07-09 — KL-2 companion: program-law provenance riders on the origin Q-blocks",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-07-09-kit-version-pin.md",
+      "date": "2026-07-09",
+      "title": "2026-07-09 — substrate-kit v1.0.0 pin file (kit-lab D2, consumer half)",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
       "file": "2026-07-09-eap-fleet-sequencing-correction.md",
       "date": "2026-07-09",
       "title": "2026-07-09 — EAP fleet sequencing correction: kit-lab governs real repos, test fleet trimmed to 2",
@@ -3634,38 +3666,6 @@
       "status": "complete",
       "run_type": "",
       "self_initiated": false
-    },
-    {
-      "file": "2026-07-06-ruff-migration.md",
-      "date": "2026-07-06",
-      "title": "2026-07-06 — Ruff migration (A3): ruff replaces black + isort",
-      "status": "complete",
-      "run_type": "manual",
-      "self_initiated": true
-    },
-    {
-      "file": "2026-07-06-reconcile-band1770.md",
-      "date": "2026-07-06",
-      "title": "2026-07-06 — Thirty-sixth Q-0107 reconciliation pass (band-#1770)",
-      "status": "complete",
-      "run_type": "routine",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-07-06-reconcile-band1740.md",
-      "date": "2026-07-06",
-      "title": "2026-07-06 — Thirty-fifth Q-0107 reconciliation pass (band-#1740)",
-      "status": "complete",
-      "run_type": "routine",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-07-06-rebuild-consolidation-fable5.md",
-      "date": "2026-07-06",
-      "title": "2026-07-06 — Rebuild consolidation: one canonical plan + foundational-completeness (Fable 5 Ultracode brief §3)",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": true
     }
   ],
   "bot_changelog": [
@@ -3686,6 +3686,22 @@
       "title": "Command-alias suggestions",
       "kind": "feature",
       "summary": "You can now suggest a friendly alias for any command from the dashboard's Aliases page,"
+    }
+  ],
+  "telemetry": [
+    {
+      "session": "2026-07-09-kl6-console-telemetry",
+      "date": "2026-07-09",
+      "model": "fable-5",
+      "effort": "high",
+      "task_class": "kernel/architecture design",
+      "tokens_out": null,
+      "outcome": {
+        "ci_green_first_push": null,
+        "checker_findings": null,
+        "merged_pr": null,
+        "reverted_within_window": null
+      }
     }
   ],
   "env_usage": [

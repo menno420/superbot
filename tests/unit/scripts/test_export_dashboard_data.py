@@ -8,6 +8,7 @@ pure stdlib, so this runs in CI with no extra dependencies.
 from __future__ import annotations
 
 import importlib.util
+import json
 import sys
 from pathlib import Path
 
@@ -643,6 +644,71 @@ def test_console_subset_whitelist_and_shapes(mod):
         # Titles + ids only — never full bug bodies on the console feed.
         assert set(bug) == {"id", "title", "status"}
     assert len(subset["bugs"]["open"]) <= 10
+    # Telemetry rows are rebuilt from the field whitelist (kit-lab plan §7.3).
+    for row in subset["telemetry"]:
+        assert set(row) == set(mod.CONSOLE_TELEMETRY_FIELDS)
+        outcome = row["outcome"]
+        assert outcome is None or set(outcome) == set(mod.TELEMETRY_OUTCOME_FIELDS)
+
+
+def test_parse_telemetry_whitelist_and_tolerance(mod, tmp_path):
+    """The JSONL reader is tolerant by contract: bad lines skipped, extra fields
+    dropped, a malformed ``outcome`` nulled — one bad row never blanks the lane.
+    """
+    feed = tmp_path / "model-usage.jsonl"
+    feed.write_text(
+        "\n".join(
+            [
+                json.dumps(
+                    {
+                        "session": "2026-07-09-a",
+                        "date": "2026-07-09",
+                        "model": "fable-5",
+                        "effort": "high",
+                        "task_class": "docs-only",
+                        "tokens_out": None,
+                        "outcome": {
+                            "ci_green_first_push": True,
+                            "checker_findings": 0,
+                            "merged_pr": 1,
+                            "reverted_within_window": None,
+                            "smuggled": "extra",
+                        },
+                        "smuggled_field": "must never pass the whitelist",
+                    },
+                ),
+                "not json at all {",
+                json.dumps(["a", "list", "row"]),
+                json.dumps({"session": "2026-07-09-b", "outcome": "scalar"}),
+                "",
+            ],
+        ),
+        encoding="utf-8",
+    )
+    rows = mod.parse_telemetry(feed)
+    assert [r["session"] for r in rows] == ["2026-07-09-a", "2026-07-09-b"]
+    for row in rows:
+        assert set(row) == set(mod.CONSOLE_TELEMETRY_FIELDS)
+    # Nested outcome is whitelisted too; a non-object outcome is nulled.
+    assert set(rows[0]["outcome"]) == set(mod.TELEMETRY_OUTCOME_FIELDS)
+    assert "smuggled" not in rows[0]["outcome"]
+    assert rows[1]["outcome"] is None
+
+
+def test_parse_telemetry_missing_file_and_cap(mod, tmp_path):
+    assert mod.parse_telemetry(tmp_path / "absent.jsonl") == []
+    feed = tmp_path / "model-usage.jsonl"
+    feed.write_text(
+        "\n".join(
+            json.dumps({"session": f"s{i}", "date": "2026-07-09"})
+            for i in range(mod.TELEMETRY_ROW_CAP + 5)
+        ),
+        encoding="utf-8",
+    )
+    rows = mod.parse_telemetry(feed)
+    assert len(rows) == mod.TELEMETRY_ROW_CAP
+    # Newest rows win the cap (the feed is append-only, newest last).
+    assert rows[-1]["session"] == f"s{mod.TELEMETRY_ROW_CAP + 4}"
 
 
 def test_cli_targets_console_writes_only_console(mod, tmp_path):

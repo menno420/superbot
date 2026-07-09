@@ -44,12 +44,21 @@
       <h3>${esc(title)}</h3>${bodyHtml}
     </section>`;
 
-  /* the three declared-contract lanes (render identically with or without data.json) */
-  const declaredLanes = () =>
+  /* the telemetry lane's pending form — used until the exported feed has rows
+     (the lane flips real in render() the moment data.telemetry is non-empty) */
+  const telemetryPendingLane = () =>
     pendingLane(
       "Model & spend telemetry",
-      "No data yet — per-session `model · effort · task-class · outcome` telemetry starts with the program kickoff sessions (Q-0248) and budget data shares the same dataset (Q-0249, observe-first window). This lane renders the cost-quality frontier once the feed lands.",
-      "telemetry/model-usage.json → [{ session, date, model, effort, task_class, tokens_out, outcome }]",
+      "No data yet — per-session `model · effort · task-class · outcome` telemetry (Q-0248) lives in telemetry/model-usage.jsonl (hand-authored rows until superbot adopts the kit) and budget data shares the same dataset (Q-0249, observe-first window). This lane renders the rows the exporter publishes.",
+      "telemetry/model-usage.jsonl → [{ session, date, model, effort, task_class, tokens_out, outcome }]",
+    );
+
+  /* the declared-contract lanes (render identically with or without data.json) */
+  const declaredLanes = () =>
+    pendingLane(
+      "Kit lab — benchmarks & guards",
+      "No data yet — the kit repo's bench/results indexes ride the kit's owner-blessing bench PR, and the cross-repo read waits on the kit going public (P11) or the read-only PAT (P13). Renders the cold-start A/B trend, allocation A/Bs, guard fp-rates and idea outcomes once the feed lands (kit-lab plan §7.3).",
+      "bench/results/*/index.json → [{ date, kit_version, family, verdict, headline }]",
     ) +
     pendingLane(
       "Rebuild port progress",
@@ -128,7 +137,22 @@
     const deployLane = lane("Deploys & user-facing changelog", (changelog || emptyList("No changelog entries.")) +
       `<p class="sb-chart-note">Merging to main IS deploying (Q-0193) — Railway redeploys each service on merge; build above is the live provenance.</p>`);
 
-    app.innerHTML = statRow + `<div class="co-lanes">${runLane}${ideasLane}${bugsLane}${deployLane}${declaredLanes()}</div>`;
+    /* Model & spend telemetry — REAL once the exported feed has rows (kit-lab
+       plan §7.3); honest-lane rule: empty feed = the declared pending form. */
+    const tRows = data.telemetry || [];
+    const tRecent = tRows.slice(-10).reverse(); /* feed is append-only: newest last */
+    const tRowsHtml = tRecent.map((r) => `
+      <div class="co-session">
+        <span class="when">${esc(r.date || "")}</span>
+        <span class="t" title="${esc(r.session || "")}">${esc(r.session || "")}</span>
+        <span class="end"><span class="sb-badge sb-badge-neutral">${esc(r.model || "?")}</span><span class="sb-badge sb-badge-neutral">${esc(r.effort || "?")}</span><span class="sb-badge sb-badge-neutral">${esc(r.task_class || "?")}</span>${r.tokens_out == null ? "" : `<span class="sb-badge sb-badge-neutral">${esc(String(r.tokens_out))} tok</span>`}</span>
+      </div>`).join("");
+    const telemetryLane = tRows.length
+      ? lane(`Model & spend telemetry — ${tRows.length} row${tRows.length === 1 ? "" : "s"}`, tRowsHtml +
+        `<p class="sb-chart-note">Per-session <code class="sb-mono">model · effort · task-class</code> rows (Q-0248) from <code class="sb-mono">telemetry/model-usage.jsonl</code> — hand-authored until superbot adopts the kit; <code class="sb-mono">tokens_out</code> is null-tolerated (no meter exists — KF-9); PR outcomes backfill via the kit-lab sweep (👤 P13).</p>`, { wide: true })
+      : telemetryPendingLane();
+
+    app.innerHTML = statRow + `<div class="co-lanes">${runLane}${ideasLane}${bugsLane}${deployLane}${telemetryLane}${declaredLanes()}</div>`;
 
     /* run-report filter pills */
     const listEl = app.querySelector("[data-run-list]");
@@ -147,7 +171,7 @@
     metaLine.textContent = "The console feed hasn't been exported yet — real lanes are dormant, declared lanes below say what will fill them.";
     app.innerHTML = `
       <div class="sb-error" style="margin-bottom:16px">${icon("alert")}<span><strong>No console feed.</strong> ${esc(reason)} Regenerate with <code class="sb-mono">python3.10 scripts/export_dashboard_data.py --targets console</code> and redeploy.</span></div>
-      <div class="co-lanes">${pendingLane("Run reports — the session feed", "Renders the .sessions/ run-report feed (dates, titles, status, ⚑ self-initiated flags) once console.json is exported.", "botsite/data/console.json → sessions[]", true)}${declaredLanes()}</div>`;
+      <div class="co-lanes">${pendingLane("Run reports — the session feed", "Renders the .sessions/ run-report feed (dates, titles, status, ⚑ self-initiated flags) once console.json is exported.", "botsite/data/console.json → sessions[]", true)}${telemetryPendingLane()}${declaredLanes()}</div>`;
   }
 
   const emptyList = (msg) => `<div class="sb-empty" style="padding:20px 8px">${esc(msg)}</div>`;
