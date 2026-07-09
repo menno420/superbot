@@ -199,3 +199,31 @@ product review's analysis — confirm, contradict, or deepen it with lived examp
   prompts" and the agent's "nothing prompted me" are both true at once · expected: the agent to
   at least know a gate exists (a surfaced "awaiting operator approval" state) so unattended
   success reporting isn't false · weight: friction · reproducible: yes (owner screenshots)
+- 2026-07-09 · axis: reliability/completion · observed: (independent review session,
+  `docs/eap/fleet-review-2026-07-09.md`) the SuperBot coordinator's headline "999 tests green"
+  claim for `superbot-next` was verified first-party — cloned @ e8d393f and run locally:
+  **998 passed / 1 skipped** under Python 3.11 (CI's interpreter), the manifest compiler exits 0
+  with `sha256:b2e5b64…` **exactly matching** the completion report, and 466 golden files exist
+  with **0 flipped to `ported`** (born-red is truthful). The 50-PR rebuild's self-report is
+  accurate *including* its disclosure of what is NOT done (no `main()`, 0/465 parity flips) —
+  the fleet does not overclaim · expected: n/a (a strong win worth recording — the exact
+  "trust the agent's report" question a non-coder owner most needs answered) · weight: delighted
+  · reproducible: yes (re-clone + `python3.11 -m pytest tests/`)
+- 2026-07-09 · axis: use-case fit · observed: a **reproducible last-mile gap in fresh-repo kit
+  adoption** across BOTH new code repos — `bootstrap.py adopt` plants docs skip-if-exists and
+  banners unfilled `${...}` slots, and stages `.claude/` behind an opt-in, so an adopted repo
+  *looks* onboarded but is un-rendered + un-enforcing until a separate render/wire step runs.
+  Neither `superbot-next` (unrendered `CONSTITUTION.md`/`current-state.md`, `session_count` 0)
+  nor `websites` (no CI on main, 8 unrendered docs, `session_count` 0) ran the follow-through;
+  the kit *itself* and origin-`superbot` are fully engaged, so only fresh adoptions strand
+  · expected: `adopt` render-and-wires by default, OR plants a born-red post-adopt gate that
+  stays red until render+enforcement complete (the kit's own "enforce, don't exhort" pattern)
+  · weight: friction · reproducible: yes (adopt into a fresh repo, observe the half-engaged
+  state; `websites` PR #16 is the per-repo repair)
+- 2026-07-09 · axis: coordinator judgment · observed: the fleet's **integrity is engineered,
+  not incidental** — `websites` commissioned an *independent* audit of its own work
+  ("not the builder auditing itself") that surfaced the gap its own status reports had missed;
+  `substrate-kit`'s day-report corrects its incident count upward (1→2); `superbot-next`'s
+  completion report leads with what is unfinished. Same-brief, same-repo, three separate
+  Projects all defaulted to honest self-assessment · expected: n/a (win) · weight: delighted
+  · reproducible: yes
