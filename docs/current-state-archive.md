@@ -86,6 +86,59 @@
 
 ## Recently shipped — archived (newest first)
 
+- **#1778 · #1783 (2026-07-07, S3 rebuild — the FINAL rebuild-plan review session)** —
+  the final review over the frozen canonical plan (verdict: **plan ready**; §11 amendments folded; readiness
+  scored — [report](planning/rebuild-final-review-report-2026-07-07.md)), which also produced the §6.3
+  live-bot runtime fixes **#1781/#1782** (listed below). **#1783** hardened the substrate-kit so **adopt
+  installs the enforcement** — the forcing functions ship with the kit rather than as a separate step.
+- **#1776 · #1777 (2026-07-07, S3 rebuild / workflow — Projects-EAP coordinator + Q-0241 never-wait autonomy + Fable-5 final-review brief)** —
+  **#1776** adopted **Claude Code Projects (EAP) as the rebuild coordinator** and recorded **Q-0241** (retire
+  the owner gates as blockers — silence = consent, live-test-in-server, never-wait; the destructive tier stays
+  reversible + vetoable — canonical in [`owner/agent-decision-authority.md`](owner/agent-decision-authority.md)).
+  **#1777** shipped the **Fable-5 ultracode brief + prompt** for the final rebuild-plan review and the
+  Projects-EAP repo prep.
+- **#1775 (2026-07-07, S3 rebuild — Phase-2.5 A/B run + verdict (G2))** —
+  executed the runnable Phase-2.5 package (the two-implementation A/B build + verdict, owner briefing homed):
+  verdict **FAIL as-tested** → the adopt-render fix + re-run pair, folded into the final-review session #1778;
+  plus a grimp-contract fix. Ran without waiting on the owner (Q-0241 gate retirement).
+- **#1773 · #1774 · #1779 · #1780 · #1799 (2026-07-06/07, docs — dashboard-data refreshes, Q-0167)** —
+  five per-source-merge refreshes keeping the committed `dashboard/data/dashboard.json` export fresh as the
+  final-review / plan-review / consolidation arc landed.
+- **#1772 (2026-07-06, workflow — thirty-sixth Q-0107 reconciliation pass, band-#1770)** —
+  the 36th docs-only reconciliation + planning pass
+  ([pass record](planning/reconciliation-pass-2026-07-06-band1770.md)): reconciled band #1741–#1770, trimmed
+  Recently-shipped to 20, flagged the 5 Codex Gate-V evidence PRs for merge-or-close + captured the
+  disposition-guard idea, confirmed the control-plane, refreshed the dashboard export, reset the marker
+  #1740 → #1770.
+- **#1781 · #1782 (2026-07-07, S1 runtime — the FINAL-REVIEW §6.3 live-bot fixes, shipped from the rebuild final-review session #1778)** —
+  **#1781** closed the three unguarded settlement paths as one class: the Gate-V-live-confirmed
+  **deathmatch `_DuelView` double-write** (SettleOnceMixin retrofit mirroring the bot-duel sibling),
+  the **blackjack FREE-tournament double-pay** (claim past the all-finished check; the free leg has
+  no escrow rows so the claim is its only guard), and a **third instance found during verification —
+  the RPS free-tournament payout race** (per-tournament claim via the new
+  `SettleOnceMixin.rearm_settlement()` seam); `check_consistency` **Rule 6 widened** (cogs/ root +
+  `payout_tournament`/`update_leaderboard` sinks) so the checker now catches this non-adopter class;
+  8 concurrency + 4 checker regressions. **#1782** wired the ready-but-unwired
+  `economy_service.transfer()` to **`!pay`/`!transfer`** (NOT `give` — banned token Q-0211), guard
+  rails + sibling embed idiom + regenerated command-surface artifacts, **live-exercised against real
+  local Postgres** (exact balances, exactly 2 audit rows). Both merged→deployed same day. Full
+  context: the [final-review report](planning/rebuild-final-review-report-2026-07-07.md).
+- **#1768 · #1769 · #1770 (2026-07-06, S3 rebuild — foundational consolidation → ONE canonical plan (Fable 5) + Q-0240 decide-and-flag)** —
+  the band's headline: the pre-Phase-B consolidation of the scattered rebuild plan into a single
+  correctly-layered source of truth, launched under Fable 5 / Ultracode. **#1768** shipped the **Fable 5
+  Ultracode launch brief** (finalize the new-repo-start method); **#1769** shipped the **Q-0240
+  decide-and-flag decision model** (new durable doc [`owner/agent-decision-authority.md`](owner/agent-decision-authority.md) —
+  agents decide reversible-until-a-gate calls themselves with recommend+rationale+flag rather than
+  routing them up; the safety brake reframed so only *executing* something irreversible before the gate
+  stops-and-waits) + the surgical `.claude/CLAUDE.md` Act-vs-ask clarification + the Fable brief revision
+  folding in the decide-and-flag model and the foundational-completeness scope; **#1770** executed the
+  consolidation via a 7-lane Ultracode source-verification fan-out → [`planning/rebuild-canonical-plan-2026-07-06.md`](planning/rebuild-canonical-plan-2026-07-06.md)
+  (corrected foundational taxonomy: **K10 = AI-invocation kernel** with a domain-registered task registry
+  replacing the `AITask` enum + the grounded-answer engine hoisted; **automation = the K5+K9+K7 spread**,
+  no new band; **verification = a defined layer V** with a named build step; settings-engine /
+  panel-runtime / findings-engine landing steps added) plus the test-guild design + runnable Phase-2.5
+  package. (Ledger drift caught here 2026-07-06: the Gate-0 `tools/check_amendments.py` enforcer named in
+  the #1716 entry was never shipped — the canonical plan's §5 step 3 builds it.)
 - **#1750 · #1751 · #1756 · #1757 · #1759 · #1767 (2026-07-06, S3 rebuild — Gate V verification-fleet pass (Arms A–D + Codex + synthesis), Q-0234)** —
   the multi-agent verification-fleet pass between Phase A and Phase B, over the frozen rebuild plan. **#1750**
   documented the **verification-fleet launch pad** (corrected review prompts, multi-Codex arm, dedicated

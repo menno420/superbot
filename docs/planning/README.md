@@ -253,8 +253,9 @@ Each carries a `historical` (or `reference`) badge and a banner pointing at its 
 - **Superseded production-readiness maps:** `ai-` · `games-` · `health-diagnostics-` · `media-youtube-` ·
   `server-management-` (their blockers shipped; the live spine is `hardening-roadmap` above).
 - **Reconciliation-pass snapshots:** the 30-PR cadence (Q-0107/Q-0134) writes one dated band snapshot.
-  **Only the newest is live** — currently [reconciliation-pass-2026-06-19-band1110](reconciliation-pass-2026-06-19-band1110.md)
-  (its §4 is the live next-band queue). **All earlier passes are `historical`** — read only for band history.
+  **Only the newest is live** — currently [reconciliation-pass-2026-07-09-band1890](reconciliation-pass-2026-07-09-band1890.md)
+  (its planning section is the live next-band queue; the live queue also lives in `current-state.md`'s
+  per-sector ▶ Next action). **All earlier passes are `historical`** — read only for band history.
 
 ---
 

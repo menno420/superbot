@@ -1,10 +1,10 @@
 {
   "meta": {
-    "generated_at": "2026-07-09T07:10:35Z",
+    "generated_at": "2026-07-09T13:58:14Z",
     "build": {
-      "commit": "a19b189",
-      "subject": "Pin the console.json cross-repo shape contract (the #1883 session idea)",
-      "committed_at": "2026-07-09T07:10:35Z"
+      "commit": "72053d26",
+      "subject": "Merge pull request #1890 from menno420/claude/projects-eap-review-9vq8oj",
+      "committed_at": "2026-07-09T13:58:14Z"
     },
     "schema_version": 1
   },
@@ -15,6 +15,14 @@
       "title": "2026-07-09 — Remove the in-tree substrate-kit copy (named follow-up chore)",
       "status": "complete",
       "run_type": "",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-07-09-projects-eap-fleet-review.md",
+      "date": "2026-07-09",
+      "title": "2026-07-09 — Independent cross-repo review of the Projects-EAP fleet",
+      "status": "complete",
+      "run_type": "manual",
       "self_initiated": false
     },
     {
@@ -42,9 +50,33 @@
       "self_initiated": false
     },
     {
+      "file": "2026-07-09-fleet-coordination-plan.md",
+      "date": "2026-07-09",
+      "title": "2026-07-09 — Fleet coordination protocol + manager Project v2 (plan)",
+      "status": "complete",
+      "run_type": "manual",
+      "self_initiated": false
+    },
+    {
       "file": "2026-07-09-eap-fleet-sequencing-correction.md",
       "date": "2026-07-09",
       "title": "2026-07-09 — EAP fleet sequencing correction: kit-lab governs real repos, test fleet trimmed to 2",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-07-09-eap-findings-email-manager-kickoff.md",
+      "date": "2026-07-09",
+      "title": "2026-07-09 — EAP findings write-back + interim email + manager kickoff",
+      "status": "complete",
+      "run_type": "manual",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-07-09-dependabot-policy-backlog.md",
+      "date": "2026-07-09",
+      "title": "2026-07-09 — Dependabot PR policy (owner decision) + backlog review/merge",
       "status": "complete",
       "run_type": "",
       "self_initiated": false
@@ -456,38 +488,6 @@
       "status": "complete",
       "run_type": "",
       "self_initiated": false
-    },
-    {
-      "file": "2026-07-07-kit-understand-and-reflect.md",
-      "date": "2026-07-07",
-      "title": "2026-07-07 — Port understand-and-reflect + guiding-questions into the substrate-kit",
-      "status": "complete",
-      "run_type": "manual",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-07-07-kit-lab-founding-plan.md",
-      "date": "2026-07-07",
-      "title": "2026-07-07 — Kit-lab founding plan (program session 2/3)",
-      "status": "complete",
-      "run_type": "manual",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-07-07-kickoff-readiness.md",
-      "date": "2026-07-07",
-      "title": "2026-07-07 — Kickoff readiness (steps-6–8 brief + Q-0247/Q-0248/Q-0249)",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-07-07-fable5-final-review-brief-prep.md",
-      "date": "2026-07-07",
-      "title": "2026-07-07 — Prepare Fable-5 ultracode brief for the final rebuild-plan review + Projects-EAP repo prep",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
     }
   ],
   "ideas": {
@@ -602,6 +602,20 @@
       "model": "fable-5",
       "effort": "high",
       "task_class": "kernel/architecture design",
+      "tokens_out": null,
+      "outcome": {
+        "ci_green_first_push": null,
+        "checker_findings": null,
+        "merged_pr": null,
+        "reverted_within_window": null
+      }
+    },
+    {
+      "session": "2026-07-09-dependabot-policy-backlog",
+      "date": "2026-07-09",
+      "model": "fable-5",
+      "effort": "high",
+      "task_class": "review/verify",
       "tokens_out": null,
       "outcome": {
         "ci_green_first_push": null,
