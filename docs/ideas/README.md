@@ -31,6 +31,11 @@ only the header block is read, so a `**Subsystem:**` *example* in an idea's body
 
 Current broad captures:
 
+- [`pinned-feed-contract-for-dashboard-json-2026-07-09.md`](./pinned-feed-contract-for-dashboard-json-2026-07-09.md) —
+  **session ender (2026-07-09, PR #1884):** extend the pinned-feed-contract pattern (the console.json
+  shape contract, `botsite/data/console_data_contract.json`) to `dashboard.json` — the websites repo's
+  dashboard renders ~12 pages off that feed with no contract at all, the same silent-break class the
+  console contract just closed (and whose first consumer-side pass caught a live dict-vs-list defect).
 - [`live-tree-test-culprit-attribution-2026-07-08.md`](./live-tree-test-culprit-attribution-2026-07-08.md) —
   **grooming capture (2026-07-08, PR #1846 follow-on pass):** live-tree ground-truth tests
   (plan homing etc.) fail on innocent fresh branches whenever an earlier merge shipped tree

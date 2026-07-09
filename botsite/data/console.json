@@ -1,11 +1,12 @@
 {
   "meta": {
-    "generated_at": "2026-07-09T06:41:17Z",
+    "generated_at": "2026-07-09T07:10:35Z",
     "build": {
-      "commit": "d2334a4",
-      "subject": "KL-6 companion: exporter telemetry family + real console telemetry lane + declared kit-lab lane",
-      "committed_at": "2026-07-09T06:41:17Z"
-    }
+      "commit": "a19b189",
+      "subject": "Pin the console.json cross-repo shape contract (the #1883 session idea)",
+      "committed_at": "2026-07-09T07:10:35Z"
+    },
+    "schema_version": 1
   },
   "sessions": [
     {
@@ -46,6 +47,14 @@
       "title": "2026-07-09 — EAP fleet sequencing correction: kit-lab governs real repos, test fleet trimmed to 2",
       "status": "complete",
       "run_type": "",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-07-09-console-feed-contract.md",
+      "date": "2026-07-09",
+      "title": "Session 2026-07-09 — console.json shape contract (superbot half)",
+      "status": "complete",
+      "run_type": "manual",
       "self_initiated": false
     },
     {
@@ -479,21 +488,13 @@
       "status": "complete",
       "run_type": "",
       "self_initiated": false
-    },
-    {
-      "file": "2026-07-07-coordinator-kickoff-calibration.md",
-      "date": "2026-07-07",
-      "title": "2026-07-07 — SuperBot Project coordinator: kickoff revision + calibration exchange design",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
     }
   ],
   "ideas": {
-    "total": 219,
+    "total": 220,
     "by_status": {
       "historical": 23,
-      "ideas": 193,
+      "ideas": 194,
       "reference": 3
     }
   },
@@ -583,6 +584,20 @@
   "telemetry": [
     {
       "session": "2026-07-09-kl6-console-telemetry",
+      "date": "2026-07-09",
+      "model": "fable-5",
+      "effort": "high",
+      "task_class": "kernel/architecture design",
+      "tokens_out": null,
+      "outcome": {
+        "ci_green_first_push": null,
+        "checker_findings": null,
+        "merged_pr": null,
+        "reverted_within_window": null
+      }
+    },
+    {
+      "session": "2026-07-09-console-feed-contract",
       "date": "2026-07-09",
       "model": "fable-5",
       "effort": "high",

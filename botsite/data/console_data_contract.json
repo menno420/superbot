@@ -1,0 +1,13 @@
+{
+  "_comment": "Canonical shape contract for the committed program-console feed `botsite/data/console.json` — the single source of truth for the TWO consumers of that file: superbot's own botsite console (botsite/console/console.js) and the websites repo's dashboard /console page (menno420/websites dashboard/data_source.py, which fetches the committed file over raw.githubusercontent.com). The producer (scripts/export_dashboard_data.py build_console_subset) and the checker (scripts/check_dashboard_data.py check_console_subset, CI-enforced via tests/unit/scripts/) both validate against this file, so a producer-side family/field rename fails CI here instead of silently blanking a consumer page (the BUG-0022 desync class; idea provenance: PR #1883's session card). Keys list the GUARANTEED fields per record (values may be null); a field or family may only be added/renamed/removed by editing THIS file and bumping `version` — the explicit, reviewable act consumers pin against (console.json carries the version as meta.schema_version).",
+  "version": 1,
+  "top_level": ["meta", "sessions", "ideas", "bugs", "bot_changelog", "telemetry"],
+  "meta": ["generated_at", "build", "schema_version"],
+  "session": ["file", "date", "title", "status", "run_type", "self_initiated"],
+  "ideas": ["total", "by_status"],
+  "bugs": ["total", "by_status", "open_count", "open"],
+  "bug_open": ["id", "title", "status"],
+  "bot_changelog": ["date", "title", "kind", "summary"],
+  "telemetry": ["session", "date", "model", "effort", "task_class", "tokens_out", "outcome"],
+  "telemetry_outcome": ["ci_green_first_push", "checker_findings", "merged_pr", "reverted_within_window"]
+}

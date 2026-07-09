@@ -651,6 +651,18 @@ def test_console_subset_whitelist_and_shapes(mod):
         assert outcome is None or set(outcome) == set(mod.TELEMETRY_OUTCOME_FIELDS)
 
 
+def test_console_meta_carries_contract_schema_version(mod):
+    # The cross-repo shape contract (botsite/data/console_data_contract.json):
+    # every emitted console.json stamps the contract version into meta so the
+    # websites-repo consumer can verify the shape it was built against.
+    contract = json.loads(mod.CONSOLE_CONTRACT_FILE.read_text(encoding="utf-8"))
+    subset = mod.build_console_subset(mod.build_data())
+    assert subset["meta"]["schema_version"] == mod.CONSOLE_SCHEMA_VERSION
+    assert subset["meta"]["schema_version"] == contract["version"]
+    # The whole emitted shape stays inside the contract's family list.
+    assert set(subset) == set(contract["top_level"])
+
+
 def test_parse_telemetry_whitelist_and_tolerance(mod, tmp_path):
     """The JSONL reader is tolerant by contract: bad lines skipped, extra fields
     dropped, a malformed ``outcome`` nulled — one bad row never blanks the lane.

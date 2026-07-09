@@ -375,3 +375,125 @@ def test_committed_site_json_passes_guard(mod):
 
 def test_main_site_exits_zero(mod):
     assert mod.main(["--site"]) == 0
+
+
+# ---------------------------------------------------------------------------
+# console feed shape contract (botsite/data/console_data_contract.json)
+# ---------------------------------------------------------------------------
+
+
+def _codes(issues):
+    return [i.code for i in issues]
+
+
+@pytest.fixture(scope="module")
+def committed_console(mod):
+    import json
+
+    return json.loads(
+        (mod.REPO_ROOT / "botsite" / "data" / "console.json").read_text(
+            encoding="utf-8",
+        ),
+    )
+
+
+def _clone(payload):
+    import json
+
+    return json.loads(json.dumps(payload))
+
+
+def test_committed_console_json_passes_contract(mod):
+    # THE cross-repo guard: the committed console.json (consumed by superbot's
+    # botsite console AND the websites repo's dashboard /console over raw
+    # GitHub) must match the committed, versioned contract as shipped.
+    errors = [i for i in mod.check_console_subset() if i.severity == "error"]
+    assert errors == [], f"committed console.json breaks its contract: {errors}"
+
+
+def test_fresh_console_subset_passes_contract(mod):
+    export = mod._export_module()
+    fresh = export.build_console_subset(mod._build_fresh())
+    errors = [i for i in mod.check_console_subset(fresh) if i.severity == "error"]
+    assert errors == [], f"fresh console subset breaks the contract: {errors}"
+
+
+def test_console_contract_matches_producer_constants(mod):
+    # The contract file is the cross-repo source of truth; the producer constants
+    # must match it exactly (changing one without the other = CI-red drift).
+    contract = mod.load_console_contract()
+    export = mod._export_module()
+    assert contract["version"] == export.CONSOLE_SCHEMA_VERSION
+    assert set(contract["top_level"]) == set(export.CONSOLE_TOPLEVEL_KEYS)
+    assert set(contract["session"]) == set(export.CONSOLE_SESSION_FIELDS)
+    assert set(contract["telemetry"]) == set(export.CONSOLE_TELEMETRY_FIELDS)
+    assert set(contract["telemetry_outcome"]) == set(export.TELEMETRY_OUTCOME_FIELDS)
+
+
+def test_console_fails_closed_on_uncontracted_family(mod, committed_console):
+    bad = _clone(committed_console)
+    bad["secret_family"] = []
+    assert "console_key_not_in_contract" in _codes(mod.check_console_subset(bad))
+
+
+def test_console_fails_closed_on_missing_family(mod, committed_console):
+    # The consumer-blanking class (BUG-0022): a dropped family is an ERROR, not
+    # a silent shrink — the websites dashboard renders this feed.
+    bad = {k: v for k, v in _clone(committed_console).items() if k != "telemetry"}
+    assert "console_family_missing" in _codes(mod.check_console_subset(bad))
+
+
+def test_console_fails_closed_on_schema_version_mismatch(mod, committed_console):
+    bad = _clone(committed_console)
+    bad["meta"]["schema_version"] = 999
+    assert "console_schema_version_mismatch" in _codes(mod.check_console_subset(bad))
+
+
+def test_console_fails_closed_on_uncontracted_session_field(mod, committed_console):
+    bad = _clone(committed_console)
+    bad["sessions"][0]["guild_id"] = 123  # the per-guild-leak class
+    assert "console_field_not_in_contract" in _codes(mod.check_console_subset(bad))
+
+
+def test_console_fails_closed_on_dropped_guaranteed_field(mod, committed_console):
+    bad = _clone(committed_console)
+    del bad["sessions"][0]["title"]
+    assert "console_field_missing" in _codes(mod.check_console_subset(bad))
+
+
+def test_console_fails_closed_on_uncontracted_telemetry_outcome_field(
+    mod,
+    committed_console,
+):
+    bad = _clone(committed_console)
+    assert bad["telemetry"], "committed telemetry feed unexpectedly empty"
+    bad["telemetry"][0]["outcome"]["surprise"] = True
+    assert "console_field_not_in_contract" in _codes(mod.check_console_subset(bad))
+
+
+def test_console_contract_producer_drift_is_flagged(mod, committed_console, tmp_path):
+    import json
+
+    contract = mod.load_console_contract()
+    contract["session"] = list(contract["session"]) + ["not_a_real_field"]
+    drifted = tmp_path / "console_data_contract.json"
+    drifted.write_text(json.dumps(contract), encoding="utf-8")
+    codes = _codes(
+        mod.check_console_subset(
+            _clone(committed_console),
+            contract_path=drifted,
+        ),
+    )
+    assert "console_contract_producer_drift" in codes
+
+
+def test_console_unreadable_contract_is_an_error(mod, committed_console, tmp_path):
+    missing = tmp_path / "nope.json"
+    codes = _codes(
+        mod.check_console_subset(_clone(committed_console), contract_path=missing),
+    )
+    assert codes == ["console_contract_unreadable"]
+
+
+def test_main_console_exits_zero(mod):
+    assert mod.main(["--console"]) == 0
