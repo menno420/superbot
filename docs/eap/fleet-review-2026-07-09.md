@@ -8,7 +8,9 @@
 > [permission-probe report](../planning/projects-eap-permission-probe-report-2026-07-08.md).
 > Deep follow-up: the [four-reviewer quality review](fleet-quality-review-2026-07-09.md)
 > (owner-requested; help/visuals forensic · old-vs-new architecture · fleet output audit ·
-> speed-vs-quality process review).
+> speed-vs-quality process review). Outside-audit entry point: the
+> [external review pack](external-review-pack-2026-07-09.md) — the single document handed
+> to external reviewers (no GitHub auth; raw-URL references only) auditing the fleet.
 >
 > **Method:** three discovery agents (one per new repo, GitHub-MCP read of PRs/diffs/CI/trees)
 > **plus** a first-party verification pass — `superbot-next` was cloned and its test suite,

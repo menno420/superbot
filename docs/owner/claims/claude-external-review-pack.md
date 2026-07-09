@@ -1,1 +1,0 @@
-- `claude/external-review-pack` · external review pack for outside auditors · `docs/eap/external-review-pack-2026-07-09.md` + fleet-review banner link + session card/telemetry · 2026-07-09
