@@ -1,6 +1,6 @@
 # 2026-07-09 — Dependabot PR policy (owner decision) + backlog review/merge
 
-> **Status:** `in-progress`
+> **Status:** `complete` — PR #1886; backlog: #1762–#1766 merged, #1761 closed
 
 ## What I did
 
