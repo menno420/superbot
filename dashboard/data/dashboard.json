@@ -1,10 +1,10 @@
 {
   "meta": {
-    "generated_at": "2026-07-08T23:27:05Z",
+    "generated_at": "2026-07-09T03:39:40Z",
     "build": {
-      "commit": "43d17939",
-      "subject": "Merge pull request #1871 from menno420/bot/dashboard-refresh",
-      "committed_at": "2026-07-08T23:27:05Z"
+      "commit": "9e351306",
+      "subject": "Merge pull request #1878 from menno420/claude/substrate-kit-planning-yescdw",
+      "committed_at": "2026-07-09T03:39:40Z"
     },
     "counts": {
       "functions": 43,
@@ -3188,6 +3188,14 @@
   "reviews": [],
   "updates": [
     {
+      "file": "2026-07-09-eap-fleet-sequencing-correction.md",
+      "date": "2026-07-09",
+      "title": "2026-07-09 — EAP fleet sequencing correction: kit-lab governs real repos, test fleet trimmed to 2",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
       "file": "2026-07-08-wave1-lane-b-supersede-checker.md",
       "date": "2026-07-08",
       "title": "Session — Wave-1 lane B: supersede-banner integrity checker",
@@ -3247,6 +3255,14 @@
       "file": "2026-07-08-rebuild-direction-handoff.md",
       "date": "2026-07-08",
       "title": "Session — Close-out: rebuild-direction handoff + email marked sent",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-07-08-rebuild-audit-checklist.md",
+      "date": "2026-07-08",
+      "title": "2026-07-08 — Rebuild-direction: owner router answers + audit checklist",
       "status": "complete",
       "run_type": "",
       "self_initiated": false
@@ -3650,22 +3666,6 @@
       "status": "complete",
       "run_type": "",
       "self_initiated": true
-    },
-    {
-      "file": "2026-07-06-gate-v-verification-fleet-prompts.md",
-      "date": "2026-07-06",
-      "title": "2026-07-06 — Gate V verification-fleet review prompts (documented launch pad)",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-07-06-gate-v-synthesis.md",
-      "date": "2026-07-06",
-      "title": "2026-07-06 — Gate V final synthesis (Arm Σ)",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
     }
   ],
   "bot_changelog": [
