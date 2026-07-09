@@ -1,0 +1,1 @@
+- `claude/vigilant-rubin-0wuxk2` · gen-1 grand review + cleanup (fleet-wide) · expected files: `docs/eap/gen1-grand-review-2026-07-09.md`, `docs/eap/gen1-wrapup-email-final-candidate.md`, `.sessions/2026-07-09-gen1-grand-review.md` · 2026-07-09
