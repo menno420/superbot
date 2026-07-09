@@ -6,7 +6,10 @@
 > (§2 entry shape · §3 axes · §4 integrity rules — read it before appending). Companions:
 > [product review](projects-eap-product-review-2026-07-07.md) ·
 > [activation plan](projects-eap-activation-plan-2026-07-07.md) (§4 feedback-reply template,
-> filled from this journal by Friday 2026-07-10).
+> filled from this journal by Friday 2026-07-10). Feedback notes: the **sent 7/8 note**
+> ([projects-eap-anthropic-email-2026-07-08.md](projects-eap-anthropic-email-2026-07-08.md)) ·
+> the **interim 7/9 follow-up draft** with tonight's fleet-run findings
+> ([projects-eap-anthropic-email-interim-2026-07-09.md](projects-eap-anthropic-email-interim-2026-07-09.md)).
 
 ## How to append
 
@@ -227,3 +230,35 @@ product review's analysis — confirm, contradict, or deepen it with lived examp
   completion report leads with what is unfinished. Same-brief, same-repo, three separate
   Projects all defaulted to honest self-assessment · expected: n/a (win) · weight: delighted
   · reproducible: yes
+- 2026-07-09 (evening) · axis: reliability/completion · observed: the rebuild coordinator built
+  the CUT-1 composition root (superbot-next PR #54) and the new bot **booted to RUNNING** on a
+  real test-bot token against real PostgreSQL — step-1 kernel-boot live smoke PASS with verbatim
+  evidence (`superbot-next/docs/status/testing-report-2026-07-09.md`): migrations apply +
+  checksum-verify on a fresh DB, gateway READY ~4s, `/ready` 503→200, outbox audit canary
+  delivered, clean SIGTERM → exit 0. The **first-ever live boot caught a real Postgres-only bug
+  invisible to unit fakes** (a PREPARE-time `timestamptz`/`interval` type error in
+  `reap_stuck_applying`, fixed same PR) · expected: n/a — this is the "live-test is the gate,
+  CI-green is not done" doctrine paying off on first contact, the exact value it promises
+  · weight: delighted · reproducible: yes (unit-fake-invisible SQL type hazards surface only on
+  real Postgres)
+- 2026-07-09 (evening) · axis: coordinator judgment · observed: an INDEPENDENT second observer —
+  the rebuild coordinator's orchestration retrospective
+  (`superbot-next/docs/status/rebuild-orchestration-retrospective-2026-07-09.md`) — reached the
+  SAME coordinator-tier findings this journal already recorded: no native coordinator timer
+  (`send_later` binds to the arming session), ~4 KB child-brief cap, no direct coordinator→child
+  channel (course corrections needed a relay-worker hop), isolated containers so file-exchange
+  routes through repos. It added two quantified frictions: **~60 no-op coordinator wakes** from
+  PR webhooks over a 14 h run, and a required "branches up to date" ruleset forcing manual
+  branch-update pushes before auto-merge under concurrent doc PRs · expected: n/a — independent
+  corroboration by a second observer raises confidence in both records · weight: helped (the
+  corroboration) / friction (the underlying gaps) · reproducible: yes
+- 2026-07-09 (evening) · axis: use-case fit · observed: because Projects give no inter-session
+  channel and no native scheduler, we designed + are standing up a **file-based inter-Project
+  coordination protocol** (git-as-message-bus: per-repo `control/inbox.md` + `status.md`,
+  one-writer-per-file, self-poll routines standing in for a native scheduler — plan
+  `docs/planning/fleet-coordination-protocol-2026-07-09.md`), with a manager Project as the
+  single owner control chair dispatching orders through committed files. The rebuild coordinator
+  independently named the same gap ("file exchange must go through repos") in its retrospective
+  the same night · expected: a native inter-session channel + a coordinator-owned scheduler would
+  remove this whole hand-built layer · weight: friction (the gap) — the workaround is now a real
+  capability · reproducible: yes
