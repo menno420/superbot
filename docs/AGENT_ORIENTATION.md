@@ -87,6 +87,13 @@ read **`docs/helper-policy.md`** first.
 | 7b | [`docs/ultracode/`](ultracode/README.md) (when scoping a **parallel** refactor / fleet run) | The parallel-safety partition: which units a fleet can build at once without colliding, the shared-held surfaces + touch policy, the collision matrix, and the worker-scope template. Operationalizes row 7 for an Ultracode fleet. |
 | 8 | `docs/owner/maintainer-question-router.md` (when needed) | Unresolved maintainer-facing questions and preserved owner intent. Unanswered questions are not approval. |
 
+> **Dependabot PRs are yours on sight (Q-0256).** The session-start open-PR overlap scan
+> (CLAUDE.md, Q-0126) is where you'll see them: an open `dependabot/*` PR has **no merge
+> actor** (the auto-merge-enabler only arms `claude/*`), so the *first session that sees one
+> reviews it and merges it* — majors get a real breaking-change assessment first
+> (fix-then-merge if contained, else write a dedicated-session work item). Full rule:
+> `docs/operations/repo-settings-state.md` § Dependabot PR policy.
+
 ### Adding a new subsystem / cog
 
 1. `docs/architecture.md` § "Where to add a new subsystem" + § "Subsystem decomposition" + § "PersistentView placement".

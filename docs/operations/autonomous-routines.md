@@ -173,7 +173,11 @@ STEP 2 — RECONCILE (the Q-0107 pass):
     state. Close the redundant/stale (e.g. a superseded ledger PR), fix or flag a red-CI one
     (a `check_docs` reachability orphan is usually one missing README link), leave the owner's.
     "Noting" a PR is not disposition — act on it. (This sweep was missing: #766 sat red + #771
-    redundant for ~21h, unnoticed by sessions and two prior passes.)
+    redundant for ~21h, unnoticed by sessions and two prior passes.) **Open `dependabot/*` PRs
+    are merge candidates, not "the owner's" (Q-0256):** review-on-sight (diff + changelog +
+    usage grep) and merge on green CI; majors = fix-then-merge if contained, else write the
+    dedicated-session work item. Rule: `repo-settings-state.md` § Dependabot PR policy. (This
+    was the gap: the 2026-07-08 pass left 6 green dependabot PRs untouched for ~3 days.)
   - GC STALE CLAIM FILES (Q-0195): run `python3.10 scripts/check_stale_claims.py` over
     `docs/owner/claims/` and `--prune` any whose branch is gone/merged (a session that forgot to
     delete its own claim file at close). This is the failsafe that keeps the per-claim ledger from

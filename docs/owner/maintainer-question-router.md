@@ -9256,3 +9256,62 @@ each confirmed live:
 **Why it needs the owner.** Both files are owner-gated (settings.json is executable config;
 CLAUDE.md is read-only to unattended sessions — proposals only). Both edits are trivial and
 carry no behavior change beyond removing dead references; recommendation: apply both as-is.
+
+### Q-0256 — DIRECTED: dependabot PRs are reviewed by the first session that sees them, then merged (2026-07-09)
+
+> **Context.** Six dependabot PRs (#1761–#1766, opened 2026-07-06) sat CI-green and
+> conflict-free for ~3 days because nothing arms auto-merge for `dependabot/*` branches —
+> the `auto-merge-enabler` workflow only arms `claude/*` PRs (by design, per the
+> `.github/dependabot.yml` provenance comment: "they wait for review"). The owner was asked
+> whether sessions should review-and-merge them.
+
+**Owner's answer (2026-07-09, verbatim):**
+
+> "yes dependabot PRs should always be reviewed by the first session that sees them and then
+> properly merged but possibly we need to make some changes on a big version update, so in
+> those cases it should either fixit and then merge, or just document that a dedicated
+> session sould work on it"
+
+**The rule this sets (durable home: `docs/operations/repo-settings-state.md` § Dependabot
+PR policy):**
+
+1. **Review-on-sight:** the *first* session that notices an open dependabot PR reviews it —
+   diff + upstream changelog/breaking-changes check + grep of the repo's real usage of the
+   package — and **merges it** (squash; CI green on the final head required, as always).
+   Don't leave it for "someone else"; an open dependabot PR is unclaimed work for whoever
+   sees it.
+2. **Major version bumps:** actually assess the breaking changes against real usage. If the
+   needed adaptation is contained → **fix it, then merge** (the fix goes through the
+   session's own PR, or the green CI on the dependabot head is itself the evidence when no
+   code change is needed). If it's too large for the current session → **don't merge**;
+   write a dedicated-session work item (`docs/planning/` or `docs/ideas/`) and say so.
+3. Merging = deploying (Q-0193) applies as normal; no extra confirmation step.
+
+**Routing.** Recorded in `docs/operations/repo-settings-state.md` (durable rule) +
+`docs/current-state.md` pointer. Executed same-session on the backlog: #1762–#1766 merged,
+#1761 closed as a strict subset of #1762 (session PR #1886).
+
+### Q-0257 — DISCUSS: should the auto-merge-enabler also arm dependabot PRs? (proposed 2026-07-09)
+
+> **Context.** The root friction behind Q-0256: dependabot PRs sit unmerged because the
+> `auto-merge-enabler` workflow arms only non-draft `claude/*` PRs, so a CI-green dependabot
+> PR has no merge actor until a session happens to look. Extending the workflow is
+> owner-gated (executable config, Q-0194-rider), so it is proposed here, not shipped.
+
+**The proposal (owner decision needed).** Options, with a recommendation:
+
+1. **Status quo + Q-0256 (recommended):** keep dependabot PRs un-armed; sessions
+   review-on-sight and merge. The owner's Q-0256 wording ("should always be *reviewed* by
+   the first session that sees them") argues *against* blanket auto-arming — auto-merge
+   would land bumps with zero review, including majors like psutil 5→7.
+2. **Partial arming:** extend `auto-merge-enabler.yml` to arm *only* dependabot PRs whose
+   title/metadata marks them minor/patch (the grouped `*-minor-patch` update sets), leaving
+   majors for session review. Reduces sit-time for the low-risk class, but a grouped
+   "minor" bump can still pull a lockfile change worth eyes; and CI-green-then-merge with
+   no review contradicts the plain reading of Q-0256.
+3. **Full arming:** arm everything on green CI. Not recommended — directly contradicts
+   Q-0256.
+
+**Why it needs the owner.** Workflow files are executable config (owner-gated). If option 1
+stands, no change is needed — this Q just records that the alternative was considered and
+why it was not shipped.
