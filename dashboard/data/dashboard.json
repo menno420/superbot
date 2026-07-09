@@ -1,10 +1,10 @@
 {
   "meta": {
-    "generated_at": "2026-07-09T22:08:16Z",
+    "generated_at": "2026-07-09T23:18:36Z",
     "build": {
-      "commit": "78cf3007",
-      "subject": "Merge pull request #1907 from menno420/bot/dashboard-refresh",
-      "committed_at": "2026-07-09T22:08:16Z"
+      "commit": "77b76dea",
+      "subject": "docs(eap): gen-1 wrap-up email draft v2 (2026-07-09) (#1910)",
+      "committed_at": "2026-07-09T23:18:36Z"
     },
     "counts": {
       "functions": 43,
@@ -3268,6 +3268,14 @@
       "self_initiated": false
     },
     {
+      "file": "2026-07-09-fleet-manifest-venture-lab.md",
+      "date": "2026-07-09",
+      "title": "2026-07-09 — fleet-manifest-venture-lab",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
       "file": "2026-07-09-fleet-coordination-plan.md",
       "date": "2026-07-09",
       "title": "2026-07-09 — Fleet coordination protocol + manager Project v2 (plan)",
@@ -3297,6 +3305,14 @@
       "title": "2026-07-09 — EAP findings write-back + interim email + manager kickoff",
       "status": "complete",
       "run_type": "manual",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-07-09-eap-email-draft-v2.md",
+      "date": "2026-07-09",
+      "title": "2026-07-09 — EAP gen-1 wrap-up email draft v2 drop",
+      "status": "complete",
+      "run_type": "",
       "self_initiated": false
     },
     {
@@ -3666,22 +3682,6 @@
       "status": "complete",
       "run_type": "",
       "self_initiated": false
-    },
-    {
-      "file": "2026-07-07-projects-eap-and-full-autonomy-q0241.md",
-      "date": "2026-07-07",
-      "title": "2026-07-07 — Claude Code Projects EAP for the rebuild + Q-0241 (remove owner gates, never-wait)",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-07-07-projects-eap-activation.md",
-      "date": "2026-07-07",
-      "title": "2026-07-07 — Claude Code Projects EAP: access granted, activation window",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
     }
   ],
   "bot_changelog": [
@@ -3777,6 +3777,34 @@
     },
     {
       "session": "2026-07-09-external-review-pack",
+      "date": "2026-07-09",
+      "model": "fable-5",
+      "effort": "high",
+      "task_class": "docs-only",
+      "tokens_out": null,
+      "outcome": {
+        "ci_green_first_push": null,
+        "checker_findings": null,
+        "merged_pr": null,
+        "reverted_within_window": null
+      }
+    },
+    {
+      "session": "2026-07-09-fleet-manifest-venture-lab",
+      "date": "2026-07-09",
+      "model": "fable-5",
+      "effort": "high",
+      "task_class": "docs-only",
+      "tokens_out": null,
+      "outcome": {
+        "ci_green_first_push": null,
+        "checker_findings": null,
+        "merged_pr": null,
+        "reverted_within_window": null
+      }
+    },
+    {
+      "session": "2026-07-09-eap-email-draft-v2",
       "date": "2026-07-09",
       "model": "fable-5",
       "effort": "high",
