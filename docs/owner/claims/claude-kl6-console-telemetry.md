@@ -1,0 +1,1 @@
+- `claude/kl6-console-telemetry` · kit-lab band KL-6 companion (exporter `telemetry` family + declared kit-lab console lane) · `scripts/export_dashboard_data.py`, `botsite/console/console.js`, `botsite/data/console.json`, `telemetry/`, exporter tests · 2026-07-09
