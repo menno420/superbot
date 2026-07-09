@@ -1,10 +1,10 @@
 {
   "meta": {
-    "generated_at": "2026-07-09T09:23:12Z",
+    "generated_at": "2026-07-09T10:45:44Z",
     "build": {
-      "commit": "d987cc76",
-      "subject": "Merge pull request #1884 from menno420/claude/console-feed-contract",
-      "committed_at": "2026-07-09T09:23:12Z"
+      "commit": "f18db769",
+      "subject": "Dependabot PR policy (owner decision Q-0256) + backlog review/merge of #1761–#1766 (#1886)",
+      "committed_at": "2026-07-09T10:45:44Z"
     },
     "counts": {
       "functions": 43,
@@ -3236,6 +3236,14 @@
       "self_initiated": false
     },
     {
+      "file": "2026-07-09-dependabot-policy-backlog.md",
+      "date": "2026-07-09",
+      "title": "2026-07-09 — Dependabot PR policy (owner decision) + backlog review/merge",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
       "file": "2026-07-09-console-feed-contract.md",
       "date": "2026-07-09",
       "title": "Session 2026-07-09 — console.json shape contract (superbot half)",
@@ -3666,14 +3674,6 @@
       "status": "complete",
       "run_type": "",
       "self_initiated": false
-    },
-    {
-      "file": "2026-07-07-fable5-final-review-brief-prep.md",
-      "date": "2026-07-07",
-      "title": "2026-07-07 — Prepare Fable-5 ultracode brief for the final rebuild-plan review + Projects-EAP repo prep",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
     }
   ],
   "bot_changelog": [
@@ -3717,6 +3717,20 @@
       "model": "fable-5",
       "effort": "high",
       "task_class": "kernel/architecture design",
+      "tokens_out": null,
+      "outcome": {
+        "ci_green_first_push": null,
+        "checker_findings": null,
+        "merged_pr": null,
+        "reverted_within_window": null
+      }
+    },
+    {
+      "session": "2026-07-09-dependabot-policy-backlog",
+      "date": "2026-07-09",
+      "model": "fable-5",
+      "effort": "high",
+      "task_class": "review/verify",
       "tokens_out": null,
       "outcome": {
         "ci_green_first_push": null,
