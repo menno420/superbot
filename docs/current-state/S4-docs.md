@@ -9,6 +9,24 @@
 > S3; the docs it produces are S4.*
 
 **Recently shipped (this sector):**
+- **Fortieth Q-0107 reconciliation pass** (band-#1890, issue #1891 —
+  [pass record](../planning/reconciliation-pass-2026-07-09-band1890.md)): reconciled the ledger
+  (band #1863–#1890 — seven grouped entries, **entirely docs/tooling**, zero `disbot/` runtime:
+  the **EAP Anthropic-feedback email assembled + sent** #1864/#1866/#1867/#1868; the **EAP Project
+  fleet founding → independent cross-repo review** #1873…#1877/#1887/#1889/#1890 (the fleet grew to
+  four repos — `superbot`, `superbot-next`, `substrate-kit`, `websites` — plus the manager-Project
+  brief; headline finding: the substrate-kit's **render/engage half strands in every fresh adoption**,
+  an upstream-kit fix); the **substrate-kit graduation to its own repo**
+  #1878/#1879/#1881/#1882/#1883/#1884 (v1.0.0 pinned via `substrate.config.json`; the in-tree copy
+  removed — 101 files; provenance riders + exporter telemetry + `console.json` contract as kit-lab
+  companions); the **Dependabot PR policy Q-0256** #1886 (+ the #1761–#1766 backlog merge); the
+  39th-pass docs PR #1863; and 8 dashboard refreshes), trimmed Recently-shipped to 20
+  (`trim_recently_shipped.py --apply`, moved the 7 oldest bullets, floor recomputed), disposed
+  **0 open PRs** (**zero open at pass start** — the dependabot backlog cleared under Q-0256; no
+  stale session PR), confirmed **ROUTINE_PAT set / loop self-fires** (issue #1891 authored by
+  `menno420`), carried the forward queue intact (still deep, no THIN flag — the rebuild Phase-B
+  canonical plan + the live SuperBot Project program/fleet dominate), refreshed the dashboard export
+  (Q-0167), reset the marker #1861 → #1890.
 - **Thirty-eighth Q-0107 reconciliation pass** (band-#1830, issue #1832 —
   [pass record](../planning/reconciliation-pass-2026-07-08-band1830.md)): reconciled the ledger
   (band #1801–#1830 — five grouped entries, headlined by the **entirely docs-only SuperBot Project
@@ -177,7 +195,7 @@
   startable slice. Companion: the still-unexecuted
   [orientation-cost-reduction plan](../planning/orientation-cost-reduction-plan-2026-06-30.md)
   (Q-0210 router archive now 3+ passes overdue — B0–B3 should run soon regardless).
-- **Next reconciliation pass due once merged PRs cross #1860** (every multiple of 30, Q-0134) —
+- **Next reconciliation pass due once merged PRs cross #1920** (every multiple of 30, Q-0134) —
   auto-triggered by `reconciliation-trigger.yml`; run by the docs-reconciliation routine, **not** a
   manual session (Q-0124).
 - Plan-band depth is healthy — **no `PLAN-BACKLOG-THIN` flag** (buildable depth well over cadence).

@@ -1,10 +1,10 @@
 {
   "meta": {
-    "generated_at": "2026-07-08T16:20:05Z",
+    "generated_at": "2026-07-09T13:58:14Z",
     "build": {
-      "commit": "e9988b3b",
-      "subject": "Merge pull request #1861 from menno420/claude/projects-testing-anthropic-feedback-5xqamy",
-      "committed_at": "2026-07-08T16:20:05Z"
+      "commit": "72053d26",
+      "subject": "Merge pull request #1890 from menno420/claude/projects-eap-review-9vq8oj",
+      "committed_at": "2026-07-09T13:58:14Z"
     }
   },
   "counts": {

@@ -1,10 +1,10 @@
 {
   "meta": {
-    "generated_at": "2026-07-09T10:45:44Z",
+    "generated_at": "2026-07-09T13:58:14Z",
     "build": {
-      "commit": "f18db769",
-      "subject": "Dependabot PR policy (owner decision Q-0256) + backlog review/merge of #1761–#1766 (#1886)",
-      "committed_at": "2026-07-09T10:45:44Z"
+      "commit": "72053d26",
+      "subject": "Merge pull request #1890 from menno420/claude/projects-eap-review-9vq8oj",
+      "committed_at": "2026-07-09T13:58:14Z"
     },
     "counts": {
       "functions": 43,
@@ -3204,6 +3204,14 @@
       "self_initiated": false
     },
     {
+      "file": "2026-07-09-projects-eap-fleet-review.md",
+      "date": "2026-07-09",
+      "title": "2026-07-09 — Independent cross-repo review of the Projects-EAP fleet",
+      "status": "complete",
+      "run_type": "manual",
+      "self_initiated": false
+    },
+    {
       "file": "2026-07-09-kl6-console-telemetry.md",
       "date": "2026-07-09",
       "title": "Session 2026-07-09 — KL-6 companion: exporter telemetry family + kit-lab console lane",
@@ -3228,11 +3236,27 @@
       "self_initiated": false
     },
     {
+      "file": "2026-07-09-fleet-coordination-plan.md",
+      "date": "2026-07-09",
+      "title": "2026-07-09 — Fleet coordination protocol + manager Project v2 (plan)",
+      "status": "complete",
+      "run_type": "manual",
+      "self_initiated": false
+    },
+    {
       "file": "2026-07-09-eap-fleet-sequencing-correction.md",
       "date": "2026-07-09",
       "title": "2026-07-09 — EAP fleet sequencing correction: kit-lab governs real repos, test fleet trimmed to 2",
       "status": "complete",
       "run_type": "",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-07-09-eap-findings-email-manager-kickoff.md",
+      "date": "2026-07-09",
+      "title": "2026-07-09 — EAP findings write-back + interim email + manager kickoff",
+      "status": "complete",
+      "run_type": "manual",
       "self_initiated": false
     },
     {
@@ -3647,30 +3671,6 @@
       "file": "2026-07-07-multi-repo-program-capture.md",
       "date": "2026-07-07",
       "title": "2026-07-07 — Multi-repo program capture (kit lab + trading repo + repo-start mechanics)",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-07-07-kit-understand-and-reflect.md",
-      "date": "2026-07-07",
-      "title": "2026-07-07 — Port understand-and-reflect + guiding-questions into the substrate-kit",
-      "status": "complete",
-      "run_type": "manual",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-07-07-kit-lab-founding-plan.md",
-      "date": "2026-07-07",
-      "title": "2026-07-07 — Kit-lab founding plan (program session 2/3)",
-      "status": "complete",
-      "run_type": "manual",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-07-07-kickoff-readiness.md",
-      "date": "2026-07-07",
-      "title": "2026-07-07 — Kickoff readiness (steps-6–8 brief + Q-0247/Q-0248/Q-0249)",
       "status": "complete",
       "run_type": "",
       "self_initiated": false

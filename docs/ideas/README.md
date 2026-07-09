@@ -31,6 +31,12 @@ only the header block is read, so a `**Subsystem:**` *example* in an idea's body
 
 Current broad captures:
 
+- [`cross-repo-eap-verification-orientation-pointer-2026-07-09.md`](./cross-repo-eap-verification-orientation-pointer-2026-07-09.md) —
+  **reconciliation session ender (2026-07-09, 40th Q-0107 pass):** add a short cross-repo verification
+  pointer to the orientation route — verify a sibling EAP repo with *its own* CI interpreter
+  (`superbot-next` = Py3.11, not superbot's pinned 3.10 — the trap that cost the fleet-review session
+  ~75 phantom failures) and name the `add_repo` → GitHub-MCP → clone-and-run first-party flow, so every
+  manager-Project run stops re-deriving it.
 - [`pinned-feed-contract-for-dashboard-json-2026-07-09.md`](./pinned-feed-contract-for-dashboard-json-2026-07-09.md) —
   **session ender (2026-07-09, PR #1884):** extend the pinned-feed-contract pattern (the console.json
   shape contract, `botsite/data/console_data_contract.json`) to `dashboard.json` — the websites repo's
