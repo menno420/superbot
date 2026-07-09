@@ -1,0 +1,1 @@
+- `claude/kl2-provenance-riders` · docs-only (kit-lab band KL-2 companion: program-law provenance riders on origin Q-blocks) · `docs/owner/maintainer-question-router.md` (Q-0105/0120/0132/0240/0241/0247/0248/0249 riders), `.sessions/` · 2026-07-09
