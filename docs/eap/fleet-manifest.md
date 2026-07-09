@@ -13,6 +13,8 @@
 | **kit-lab** | menno420/substrate-kit | unknown | **not yet armed** (owner action) | 2026-07-09 (recon: #25 merged @ eb540d9) | v1.0.0 released, 637 tests, CI green; PR #26 owner-gated; B1 benchmark next; ORDER 002 = ship the control/ kit band |
 | **websites** | menno420/websites | unknown | **not yet armed** (owner action) | 2026-07-09 (recon: 20/20 PRs merged @ d0e9b33) | 3 services live on Railway; quality (required) green; Q4/Q5 owner-gated |
 | **trading-lab** | menno420/trading-strategy | default (Opus 4.8) | **not yet armed** (owner action) | 2026-07-09 (repo created, scaffold in progress) | autonomous trading-strategy research lab (backtesting; research-only, no live trading); founding docs in its repo |
+| **game-mining** | menno420/superbot-games (shared, lanes) | default | **not yet armed** (owner action) | 2026-07-09 (repo seeded, Projects launching) | shared-repo cohabitation experiment; plugin packages for superbot-next |
+| **game-exploration** | menno420/superbot-games (shared, lanes) | default | **not yet armed** (owner action) | 2026-07-09 (repo seeded, Projects launching) | shared-repo cohabitation experiment; plugin packages for superbot-next |
 | codetool-lab-fable5 | menno420/codetool-lab-fable5 | Fable 5 | planned | 2026-07-09 (seeded; Project launching) | model-comparison coding arm (docs/planning/eap-project-fleet-2026-07-09.md) |
 | codetool-lab-opus48 | menno420/codetool-lab-opus4.8 | Opus 4.8 | planned | 2026-07-09 (seeded; Project launching) | model-comparison coding arm (identical brief; only the model differs) |
 | codetool-lab-sonnet5 | menno420/codetool-lab-sonnet5 | Sonnet 5 | planned | 2026-07-09 (seeded; Project launching) | model-comparison coding arm (third arm, added by owner decision 2026-07-09) |
