@@ -1,6 +1,6 @@
 # 2026-07-09 — Remove the in-tree substrate-kit copy (named follow-up chore)
 
-> **Status:** `in-progress`
+> **Status:** `complete`
 
 ## What I did
 
@@ -43,7 +43,7 @@ in-tree build/bootstrap paths) and the `.claude/CLAUDE.md` Q-0254 bullet's
 **router Q-0255 (DISCUSS)** with an apply-as-is recommendation.
 
 **Checks:** `check_quality.py --check-only` ✓ · `check_quality.py --full`
-(mypy + full pytest) ✓ · `check_docs.py --strict` ✓ ·
+(mypy + full pytest: 13813 passed / 49 skipped / 2 xfailed) ✓ · `check_docs.py --strict` ✓ ·
 `check_architecture.py --mode strict` ✓ (2 pre-existing WARNs only) ·
 `check_current_state_ledger.py --strict` ✓ (benign newest-merge lag only) ·
 `check_session_log.py` ✓.
