@@ -167,7 +167,8 @@
   [`planning/rebuild-canonical-plan-2026-07-06.md`](../planning/rebuild-canonical-plan-2026-07-06.md)
   (PR #1770). Still behind the G1 owner gate; no new-repo code yet.
 - **▶ SuperBot retention application — startable (owner-directed brainstorm, PR #1643; Q-0214):** the
-  **kit-native** context-economy engine already shipped in **#1649** (`substrate-kit/src/engine/economy/`);
+  **kit-native** context-economy engine already shipped in **#1649** (`src/engine/economy/` — now in the graduated
+  [menno420/substrate-kit](https://github.com/menno420/substrate-kit) repo; the in-tree copy was removed in #1882, pin = `substrate.config.json`);
   what remains here is applying retention to SuperBot's *own* docs via a `check_retention.py`
   checker/actuator (which consumes that engine) —
   [`planning/memory-retention-and-context-economy-plan-2026-07-02.md`](../planning/memory-retention-and-context-economy-plan-2026-07-02.md)

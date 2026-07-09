@@ -8,7 +8,8 @@
 Answering the owner's question ("is there a guide for how a session classifies its task and
 picks an efficient method?") surfaced that the substrate-kit already ships exactly this — five
 "stances" (`question` / `analysis` / `debug` / `review` / `plan`), each with its own
-reading-route, tool-scope, and output contract (`substrate-kit/src/engine/stances/stances.py`).
+reading-route, tool-scope, and output contract (`src/engine/stances/stances.py` in the graduated
+[menno420/substrate-kit](https://github.com/menno420/substrate-kit) repo — the in-tree copy was removed in #1882).
 It is fully built and tested (part of the 440-test suite) but **dormant**: nothing in this
 repo's live `.claude/CLAUDE.md` or `AGENT_ORIENTATION.md` tells a session to classify an
 incoming message into one of these stances first, and no hook enforces or even advises it.

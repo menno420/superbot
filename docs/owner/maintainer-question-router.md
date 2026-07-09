@@ -9231,3 +9231,28 @@ each confirmed live:
 5. **Threshold calibration deferred, explicitly**: "let it be for now, I can review how well it
    works with a few weeks of testing." The guessed "non-trivial, non-mechanical" trigger in
    CLAUDE.md stays as-is; no further tuning until empirical feedback arrives.
+
+### Q-0255 — DISCUSS: clean the two owner-gated pointers left stale by the in-tree substrate-kit removal (proposed 2026-07-09)
+
+> **Context.** PR #1882 executed the follow-up chore named in the kit-lab founding plan §4.2
+> (substrate-kit `docs/planning/kit-lab-founding-plan-2026-07-07.md`): the kit graduated to its
+> own repo (menno420/substrate-kit, v1.0.0 released; superbot's pin = `substrate.config.json`,
+> #1879), so the historical in-tree copy (`substrate-kit/` + `tests/unit/substrate_kit/`) was
+> deleted and the living-doc pointers repointed at the graduated repo. Two references live in
+> **owner-gated files** the session may not self-edit (autonomy boundary, `.claude/CLAUDE.md`
+> § Working agreement / Q-0194-rider), so they are proposed here instead:
+
+**The proposal (owner decision needed — both touch executable/binding config).**
+1. **`.claude/settings.json`** — remove the two now-dead permission-allowlist lines
+   `"Bash(python3.10 substrate-kit/src/build_bootstrap.py*)"` and
+   `"Bash(python3.10 substrate-kit/dist/bootstrap.py*)"` (lines 47–48). The paths no longer
+   exist; the entries are inert but misleading — a later agent could read them as evidence an
+   in-tree kit still exists.
+2. **`.claude/CLAUDE.md`** — in the Q-0254 working-agreement bullet, the parenthetical
+   `(substrate-kit/src/engine/templates/CONSTITUTION.md.tmpl + …)` now names deleted paths;
+   reword to point at the graduated repo (menno420/substrate-kit `src/engine/templates/`).
+   One-line wording change, no rule-content change.
+
+**Why it needs the owner.** Both files are owner-gated (settings.json is executable config;
+CLAUDE.md is read-only to unattended sessions — proposals only). Both edits are trivial and
+carry no behavior change beyond removing dead references; recommendation: apply both as-is.
