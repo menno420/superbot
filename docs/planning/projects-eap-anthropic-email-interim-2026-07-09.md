@@ -6,7 +6,10 @@
 > ✅ SENT 2026-07-08) as the promised "I'll update you once I run into more useful findings." The
 > owner adds his personal **Part 1** before sending (same as last time); Part 2 (agents' findings)
 > is drafted here. If the owner judges it complete enough, it can go as an in-between update;
-> otherwise it feeds the next fuller note.
+> otherwise it feeds the next fuller note. **Superseded as the send-candidate** by the gen-1
+> wrap-up draft v2
+> ([docs/eap/gen1-wrapup-email-draft-v2-2026-07-09.md](../eap/gen1-wrapup-email-draft-v2-2026-07-09.md))
+> — don't send both.
 
 ## Rules of the road (owner-set, carried from the 7/8 note — binding)
 
