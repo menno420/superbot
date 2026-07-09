@@ -593,7 +593,8 @@ context-compiler · governance scaffolding). Content-agnostic and liftable; the
 
 - **Now (owner-steered OSS arc — #813)** — the
   [portable substrate-kit extraction](planning/portable-substrate-kit-extraction-2026-06-13.md):
-  externalize the workflow substrate into a single-file, stdlib-only kit (`substrate-kit/`) that
+  externalize the workflow substrate into a single-file, stdlib-only kit (built in-tree as `substrate-kit/`;
+  **graduated 2026-07-08 to [menno420/substrate-kit](https://github.com/menno420/substrate-kit), v1.0.0 — in-tree copy removed #1882, pin = `substrate.config.json`**) that
   bootstraps the loop in any project. **PRs 1a/1b + the 1b tail are DONE** (#789 · #791–#793 · #802 —
   skeleton, interview engine, templates, render, the `check_docs`/`check_session_log` ports + a
   `check` CLI); **PR 2's capability layer §3b/§3c is COMPLETE** — **stances (#805) + skills (#811) +

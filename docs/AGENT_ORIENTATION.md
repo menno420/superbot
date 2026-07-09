@@ -451,7 +451,8 @@ Before proposing or implementing any non-trivial change:
    one guiding question you can't derive yourself (rare, only when it matters
    and is actionable); escalate a big/vague idea to a delegated research pass
    or its own session rather than answering from memory alone. **Portable
-   kit doctrine now** (`substrate-kit/src/engine/templates/`), not just local.
+   kit doctrine now** (graduated repo [menno420/substrate-kit](https://github.com/menno420/substrate-kit)
+   `src/engine/templates/`; superbot's pin: `substrate.config.json`, #1879), not just local.
 
 This is not a courtesy — repeated rediscovery is the main reason
 SuperBot accumulates duplicate helpers and orphan plans. The minutes

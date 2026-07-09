@@ -45,6 +45,7 @@ platform should own — this is the kit-local version we can ship without waitin
 
 ## Fit
 
-Lands in `substrate-kit/src/engine/` (session-close + stop_check); pure stdlib (git + subprocess);
+Lands in `src/engine/` of the graduated [menno420/substrate-kit](https://github.com/menno420/substrate-kit)
+repo (session-close + stop_check; the in-tree copy was removed in #1882); pure stdlib (git + subprocess);
 testable against a scratch repo like the existing adopt tests. A natural T4 re-run afterward would
 measure whether drafted handoffs finally move the continuity needle.
