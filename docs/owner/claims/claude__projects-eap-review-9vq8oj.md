@@ -1,0 +1,1 @@
+ - `claude/projects-eap-review-9vq8oj` · **EAP fleet review** — independent cross-repo review (4 repos) + manager-Project brief · `docs/eap/fleet-review-2026-07-09.md` `docs/planning/eap-manager-project-brief-2026-07-09.md` · 2026-07-09 · docs-only, PR open
