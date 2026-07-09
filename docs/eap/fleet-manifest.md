@@ -1,6 +1,6 @@
 # Fleet manifest — Project registry
 
-> **Status:** `live` — maintained by the **manager Project** (its sole-writer file, like each
+> **Status:** `living-ledger` — maintained by the **manager Project** (its sole-writer file, like each
 > Project's `inbox.md`). One row per Project; the manager updates `last-seen` from each Project's
 > `control/status.md` heartbeat. Protocol:
 > [fleet-coordination-protocol-2026-07-09.md](../planning/fleet-coordination-protocol-2026-07-09.md).
