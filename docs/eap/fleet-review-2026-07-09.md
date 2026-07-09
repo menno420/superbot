@@ -26,6 +26,26 @@ honesty caveat the owner should hold (impressive counts slightly overstate "done
 disclosed honestly by the repos themselves). Grades: **substrate-kit A · superbot-next B+ ·
 websites B+ product / C governance-transfer**, against the mature `superbot` baseline.
 
+> **Update — 2026-07-09 evening (post-review, from the rebuild coordinator's own run):** the
+> `superbot-next` "doesn't boot yet / 0 parity demonstrated" caveat (§3, §5) has **partly
+> closed**. The coordinator built the CUT-1 composition root (superbot-next PR #54) and the bot
+> now **boots to `RUNNING`** on a real test-bot token against real PostgreSQL — the step-1
+> kernel-boot live smoke is **PASS** with verbatim evidence
+> (`superbot-next/docs/status/testing-report-2026-07-09.md`): migrations 0001–0024 apply +
+> checksum-verify on a fresh DB, gateway READY ~4 s, `/ready` 503→200 at RUNNING, the outbox
+> delivered its audit canary, clean SIGTERM → exit 0, zero ERROR lines on a second run. **The
+> first-ever live boot caught a real Postgres-only bug invisible to unit fakes** (a PREPARE-time
+> `timestamptz`/`interval` type error in `reap_stuck_applying`, fixed in the same PR) — the
+> "live-test is the gate, CI-green is not done" doctrine paying off on first contact. The
+> coordinator also shipped a strong orchestration retrospective
+> (`superbot-next/docs/status/rebuild-orchestration-retrospective-2026-07-09.md`): 49 PRs in
+> ~14 h across 18 workers, **zero reverts**, every incident recovered from durable state, and a
+> §6 "Projects model" opinion that **independently corroborates** this program's evaluation-log
+> findings (no coordinator timer · 4 KB brief cap · no direct coordinator→child channel ·
+> isolated containers → file-exchange-via-repos). **Net: `superbot-next` ticks from B+ toward
+> A-** — its biggest caveat (no boot) is closed; what remains is subsystem steps 2–9 live + the
+> 0/465 parity flips. The paragraph-level text below is the morning snapshot, preserved.
+
 ## 1. The four repos and their roles
 
 | Repo | Role | Scale | Open PRs |
