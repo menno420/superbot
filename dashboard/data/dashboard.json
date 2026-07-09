@@ -1,14 +1,14 @@
 {
   "meta": {
-    "generated_at": "2026-07-09T06:41:17Z",
+    "generated_at": "2026-07-09T09:23:12Z",
     "build": {
-      "commit": "d2334a4",
-      "subject": "KL-6 companion: exporter telemetry family + real console telemetry lane + declared kit-lab lane",
-      "committed_at": "2026-07-09T06:41:17Z"
+      "commit": "d987cc76",
+      "subject": "Merge pull request #1884 from menno420/claude/console-feed-contract",
+      "committed_at": "2026-07-09T09:23:12Z"
     },
     "counts": {
       "functions": 43,
-      "ideas": 219,
+      "ideas": 220,
       "bugs": 31,
       "reviews": 0,
       "reviews_open": 0,
@@ -1164,6 +1164,14 @@
     }
   ],
   "ideas": [
+    {
+      "file": "pinned-feed-contract-for-dashboard-json-2026-07-09.md",
+      "title": "Idea — extend the pinned-feed-contract pattern to `dashboard.json`",
+      "status": "ideas",
+      "date": "2026-07-09",
+      "summary": "PR #1884 pinned the shape of `botsite/data/console.json` in a committed, versioned",
+      "subsystems": null
+    },
     {
       "file": "agent-readable-external-reviewer-entrypoint-2026-07-08.md",
       "title": "Idea — a first-class \"external agent reviewer\" entry point into the repo",
@@ -3228,6 +3236,14 @@
       "self_initiated": false
     },
     {
+      "file": "2026-07-09-console-feed-contract.md",
+      "date": "2026-07-09",
+      "title": "Session 2026-07-09 — console.json shape contract (superbot half)",
+      "status": "complete",
+      "run_type": "manual",
+      "self_initiated": false
+    },
+    {
       "file": "2026-07-08-wave1-lane-b-supersede-checker.md",
       "date": "2026-07-08",
       "title": "Session — Wave-1 lane B: supersede-banner integrity checker",
@@ -3658,14 +3674,6 @@
       "status": "complete",
       "run_type": "",
       "self_initiated": false
-    },
-    {
-      "file": "2026-07-07-coordinator-kickoff-calibration.md",
-      "date": "2026-07-07",
-      "title": "2026-07-07 — SuperBot Project coordinator: kickoff revision + calibration exchange design",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
     }
   ],
   "bot_changelog": [
@@ -3691,6 +3699,20 @@
   "telemetry": [
     {
       "session": "2026-07-09-kl6-console-telemetry",
+      "date": "2026-07-09",
+      "model": "fable-5",
+      "effort": "high",
+      "task_class": "kernel/architecture design",
+      "tokens_out": null,
+      "outcome": {
+        "ci_green_first_push": null,
+        "checker_findings": null,
+        "merged_pr": null,
+        "reverted_within_window": null
+      }
+    },
+    {
+      "session": "2026-07-09-console-feed-contract",
       "date": "2026-07-09",
       "model": "fable-5",
       "effort": "high",
