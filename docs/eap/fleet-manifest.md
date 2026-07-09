@@ -8,7 +8,7 @@
 
 | Project | Repo(s) | Model | Routine cadence | Last-seen | Notes |
 |---|---|---|---|---|---|
-| **manager** | all program repos (control chair; builds nothing) | — | daily rollup + owner pings (self-scheduling unavailable — owner-armed) | 2026-07-09T12:07Z (kickoff) | v2 autonomous director; sole writer of every `control/inbox.md` + this manifest |
+| **manager** | menno420/fleet-manager (home; control chair over all program repos) | — | daily rollup + owner pings (self-scheduling unavailable — owner-armed) | 2026-07-09 | manager home repo seeded (playbook/templates/owner-queue); program record stays in superbot |
 | **SuperBot coordinator** | menno420/superbot · menno420/superbot-next | unknown | **not yet armed** (owner action: create self-poll routine, ~2–4 h while live) | 2026-07-09 (recon: next#55 merged; superbot green, recon band #1890 next) | rebuild complete (49 PRs, ~1000 tests); live-testing ledger step 1 PASS; golden-parity red-by-design (465 pending) |
 | **kit-lab** | menno420/substrate-kit | unknown | **not yet armed** (owner action) | 2026-07-09 (recon: #25 merged @ eb540d9) | v1.0.0 released, 637 tests, CI green; PR #26 owner-gated; B1 benchmark next; ORDER 002 = ship the control/ kit band |
 | **websites** | menno420/websites | unknown | **not yet armed** (owner action) | 2026-07-09 (recon: 20/20 PRs merged @ d0e9b33) | 3 services live on Railway; quality (required) green; Q4/Q5 owner-gated |
