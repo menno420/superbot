@@ -231,6 +231,22 @@ every claim is sourced in Appendix B below.)*
 > are **process gaps, not honesty failures**, and each shipped with a named fix. Our read for
 > your team: the model tier held integrity at 10x parallelism; what needs engineering at that
 > scale is the *process oracle* (live drives, rendered-output checks), not the model's honesty.
+>
+> **10. Environment setup-script failures kill sessions outright — no graceful degradation.** A
+> session provisioned into an environment whose setup script exits non-zero is left dead, with no
+> signal to the owner and no retry: our Trading Strategy Project's first working child was
+> provisioned at 13:00 CEST with a setup script written for a single-repo checkout (the
+> environment had two repos, so `git`/`pip` ran in the wrong directory and the script exited 1) —
+> the session sat dead ~30 minutes until manually resumed, and every new session in that
+> environment would have hit the same wall. Our workaround is owner-side: a defensive universal
+> shim (per-repo detection, every step non-fatal, `exit 0` always) pasted into a new
+> environment's setup script — after which a fresh probe session provisioned cleanly with all 5
+> repos' dependencies installed. The ask: make setup-script failure non-fatal by default — run
+> what works, skip what fails, boot the session with a visible "setup degraded: step N failed"
+> notice (and surface that state in the session list) instead of a dead session; a per-step
+> failsafe would have prevented every instance we hit. (Source: owner screen recording of the
+> provision log, 2026-07-09 ~15:37 CEST; the shim now lives in the "multi-repo" environment
+> config; probe verification in the manager session log.)
 
 ### Appendix B — addendum claims (not part of the email; owner's own check)
 
@@ -250,3 +266,4 @@ every claim is sourced in Appendix B below.)*
 | No legacy failure signatures returned (drift/overclaim/duplication/false greens) | fleet-quality review R4 §3 ("old problem signatures did NOT return") |
 | Born-red accounting honest: 0/465 held, no exemption rows, reds ledgered pre-owner | fleet-quality review R1 §2–3 (D-0026/D-0028, PR #59 "0/53 ledgered-red" 44 min before owner's `!help`) |
 | Gaps found were process, not honesty (presentation debt, red-by-design masking) | fleet-quality review R4 verdict (a) + manager synthesis 8–9 |
+| Setup-script exit 1 → dead session ~30 min, no signal/retry; exit-0 shim fixed it | owner screen recording of the provision log (2026-07-09 ~15:37 CEST) + the shim in the "multi-repo" environment config + probe-session verification (13:55Z) in the manager session log + eval log 2026-07-09 ~16:23Z |
