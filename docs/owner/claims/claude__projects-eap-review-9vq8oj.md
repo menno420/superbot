@@ -1,1 +1,0 @@
- - `claude/projects-eap-review-9vq8oj` · **EAP findings + interim email + manager kickoff** — write-back of tonight's findings, interim Anthropic email draft, manager Project launch materials · `docs/planning/projects-eap-anthropic-email-interim-2026-07-09.md` `docs/planning/manager-project-kickoff-2026-07-09.md` · 2026-07-09 · docs-only, PR open
