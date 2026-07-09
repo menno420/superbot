@@ -18,6 +18,15 @@
 | codetool-lab-fable5 | menno420/codetool-lab-fable5 | Fable 5 | planned | 2026-07-09 (seeded; Project launching) | model-comparison coding arm (docs/planning/eap-project-fleet-2026-07-09.md) |
 | codetool-lab-opus48 | menno420/codetool-lab-opus4.8 | Opus 4.8 | planned | 2026-07-09 (seeded; Project launching) | model-comparison coding arm (identical brief; only the model differs) |
 | codetool-lab-sonnet5 | menno420/codetool-lab-sonnet5 | Sonnet 5 | planned | 2026-07-09 (seeded; Project launching) | model-comparison coding arm (third arm, added by owner decision 2026-07-09) |
+| **venture-lab** | menno420/venture-lab | default | hourly (cadence class A) | 2026-07-09 (repo seeded @ d065c68) | first gen-2 born-right lane; Project boot pending owner clicks |
+
+## Lane notes — gen-1 wind-down (2026-07-09)
+
+- **Wind-down complete ×7:** kit, websites, trading, 3 codetools (fable5 / opus48 / sonnet5),
+  games-exploration.
+- **Pending ×2:** superbot-next — no wind-down reaction, needs owner re-paste check ·
+  games-mining — blocked on owner PR #5 click.
 
 Deferred fleet menu (same doc): codetool-lab-sonnet5 · game-lab · bot-lab · research-lab ·
-design-lab · personal-lab · wildcard-lab. EAP free window closes Friday 2026-07-10.
+design-lab · personal-lab · wildcard-lab. **EAP window extended to 2026-07-14** (Anthropic
+email 22:29Z, 2026-07-09; supersedes the Friday 2026-07-10 close recorded at seeding).
