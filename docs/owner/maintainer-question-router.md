@@ -4135,6 +4135,8 @@ is the automated teeth · this entry is provenance.
 
 ### Q-0105 — Adopt tooling freely, with a "delete if unreliable" kill-switch in its header
 
+> **→ Program law: [PL-008]** — this block's durable conclusion is canonicalized as program law **PL-008** in substrate-kit `docs/program/rulings.md` (the canonical home — cite the PL-ID, never copy the body). Canonicalized 2026-07-09, kit-lab band KL-2 (founding plan §8.3(3)); this Q-block stays in place as the origin provenance.
+
 > **DIRECTED 2026-06-12 (owner, voice).** Extends Q-0014. The owner: *"implement whatever you
 > think would work, but make sure another agent knows it should be deleted if it's been proven
 > unreliable over multiple sessions."*
@@ -4550,6 +4552,8 @@ analysis + the family-3 gate); this entry is the router pointer. **Decided → o
 execute in a future P0-3 arc PR (family 3).
 
 ### Q-0120 — Promote the earned candidate rules from `.session-journal.md` into `.claude/CLAUDE.md`?
+
+> **→ Program law: [PL-006]** — this block's durable conclusion is canonicalized as program law **PL-006** in substrate-kit `docs/program/rulings.md` (the canonical home — cite the PL-ID, never copy the body). Canonicalized 2026-07-09, kit-lab band KL-2 (founding plan §8.3(3)); this Q-block stays in place as the origin provenance.
 
 > **DECIDED 2026-06-16 (owner, in-session): promote all three.** Applied directly under the Q-0106
 > in-session exception. Mapping: **(a)** open-PR / merged-since check was already in CLAUDE.md
@@ -5034,6 +5038,8 @@ yes — flagged here, not self-applied (Q-0106).
 ---
 
 ### Q-0132 — Durable items mined from the owner's exported strategy chats (2026-06-14)
+
+> **→ Program law: [PL-007]** — this block's durable conclusion is canonicalized as program law **PL-007** in substrate-kit `docs/program/rulings.md` (the canonical home — cite the PL-ID, never copy the body). Canonicalized 2026-07-09, kit-lab band KL-2 (founding plan §8.3(3)); this Q-block stays in place as the origin provenance.
 
 > **CAPTURE 2026-06-14 (owner-directed).** The owner exported his claude.ai chat history (13 plain
 > chats — Claude Code *sessions* are not in that export) and asked the session to "see if anything is
@@ -8690,6 +8696,8 @@ required context; nothing is deleted. **Homes (on decision):** `.github/workflow
 
 ## Q-0240 — Agent decision authority: decide-and-flag over route-up (owner-directed, 2026-07-06)
 
+> **→ Program law: [PL-001]** — this block's durable conclusion is canonicalized as program law **PL-001** in substrate-kit `docs/program/rulings.md` (the canonical home — cite the PL-ID, never copy the body). Canonicalized 2026-07-09, kit-lab band KL-2 (founding plan §8.3(3)); this Q-block stays in place as the origin provenance.
+
 **Owner directive (in-session):** *"let fable decide … I'm usually going with the recommended decisions
 and things are usually too technical for me anyways … redesign the repo so fable will make its own
 decisions."* → **Applied directly** (the in-session owner is the live reviewer — the Q-0106 exception —
@@ -8710,6 +8718,8 @@ Provenance: `.sessions/2026-07-06-fable-decision-authority-and-foundational-cons
 ---
 
 ## Q-0241 — Remove the owner gates from the rebuild; never-wait autonomy + live-test visibility + silence=consent (owner-directed, 2026-07-07)
+
+> **→ Program law: [PL-002]** — this block's durable conclusion is canonicalized as program law **PL-002** in substrate-kit `docs/program/rulings.md` (the canonical home — cite the PL-ID, never copy the body). Canonicalized 2026-07-09, kit-lab band KL-2 (founding plan §8.3(3)); this Q-block stays in place as the origin provenance.
 
 **Owner directive (in-session):** *"we should get rid of the owner gates/blockers, especially since we
 now also have the option to let all commands be used by an agent in a live bot session, it should just
@@ -8914,6 +8924,8 @@ owning fold).
 
 ### Q-0247 — DECIDED: multi-repo sequencing ratified; kickoff brief directed (2026-07-07)
 
+> **→ Program law: [PL-003]** — this block's durable conclusion is canonicalized as program law **PL-003** in substrate-kit `docs/program/rulings.md` (the canonical home — cite the PL-ID, never copy the body). Canonicalized 2026-07-09, kit-lab band KL-2 (founding plan §8.3(3)); this Q-block stays in place as the origin provenance.
+
 **Owner ruling (in-session):** "yes I agree, please make sure everything is properly documented
 and ready for its own dedicated session." Ratifies the recommended sequencing in
 `docs/ideas/multi-repo-program-kit-lab-trading-2026-07-07.md`: **(1)** `superbot-next` now (plan
@@ -8928,6 +8940,8 @@ read-only as the oracle, never clone-as-base.
 capture doc's routing section · current-state ▶ pointers.
 
 ### Q-0248 — DECIDED: model-for-task allocation becomes an empirical, rule-based discipline (2026-07-07)
+
+> **→ Program law: [PL-004]** — this block's durable conclusion is canonicalized as program law **PL-004** in substrate-kit `docs/program/rulings.md` (the canonical home — cite the PL-ID, never copy the body). Canonicalized 2026-07-09, kit-lab band KL-2 (founding plan §8.3(3)); this Q-block stays in place as the origin provenance.
 
 **Owner ruling (in-session):** "we should also find out ways to properly use the right model for
 the right task, like everything we do, we should have a way to test this reliably and a proper
@@ -8972,6 +8986,8 @@ from session one) · future kit-repo benchmark suite · K10's task-registry/prof
 (the product-plane enforcement point).
 
 ### Q-0249 — DECIDED: no budget caps yet — a ~2-month observation window with spend telemetry first (2026-07-07)
+
+> **→ Program law: [PL-005]** — this block's durable conclusion is canonicalized as program law **PL-005** in substrate-kit `docs/program/rulings.md` (the canonical home — cite the PL-ID, never copy the body). Canonicalized 2026-07-09, kit-lab band KL-2 (founding plan §8.3(3)); this Q-block stays in place as the origin provenance.
 
 **Owner ruling (in-session):** "budget so far is not really a problem, I'd like to test it for a
 while to see the average of a couple of months before deciding on anything."
