@@ -68,6 +68,27 @@ this row is manual-confirm same as the rest of this doc until Phase 2 lands).
   there merge via direct API call by whichever session is driving, not native GitHub auto-merge.
   Adding `ROUTINE_PAT` + the enabler workflow is a prerequisite for that to change.
 
+## Dependabot PR policy (owner decision Q-0256, 2026-07-09)
+
+Dependabot PRs land on `dependabot/*` branches, so the `auto-merge-enabler` never arms them —
+**by design** (`.github/dependabot.yml` provenance comment); they have no merge actor until a
+session acts. The owner's standing rule:
+
+- **Review-on-sight, then merge.** The *first* session that sees an open dependabot PR reviews
+  it — diff + upstream changelog/breaking-changes check + grep of the repo's *actual* usage of
+  the package — and merges it (squash; **CI green on the final head** required, as always).
+  An open dependabot PR is unclaimed work for whoever sees it; don't leave it for later.
+- **Major version bumps:** assess the breaking changes against real usage. Contained
+  adaptation → **fix it, then merge** (green CI on the dependabot head is itself the evidence
+  when no code change is needed — CI installs the bumped floor and runs the full suite). Too
+  large for this session → **don't merge**; write a dedicated-session work item
+  (`docs/planning/` or `docs/ideas/`) and note it on the PR.
+- Grouped PRs from different ecosystems can overlap (root pip vs `/dashboard` pip both touched
+  `dashboard/requirements.*` in #1761/#1762) — check whether one diff is a superset before
+  calling them duplicates; merge the superset, close the subset with a one-line comment.
+- Merging = deploying (Q-0193) applies unchanged. Extending the enabler workflow to auto-arm
+  dependabot PRs was considered and **not** shipped — proposal + rationale: router Q-0257.
+
 ## Auto-mode capability facts (what a session can/can't do — the walls)
 
 Full evidence: `docs/planning/projects-eap-permission-probe-report-2026-07-08.md`.

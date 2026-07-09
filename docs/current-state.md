@@ -317,6 +317,17 @@ Source code and merged PRs win over anything written here.
 > auto-opens a `reconcile` issue at the boundary that fires the docs-reconciliation routine). Reset
 > this marker to the latest PR after a pass.
 
+- **#1762 · #1763 · #1764 · #1765 · #1766 (2026-07-09, dependabot backlog cleared under the new Q-0256 policy)** —
+  the six stuck dependabot PRs (opened 2026-07-06, CI-green ~3 days with no merge actor — `dependabot/*`
+  branches are never armed by the enabler, by design) were reviewed and dispositioned per the owner's
+  new **review-on-sight rule (Q-0256**, durable home `docs/operations/repo-settings-state.md`
+  § Dependabot PR policy**)**: **#1764** discord.py ≥2.7.1, **#1763** anthropic ≥0.116, **#1766**
+  Pillow ≥12.3, **#1762** uvicorn 0.50.2 (botsite + dashboard lockfile) — all floor/patch bumps fresh
+  builds already resolved; **#1765** psutil ≥7.2.2 (**major** 5→7) merged after a real breaking-change
+  assessment (only `Process().memory_info().rss` / `cpu_percent()` / `virtual_memory()` used — all
+  unchanged through 7.2.x; removed APIs unused; full suite green with 7.2.2 installed). **#1761 closed**
+  as a strict subset of #1762 (both bumped the same `dashboard/requirements.*` lines). Policy Q-block +
+  the not-shipped auto-arm alternative: router Q-0256/Q-0257 (session PR #1886).
 - **#1834 · #1837 · #1838 · #1839 · #1840 · #1842 · #1847 · #1852 · #1853 · #1856 · #1858 · #1859 · #1861 (2026-07-07/08, S3 rebuild / EAP-evaluation — the Anthropic-feedback email + permission-probe arc)** —
   the band's headline: the coordinator kickoff continued (**#1834/#1837**) and the EAP evaluation produced
   the owner's **Friday Anthropic feedback email**, refined across the band with **every claim audited to a
