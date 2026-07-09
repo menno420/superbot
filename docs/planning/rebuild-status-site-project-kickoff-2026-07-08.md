@@ -1,7 +1,16 @@
 # Rebuild status-site Project — kickoff (Custom Instructions + startup prompt, 2026-07-08)
 
-> **Status:** `plan` — paste-in Custom Instructions + startup prompt for a **second,
-> separate** Claude Code Project, distinct from the rebuild Project
+> **Status:** `historical` — **superseded 2026-07-09 by
+> [`websites-project-kickoff-2026-07-09.md`](websites-project-kickoff-2026-07-09.md).**
+> This doc scoped a narrow single-purpose site in a one-off repo. The owner decided
+> the target repo (`menno420/websites`, created 2026-07-08) should instead be the
+> **permanent consolidated home for all websites** — the control-plane site this doc
+> describes is still the first deliverable, but the repo, Custom Instructions, and
+> startup prompt are all superseded. Kept for history / the reasoning trail only —
+> **use the new doc**, not this one.
+>
+> Original framing below, unchanged: paste-in Custom Instructions + startup prompt
+> for a **second, separate** Claude Code Project, distinct from the rebuild Project
 > ([`rebuild-project-kickoff-2026-07-08.md`](rebuild-project-kickoff-2026-07-08.md)).
 > **Provenance:** owner directive 2026-07-08, decided via the directing session's
 > question panel (see [`rebuild-direction-handoff-2026-07-08.md`](rebuild-direction-handoff-2026-07-08.md)
