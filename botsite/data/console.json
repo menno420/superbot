@@ -1,13 +1,53 @@
 {
   "meta": {
-    "generated_at": "2026-07-08T16:20:05Z",
+    "generated_at": "2026-07-09T06:41:17Z",
     "build": {
-      "commit": "e9988b3b",
-      "subject": "Merge pull request #1861 from menno420/claude/projects-testing-anthropic-feedback-5xqamy",
-      "committed_at": "2026-07-08T16:20:05Z"
+      "commit": "d2334a4",
+      "subject": "KL-6 companion: exporter telemetry family + real console telemetry lane + declared kit-lab lane",
+      "committed_at": "2026-07-09T06:41:17Z"
     }
   },
   "sessions": [
+    {
+      "file": "2026-07-09-remove-intree-kit.md",
+      "date": "2026-07-09",
+      "title": "2026-07-09 — Remove the in-tree substrate-kit copy (named follow-up chore)",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-07-09-kl6-console-telemetry.md",
+      "date": "2026-07-09",
+      "title": "Session 2026-07-09 — KL-6 companion: exporter telemetry family + kit-lab console lane",
+      "status": "complete",
+      "run_type": "manual",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-07-09-kl2-provenance-riders.md",
+      "date": "2026-07-09",
+      "title": "2026-07-09 — KL-2 companion: program-law provenance riders on the origin Q-blocks",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-07-09-kit-version-pin.md",
+      "date": "2026-07-09",
+      "title": "2026-07-09 — substrate-kit v1.0.0 pin file (kit-lab D2, consumer half)",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-07-09-eap-fleet-sequencing-correction.md",
+      "date": "2026-07-09",
+      "title": "2026-07-09 — EAP fleet sequencing correction: kit-lab governs real repos, test fleet trimmed to 2",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
     {
       "file": "2026-07-08-wave1-lane-b-supersede-checker.md",
       "date": "2026-07-08",
@@ -41,11 +81,43 @@
       "self_initiated": false
     },
     {
+      "file": "2026-07-08-reconcile-band1860.md",
+      "date": "2026-07-08",
+      "title": "2026-07-08 — Thirty-ninth Q-0107 reconciliation pass (band-#1860)",
+      "status": "complete",
+      "run_type": "routine",
+      "self_initiated": true
+    },
+    {
       "file": "2026-07-08-reconcile-band1830.md",
       "date": "2026-07-08",
       "title": "Session — thirty-eighth Q-0107 reconciliation pass (band-#1830)",
       "status": "complete",
       "run_type": "routine",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-07-08-rebuild-project-kickoff.md",
+      "date": "2026-07-08",
+      "title": "Session — Rebuild Project kickoff (Custom Instructions + startup prompt)",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-07-08-rebuild-direction-handoff.md",
+      "date": "2026-07-08",
+      "title": "Session — Close-out: rebuild-direction handoff + email marked sent",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-07-08-rebuild-audit-checklist.md",
+      "date": "2026-07-08",
+      "title": "2026-07-08 — Rebuild-direction: owner router answers + audit checklist",
+      "status": "complete",
+      "run_type": "",
       "self_initiated": false
     },
     {
@@ -129,6 +201,14 @@
       "self_initiated": false
     },
     {
+      "file": "2026-07-08-eap-email-sign-part2.md",
+      "date": "2026-07-08",
+      "title": "Session — Sign Part 2 of the EAP email as Claude",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
       "file": "2026-07-08-eap-email-refresh-forward-only-project.md",
       "date": "2026-07-08",
       "title": "Session — EAP email refresh + forward-only Project instructions",
@@ -140,6 +220,14 @@
       "file": "2026-07-08-eap-email-finalize.md",
       "date": "2026-07-08",
       "title": "Session — Finalize the Anthropic EAP email",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-07-08-eap-email-assemble-part1.md",
+      "date": "2026-07-08",
+      "title": "Session — Assemble the full EAP email (Part 1 landed + Part 2 made complementary)",
       "status": "complete",
       "run_type": "",
       "self_initiated": false
@@ -399,101 +487,13 @@
       "status": "complete",
       "run_type": "",
       "self_initiated": false
-    },
-    {
-      "file": "2026-07-06-ruff-migration.md",
-      "date": "2026-07-06",
-      "title": "2026-07-06 — Ruff migration (A3): ruff replaces black + isort",
-      "status": "complete",
-      "run_type": "manual",
-      "self_initiated": true
-    },
-    {
-      "file": "2026-07-06-reconcile-band1770.md",
-      "date": "2026-07-06",
-      "title": "2026-07-06 — Thirty-sixth Q-0107 reconciliation pass (band-#1770)",
-      "status": "complete",
-      "run_type": "routine",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-07-06-reconcile-band1740.md",
-      "date": "2026-07-06",
-      "title": "2026-07-06 — Thirty-fifth Q-0107 reconciliation pass (band-#1740)",
-      "status": "complete",
-      "run_type": "routine",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-07-06-rebuild-consolidation-fable5.md",
-      "date": "2026-07-06",
-      "title": "2026-07-06 — Rebuild consolidation: one canonical plan + foundational-completeness (Fable 5 Ultracode brief §3)",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": true
-    },
-    {
-      "file": "2026-07-06-gate-v-verification-fleet-prompts.md",
-      "date": "2026-07-06",
-      "title": "2026-07-06 — Gate V verification-fleet review prompts (documented launch pad)",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-07-06-gate-v-synthesis.md",
-      "date": "2026-07-06",
-      "title": "2026-07-06 — Gate V final synthesis (Arm Σ)",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-07-06-gate-v-findings-corrections.md",
-      "date": "2026-07-06",
-      "title": "2026-07-06 — Gate V evidence-findings corrections (Codex C2–C5 + Agent Mode)",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-07-06-gate-v-c1-and-arm-a-review.md",
-      "date": "2026-07-06",
-      "title": "2026-07-06 — Gate V: verify C1 re-run + Arm A Ultracode review (fleet complete)",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-07-06-gate-v-arm-d-live-testing.md",
-      "date": "2026-07-06",
-      "title": "2026-07-06 — GATE V Arm D: empirical live-testing evidence pack",
-      "status": "complete",
-      "run_type": "manual",
-      "self_initiated": true
-    },
-    {
-      "file": "2026-07-06-fable5-newrepo-start-brief.md",
-      "date": "2026-07-06",
-      "title": "2026-07-06 — Fable 5 Ultracode launch brief: finalize the new-repo-start method",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-07-06-fable-decision-authority-and-foundational-consolidation.md",
-      "date": "2026-07-06",
-      "title": "2026-07-06 — Fable decision authority (Q-0240) + foundational-consolidation brief revision",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
     }
   ],
   "ideas": {
-    "total": 218,
+    "total": 219,
     "by_status": {
       "historical": 23,
-      "ideas": 192,
+      "ideas": 193,
       "reference": 3
     }
   },
@@ -578,6 +578,22 @@
       "title": "Command-alias suggestions",
       "kind": "feature",
       "summary": "You can now suggest a friendly alias for any command from the dashboard's Aliases page,"
+    }
+  ],
+  "telemetry": [
+    {
+      "session": "2026-07-09-kl6-console-telemetry",
+      "date": "2026-07-09",
+      "model": "fable-5",
+      "effort": "high",
+      "task_class": "kernel/architecture design",
+      "tokens_out": null,
+      "outcome": {
+        "ci_green_first_push": null,
+        "checker_findings": null,
+        "merged_pr": null,
+        "reverted_within_window": null
+      }
     }
   ]
 }

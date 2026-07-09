@@ -83,7 +83,7 @@ SITE_TOPLEVEL_KEYS: frozenset[str] = frozenset(
 # ``reviews``) are excluded, and per-guild/user values never enter the producer.
 CONSOLE_OUTPUT_FILE = REPO_ROOT / "botsite" / "data" / "console.json"
 CONSOLE_TOPLEVEL_KEYS: frozenset[str] = frozenset(
-    {"meta", "sessions", "ideas", "bugs", "bot_changelog"},
+    {"meta", "sessions", "ideas", "bugs", "bot_changelog", "telemetry"},
 )
 # Per-entry field whitelist for the console's session feed (run reports).
 CONSOLE_SESSION_FIELDS: tuple[str, ...] = (
@@ -94,6 +94,35 @@ CONSOLE_SESSION_FIELDS: tuple[str, ...] = (
     "run_type",
     "self_initiated",
 )
+# The program's model-allocation telemetry feed (kit-lab founding plan §5.2 /
+# PL-004, Q-0248) — the console's declared "Model & spend telemetry" lane.
+# Superbot's rows are HAND-AUTHORED against the kit's canonical schema until it
+# truly adopts the kit (plan §4.2); the feed is a per-repo append-only JSONL and
+# the exporter renders it as the JSON array the lane contract declares (the
+# D-10 refinement: the lane binds to the record shape, not the file encoding).
+# Same field-whitelist-by-construction posture as the session feed; no value in
+# a row is per-guild/user data (session slug, date, model tier, effort, task
+# class, token count, PR outcome — all repo-development metadata).
+TELEMETRY_FILE = REPO_ROOT / "telemetry" / "model-usage.jsonl"
+CONSOLE_TELEMETRY_FIELDS: tuple[str, ...] = (
+    "session",
+    "date",
+    "model",
+    "effort",
+    "task_class",
+    "tokens_out",
+    "outcome",
+)
+# The structured ``outcome`` object's own whitelist (Q-0248's objective gates).
+TELEMETRY_OUTCOME_FIELDS: tuple[str, ...] = (
+    "ci_green_first_push",
+    "checker_findings",
+    "merged_pr",
+    "reverted_within_window",
+)
+# The exported array is capped to the newest rows so the console feed stays
+# bounded as the JSONL grows; the file itself remains the full record.
+TELEMETRY_ROW_CAP = 200
 # Per-command fields the public ``commands`` reference exposes (no per-guild value
 # ever appears — these are repo-level command metadata). The interactive command
 # browser (plan unit S1.1 / P2) renders these in a clickable detail view:
@@ -618,6 +647,41 @@ _CHANGELOG_KIND_RE = re.compile(
 _VALID_CHANGELOG_KINDS = frozenset({"feature", "fix", "improvement"})
 
 
+def parse_telemetry(path: Path) -> list[dict]:
+    """Parse ``telemetry/model-usage.jsonl`` into whitelisted records (file order).
+
+    One JSON object per line — the PL-004/Q-0248 per-session record. Tolerant by
+    contract: a malformed line, a non-object row, or a missing field is skipped or
+    nulled, never fatal (the JSONL is appended by many parallel sessions and one
+    bad row must not blank the console lane). Every record is rebuilt from the
+    :data:`CONSOLE_TELEMETRY_FIELDS` whitelist (nested ``outcome`` object from
+    :data:`TELEMETRY_OUTCOME_FIELDS`) — unknown extra fields are dropped by
+    construction. Returns at most :data:`TELEMETRY_ROW_CAP` newest rows.
+    """
+    if not path.is_file():
+        return []
+    records: list[dict] = []
+    for line in path.read_text(encoding="utf-8").splitlines():
+        line = line.strip()
+        if not line:
+            continue
+        try:
+            raw = json.loads(line)
+        except json.JSONDecodeError:
+            continue
+        if not isinstance(raw, dict):
+            continue
+        record = {field: raw.get(field) for field in CONSOLE_TELEMETRY_FIELDS}
+        outcome = raw.get("outcome")
+        record["outcome"] = (
+            {field: outcome.get(field) for field in TELEMETRY_OUTCOME_FIELDS}
+            if isinstance(outcome, dict)
+            else None
+        )
+        records.append(record)
+    return records[-TELEMETRY_ROW_CAP:]
+
+
 def parse_bot_changelog(text: str) -> list[dict]:
     """Parse ``docs/bot-changelog.md`` into date/title/kind/summary records.
 
@@ -732,6 +796,7 @@ def build_data(repo_root: Path = REPO_ROOT) -> dict:
         if bot_changelog_file.exists()
         else []
     )
+    telemetry = parse_telemetry(repo_root / "telemetry" / "model-usage.jsonl")
 
     scan_root = repo_root / "disbot"
     env_usage = (
@@ -829,6 +894,7 @@ def build_data(repo_root: Path = REPO_ROOT) -> dict:
         "reviews": reviews,
         "updates": updates,
         "bot_changelog": bot_changelog,
+        "telemetry": telemetry,
         "env_usage": env_usage,
         "cogs": cogs,
         "settings": settings,
@@ -1255,6 +1321,10 @@ def build_console_subset(data: dict) -> dict:
             "open": open_bugs,
         },
         "bot_changelog": data.get("bot_changelog", []),
+        # The declared "Model & spend telemetry" lane's feed (kit-lab plan §7.3):
+        # already field-whitelisted by parse_telemetry — repo-development metadata
+        # only, never per-guild/user values.
+        "telemetry": data.get("telemetry", []) or [],
     }
     extra = set(subset) - CONSOLE_TOPLEVEL_KEYS
     if extra:

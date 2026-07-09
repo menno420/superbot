@@ -22,3 +22,8 @@ disbot/data/btd6/** linguist-generated=true
 # Reliability (Q-0105): standard git feature; remove these lines to revert.
 docs/owner/active-work.md merge=union
 docs/ideas/README.md merge=union
+
+# The model-allocation telemetry feed (kit-lab plan §5.2 / PL-004): one JSON
+# object per line, appended by every session — the same append-only shape as
+# the ledgers above, so the same union merge applies.
+telemetry/*.jsonl merge=union
