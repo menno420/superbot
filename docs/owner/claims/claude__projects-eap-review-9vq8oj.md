@@ -1,1 +1,0 @@
- - `claude/projects-eap-review-9vq8oj` · **fleet coordination plan** — manager Project v2 + git-as-message-bus protocol design · `docs/planning/fleet-coordination-protocol-2026-07-09.md` · 2026-07-09 · docs-only, PR open
