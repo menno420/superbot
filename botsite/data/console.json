@@ -1,11 +1,12 @@
 {
   "meta": {
-    "generated_at": "2026-07-09T06:41:17Z",
+    "generated_at": "2026-07-09T07:01:03Z",
     "build": {
-      "commit": "d2334a4",
-      "subject": "KL-6 companion: exporter telemetry family + real console telemetry lane + declared kit-lab lane",
-      "committed_at": "2026-07-09T06:41:17Z"
-    }
+      "commit": "3fd2a56",
+      "subject": "Session card (born-red) + claim: console.json shape contract",
+      "committed_at": "2026-07-09T07:01:03Z"
+    },
+    "schema_version": 1
   },
   "sessions": [
     {
@@ -45,6 +46,14 @@
       "date": "2026-07-09",
       "title": "2026-07-09 — EAP fleet sequencing correction: kit-lab governs real repos, test fleet trimmed to 2",
       "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-07-09-console-feed-contract.md",
+      "date": "2026-07-09",
+      "title": "Session 2026-07-09 — console.json shape contract (superbot half)",
+      "status": "in-progress",
       "run_type": "",
       "self_initiated": false
     },
@@ -476,14 +485,6 @@
       "file": "2026-07-07-fable5-final-review-brief-prep.md",
       "date": "2026-07-07",
       "title": "2026-07-07 — Prepare Fable-5 ultracode brief for the final rebuild-plan review + Projects-EAP repo prep",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-07-07-coordinator-kickoff-calibration.md",
-      "date": "2026-07-07",
-      "title": "2026-07-07 — SuperBot Project coordinator: kickoff revision + calibration exchange design",
       "status": "complete",
       "run_type": "",
       "self_initiated": false

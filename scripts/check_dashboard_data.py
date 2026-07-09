@@ -19,6 +19,11 @@ Checks:
   command-count-drift class).
 * **required fields** — every command has a name + valid ``type``; every cog has a
   ``file``; every catalogue entry has a ``key``.
+* **console shape contract** (``--console``) — the committed
+  ``botsite/data/console.json`` must match the versioned cross-repo contract
+  ``botsite/data/console_data_contract.json`` (two repos consume the feed:
+  superbot's botsite console + the websites repo's dashboard ``/console``).
+  See :func:`check_console_subset`.
 
 Pure stdlib so it runs in CI with no extra dependencies (the dashboard's web deps
 never enter the bot's ``requirements.txt``). Run::
@@ -55,6 +60,8 @@ from typing import Any
 REPO_ROOT = Path(__file__).resolve().parent.parent
 DATA_FILE = REPO_ROOT / "dashboard" / "data" / "dashboard.json"
 SITE_DATA_FILE = REPO_ROOT / "botsite" / "data" / "site.json"
+CONSOLE_DATA_FILE = REPO_ROOT / "botsite" / "data" / "console.json"
+CONSOLE_CONTRACT_FILE = REPO_ROOT / "botsite" / "data" / "console_data_contract.json"
 
 # Real (``is_cog``) cogs that legitimately have NO own SUBSYSTEMS registry entry
 # AND no parent to map to: ``HermesCog`` (ops bridge), ``SetupCog`` (the hub-less
@@ -415,6 +422,232 @@ def check_site_subset(
     return issues
 
 
+def load_console_contract(path: Path = CONSOLE_CONTRACT_FILE) -> dict[str, Any]:
+    """Load the committed console-feed shape contract (cross-repo source of truth)."""
+    return json.loads(path.read_text(encoding="utf-8"))
+
+
+def _console_record_field_issues(
+    label: str,
+    records: list[Any],
+    allowed: set[str],
+    *,
+    exact: bool = False,
+) -> list[Issue]:
+    """Field-whitelist findings for one console family's records.
+
+    Every record's keys must be a *subset* of the contract's guaranteed fields
+    (a new un-contracted field fails closed — the within-family leak/drift class).
+    With ``exact=True`` a record must also carry *every* contract field (the
+    producer constructs sessions/telemetry rows by whitelist comprehension, so a
+    missing field there means the producer dropped one a consumer relies on).
+    """
+    issues: list[Issue] = []
+    extra: set[str] = set()
+    missing: set[str] = set()
+    for record in records:
+        if not isinstance(record, dict):
+            continue
+        extra |= set(record) - allowed
+        if exact:
+            missing |= allowed - set(record)
+    if extra:
+        issues.append(
+            _err(
+                "console_field_not_in_contract",
+                f"console.json {label} carries field(s) {sorted(extra)} not in the "
+                f"contract {sorted(allowed)} — the console feed's shape is a "
+                f"cross-repo contract (websites' dashboard consumes it); add the "
+                f"field to console_data_contract.json and bump its version instead "
+                f"of shipping it implicitly",
+            ),
+        )
+    if missing:
+        issues.append(
+            _err(
+                "console_field_missing",
+                f"console.json {label} is missing guaranteed field(s) "
+                f"{sorted(missing)} — a consumer built against the contract relies "
+                f"on them; restore the field or change the contract (version bump)",
+            ),
+        )
+    return issues
+
+
+def check_console_subset(
+    committed: dict[str, Any] | None = None,
+    *,
+    console_path: Path = CONSOLE_DATA_FILE,
+    contract_path: Path = CONSOLE_CONTRACT_FILE,
+) -> list[Issue]:
+    """Validate ``botsite/data/console.json`` against the cross-repo shape contract.
+
+    The console feed has TWO consumers — superbot's own botsite console AND the
+    websites repo's dashboard ``/console`` page (fetched over raw GitHub) — so its
+    shape is pinned in the committed, versioned
+    ``botsite/data/console_data_contract.json`` (the ``site_data_contract.json``
+    pattern; PR #1883's session idea). Three assertion groups, all **fail-closed**:
+
+    * **producer⇄contract parity** — the exporter's ``CONSOLE_*`` constants and
+      ``CONSOLE_SCHEMA_VERSION`` must match the contract file exactly, so the
+      contract can only change via an explicit, reviewable edit of both.
+    * **family whitelist, both directions** — the committed file's top-level keys
+      must equal the contract's ``top_level`` exactly: an extra family is the leak
+      class, a *missing* family is the consumer-blanking class (BUG-0022).
+      ``meta.schema_version`` must equal the contract ``version``.
+    * **per-record guaranteed fields** — sessions / telemetry (+ nested outcome)
+      rows carry exactly the contract fields; meta / ideas / bugs / open-bug /
+      changelog keys stay a subset of theirs.
+
+    Returns ``[]`` when the console file is absent (generated artifact; freshness
+    is reported elsewhere). A missing/unparseable *contract* file is an error —
+    the contract itself is load-bearing.
+    """
+    issues: list[Issue] = []
+    if committed is None:
+        if not console_path.exists():
+            return issues
+        committed = json.loads(console_path.read_text(encoding="utf-8"))
+
+    try:
+        contract = load_console_contract(contract_path)
+    except (OSError, json.JSONDecodeError) as exc:
+        return [
+            _err(
+                "console_contract_unreadable",
+                f"cannot load {contract_path.name}: {exc} — the console feed's "
+                f"cross-repo shape contract must stay committed and valid",
+            ),
+        ]
+
+    # -- producer⇄contract parity (the contract file is the source of truth) --
+    export = _export_module()
+    parity: tuple[tuple[str, Any, Any], ...] = (
+        ("version", contract.get("version"), export.CONSOLE_SCHEMA_VERSION),
+        (
+            "top_level",
+            set(contract.get("top_level", [])),
+            set(export.CONSOLE_TOPLEVEL_KEYS),
+        ),
+        (
+            "session",
+            set(contract.get("session", [])),
+            set(export.CONSOLE_SESSION_FIELDS),
+        ),
+        (
+            "telemetry",
+            set(contract.get("telemetry", [])),
+            set(export.CONSOLE_TELEMETRY_FIELDS),
+        ),
+        (
+            "telemetry_outcome",
+            set(contract.get("telemetry_outcome", [])),
+            set(export.TELEMETRY_OUTCOME_FIELDS),
+        ),
+    )
+    for surface, contracted, produced in parity:
+        if contracted != produced:
+            issues.append(
+                _err(
+                    "console_contract_producer_drift",
+                    f"contract {surface!r} = {contracted!r} but the producer "
+                    f"(export_dashboard_data) emits {produced!r} — change "
+                    f"console_data_contract.json and the CONSOLE_* constants in "
+                    f"the same commit (version bump) so both repos see the move",
+                ),
+            )
+
+    # -- family whitelist, BOTH directions (extra = leak, missing = blanked page) --
+    contracted_families = set(contract.get("top_level", []))
+    extra = set(committed) - contracted_families
+    missing = contracted_families - set(committed)
+    if extra:
+        issues.append(
+            _err(
+                "console_key_not_in_contract",
+                f"console.json has top-level key(s) {sorted(extra)} not in the "
+                f"contract {sorted(contracted_families)} — an un-contracted family "
+                f"must never ship implicitly (two repos consume this feed)",
+            ),
+        )
+    if missing:
+        issues.append(
+            _err(
+                "console_family_missing",
+                f"console.json is missing contracted famil(ies) {sorted(missing)} — "
+                f"a consumer page renders blank on this (the BUG-0022 class); "
+                f"restore the family or change the contract (version bump)",
+            ),
+        )
+
+    # -- schema version --
+    meta = committed.get("meta", {}) if isinstance(committed.get("meta"), dict) else {}
+    if meta.get("schema_version") != contract.get("version"):
+        issues.append(
+            _err(
+                "console_schema_version_mismatch",
+                f"console.json meta.schema_version={meta.get('schema_version')!r} "
+                f"but the contract pins version={contract.get('version')!r} — "
+                f"regenerate the feed (export_dashboard_data --targets console) "
+                f"or reconcile the contract",
+            ),
+        )
+
+    # -- per-record guaranteed fields --
+    issues += _console_record_field_issues(
+        "meta",
+        [meta],
+        set(contract.get("meta", [])),
+    )
+    issues += _console_record_field_issues(
+        "sessions",
+        list(committed.get("sessions", []) or []),
+        set(contract.get("session", [])),
+        exact=True,
+    )
+    telemetry_rows = list(committed.get("telemetry", []) or [])
+    issues += _console_record_field_issues(
+        "telemetry",
+        telemetry_rows,
+        set(contract.get("telemetry", [])),
+        exact=True,
+    )
+    issues += _console_record_field_issues(
+        "telemetry[].outcome",
+        [
+            row.get("outcome")
+            for row in telemetry_rows
+            if isinstance(row, dict) and isinstance(row.get("outcome"), dict)
+        ],
+        set(contract.get("telemetry_outcome", [])),
+    )
+    ideas = committed.get("ideas")
+    if isinstance(ideas, dict):
+        issues += _console_record_field_issues(
+            "ideas",
+            [ideas],
+            set(contract.get("ideas", [])),
+        )
+    bugs = committed.get("bugs")
+    if isinstance(bugs, dict):
+        issues += _console_record_field_issues(
+            "bugs",
+            [bugs],
+            set(contract.get("bugs", [])),
+        )
+        issues += _console_record_field_issues(
+            "bugs.open",
+            list(bugs.get("open", []) or []),
+            set(contract.get("bug_open", [])),
+        )
+    issues += _console_record_field_issues(
+        "bot_changelog",
+        list(committed.get("bot_changelog", []) or []),
+        set(contract.get("bot_changelog", [])),
+    )
+    return issues
+
+
 def main(argv: list[str] | None = None) -> int:
     """CLI entry point: validate the export, print findings, exit non-zero on error."""
     parser = argparse.ArgumentParser(description="Validate the dashboard data export.")
@@ -434,6 +667,12 @@ def main(argv: list[str] | None = None) -> int:
         action="store_true",
         help="also validate the public botsite/data/site.json subset (whitelist + counts)",
     )
+    parser.add_argument(
+        "--console",
+        action="store_true",
+        help="also validate botsite/data/console.json against its cross-repo shape "
+        "contract (console_data_contract.json)",
+    )
     args = parser.parse_args(argv)
 
     if args.fresh:
@@ -444,6 +683,8 @@ def main(argv: list[str] | None = None) -> int:
     issues = validate(data)
     if args.site:
         issues.extend(check_site_subset())
+    if args.console:
+        issues.extend(check_console_subset())
     if args.drift:
         # Compare the committed artifact (never the fresh one, even under --fresh)
         # against a fresh build so the report names what the *committed* file is

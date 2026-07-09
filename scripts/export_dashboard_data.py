@@ -85,6 +85,20 @@ CONSOLE_OUTPUT_FILE = REPO_ROOT / "botsite" / "data" / "console.json"
 CONSOLE_TOPLEVEL_KEYS: frozenset[str] = frozenset(
     {"meta", "sessions", "ideas", "bugs", "bot_changelog", "telemetry"},
 )
+# The console feed's CROSS-REPO shape contract. ``console.json`` has two consumers —
+# superbot's own botsite console (``botsite/console/console.js``) AND the websites
+# repo's dashboard ``/console`` page (menno420/websites, fetching the committed file
+# over raw GitHub) — so the shape is pinned in the committed, versioned
+# ``botsite/data/console_data_contract.json`` (the ``site_data_contract.json``
+# pattern applied to this feed; PR #1883's session idea). These producer constants
+# must MATCH that file — ``check_dashboard_data.check_console_subset`` enforces the
+# parity (CI via tests/unit/scripts/) — and every emitted ``console.json`` carries
+# the contract version as ``meta.schema_version`` so consumers can cheaply verify
+# the shape they were built against. Changing the shape = edit the contract file
+# and these constants in the same commit and bump the version — the explicit,
+# reviewable act a consumer repo pins against.
+CONSOLE_CONTRACT_FILE = REPO_ROOT / "botsite" / "data" / "console_data_contract.json"
+CONSOLE_SCHEMA_VERSION = 1
 # Per-entry field whitelist for the console's session feed (run reports).
 CONSOLE_SESSION_FIELDS: tuple[str, ...] = (
     "file",
@@ -1311,6 +1325,10 @@ def build_console_subset(data: dict) -> dict:
         "meta": {
             "generated_at": meta.get("generated_at"),
             "build": meta.get("build", {}),
+            # The cross-repo shape-contract version (console_data_contract.json):
+            # consumers (websites' dashboard /console) pin the version they were
+            # built against and verify it here at render time.
+            "schema_version": CONSOLE_SCHEMA_VERSION,
         },
         "sessions": sessions,
         "ideas": {"total": len(ideas), "by_status": _by_status(ideas)},
