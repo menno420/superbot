@@ -1,7 +1,7 @@
 # Session 2026-07-09 — KL-6 companion: exporter telemetry family + kit-lab console lane
 
-> **Status:** `complete` *(PR #1883 — superbot-side half of kit-lab band KL-6;
-> the kit-side half is substrate-kit PR #18.)*
+> **Status:** `complete` — PR #1883, the superbot-side half of kit-lab band
+> KL-6 (the kit-side half is substrate-kit PR #18).
 
 ## What I did
 

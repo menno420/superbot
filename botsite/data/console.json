@@ -1,10 +1,10 @@
 {
   "meta": {
-    "generated_at": "2026-07-09T06:23:59Z",
+    "generated_at": "2026-07-09T06:41:17Z",
     "build": {
-      "commit": "dcbcf7e",
-      "subject": "KL-6 companion: born-red session card + claim",
-      "committed_at": "2026-07-09T06:23:59Z"
+      "commit": "d2334a4",
+      "subject": "KL-6 companion: exporter telemetry family + real console telemetry lane + declared kit-lab lane",
+      "committed_at": "2026-07-09T06:41:17Z"
     }
   },
   "sessions": [
@@ -20,7 +20,7 @@
       "file": "2026-07-09-kl6-console-telemetry.md",
       "date": "2026-07-09",
       "title": "Session 2026-07-09 — KL-6 companion: exporter telemetry family + kit-lab console lane",
-      "status": "",
+      "status": "complete",
       "run_type": "manual",
       "self_initiated": false
     },
