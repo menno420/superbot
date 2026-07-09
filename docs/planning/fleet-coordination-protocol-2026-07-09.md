@@ -61,12 +61,18 @@ forward-only git and the "create-but-can't-delete published state" permission wa
 updated: <ISO8601>            # heartbeat — stale = the manager treats the Project as dark
 phase: <what I'm doing right now, one line>
 health: green | red-by-design (<why — e.g. parity born-red>) | broken (<what>)
+kit: v<X.Y.Z> · check: green|red · engaged: yes|no   # kit self-report — one line, exact format
 last-shipped: #<PR> — <one line>
 blockers: <what's stopping me, or `none`>
 orders: acked=<ids> done=<ids>          # how I report order progress (I never edit inbox)
 ⚑ needs-owner: <a decision/action only the owner can give, or `none`>
 notes: <anything the manager should know>
 ```
+The `kit:` line is the kit self-report shipped by substrate-kit v1.3.0 (ORDER 003, 2026-07-09):
+the kit plants it in every adopter's `control/status.md` seed and documents the format in the
+planted `control/README.md`. Mirrored here on kit-lab's request via its own `status.md` flag —
+the KF-2 boundary means kit-lab never writes adopter repos, so it cannot edit this canonical
+spec itself.
 
 ### `inbox.md` — how the manager delivers an order (append-only)
 ```markdown
