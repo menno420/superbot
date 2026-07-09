@@ -262,3 +262,20 @@ product review's analysis — confirm, contradict, or deepen it with lived examp
   the same night · expected: a native inter-session channel + a coordinator-owned scheduler would
   remove this whole hand-built layer · weight: friction (the gap) — the workaround is now a real
   capability · reproducible: yes
+- 2026-07-09 ~14:52Z · axis: sidebar states / use-case fit · observed: with 10 Projects running,
+  the owner has no single view of which agents are running or how far along they are — the
+  Projects list and the Code sessions screen each show partial, stale state (screen recordings
+  2026-07-09 16:47/16:49 owner-side; sessions actively running workers looked dormant). Manager
+  mitigation shipped same day: fleet heartbeat files (control/status*.md) + a /fleet aggregation
+  page ordered on the websites control-plane board. · expected: one native fleet view:
+  per-session live state (running/idle/waiting-on-permission), current phase, last activity.
+  · weight: friction · reproducible: yes
+- 2026-07-09 ~14:52Z · axis: permissions/autonomy · observed: standing blocker re-confirmed
+  twice today: (1) permission prompts surface inside spawned agents/sessions and require the
+  owner personally present to approve (owner report, 2026-07-09); (2) the auto-mode classifier
+  denied the manager's fix-and-merge worker spawn with explicit reasons ("[Self-Approval] …
+  directs a direct merge of a PR the agent authored … Merge Without Review"), and
+  destructive-tier git remains hard-walled at the credential layer regardless of any grant.
+  Deepens the 2026-07-08 two-wall finding; the scoped pre-authorization ask stands as the fix.
+  · expected: owner-declared, scoped, auditable pre-authorization per Project/repo so unattended
+  runs don't dead-end on reversible actions. · weight: blocked-me · reproducible: yes
