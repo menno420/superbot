@@ -157,3 +157,96 @@
 | No inter-session channel · no coordinator timer · ~4 KB cap · files-only | eval log 2026-07-07/08 **and** retrospective §6 (two independent observers) |
 | The file-based message bus we built | `docs/planning/fleet-coordination-protocol-2026-07-09.md` |
 | ~60 no-op coordinator wakes; "branches up to date" merge friction | retrospective §5 + testing report "flagged for owner" #4 |
+
+---
+
+## Addendum v2 — 2026-07-09 evening, 10-Project scale
+
+*(Drafted after the day-2 fleet run and the four-reviewer quality audit. Drop-in prose:
+appendable to the end of Part 2 above — findings continue the numbering — or liftable as a
+standalone shorter note. Same rules of the road: this is a draft, only the owner sends;
+every claim is sourced in Appendix B below.)*
+
+> **A same-day addendum — we scaled the experiment before sending this, and the day at 10x
+> sharpened four things.**
+>
+> **6. The scale datapoint: one manager + nine build/test Projects ran concurrently for a
+> day — coordinated entirely through committed files, because nothing else exists.** After the
+> 1→4-repo night, we stood up a manager Project and ran **ten Projects at once** (the manager
+> plus nine build/test lanes: the rewrite, the kit, the websites, three code-tool labs on three
+> model arms, a quant lab, and review/monitor lanes). Every order, acknowledgment, and status
+> report between them crossed as **commits** — the per-repo `control/` inbox+status files from
+> finding 5, one-writer-per-file — since there is still no Project→Project channel. And it
+> *worked*: orders were dispatched and acked through file PRs (e.g. the trading lab's ORDER 002,
+> the rewrite's ORDER 003), statuses flowed back as heartbeat files, and one cross-lane
+> collision (a stale heartbeat PR superseded by a sibling's) was arbitrated by a written order
+> rather than a conversation. But be clear about what the finding is: **not that our bus works —
+> that we had to build a message bus at all.** At ten concurrent Projects, coordination *is* the
+> workload, and today all of it was hand-rolled on top of git.
+>
+> **7. The visibility split, sharpened by two screen recordings.** Yesterday we said "no fleet
+> view"; today we can say exactly where the product is good and where it goes dark, because the
+> owner recorded his own screen while ten Projects ran (recordings 16:47 and 16:49 CEST; frames
+> on file). The **session-level** activity UI is genuinely good: sessions bucket into
+> Working / Needs-input / Idle, show step counters, and tick "Just now" live — one recording
+> caught a Working→Idle transition as it happened. But **none of it rolls up**: in the Projects
+> sidebar, a Project with three Working sessions is **pixel-identical to a dormant one**, and the
+> timestamp shown is the *coordinator chat's* last turn — so an actively-building Project reads
+> "8 minutes ago" while its spawned children work, which is worse than no signal because it
+> reads as staleness. One more nuance from the same recordings: "Working" can persist on a hung
+> session — we observed a "Working…" row ~50 minutes stale — so the state means "session open,"
+> not "making progress." The concrete ask: **surface per-Project Working / Needs-input counts in
+> the sidebar, add one fleet-level view across Projects, and split "session open" from "making
+> progress"** (a liveness heartbeat, not just a state flag). At one Project this is polish; at
+> ten it is the difference between operating a fleet and guessing at one.
+>
+> **8. Permissions, one layer deeper — we now have the exact boundary, verbatim.** The manager
+> tried to spawn a worker that would fix a red PR and merge it. The auto-mode classifier denied
+> the spawn with a written reason: **"[Self-Approval] … directs a direct merge of a PR the agent
+> authored … Merge Without Review."** But here is the nuance we only discovered by trial:
+> **arming `enable_pr_auto_merge` while checks are pending is permitted** — our agents do it on
+> every PR, including this addendum's own — **while a direct self-merge of the same PR is not.**
+> That is actually a coherent line (the server merges on green CI; the agent never approves its
+> own work), and we now rely on it — but nothing documents it, and we found it the expensive
+> way: a denied spawn mid-run. Meanwhile in-session capability prompts (the scheduling-tool
+> gates from our 7/8 note) still require the owner *physically present* to click Allow, which at
+> ten concurrent Projects means the owner is a full-time approval surface. So the 7/8 ask
+> stands, sharpened by these two incidents: **a scoped, owner-declared, auditable
+> pre-authorization per Project/repo** — and, cheaper still, **document the classifier's actual
+> line** (auto-merge-arm allowed / self-merge denied) so fleets design for it instead of
+> discovering it by denial.
+>
+> **9. Quality at speed — credit where it's due, verified adversarially.** The fair question at
+> 10x parallelism is whether output quality quietly collapsed. We commissioned an independent
+> **four-reviewer audit** over the day's shipped code (help/visuals forensics, old-vs-new
+> architecture, a file-by-file fleet output audit, and a speed-vs-quality process review — none
+> of them the builders). Result: **zero test-count inflation across three separate model arms**
+> — claimed counts of 63, 100, and 66 tests each reconciled *exactly* against counted test
+> functions plus parametrize expansion; **none of the legacy failure signatures returned** (no
+> ledger drift, no overclaiming, no duplicate parallel builds, no false greens); and the
+> born-red accounting held honestly under pressure (0/465 parity flips maintained, "no exemption
+> rows minted," with the known-red classes ledgered *before* the owner ever looked). The gaps
+> the audit did find — presentation debt (surfaces built to spec but never rendered to a human
+> eye) and red-by-design dashboards whose per-defect signal only a human classifier recovers —
+> are **process gaps, not honesty failures**, and each shipped with a named fix. Our read for
+> your team: the model tier held integrity at 10x parallelism; what needs engineering at that
+> scale is the *process oracle* (live drives, rendered-output checks), not the model's honesty.
+
+### Appendix B — addendum claims (not part of the email; owner's own check)
+
+| Claim | Source |
+|---|---|
+| 1 manager + 9 build/test Projects concurrent for a day | eval log 2026-07-09 ~14:52Z ("with 10 Projects running") + `docs/eap/fleet-quality-review-2026-07-09.md` (five lanes audited) + per-repo `control/` files |
+| Orders dispatched/acked via committed control files | trading-strategy ORDER 002 (PR #2, merged 14:53Z) · superbot-next ORDER 003 (merged 14:54Z) — cited in fleet-quality review R3 §1 / R4 §1 item 12 |
+| Cross-lane collision arbitrated via a written order | superbot-next stale heartbeat PR #60 superseded by #73; ORDER 003 directed closure (fleet-quality review R4 §1 item 12) |
+| The bus itself (inbox+status, one-writer-per-file, no native channel) | `docs/planning/fleet-coordination-protocol-2026-07-09.md` + eval log 2026-07-09 (evening) |
+| Session UI good: Working/Needs-input/Idle, step counters, live ticks; Working→Idle caught live | owner screen recordings 16:47/16:49 CEST 2026-07-09, frames on file |
+| No sidebar roll-up; active Project pixel-identical to dormant; "8 minutes ago" during active build | same recordings + eval log 2026-07-09 ~14:52Z (sidebar-states entry) |
+| ~50-min stale "Working…" row (session open ≠ making progress) | same recordings, frames on file |
+| Verbatim classifier denial of the merge-capable worker | eval log 2026-07-09 ~14:52Z ("[Self-Approval] … Merge Without Review") |
+| Auto-merge-arm permitted while checks pend; direct self-merge denied | every `claude/*` PR in this repo arms `enable_pr_auto_merge` pre-green (Q-0123/Q-0127 workflow, incl. this addendum's PR) vs. the denied spawn above |
+| In-session capability prompts need the owner present | eval log 2026-07-09 ~14:52Z item (1) + 2026-07-08 live permission-mode probe (owner screenshots) |
+| Zero test-count inflation: 63/100/66 all exact, three model arms | `docs/eap/fleet-quality-review-2026-07-09.md` R3 (grade A−, counts reconciled per lane) |
+| No legacy failure signatures returned (drift/overclaim/duplication/false greens) | fleet-quality review R4 §3 ("old problem signatures did NOT return") |
+| Born-red accounting honest: 0/465 held, no exemption rows, reds ledgered pre-owner | fleet-quality review R1 §2–3 (D-0026/D-0028, PR #59 "0/53 ledgered-red" 44 min before owner's `!help`) |
+| Gaps found were process, not honesty (presentation debt, red-by-design masking) | fleet-quality review R4 verdict (a) + manager synthesis 8–9 |
