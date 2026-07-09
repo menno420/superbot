@@ -1,7 +1,7 @@
-> **Provenance:** Drafted 2026-07-09 in the `superbot-games` coordinator session (gen-1
-> wind-down). Supersedes the interim email draft + Addendum v2 in
-> `docs/planning/projects-eap-anthropic-email-interim-2026-07-09.md` as the send-candidate.
-> **Status:** DRAFT — not sent. Finalize once all lanes' wind-downs complete: Part 1
+> **Status:** `reference` — DRAFT, not sent. Drafted 2026-07-09 in the `superbot-games`
+> coordinator session (gen-1 wind-down). Supersedes the interim email draft + Addendum v2 in
+> [docs/planning/projects-eap-anthropic-email-interim-2026-07-09.md](../planning/projects-eap-anthropic-email-interim-2026-07-09.md)
+> as the send-candidate. Finalize once all lanes' wind-downs complete: Part 1
 > (owner slot) plus fleet-manager / websites / venture-lab placeholders remain open.
 
 # DRAFT — Claude Code Projects review, gen-1 wrap-up (do not send; finalize when all lanes are wound down)
