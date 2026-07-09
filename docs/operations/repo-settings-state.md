@@ -46,22 +46,27 @@ gap is itself an EAP finding** (an agent can't introspect the repo config it ope
 
 ## Rules / branch protection / required checks
 
-**Only `superbot` has any rules / branch protection / Actions / workflows** (owner, 2026-07-08).
-The new repos are **bare** — just the intent commit + the General settings above, nothing else yet.
+**Updated 2026-07-09** — `superbot-next` and `substrate-kit` both now have a `main-branch-protection`
+ruleset (owner-created via the directing session's runbook, verified from the owner's screen
+recordings — the GitHub MCP tools available to this session still cannot read rulesets back, so
+this row is manual-confirm same as the rest of this doc until Phase 2 lands).
 
 | Aspect | superbot | substrate-kit | superbot-next |
 |---|---|---|---|
-| Required status check(s) | `Code Quality` (the auto-merge gate) + `CodeQL`; `codex-final-review` advisory | **none yet** | **none yet** |
-| Ruleset / approvals | single-owner (no required approvals) | **none yet** | **none yet** — *planned* config (0 approvals, strict-checks-off + 6-hourly `main` backstop, `staging/step8-control-plane-drafts` `DECISIONS.md`) is not applied |
-| Workflows / Actions | full CI suite | **none yet** | **none yet** |
+| Required status check(s) | `Code Quality` (the auto-merge gate) + `CodeQL`; `codex-final-review` advisory | `Kit test suite`, `Cold-adoption smoke (adopt + check --strict)` | `tests, ci`, `checkers, ci`, `lockfile-fresh, ci`, `pip-audit`, `gate, golden-parity` (never `report, golden-parity` — that job is red-until-parity by design) |
+| Ruleset / approvals | single-owner (no required approvals) | `main-branch-protection`, Active, 0 required approvals, **Require review from Code Owners: off** (kept consistent with the CI-only-gate model everywhere else in this program), bypass list empty | same shape as substrate-kit |
+| Workflows / Actions | full CI suite | `ci.yml` (2 jobs) | `ci.yml` (4 jobs), `golden-parity.yml` (2 jobs, `report` intentionally red), `backup-db.yml`, `restore-verify.yml` |
+| CODEOWNERS | n/a (single-owner) | `.github/CODEOWNERS` — blanket `* @menno420`, present but **not enforced** (review not required) | same |
 | Delete-protection | branch deletion is auto-mode-walled regardless (see capability facts) | same | same |
 
 ## Automation / tokens
 
 - **`ROUTINE_PAT`** (real fine-grained PAT) drives `auto-merge-enabler`, `ci-rerun-watchdog`,
   `pr-auto-update`, `reconciliation-trigger` on **superbot** — needed because app/integration-token
-  actions don't fire workflows. **New repos: none yet** — no secrets/PATs and no automation;
-  adding the `ROUTINE_PAT` secret is owner-only and is a prerequisite for auto-merge to arm there.
+  actions don't fire workflows. **`substrate-kit` / `superbot-next`: still none.** Neither repo has
+  an `auto-merge-enabler` workflow yet (a gap flagged back to the coordinator, not yet fixed) — PRs
+  there merge via direct API call by whichever session is driving, not native GitHub auto-merge.
+  Adding `ROUTINE_PAT` + the enabler workflow is a prerequisite for that to change.
 
 ## Auto-mode capability facts (what a session can/can't do — the walls)
 
