@@ -279,3 +279,10 @@ product review's analysis — confirm, contradict, or deepen it with lived examp
   Deepens the 2026-07-08 two-wall finding; the scoped pre-authorization ask stands as the fix.
   · expected: owner-declared, scoped, auditable pre-authorization per Project/repo so unattended
   runs don't dead-end on reversible actions. · weight: blocked-me · reproducible: yes
+- 2026-07-09 ~16:23Z · axis: reliability/completion · observed: session provisioned with a
+  failing environment setup script (single-repo script in a multi-repo env; exit 1) was left
+  dead ~30 min with no owner-visible signal and no retry — every new session in that env would
+  fail identically until the owner replaced the script with an always-exit-0 defensive shim
+  (multi-repo env, verified by probe session 13:55Z). · expected: setup-script failure degrades
+  gracefully — skip failed steps, boot the session, surface "setup degraded" in the session
+  list. · weight: blocked-me · reproducible: yes
