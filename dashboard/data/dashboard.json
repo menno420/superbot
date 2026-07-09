@@ -1,10 +1,10 @@
 {
   "meta": {
-    "generated_at": "2026-07-09T17:27:32Z",
+    "generated_at": "2026-07-09T17:14:28Z",
     "build": {
-      "commit": "b6832781",
-      "subject": "Merge pull request #1897 from menno420/claude/fleet-quality-review-2026-07-09",
-      "committed_at": "2026-07-09T17:27:32Z"
+      "commit": "6f67206e",
+      "subject": "docs(eap): fleet-manifest — manager row: home repo menno420/fleet-manager seeded (#1905)",
+      "committed_at": "2026-07-09T17:14:28Z"
     },
     "counts": {
       "functions": 43,
@@ -3260,11 +3260,27 @@
       "self_initiated": false
     },
     {
+      "file": "2026-07-09-fleet-spec-heartbeat-mirror.md",
+      "date": "2026-07-09",
+      "title": "2026-07-09 — fleet-spec-heartbeat-mirror",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
       "file": "2026-07-09-fleet-coordination-plan.md",
       "date": "2026-07-09",
       "title": "2026-07-09 — Fleet coordination protocol + manager Project v2 (plan)",
       "status": "complete",
       "run_type": "manual",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-07-09-external-review-pack.md",
+      "date": "2026-07-09",
+      "title": "2026-07-09 — external-review-pack",
+      "status": "complete",
+      "run_type": "",
       "self_initiated": false
     },
     {
@@ -3666,22 +3682,6 @@
       "status": "complete",
       "run_type": "",
       "self_initiated": false
-    },
-    {
-      "file": "2026-07-07-permission-allowlist-rediagnosis-q0242.md",
-      "date": "2026-07-07",
-      "title": "2026-07-07 — Permission-allowlist re-diagnosis (Q-0242): Q-0229's fix was unverified, and mostly unnecessary",
-      "status": "complete",
-      "run_type": "manual",
-      "self_initiated": true
-    },
-    {
-      "file": "2026-07-07-owner-rulings-followup.md",
-      "date": "2026-07-07",
-      "title": "2026-07-07 — Owner rulings follow-up (pricing-by-sim + slash-verification model)",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
     }
   ],
   "bot_changelog": [
@@ -3753,6 +3753,34 @@
       "model": "fable-5",
       "effort": "high",
       "task_class": "runtime bugfix",
+      "tokens_out": null,
+      "outcome": {
+        "ci_green_first_push": null,
+        "checker_findings": null,
+        "merged_pr": null,
+        "reverted_within_window": null
+      }
+    },
+    {
+      "session": "2026-07-09-fleet-spec-heartbeat-mirror",
+      "date": "2026-07-09",
+      "model": "fable-5",
+      "effort": "high",
+      "task_class": "docs-only",
+      "tokens_out": null,
+      "outcome": {
+        "ci_green_first_push": null,
+        "checker_findings": null,
+        "merged_pr": null,
+        "reverted_within_window": null
+      }
+    },
+    {
+      "session": "2026-07-09-external-review-pack",
+      "date": "2026-07-09",
+      "model": "fable-5",
+      "effort": "high",
+      "task_class": "docs-only",
       "tokens_out": null,
       "outcome": {
         "ci_green_first_push": null,
