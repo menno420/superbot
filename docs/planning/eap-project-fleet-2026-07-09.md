@@ -1,8 +1,9 @@
 # EAP Project fleet — broad capability + model-comparison test plan (2026-07-09)
 
-> **Status:** `plan` — prep artifact for a **dedicated next session** that creates the repos and
-> launches this fleet. Not executed yet; this doc is the refined plan + ready-to-paste materials
-> so that session is pure execution.
+> **Status:** `plan` — prep artifact for a **dedicated next session** that
+> creates the repos and launches this fleet. This doc is the refined plan + ready-to-paste
+> materials; **§ "Corrected launch scope" below (same day) supersedes the original "launch all
+> 11" execution checklist** — read that section first, it changes what actually launches today.
 > **Provenance:** owner directive 2026-07-09 (directing-session chat) — run several Claude Code
 > Projects in parallel across varied domains as an extensive capability eval, plus a dedicated
 > model-comparison sub-experiment, plus the already-planned substrate-kit self-improvement lab.
@@ -12,6 +13,42 @@
 > §5). Today (Thursday) is the last day to get autonomous fleet runtime in *before* that
 > deadline, though nothing here stops mattering after — the collaboration goal outlives the free
 > window (same doc §5).
+
+## Corrected launch scope (owner correction, same day)
+
+The original framing below (§ "Why a fleet") and its execution checklist treated kit-lab as one
+of 11 roughly co-launched Projects, and floated kit-lab acting as a reviewing "mastermind" over
+the domain-breadth test fleet itself. Both are wrong:
+
+- **Kit-lab is not a peer of the test fleet and does not govern it.** Kit-lab's job (unchanged,
+  [`kit-lab-founding-plan-2026-07-07.md`](kit-lab-founding-plan-2026-07-07.md), KF-1…KF-11) is to
+  manage the **real, permanent program repos** — superbot, superbot-next, botsite — over the long
+  term: releases, the model-allocation dataset, guard telemetry, ideas-that-ship. The 7
+  domain-breadth Projects below are a separate, throwaway EAP capability eval. Kit-lab has no role
+  reviewing or feeding them.
+- **Today launches kit-lab + 2 test-fleet Projects, not 11.** Kit-lab launches first, alone,
+  through its own §7.2 provisioning checklist. Alongside it, exactly **two** domain-breadth
+  Projects launch today, picked for being the most directly useful right now: **row 4 (coding)
+  run twice** — `codetool-lab-fable5` (Fable 5) and `codetool-lab-opus48` (Opus 4.8) — same task
+  brief, same Custom Instructions template, only the model differs. This drops row 4's original
+  third arm (Sonnet 5) from today's launch and defers every other row (games, non-Discord bots,
+  research, design, personal-friction, wildcard) entirely.
+- **Everything else is a tomorrow decision, not a backlog commitment.** Whether to add the
+  Sonnet 5 arm back, launch more of the 7 rows, or stop at 3 total running Projects (kit-lab +
+  the 2 coding arms) is explicitly deferred to next session, made with real capacity/monitoring
+  data from today's 3 in hand — not pre-committed here.
+
+Everything under "Why a fleet" / the 7-row table / the model-comparison section below still
+describes the **available menu** for that tomorrow decision — it is not today's launch list.
+The "Next-session execution checklist" at the bottom is superseded for today by the trimmed list:
+1. Provision + launch kit-lab per its own §7.2 checklist (P1–P13) — independent of the fleet.
+2. Create `codetool-lab-fable5` and `codetool-lab-opus48` (Contents-API-seeded README, same
+   pattern as `websites`).
+3. Paste the shared Custom Instructions template (below) into each, task brief = row 4's coding
+   brief verbatim, model = Fable 5 / Opus 4.8 respectively.
+4. Do **not** create the other 5 domain repos or the Sonnet 5 arm today.
+5. Next session: review kit-lab + the 2 coding arms' status reports, then decide what (if
+   anything) to add from the remaining menu.
 
 ## Why a fleet, not one more Project
 
