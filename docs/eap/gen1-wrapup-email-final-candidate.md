@@ -360,10 +360,6 @@ repos under github.com/menno420. Counts re-verified 2026-07-10 by the grand-revi
   (12 proof-documented ROM patches; a complete original GBA game) overnight. The
   generation mechanism (retro → succession → blueprint → relaunch) is the pattern we'd
   most like the product to make first-class.
-- **One planning question back:** how will Projects be billed after the EAP window —
-  within normal plan/session limits, or metered separately? We are designing a standing
-  4-Project always-on core around routine wakes, and the answer decides its cadence
-  (and whether an always-on fleet is viable on a consumer plan at all).
 
 **Read this with an agent too, as before.** Everything is public and re-runnable. Best
 single entry points: the external review pack
