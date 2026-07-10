@@ -22,6 +22,13 @@
   setup script = the tested fleet archetype, pasted verbatim (canonical:
   `fleet-manager/environments/archetype-*.sh`; rendered at the control-plane
   `/environments` page).
+- **Single-writable-repo rule (owner directive Q-0260, 2026-07-10):** every Project
+  except the manager attaches exactly ONE repo — its lane repo. Cross-repo reads use the
+  public raw path, never attachment. Together with the founding-instruction "agent of
+  THIS Project (repo X)" line this is the lane boundary (the Project-home ≠ repo-lane
+  finding, §5). Carve-outs: the manager stays multi-repo (oversight is its job) and needs
+  **pokemon-mod-lab attached** now that repo is private (raw reads 404 → its sweep would
+  misread the lane as DARK); any future private repo inherits the same caveat.
 
 ## 2. Fleet-manager founding package v3 (FINAL — owner pasting)
 

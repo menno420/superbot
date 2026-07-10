@@ -157,7 +157,8 @@ owner clicks you expect to produce.
 
 ## §3 — Environment
 
-Name **`product-forge`** · repos: `menno420/product-forge` only · variables: **none** ·
+Name **`product-forge`** · repos: `menno420/product-forge` only (single-writable-repo
+rule, owner directive Q-0260) · variables: **none** ·
 setup script: `fleet-manager/environments/archetype-python-lab.sh` **verbatim** (raw:
 `https://raw.githubusercontent.com/menno420/fleet-manager/main/environments/archetype-python-lab.sh`;
 the tested stdlib/tiny-dep lab archetype — the codetool arms and venture-lab run on it).

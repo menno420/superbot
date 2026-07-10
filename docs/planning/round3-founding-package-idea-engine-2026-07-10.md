@@ -150,7 +150,9 @@ proposals will live.
 **Zero new env work.** Use the existing **`superbot`** environment (one env per repo,
 named like the repo — launch pack §6b; archetype: `archetype-bot-prod.sh`, the legacy
 superbot 3.10 pin — superbot's own SessionStart hook does the heavy lifting). Repos:
-`menno420/superbot` only. Variables: none beyond what the environment already carries.
+`menno420/superbot` only — the single-writable-repo rule (owner directive Q-0260,
+2026-07-10): one attached repo per Project, cross-repo reads via the public raw path.
+Variables: none beyond what the environment already carries.
 Owner action: when creating the Project, just select the `superbot` environment.
 
 ## §4 — Boot verification (what the dispatch copilot checks)

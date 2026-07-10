@@ -9377,3 +9377,32 @@ prerequisite: enable the Codex GitHub integration on the valuable repos (owner q
 **Routing.** Round-3 pack §4b (answers) + §1 brief consumers; the manager maps the current
 game lanes (superbot-games shared repo · pokemon-mod-lab · gba-homebrew) onto the
 3-projects/3-repos shape decide-and-flag.
+
+### Q-0260 — single-writable-repo rule: every Project except the manager attaches exactly ONE repo (owner directive, 2026-07-10)
+
+> **Context.** Live dispatch session, round-3 boot day. Until now Projects often attached
+> multiple repos, mainly for read access. Two same-day findings sharpened the question:
+> Project-home ≠ repo-lane (a Venture-Lab-homed chat ran the substrate-kit lane overnight
+> — the Project boundary does not constrain repo work), and all fleet repos are public and
+> therefore raw-readable without attachment.
+
+**The directive (owner's words, expanded).** Each Project, **apart from the fleet manager**,
+gets **write access to exactly one repo** — its own lane repo. Cross-repo *reading* uses the
+public raw path (`raw.githubusercontent.com`), not attachment. The manager keeps its
+multi-repo attachment (its job is cross-repo oversight). Consequences:
+
+1. **Environments compose with the §6b registry rule** (one env per repo, named like the
+   repo): a Project selects its lane's single-repo environment; no new multi-repo envs.
+2. **The founding-package line "you are an agent of THIS Project (repo X)" plus the
+   single-repo attachment together are the lane boundary** — instruction + credential now
+   agree, closing the cross-homed-lane class the Venture-Lab screenshot exposed.
+3. **Private repos are the carve-out to watch:** raw-read only works on public repos.
+   pokemon-mod-lab went private 2026-07-10, so any *other* Project's read of it now fails —
+   in particular the manager's staleness sweep needs pokemon-mod-lab attached to the
+   manager's environment (or accepts a DARK-by-privacy verdict relayed via the owner).
+   Any future private repo inherits the same caveat.
+
+**Routing.** This entry (provenance) + round-3 dispatch runbook §1 (design decisions) +
+the founding packages (already single-repo: Idea Engine → superbot; Product Forge →
+product-forge) + the manager's environments registry (fleet-manager `environments/`,
+owner-relayed) for gen-3 env improvements per Q-0259 ruling 2.
