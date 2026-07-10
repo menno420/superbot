@@ -71,7 +71,7 @@ Current broad captures:
   lane hasn't). Adds a cross-pass memory step that escalates a runtime PR deferred ≥3 passes into a loud
   one-line owner/dispatch hand-off, so "not my lane" stops becoming "no lane forever."
 - [`claim-remote-visibility-scan-2026-07-08.md`](./claim-remote-visibility-scan-2026-07-08.md) —
-  **session idea (2026-07-08, Q-0089, grooming wave-1 lane C, #1845):** claims only become visible
+  **session idea (2026-07-08, Q-0089, grooming wave-1 lane C, #1845) — ✅ SHIPPED (PR #1919):** claims only become visible
   to siblings via the open PR — `check_lane_overlap.py` reads the *local* claims dir, so a claim on
   an un-merged sibling branch (and any lane in the pre-first-push window of a simultaneous-start
   wave) is invisible to the tool. Add a `--remote` mode that scans recent `origin/claude/*` refs for

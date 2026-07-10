@@ -331,6 +331,14 @@ Source code and merged PRs win over anything written here.
 > auto-opens a `reconcile` issue at the boundary that fires the docs-reconciliation routine). Reset
 > this marker to the latest PR after a pass.
 
+- **#1919 (2026-07-10, overnight shift B — claim visibility across un-merged branches)** —
+  `check_lane_overlap.py --remote` scans recent un-merged `origin/claude/*` / `origin/bot/*`
+  branch tips for `docs/owner/claims/` files not on `main` (tip-state `ls-tree` compare —
+  shallow-clone-safe, degrades gracefully offline), so a sibling session's claim is visible
+  **before its PR exists** — closing the pre-PR race window of a parallel wave
+  (idea `claim-remote-visibility-scan-2026-07-08`, now shipped; +5 unit tests, protocol line
+  in `docs/owner/claims/README.md`). Ride-alongs: Recently-shipped trimmed to the 20 ratchet,
+  fresh-container dev-tools bootstrap row in the journal ⚡ Quick reference (Q-0194). Tooling/docs-only.
 - **#1913 (2026-07-09/10, EAP — independent fleet wind-down audit)** — a fresh `superbot`
   session ran an adversarial, evidence-based audit of the 2026-07-09 gen-1 fleet wind-down:
   cloned all 9 EAP repos fresh, then had one agent per lane read its succession package and
@@ -479,25 +487,6 @@ Source code and merged PRs win over anything written here.
 - **#1805 · #1815 · #1824 (2026-07-07/08, docs — dashboard-data refreshes, Q-0167)** —
   three per-source-merge refreshes keeping the committed `dashboard/data/dashboard.json` export fresh as
   the coordinator-kickoff / EAP-evaluation arc landed.
-- **#1791 · #1792 · #1793 · #1794 · #1795 · #1796 · #1797 · #1798 (2026-07-07, S3 rebuild — idea-consolidation → multi-repo program founding + owner rulings Q-0243…Q-0252)** —
-  the pre-program-launch consolidation session. **#1791** folded the day's four owner captures + hardened
-  the §3.C risks into the canonical-plan machinery (§11b amendments A-12…A-20; registry mints R-16/R-17/P-5).
-  Owner rulings: **#1792** (Q-0243 pricing-by-simulation + Q-0244 slash verification inherits prefix, never a
-  blocker), **#1796** (Q-0250 trading repo stocks-first — US large-cap tech, point-in-time universe, API-broker
-  paper lane, DEGIRO manual venue), **#1797** (Q-0251 trading operating model — decision-ledger mock trades,
-  sniper bucket, 3-way hybrid allocator). **#1794** captured the **multi-repo program** (repo-start mechanics ·
-  kit self-improvement lab · trading research repo); **#1795** the steps-6–8 kickoff-readiness brief
-  (Q-0247/Q-0248/Q-0249); **#1798** (Q-0252) prepared the **three program sessions** — kit-lab + trading
-  founding briefs + the [launch index](planning/program-three-sessions-launch-index-2026-07-07.md). #1793 =
-  format/lint + env-var-artifact regen for `EXTRA_OWNER_USER_IDS`.
-- **#1784 · #1785 · #1786 · #1787 · #1788 · #1789 · #1790 (2026-07-07, S3 rebuild-plan review + owner-idea capture, incl. an S1 automod runtime fix #1789)** —
-  an owner-review session over the rebuild plan that captured rulings/ideas and shipped one runtime fix:
-  **#1785** recorded the owner ruling on auto-collect gating (coins+XP unlock), **#1786** three
-  foundational/feature gaps, **#1787** the automod duplicate-content + cross-channel spam gaps; **#1789** then
-  *shipped* the **S1 automod fix** (cross-channel spam-evasion + duplicate-content detection —
-  `services/automod_service.py`/`automod_config.py` + `cogs/automod/schemas.py` + 3 test files; a genuine
-  `disbot/` runtime change). **#1788/#1790** = the Fable-5 ultracode brief to fold the day's ideas into the
-  plan (revised once #1789 shipped — the automod finding is shipped-not-a-fold candidate).
 - **Older merges (#1799 … #535) → [`current-state-archive.md`](current-state-archive.md).** Recently-shipped keeps the ~20 newest; older entries are trimmed to the archive (newest-first), which `scripts/check_docs.py` soft-ratchets at 20 and `check_current_state_ledger.py` treats as present. *(Thematic grouping by date means the live/archive PR-number spans overlap slightly — the floor pointer is approximate prose, not a strict bound; the per-band pass records carry the exact moved sets.)* *(The twenty-first Q-0107 pass — band-#1320, 2026-06-22 — added the band #1294–#1320 work as seven grouped entries (fishing minigame #1296/#1298/#1299/#1301/#1303/#1304, role management #1300/#1302/#1306, help surface #1294/#1297, BTD6 answerability #1295/#1316, botsite React PR1 #1305, CI/ledger/tool-pin hygiene #1308/#1317/#1320, dependency bumps + dashboard #1307/#1309/#1311/#1312/#1313/#1314/#1315); trimmed the live ledger to 20, moving #1208-band · #1226-band · #1211-band · #1210 · #1203-band · #1209-band · #1183-band to the archive.)* *(The twentieth Q-0107 pass — band-#1290, 2026-06-22 — added the band #1265–#1291 work as six grouped entries; trimmed the live ledger to 20, moving #1186 · #1156-band · #1147-band · #1143-band · #1162-band · #1149-band to the archive.)*
 
 > Older than this: see `docs/planning/*` trackers and `docs/decisions/*` ADRs.

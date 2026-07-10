@@ -16,13 +16,35 @@ fleet-dispatch overlap-check rule):
     files) needs GitHub and CANNOT be checked locally — always ALSO run `list_pull_requests`.
     Confirm its hits across a few sessions; **delete it if it proves noisy/unreliable.**
 
+PROVENANCE / RELIABILITY — ``--remote`` mode (2026-07-10, builds
+``docs/ideas/claim-remote-visibility-scan-2026-07-08.md``):
+    Why: a claim committed on a sibling session's un-merged branch is invisible to the local
+    claims dir until that branch merges — in practice ``docs/owner/claims/`` on ``main`` is
+    almost always just ``README.md``, because claims are deleted at close before the PR merges.
+    So the pre-PR window (born-red push → PR open) was uncovered — the exact race a parallel
+    wave lives in (the #1221 duplicate-PR lesson). ``--remote`` reads sibling claims at their
+    *native* layer (git refs): enumerate recent ``origin/claude/*`` / ``origin/bot/*`` tips,
+    diff each one's ``docs/owner/claims/`` files against ``origin/main``, and fold those
+    claims into the same overlap scan.
+
+    UNVERIFIED — confirm its hits against real sibling branches a few times across sessions
+    before trusting it; **delete the ``--remote`` half if it proves noisy/unreliable.** It
+    degrades gracefully offline (warns and returns local-only results; exit code unaffected
+    by the degradation itself).
+
 Usage:
     check_lane_overlap.py <scope> [<scope> ...] [--limit N] [--strict]
+                          [--remote] [--remote-days D] [--no-fetch]
 
-    <scope>  — files / directories / globs the lane will touch
-               (e.g. `scripts/check_consistency.py`, `disbot/views/mining/`, `disbot/**/fish*`).
-    --limit  — how many recent commits to scan (default 80 — ~2 burst bands).
-    --strict — exit 1 if any overlap is found (for a dispatch gate once trusted).
+    <scope>       — files / directories / globs the lane will touch
+                    (e.g. `scripts/check_consistency.py`, `disbot/views/mining/`).
+    --limit       — how many recent commits to scan (default 80 — ~2 burst bands).
+    --strict      — exit 1 if any overlap is found (for a dispatch gate once trusted).
+    --remote      — ALSO scan recent un-merged `origin/claude/*` / `origin/bot/*` branches
+                    for claim files not on main: a sibling that pushed its born-red first
+                    commit becomes visible BEFORE its PR exists. Fetches first.
+    --remote-days — how far back a remote branch tip counts as "recent" (default 4).
+    --no-fetch    — with --remote: skip `git fetch origin`; scan already-fetched refs only.
 """
 
 from __future__ import annotations
@@ -30,8 +52,10 @@ from __future__ import annotations
 import argparse
 import re
 import subprocess
+import time
 from fnmatch import fnmatch
 from pathlib import Path
+from posixpath import basename
 from typing import cast
 
 _RS = "\x1e"  # record separator between commits
@@ -206,6 +230,124 @@ def _load_claims() -> list[dict[str, object]]:
     return claims
 
 
+# ---------------------------------------------------------------------------
+# Remote-branch claim scan (--remote) — claims on un-merged sibling branches
+# ---------------------------------------------------------------------------
+
+# Branch namespaces agent sessions push to (see Q-0126 / claims README).
+_REMOTE_REF_PATTERNS = ("refs/remotes/origin/claude", "refs/remotes/origin/bot")
+_REMOTE_BASE = "origin/main"
+_CLAIMS_REL = "docs/owner/claims/"
+
+
+def _git(args: list[str], timeout: int = 60) -> str:
+    """Run one git command and return stdout (raises on failure — callers degrade)."""
+    return subprocess.run(
+        ["git", *args],
+        capture_output=True,
+        text=True,
+        check=True,
+        timeout=timeout,
+    ).stdout
+
+
+def parse_ref_lines(text: str, cutoff_epoch: int) -> list[str]:
+    """Pure: ``<unix-committerdate>\\t<refname>`` lines -> refs at/after *cutoff_epoch*."""
+    refs: list[str] = []
+    for ln in text.splitlines():
+        stamp, _, ref = ln.strip().partition("\t")
+        if not ref:
+            continue
+        try:
+            fresh = int(stamp) >= cutoff_epoch
+        except ValueError:
+            continue
+        if fresh:
+            refs.append(ref)
+    return refs
+
+
+def _own_remote_ref() -> str:
+    """The remote-tracking name of the *current* branch (skipped — it's our own claim)."""
+    try:
+        branch = _git(["rev-parse", "--abbrev-ref", "HEAD"]).strip()
+    except (subprocess.SubprocessError, OSError):
+        return ""
+    return f"origin/{branch}" if branch and branch != "HEAD" else ""
+
+
+def _claim_files_at(ref: str) -> set[str]:
+    """Claim-file paths present at *ref*'s tip (README excluded). Raises on git failure.
+
+    Tip-state comparison on purpose (not a merge-base diff): claims are transient
+    tip-state by design (created at open, deleted at close), and ``ls-tree`` needs
+    only the tip object — so this also works in the shallow clones agent containers
+    use, where ``origin/main...ref`` often has **no merge base** and diff dies.
+    """
+    out = _git(["ls-tree", "-r", "--name-only", ref, "--", _CLAIMS_REL])
+    return {
+        ln.strip()
+        for ln in out.splitlines()
+        if ln.strip() and basename(ln.strip()).lower() != "readme.md"
+    }
+
+
+def load_remote_claims(
+    days: int,
+    fetch: bool = True,
+) -> tuple[list[dict[str, object]], list[str]]:
+    """Claims present on recent un-merged sibling branch tips but not on origin/main.
+
+    Each claim dict gains a ``"ref"`` key naming the branch it was found on. Every
+    network/git failure degrades to a warning string instead of raising, so an
+    offline run still produces the local-only result.
+    """
+    warnings: list[str] = []
+    if fetch:
+        try:
+            _git(["fetch", "--quiet", "origin"], timeout=120)
+        except (subprocess.SubprocessError, OSError):
+            warnings.append(
+                "git fetch failed (offline?) — scanning already-fetched refs only",
+            )
+    try:
+        out = _git(
+            [
+                "for-each-ref",
+                "--format=%(committerdate:unix)\t%(refname:short)",
+                *_REMOTE_REF_PATTERNS,
+            ],
+        )
+        base_files = _claim_files_at(_REMOTE_BASE)
+    except (subprocess.SubprocessError, OSError):
+        warnings.append("remote-ref scan unavailable — local-only results")
+        return [], warnings
+
+    cutoff = int(time.time()) - days * 86400
+    own = _own_remote_ref()
+    claims: list[dict[str, object]] = []
+    skipped: list[str] = []
+    for ref in parse_ref_lines(out, cutoff):
+        if ref == own:
+            continue  # our own branch's claim is not a *sibling* claim
+        try:
+            names = _claim_files_at(ref) - base_files
+        except (subprocess.SubprocessError, OSError):
+            skipped.append(ref)
+            continue
+        for name in sorted(names):
+            try:
+                text = _git(["show", f"{ref}:{name}"])
+            except (subprocess.SubprocessError, OSError):
+                continue
+            for claim in parse_claim_file(text):
+                claims.append({**claim, "ref": ref})
+    if skipped:
+        shown = ", ".join(skipped[:3]) + ("…" if len(skipped) > 3 else "")
+        warnings.append(f"could not inspect {len(skipped)} ref(s) — skipped ({shown})")
+    return claims, warnings
+
+
 def scan(scopes: list[str], limit: int) -> dict[str, list[tuple[str, str, list[str]]]]:
     """Map each scope -> the recent commits whose files overlap it."""
     commits = _recent_commits(limit)
@@ -223,7 +365,8 @@ def scan(scopes: list[str], limit: int) -> dict[str, list[tuple[str, str, list[s
 
 _FOOTER = (
     "\n  NOTE: this covers the recently-MERGED commits (local git) + the docs/owner/claims/ "
-    "claim ledger. The OPEN-PR half (a concurrent unmerged PR with no claim line) still "
+    "claim ledger (add --remote to also see claims pushed on un-merged sibling branches). "
+    "The OPEN-PR half (a concurrent unmerged PR with no claim line) still "
     "needs GitHub — ALSO run `list_pull_requests`."
 )
 
@@ -246,17 +389,58 @@ def main() -> int:
         action="store_true",
         help="exit 1 if any overlap is found (dispatch gate)",
     )
+    ap.add_argument(
+        "--remote",
+        action="store_true",
+        help="also scan recent un-merged origin/claude|bot branches for claim files",
+    )
+    ap.add_argument(
+        "--remote-days",
+        type=int,
+        default=4,
+        help="how far back a remote branch tip counts as recent (default 4 days)",
+    )
+    ap.add_argument(
+        "--no-fetch",
+        action="store_true",
+        help="with --remote: skip `git fetch origin` (offline mode)",
+    )
     args = ap.parse_args()
 
     hits = scan(args.scopes, args.limit)
     claim_hits = scan_claims(args.scopes, _load_claims())
+    remote_hits: dict[str, list[dict[str, object]]] = {}
+    if args.remote:
+        remote_claims, remote_warnings = load_remote_claims(
+            args.remote_days,
+            fetch=not args.no_fetch,
+        )
+        for warning in remote_warnings:
+            print(f"check_lane_overlap: ⚠ {warning}")
+        remote_hits = scan_claims(args.scopes, remote_claims)
 
-    if not hits and not claim_hits:
+    if not hits and not claim_hits and not remote_hits:
+        checked = "recently-merged commits + local claims"
+        if args.remote:
+            checked += f" + un-merged origin branches (last {args.remote_days}d)"
         print(
-            f"check_lane_overlap: no recently-merged commit (last {args.limit}) and no "
-            f"docs/owner/claims/ claim touch {', '.join(args.scopes)} ✓" + _FOOTER,
+            f"check_lane_overlap: no overlap ({checked}, last {args.limit} commits) with "
+            f"{', '.join(args.scopes)} ✓" + _FOOTER,
         )
         return 0
+
+    if remote_hits:
+        print(
+            "check_lane_overlap: ⚠ REMOTE CLAIM — an un-merged sibling branch claims this "
+            "scope (pushed; its PR may not exist yet). Coordinate or pick another lane:\n",
+        )
+        for scope, claims in remote_hits.items():
+            print(f"  scope `{scope}`:")
+            for claim in claims:
+                shown = ", ".join(cast("list[str]", claim["matched"])[:4])
+                print(f"    {claim['ref']}  {claim['summary']}")
+                print(f"             ↳ {shown}")
+        print()
 
     if claim_hits:
         print(
@@ -284,7 +468,7 @@ def main() -> int:
                 print(f"    {short_hash}  {subject[:72]}")
                 print(f"             ↳ {shown}{more}")
     print(_FOOTER)
-    return 1 if (args.strict and (hits or claim_hits)) else 0
+    return 1 if (args.strict and (hits or claim_hits or remote_hits)) else 0
 
 
 if __name__ == "__main__":
