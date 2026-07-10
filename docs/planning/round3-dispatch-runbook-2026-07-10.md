@@ -232,17 +232,27 @@ Reply here with the substrate-kit section inline + per-class totals when the PR 
    (owner-confirmed upgrade from the §2 continuation prompt):
    [`round3-founding-package-builder-2026-07-10.md`](round3-founding-package-builder-2026-07-10.md)
    — routine rides its own inbox ORDER 008; ender catch-up for #99/#101 baked into boot.
-4. ☐ **Idea Engine (core seat 4).** Package **DRAFTED**:
+4. ☐ **Idea Engine (core seat 4) — REDESIGNED per owner ruling Q-0264.** Package
+   **rewritten v2 (own-repo)**:
    [`round3-founding-package-idea-engine-2026-07-10.md`](round3-founding-package-idea-engine-2026-07-10.md)
-   (probe battery v0; env = existing `superbot`, zero env work). Finalize-first: superbot
-   has no open owner-gates for it (verify at its turn).
+   (own `idea-engine` repo, sections per fleet lane derived from the manifest, parallel
+   agents; finalizes nothing — sim-ready ideas go to seat 6). Finalize-first: owner
+   creates the `idea-engine` repo + env + Project (§0 of the package — batches with
+   §3.5/§3.6 clicks).
 5. ☐ **Product Forge (core seat 5).** Package **DRAFTED**:
    [`round3-founding-package-product-forge-2026-07-10.md`](round3-founding-package-product-forge-2026-07-10.md)
    (born-right ORDER 000 = blueprint §1 seed). Finalize-first: owner creates the
    `product-forge` repo + env + Project (§0 of the package).
-6. ☐ **Sixth core seat = the superbot hub Project** (games-finishing/maintenance seat —
-   applied under the Q-0262 delegation, ⚑ flagged: most-vetoable item of the set; say the
-   word to swap in websites instead). Package drafted at its turn in the order.
+6. ☐ **Sixth core seat = the SIMULATOR Project (`sim-lab`) — owner ruling Q-0264,
+   superseding the Q-0262.8 superbot-hub pick** (the flagged veto arrived). The fleet's
+   evidence stage: reproduces facts (sim / measured prototype / labeled JUDGMENT-ONLY),
+   validity-gates + @codex-reviews every verdict, and ships reusable sim templates as a
+   public product; the manager final-reviews + routes finalized verdicts as ORDERs.
+   Package **DRAFTED**:
+   [`round3-founding-package-simulator-2026-07-10.md`](round3-founding-package-simulator-2026-07-10.md).
+   Finalize-first: owner creates the `sim-lab` repo + env + Project **+ enables the
+   Codex integration for it** (§0 of the package). Hub games-finishing work routes to
+   the games program (Q-0259 r.5) / owner-started superbot sessions instead.
 7. ☐ Post-core (pipelined standard): manual lanes (venture-lab after the holdout/settings
    items, trading after the holdout ORDER, websites continuation) · games program once
    the manager proposes the 3-repo mapping (Q-0259 r.5) — 3 packages on the standard.
@@ -251,8 +261,9 @@ Reply here with the substrate-kit section inline + per-class totals when the PR 
 
 ## 4. Open drafting queue (for the dispatch-coordination session)
 
-- ~~Idea Engine founding package~~ **done** → [`round3-founding-package-idea-engine-2026-07-10.md`](round3-founding-package-idea-engine-2026-07-10.md).
+- ~~Idea Engine founding package~~ **done, then REWRITTEN v2 (own-repo) per Q-0264** → [`round3-founding-package-idea-engine-2026-07-10.md`](round3-founding-package-idea-engine-2026-07-10.md).
 - ~~Product Forge founding package~~ **done** → [`round3-founding-package-product-forge-2026-07-10.md`](round3-founding-package-product-forge-2026-07-10.md).
+- ~~Simulator (seat 6) founding package~~ **done (Q-0264)** → [`round3-founding-package-simulator-2026-07-10.md`](round3-founding-package-simulator-2026-07-10.md); the superseded superbot-hub seat needs no package.
 - 3 × game-Project founding packages once the manager's mapping lands (Q-0259 r.5).
 - Per-boot verification ritual: after each paste, check calibration answer · routine
   armed+verified · first heartbeat — recorded per-lane in §5 below.
@@ -263,8 +274,9 @@ Reply here with the substrate-kit section inline + per-class totals when the PR 
 |---|---|---|---|---|---|
 | fleet-manager | ✓ 2026-07-10 ~13:40Z | **GOOD** — corrected the brief's stale premise (#20 had pre-seeded ORDERs 001–006), caught the real gap (debt 6 → ORDER 007), evidence-based first-sweep pick (venture-lab) | ✓ **verified in the account trigger list** by the dispatch copilot: `trig_01QBrp5MjZL3F9mv6KsTXTzN`, cron `30 */2 * * *`, enabled, recurring, prompt verbatim; **first wake fired 14:36:29Z**, next 16:31Z | ✓ status.md @ `117caeb` (main): coordinator LIVE, verbatim arming record (incl. the `cse_`→`session_` id-normalization recipe detail), orders footer fixed | **LIVE** — no correction needed |
 | substrate-kit | ✓ 2026-07-10 ~15:45Z (env archetype + 2a/2b; F-5 pre-landed as ORDER 011) | calibration not paste-backed (owner: "freshly running"); §4.1 judged via registry evidence instead | ✓ **CUTOVER VERIFIED in the registry** by the dispatch copilot: old `trig_01FnqnAQjLU2T8d16iHwWQ2h` DELETED (absent from its created-order slot); new `trig_016EfUawz6KxEYqUM6f1BqDw` "substrate-kit 2-hourly standing wake" cron `0 */2 * * *`, prompt verbatim, **first wake fired 16:02:43Z**, next 18:00Z | ✓ **heartbeat @ HEAD 16:42Z** — ORDER 011 executed (F-5=A applied, headline 1 PASS/3 FAIL, B-benches unpaused; claim #127/PR #128, 819 tests green) AND first §6.1 slice shipped (#129/#130: substrate-gate.yml kit-owned) | **LIVE — fully verified, executing the brief** |
-| Idea Engine | package ready; Project not yet created (§3.2) | — | — | — | — |
-| Product Forge | package ready; repo not yet created (§3.2/§0) | — | — | — | — |
+| Idea Engine | package v2 (own-repo, Q-0264) ready; `idea-engine` repo/Project not yet created (§3.4/§0) | — | — | — | — |
+| Product Forge | package ready; repo not yet created (§3.5/§0) | — | — | — | — |
+| Simulator (sim-lab) | package ready (Q-0264 seat 6); `sim-lab` repo/Project/Codex-integration not yet created (§3.6/§0) | — | — | — | — |
 | Builder (superbot-next) | ✓ 2026-07-10 ~16:30Z (owner pasted; booted) | not paste-backed; judged via artifacts | ✓ **verified in the registry**: `trig_01VYZQ7GHxYq3ecSw8UNZek8` "builder-wake", cron `0 */2 * * *`, ORDER-008 prompt verbatim, next fire 18:00Z | pending — first PR (ender catch-up + heartbeat) not yet at HEAD; check next sweep | **LIVE** (first slice in flight). Note: dispatch-session ORDER-number collision (both manager and copilot appended "ORDER 010") caught pre-merge and renumbered to 011 on PR #104 — the kit §6.8 order-claim convention exists for exactly this |
 
 **Six-vs-seven RESOLVED (2026-07-10):** the drafting-time note below stands as history —
