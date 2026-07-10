@@ -211,8 +211,11 @@ Reply here with the substrate-kit section inline + per-class totals when the PR 
 > its boot). Items 2–6 below are the core order; post-core lanes follow the pipelined
 > standard.
 
-2. ☐ **substrate-kit (core seat 2 — NEXT).** Finalize-first: F-5 **RULED: Reading A**
-   (Q-0262.1 — inbox line rides the manager relay) · repo settings **verified from the
+2. ☐ **substrate-kit (core seat 2 — NEXT).** Finalize-first: F-5 **RULED: Reading A —
+   LANDED at kit HEAD** (kit ORDER 011, PR #126 merged 2026-07-10 ~15:34Z; the owner
+   granted this session lane-repo write access, so all four Q-0262 ORDERs were routed
+   directly: kit #126 · trading #35 `fd5e9fe` · superbot-next #102 · fleet-manager #29
+   `44df3a5` — all merged, all verified at origin/main) · repo settings **verified from the
    owner's 17:20 recording, unchanged since creation**: auto-merge ✓, auto-delete
    branches ✓, ruleset active with required checks "Kit test suite" + "Cold-adoption
    smoke" ✓ — the ONE change: **uncheck "Require branches to be up to date before
