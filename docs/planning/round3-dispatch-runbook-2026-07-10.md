@@ -141,8 +141,9 @@ script: `fleet-manager/environments/archetype-coordinator.sh` **verbatim** (raw:
 
 ## 3. Dispatch order (the launch checklist)
 
-1. ☐ Manager env created/updated (2c) → Custom Instructions pasted (2a) → chat brief
-   pasted (2b) → **calibration answer reviewed by the owner** → manager live.
+1. ☑ **Manager LIVE** (2026-07-10 ~13:45Z) — env + 2a + 2b pasted; calibration reviewed
+   (verdict GOOD, §5); routine armed + verified + **first wake fired 14:36Z**; boot PR
+   fleet-manager#26 squash-merged as `117caeb`. Verification record in §5.
 2. ☐ Owner clicks that gate the core: create the **Idea Engine** Project (superbot
    repo) · create the **product-forge** repo + Project (repo creation = agent wall) ·
    venture-lab settings (Allow auto-merge + required check).
@@ -173,12 +174,21 @@ script: `fleet-manager/environments/archetype-coordinator.sh` **verbatim** (raw:
 
 | Project | Package pasted | Calibration | Routine armed+verified | First heartbeat | Verdict |
 |---|---|---|---|---|---|
-| fleet-manager | in progress (owner, 2026-07-10 afternoon) | pending owner paste-back | pending | pending | — |
+| fleet-manager | ✓ 2026-07-10 ~13:40Z | **GOOD** — corrected the brief's stale premise (#20 had pre-seeded ORDERs 001–006), caught the real gap (debt 6 → ORDER 007), evidence-based first-sweep pick (venture-lab) | ✓ **verified in the account trigger list** by the dispatch copilot: `trig_01QBrp5MjZL3F9mv6KsTXTzN`, cron `30 */2 * * *`, enabled, recurring, prompt verbatim; **first wake fired 14:36:29Z**, next 16:31Z | ✓ status.md @ `117caeb` (main): coordinator LIVE, verbatim arming record (incl. the `cse_`→`session_` id-normalization recipe detail), orders footer fixed | **LIVE** — no correction needed |
 | Idea Engine | package ready; Project not yet created (§3.2) | — | — | — | — |
 | Product Forge | package ready; repo not yet created (§3.2/§0) | — | — | — | — |
 | Builder (superbot-next) | not yet dispatched (§3.4) | — | — | — | — |
 
-**Known drafting-time correction (2026-07-10, dispatch session):** §2b/the calibration ask
-say "six doctrine-debt ORDERs", but launch pack §1 lists **seven** standing debts. Judge
-the manager's calibration on coverage of all seven, not the count; a manager that flags
-the discrepancy itself is calibrating well.
+**Six-vs-seven RESOLVED (2026-07-10):** the drafting-time note below stands as history —
+launch pack §1 lists seven debts; fleet-manager PR #20 had pre-seeded six ORDERs covering
+debts 1–5 + 7 (ORDER 005/006 already done); the manager's boot caught the uncovered debt 6
+(@codex relay, Q-0258) and appended it as ORDER 007. All seven debts now have inbox ORDERs
+(001–004 open · 005–006 done · 007 new), verified against `control/inbox.md` @ main.
+
+**Boot-time fleet facts (verified via the account trigger list, 2026-07-10 ~14:40Z):**
+routine coverage is now manager (2-hourly) + kit-lab (hourly) + trading (4-hourly) +
+**websites (4-hourly — armed 13:49Z as its ORDER 008, discovered during manager-boot
+verification)**. Owner clicks surfaced by the boot, for the queue: 🚨 pokemon-mod-lab is
+PUBLIC with Nintendo source (urgent flip, top of the manager's owner-queue) · Codex has no
+environment for fleet-manager (chatgpt.com/codex settings — gates ORDER 007's @codex relay
+there) · fleet-manager visibility joins the account-wide review (non-urgent).
