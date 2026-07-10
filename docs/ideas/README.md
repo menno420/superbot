@@ -50,6 +50,22 @@ Current broad captures:
   checker's hybrid-command blind spot was caught only by a lucky dedup look at its sibling). Factor
   one `scripts/lib/command_surface_ast.py` declaration stream and re-base all three — a concrete
   first slice of `warn-first-checker-authoring-kit-2026-07-06.md`. Subsystem: none (build hygiene).
+- [`adopt-codetool-lab-tools-2026-07-10.md`](./adopt-codetool-lab-tools-2026-07-10.md) —
+  **owner repo-disposition review (2026-07-10):** the three codetool "test" labs each built a
+  real CLI (mdverify — released; envdrift; cfgdiff) — adopt them as fleet tools (mdverify
+  over docs/ first), then archive sonnet5+fable5 repos after harvest. Subsystem: tooling.
+- [`idea-probe-brainstorm-simulator-2026-07-10.md`](./idea-probe-brainstorm-simulator-2026-07-10.md) —
+  **owner-raised (2026-07-10, round-3 planning day):** a brainstorming simulator — probe any
+  idea with a structured question battery (+ panel-simulation mode) to get the filled-in
+  picture and the way forward; Q-0254 understand-and-reflect turned from habit into tool,
+  and the natural core method of the new Idea Engine (round-3 pack §5). One engine, two
+  skins with the suggestion copilot below. Subsystem: Idea Engine / agent workflow.
+- [`website-suggestion-copilot-2026-07-10.md`](./website-suggestion-copilot-2026-07-10.md) —
+  **owner-raised (2026-07-10, round-3 planning day):** an AI helper on the websites that
+  turns vague suggestions/bug reports (from the owner or visitors) into structured,
+  routable intake via a short clarifying interview — the public skin of the idea-probe
+  battery; lands on the `/submit` path. Needs a capped server-side API key (owner-gated).
+  Subsystem: websites / intake pipeline.
 - [`cross-agent-trust-ledger-2026-07-10.md`](./cross-agent-trust-ledger-2026-07-10.md) —
   **session ender (2026-07-10, GPT-5.6 Sol eval session):** generalize the Sol Codex
   eval suite (`docs/owner/gpt-5-6-sol-codex-eval-2026-07-10.md`) into a standing
