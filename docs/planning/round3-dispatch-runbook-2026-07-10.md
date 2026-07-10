@@ -211,8 +211,8 @@ Reply here with the substrate-kit section inline + per-class totals when the PR 
 > its boot). Items 2–6 below are the core order; post-core lanes follow the pipelined
 > standard.
 
-2. ☐ **substrate-kit (core seat 2 — NEXT).** Finalize-first: F-5 ruling into kit's inbox
-   (recommendation: Reading A, launch pack §4.1) · repo settings **verified from the
+2. ☐ **substrate-kit (core seat 2 — NEXT).** Finalize-first: F-5 **RULED: Reading A**
+   (Q-0262.1 — inbox line rides the manager relay) · repo settings **verified from the
    owner's 17:20 recording, unchanged since creation**: auto-merge ✓, auto-delete
    branches ✓, ruleset active with required checks "Kit test suite" + "Cold-adoption
    smoke" ✓ — the ONE change: **uncheck "Require branches to be up to date before
@@ -223,11 +223,11 @@ Reply here with the substrate-kit section inline + per-class totals when the PR 
    session-bound) is deleted by the NEW boot itself, then the old chat can be archived.
    Package: [`round3-founding-package-substrate-kit-2026-07-10.md`](round3-founding-package-substrate-kit-2026-07-10.md)
    (write-all distribution seat per Q-0261.3). Env: attach ALL fleet repos.
-3. ☐ **superbot-next (core seat 3).** Finalize-first: flag-13 corpus-red disposition
-   (Q-0240-class — accept the lane's proposed disposition, launch pack §4.5) · the
-   `superbot-plugin-hello` repo creation (its ORDER 002 gate) · up-to-date merge rule
-   relax. Then: §2 continuation prompt + standing-@codex line (Q-0259 r.3) + 2-hourly
-   routine confirm/arm.
+3. ☐ **superbot-next (core seat 3).** Finalize-first: flag-13 **RULED: lane's disposition
+   accepted** (Q-0262.3 — inbox line rides the manager relay) · the
+   `superbot-plugin-hello` repo creation (its ORDER 002 gate, owner click) · up-to-date
+   merge rule relax (same uncheck as kit's). Then: §2 continuation prompt +
+   standing-@codex line (Q-0259 r.3) + 2-hourly routine confirm/arm.
 4. ☐ **Idea Engine (core seat 4).** Package **DRAFTED**:
    [`round3-founding-package-idea-engine-2026-07-10.md`](round3-founding-package-idea-engine-2026-07-10.md)
    (probe battery v0; env = existing `superbot`, zero env work). Finalize-first: superbot
@@ -236,8 +236,9 @@ Reply here with the substrate-kit section inline + per-class totals when the PR 
    [`round3-founding-package-product-forge-2026-07-10.md`](round3-founding-package-product-forge-2026-07-10.md)
    (born-right ORDER 000 = blueprint §1 seed). Finalize-first: owner creates the
    `product-forge` repo + env + Project (§0 of the package).
-6. ☐ **Sixth core seat — owner to name** (candidates: hub-superbot games/maintenance
-   seat · websites). Package drafted once named.
+6. ☐ **Sixth core seat = the superbot hub Project** (games-finishing/maintenance seat —
+   applied under the Q-0262 delegation, ⚑ flagged: most-vetoable item of the set; say the
+   word to swap in websites instead). Package drafted at its turn in the order.
 7. ☐ Post-core (pipelined standard): manual lanes (venture-lab after the holdout/settings
    items, trading after the holdout ORDER, websites continuation) · games program once
    the manager proposes the 3-repo mapping (Q-0259 r.5) — 3 packages on the standard.

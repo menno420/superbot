@@ -9438,3 +9438,42 @@ owner-relayed) for gen-3 env improvements per Q-0259 ruling 2.
 **Routing.** This entry (provenance) + Q-0260 (amended by 3) + round-3 dispatch runbook §3
 (reordered checklist) + `gen3-deployment-standard-2026-07-10.md` §0 note + the
 substrate-kit founding package (drafted same session).
+
+### Q-0262 — blanket application of the round-3 recommended answers (owner directive, 2026-07-10)
+
+> **Context.** Live dispatch session. The owner: "apply all your recommended answers to the
+> remaining owner questions wherever possible." Scope: the round-3 open decision set
+> (launch pack §4 remainder + the session's open questions). Applied wholesale, each item
+> flagged-for-veto per Q-0240; lane-inbox lines route via the manager (this session writes
+> only superbot).
+
+**The applied rulings:**
+
+1. **Kit F-5 = Reading A** (the stricter reading). Bench runs 2–3 scored under A; family
+   headline 1 PASS / 3 FAIL; B-benches unpause. (Launch pack §4.1 recommendation.)
+2. **Trading P5 holdout: UNLOCKED** — `docs/p5-holdout-protocol.md` binding for the
+   one-shot evaluation; sequencing: trading's own ORDER 007 (significance bar + AAPL
+   re-grade) executes FIRST (its status names 007 as gating any holdout use). (§4.2.)
+3. **superbot-next flag-13 corpus-red: the lane's own proposed disposition ACCEPTED** —
+   proceed; reviewable at the parity gate (Q-0240 class). (§4.5.)
+4. **Model-line policy: family-level names ONLY, everywhere** (fable-5, opus-4.8; exact
+   IDs never) — un-nulls trading's model rows; matches superbot telemetry vocabulary.
+   (§4.6.)
+5. **OWNER-ACTION grammar: the kit's field set wins by definition**; venture-lab conforms
+   at its next kit upgrade; kit §6.8 (grammar as kit-owned constant) embeds it. (§4.7.)
+6. **The 8 undeployed instruction packages STAY undeployed** until re-based on the
+   manager's gen-3 blueprint delta. (§4.8.)
+7. **Pokemon concept pick = QoL+** (the lane's own recommendation; 12 patches form its
+   foundation) — takes effect when the games program boots post-core. (§4.3; GBA
+   release-prep was already ruled in Q-0259/§4b.)
+8. **Core seat 6 (the Q-0261 open slot) = the superbot hub Project** (games-finishing /
+   maintenance seat — the dispatch session's recommendation, applied under this
+   delegation; ⚑ most-vetoable item of the set: it names a core roster member).
+
+**Not appliable by delegation (stay owner-only):** the settings sweep (physical clicks —
+consolidated by the manager's launch-readiness report), venture-lab ⚑A–D (external/money,
+frozen behind the P0 Stripe-path fix), repo creations (product-forge, superbot-plugin-hello,
+3 game repos).
+
+**Routing.** This entry (provenance) + manager relay (lane-inbox ORDERs 1–3, policy lines
+4–5) + runbook §3 updates + kit founding package §0.1 (F-5 now ruled).

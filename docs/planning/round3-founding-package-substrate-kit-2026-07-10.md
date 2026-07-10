@@ -21,8 +21,9 @@
 
 ## §0 — Finalize-first (owner, BEFORE the boot — Q-0261.2)
 
-1. **F-5 ruling** into substrate-kit's `control/inbox.md` (one line; recommendation:
-   **Reading A**, launch pack §4.1 — honest-negative headlines are the credibility asset).
+1. **F-5 ruling — RULED: Reading A** (Q-0262.1, owner delegation 2026-07-10; the stricter
+   reading — honest-negative headlines are the credibility asset). The inbox ORDER line
+   rides the manager relay; verify it is at kit HEAD before the boot.
 2. Kit repo settings — verified from the owner's 2026-07-10 17:20 recording (unchanged
    since creation): auto-merge ✓, auto-delete branches ✓, required checks "Kit test
    suite" + "Cold-adoption smoke" ✓. **One change: uncheck "Require branches to be up to
