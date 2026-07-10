@@ -31,6 +31,11 @@ only the header block is read, so a `**Subsystem:**` *example* in an idea's body
 
 Current broad captures:
 
+- [`purpose-specific-test-bot-fleet-2026-07-10.md`](./purpose-specific-test-bot-fleet-2026-07-10.md) —
+  **owner-raised (2026-07-10, round-3 dispatch):** later, purpose-specific test bot identities (a
+  games-testing bot etc.) instead of the one shared test bot; deferred by the owner, capture only.
+  Subsystem: none.
+
 - [`trigger-registry-liveness-sweep-2026-07-10.md`](./trigger-registry-liveness-sweep-2026-07-10.md) —
   **session ender (2026-07-10, round-3 dispatch session):** make `list_triggers` a standing manager
   wake-step diffing the account trigger registry against the manifest — missing / orphaned /

@@ -26,9 +26,12 @@
 3. Already done earlier: flag-13 ruling at HEAD (ORDER 009, PR #102) · kit 1.6.0→1.7.0
    rides the kit distribution seat.
 4. **Live-drive grants (gate the LIVE leg, not the boot — grand-review item 3; do before
-   or during the seat's first sessions):** a sacrificial **test Discord app/bot** (its
-   token becomes `DISCORD_BOT_TOKEN_PRODUCTION` in this env — never the live bot's) ·
-   enable its **privileged intents** (message content + members) in the dev portal ·
+   or during the seat's first sessions).** Owner ruling 2026-07-10: **reuse the existing
+   test bot** (the one already in use — a separate application from the live bot; the
+   purpose-specific test-bot fleet idea is deferred:
+   `docs/ideas/purpose-specific-test-bot-fleet-2026-07-10.md`). Its token becomes
+   `DISCORD_BOT_TOKEN_PRODUCTION` in this env — never the live bot's · verify its
+   **privileged intents** (message content + members) are enabled in the dev portal ·
    **remove the old bot's `!` prefix from the test guild** (or remove the old bot) so
    both bots don't answer the same commands · note the **test guild id** for
    `SB_APPCMD_SYNC_GUILD_ID`. The seat boots and does non-live work without these
