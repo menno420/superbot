@@ -36,6 +36,12 @@ Current broad captures:
   games-testing bot etc.) instead of the one shared test bot; deferred by the owner, capture only.
   Subsystem: none.
 
+- [`project-capability-self-awareness-2026-07-10.md`](./project-capability-self-awareness-2026-07-10.md) —
+  **owner-raised (2026-07-10, dispatch part-4c):** "ask a project what its abilities are and it
+  answers honestly" — platform half routed to the EAP email (§(d) item 2); buildable half = a kit
+  `capabilities --probe` battery that regenerates `docs/CAPABILITIES.md` from live probe results.
+  Subsystem: agent-ecosystem / substrate-kit.
+
 - [`seat-boot-verification-harness-2026-07-10.md`](./seat-boot-verification-harness-2026-07-10.md) —
   **session ender (2026-07-10, round-3 dispatch part 4):** script the dispatch copilot's
   four-times-repeated per-seat boot verification (trigger-registry match + raw heartbeat/inbox/outbox

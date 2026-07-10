@@ -83,8 +83,13 @@ one-slice pacing).** Every gen-3 seat is **born continuous**:
   its own merged-on-green PR (the throttle is removed, not the ceremony; near context
   limits, hand off cleanly to a fresh card/branch instead of degrading).
 - **The `send_later` continuation chain (~15 min out, "continue the work loop") is the
-  pacemaker**, armed before ending any turn — where the seat's toolset has the tool;
-  if absent, record that verbatim and the cron below becomes the pacemaker.
+  pacemaker**, armed before ending any turn — where the seat's toolset has the tool.
+  **If a scheduling tool is absent from the coordinator's toolset, FIRST retry from a
+  spawned worker seat** — toolsets are seat-dependent *within one Project*: twice-proven
+  on 2026-07-10 (idea-engine, then sim-lab, whose coordinator lacked BOTH
+  `create_trigger` and `send_later` while its worker had both and armed first-try).
+  Only after a worker-seat denial (recorded verbatim) does the cron below become the
+  pacemaker / the ask go owner-manual.
 - **The standing cron is demoted to a dead-man failsafe**, named "<seat> failsafe wake",
   keeping the 2-hourly stagger (lanes `0 */2 * * *`, manager `30 */2 * * *`); its prompt:
   if the chain is alive, verify liveness in one line and end; if it stalled, resume the

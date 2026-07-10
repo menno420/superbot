@@ -238,7 +238,21 @@ read our workarounds: each one is a feature spec written in scar tissue.
 
 1. **A native inter-session channel + a coordinator-owned scheduler.** Retires the entire
    message bus + self-poll layer, and closes the "2-hour order pickup" hole.
-2. **Scoped, owner-declared, auditable pre-authorization per Project/repo** — and, far
+2. **Capability self-awareness — ask a Project what it can do and get an honest,
+   machine-readable answer** *(owner-raised 2026-07-10, in his words: "the projects are
+   not fully aware of how they work themselves yet … if you could just ask a project
+   what it's abilities are, and it could answer honestly, that would be really nice")*.
+   Today every seat discovers its abilities by trial-and-refusal (§(c)'s closing
+   finding), and the answers differ per session type: on 2026-07-10 the sim-lab
+   coordinator's toolset had neither `create_trigger` nor `send_later` (verbatim wall:
+   "tool not present in session toolset") while a worker it spawned minutes later had
+   BOTH and armed the seat's routine first-try — the same split the idea-engine seat
+   hit hours earlier. We now maintain per-repo CAPABILITIES.md ledgers and a
+   "never probe a documented wall twice" doctrine purely to compensate. A first-party
+   answer — a queryable manifest of this session's tools + permissions (and ideally
+   the classifier's live line per item 3), or even the model being told its own
+   toolset honestly at session start — would delete that whole coping layer.
+3. **Scoped, owner-declared, auditable pre-authorization per Project/repo** — and, far
    cheaper: **document the classifier's actual line** (auto-merge-arm allowed / self-merge
    sometimes denied) and make refusals *consistent and machine-readable*, including
    positive confirmation of what IS allowed. Our lanes now script the refusal branch
@@ -246,20 +260,20 @@ read our workarounds: each one is a feature spec written in scar tissue.
    because a grant alone doesn't survive contact with a platform that disagrees
    per-session-type — and see friction 1's new hook-vs-classifier datapoint: even two
    platform-side guards can disagree with each other.
-3. **PR events for CI-success, new pushes, and merge conflicts** (not just failures), plus
+4. **PR events for CI-success, new pushes, and merge conflicts** (not just failures), plus
    a merge queue — so watchers neither poll nor get woken ~60 times for nothing.
-4. **Make setup-script failure non-fatal by default**: run what works, skip what fails,
+5. **Make setup-script failure non-fatal by default**: run what works, skip what fails,
    boot the session with a "setup degraded: step N failed" notice surfaced in the session
    list.
-5. **Fleet visibility:** per-Project Working/Needs-input counts in the sidebar, one
+6. **Fleet visibility:** per-Project Working/Needs-input counts in the sidebar, one
    fleet-level view, and a liveness heartbeat that splits "session open" from "making
    progress."
-6. **A larger child-brief budget** than 4096 bytes, and `run_in_background`/agent-type
+7. **A larger child-brief budget** than 4096 bytes, and `run_in_background`/agent-type
    parameters that do what they say.
-7. **Auto-merge arming that tolerates fast CI** (or REST reachability + per-Project token
+8. **Auto-merge arming that tolerates fast CI** (or REST reachability + per-Project token
    quotas, per frictions 10–11) — as-is, "arm at creation" can fail both ways within
    minutes and needs a scripted fallback.
-8. Still open from July 8: **post-hoc "what each finished session did" summaries** — should
+9. Still open from July 8: **post-hoc "what each finished session did" summaries** — should
    we keep generating these ourselves from the repo record, or is this coming?
 
 ### (e) What the fleet shipped during the EAP — compact evidence section
@@ -360,6 +374,20 @@ repos under github.com/menno420. Counts re-verified 2026-07-10 by the grand-revi
   (12 proof-documented ROM patches; a complete original GBA game) overnight. The
   generation mechanism (retro → succession → blueprint → relaunch) is the pattern we'd
   most like the product to make first-class.
+
+- **The seat-dependence finding got its cleanest datapoint yet — inside ONE session
+  (2026-07-10 ~20:5xZ, sim-lab boot).** The freshly-booted sim-lab coordinator found
+  NEITHER `create_trigger` NOR `send_later` in its toolset (verbatim: "tool not present
+  in session toolset"), wrote the owner-manual fallback ask into its status — then a
+  worker it spawned minutes later had BOTH tools and armed the seat's failsafe routine
+  first-try (registry-verified: "sim-lab failsafe wake", fired on schedule within the
+  hour). Same account, same Project, same minute — different worlds, and nothing told
+  either party which one it was in. The operator's own words when he saw it: *"the
+  projects are not fully aware of how they work themselves yet … if you could just ask
+  a project what it's abilities are, and it could answer honestly, that would be really
+  nice."* That ask is now §(d) item 2; the coping cost it would delete is real — this
+  single incident consumed an owner intervention, a status OWNER-ACTION block, and a
+  worker-seat retry recipe that now has to travel in every founding package.
 
 **Read this with an agent too, as before.** Everything is public and re-runnable. Best
 single entry points: the external review pack
