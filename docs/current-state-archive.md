@@ -86,6 +86,13 @@
 
 ## Recently shipped — archived (newest first)
 
+- **#1845 · #1846 · #1854 · #1855 (2026-07-08, S4/workflow — grooming waves: idea→plan + friction→guard)** —
+  the campaign's grooming lanes, all idea-lifecycle / self-improvement: **#1845** (lane C) promoted the
+  **usage-limit-aware routines** idea → a 2-PR plan + roadmap S5 horizon; **#1846** (lane B) shipped the
+  **supersede-banner integrity checker** (`scripts/check_supersede_integrity.py` + a warn-first `check_docs`
+  soft check, 16 tests); **#1854** groomed the #1846 follow-ons; **#1855** closed the "green-by-skip" gap by
+  wiring **`check_plan_homing --strict` as an always-run pre-setup gate** in `code-quality.yml` so the
+  docs-only fast path can no longer land an unhomed plan (Q-0194 friction→guard).
 - **#1833 (2026-07-08, workflow — thirty-eighth Q-0107 reconciliation pass, band-#1830)** —
   the 38th docs-only reconciliation + planning pass
   ([pass record](planning/reconciliation-pass-2026-07-08-band1830.md)): reconciled band #1801–#1830,

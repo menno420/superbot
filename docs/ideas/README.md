@@ -57,9 +57,11 @@ Current broad captures:
   re-run on every model release — so cross-agent routing (Q-0120) is data-driven
   instead of tribal knowledge.
 - [`fleet-manifest-freshness-checker-2026-07-10.md`](./fleet-manifest-freshness-checker-2026-07-10.md) —
-  **gen-2 night-prep seed (2026-07-10, PR #1915):** a checker comparing each fleet-manifest row's
-  last-seen against the lane repo's `control/status.md` header — the manifest cells went stale within
-  hours all through gen-1 (grand review §5); "enforce, don't exhort" applied to the fleet dashboard.
+  **gen-2 night-prep seed (2026-07-10, PR #1915) · `historical` — implemented PR #1923:** a checker
+  comparing each fleet-manifest row's last-seen against the lane repo's `control/status.md` header —
+  the manifest cells went stale within hours all through gen-1 (grand review §5); "enforce, don't
+  exhort" applied to the fleet dashboard. Shipped as `scripts/check_manifest_freshness.py` (git
+  transport, advisory, fail-open).
 - [`coordinator-self-review-against-1901-2026-07-10.md`](./coordinator-self-review-against-1901-2026-07-10.md) —
   **gen-2 night-prep seed (2026-07-10, PR #1915):** the coordinator lane is the only gen-1 lane that
   never answered the #1901 retro question set it planted — assemble its self-review pair from the
