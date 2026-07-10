@@ -1,14 +1,38 @@
 {
   "meta": {
-    "generated_at": "2026-07-10T03:29:45Z",
+    "generated_at": "2026-07-10T16:56:21Z",
     "build": {
-      "commit": "f4da4b8b",
-      "subject": "reconcile band-#1920: born-red session card + lane claim (41st Q-0107 pass)",
-      "committed_at": "2026-07-10T03:29:45Z"
+      "commit": "96a1c054",
+      "subject": "Merge pull request #1950 from menno420/bot/dashboard-refresh",
+      "committed_at": "2026-07-10T16:56:21Z"
     },
     "schema_version": 1
   },
   "sessions": [
+    {
+      "file": "2026-07-10-sol-eval-scoring.md",
+      "date": "2026-07-10",
+      "title": "2026-07-10 — GPT-5.6 Sol eval results: scoring the Codex PRs",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": true
+    },
+    {
+      "file": "2026-07-10-shift-e2-coordinator-self-review.md",
+      "date": "2026-07-10",
+      "title": "2026-07-10 — coordinator self-review vs the #1901 retro question set (overnight shift, session E, PR 2)",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-07-10-shift-e-manifest-freshness.md",
+      "date": "2026-07-10",
+      "title": "2026-07-10 — fleet-manifest freshness checker (overnight shift, session E)",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
     {
       "file": "2026-07-10-shift-d-dashboard-contract.md",
       "date": "2026-07-10",
@@ -29,7 +53,7 @@
       "file": "2026-07-10-reconcile-band1920.md",
       "date": "2026-07-10",
       "title": "Session — forty-first Q-0107 reconciliation pass (band-#1920)",
-      "status": "in-progress",
+      "status": "complete",
       "run_type": "routine",
       "self_initiated": false
     },
@@ -58,9 +82,49 @@
       "self_initiated": false
     },
     {
+      "file": "2026-07-10-fleet-overnight-review.md",
+      "date": "2026-07-10",
+      "title": "2026-07-10 — Owner-directed cross-fleet overnight review (all 13 repos)",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": true
+    },
+    {
+      "file": "2026-07-10-eap-verification-corrections.md",
+      "date": "2026-07-10",
+      "title": "2026-07-10 — EAP docs: two verified factual corrections (from fleet-manager ultracode verification)",
+      "status": "complete",
+      "run_type": "manual",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-07-10-eap-journal-routine-observability.md",
+      "date": "2026-07-10",
+      "title": "2026-07-10 — EAP journal: routine-observability bug entry (round-3 brief §1(d))",
+      "status": "complete",
+      "run_type": "manual",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-07-10-coordinator-close-out.md",
+      "date": "2026-07-10",
+      "title": "2026-07-10 — Gen-1 games-lane coordinator close-out (grand-review prompt + Part 1 questions)",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
       "file": "2026-07-10-command-collision-checker.md",
       "date": "2026-07-10",
       "title": "2026-07-10 — command-collision checker (overnight shift, session A)",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": true
+    },
+    {
+      "file": "2026-07-10-codex-review-verification.md",
+      "date": "2026-07-10",
+      "title": "2026-07-10 — Verifying the 3 Codex review PRs (#1940/#1941/#1942)",
       "status": "complete",
       "run_type": "",
       "self_initiated": true
@@ -424,77 +488,13 @@
       "status": "complete",
       "run_type": "",
       "self_initiated": false
-    },
-    {
-      "file": "2026-07-08-audit-server-management.md",
-      "date": "2026-07-08",
-      "title": "2026-07-08 — Audit: server-management contract-vs-code audit (docs-only)",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-07-08-api-publish-finding.md",
-      "date": "2026-07-08",
-      "title": "2026-07-08 — Finding: GitHub-API publish bypasses the git-push first-publish wall",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-07-07-website-design-system-fable.md",
-      "date": "2026-07-07",
-      "title": "2026-07-07 — Program websites: design system + botsite v2 + console shell (Fable session 1/4)",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-07-07-understand-and-reflect-rule.md",
-      "date": "2026-07-07",
-      "title": "2026-07-07 — Understand-and-reflect workflow rule (owner-directed in-session)",
-      "status": "complete",
-      "run_type": "manual",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-07-07-trading-operating-model.md",
-      "date": "2026-07-07",
-      "title": "2026-07-07 — Trading operating model (Q-0251: decision ledger + sniper bucket + 3-way hybrid)",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-07-07-trading-market-ruling.md",
-      "date": "2026-07-07",
-      "title": "2026-07-07 — Trading-repo market ruling (Q-0250: stocks-first)",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-07-07-three-sessions-prep.md",
-      "date": "2026-07-07",
-      "title": "2026-07-07 — Three-sessions prep (Q-0252: program launch briefs)",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-07-07-substrate-kit-enforcement.md",
-      "date": "2026-07-07",
-      "title": "2026-07-07 — substrate-kit: adopt installs the enforcement (the forcing functions)",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": true
     }
   ],
   "ideas": {
-    "total": 226,
+    "total": 230,
     "by_status": {
-      "historical": 24,
-      "ideas": 199,
+      "historical": 26,
+      "ideas": 201,
       "reference": 3
     }
   },
@@ -798,6 +798,132 @@
       "model": "fable-5",
       "effort": "high",
       "task_class": "test writing",
+      "tokens_out": null,
+      "outcome": {
+        "ci_green_first_push": null,
+        "checker_findings": null,
+        "merged_pr": null,
+        "reverted_within_window": null
+      }
+    },
+    {
+      "session": "2026-07-10-shift-e-manifest-freshness",
+      "date": "2026-07-10",
+      "model": "fable-5",
+      "effort": "high",
+      "task_class": "test writing",
+      "tokens_out": null,
+      "outcome": {
+        "ci_green_first_push": null,
+        "checker_findings": null,
+        "merged_pr": null,
+        "reverted_within_window": null
+      }
+    },
+    {
+      "session": "2026-07-10-reconcile-band1920",
+      "date": "2026-07-10",
+      "model": "opus-4.8",
+      "effort": "high",
+      "task_class": "docs-only",
+      "tokens_out": null,
+      "outcome": {
+        "ci_green_first_push": null,
+        "checker_findings": null,
+        "merged_pr": null,
+        "reverted_within_window": null
+      }
+    },
+    {
+      "session": "2026-07-10-shift-e2-coordinator-self-review",
+      "date": "2026-07-10",
+      "model": "fable-5",
+      "effort": "high",
+      "task_class": "docs-only",
+      "tokens_out": null,
+      "outcome": {
+        "ci_green_first_push": null,
+        "checker_findings": null,
+        "merged_pr": null,
+        "reverted_within_window": null
+      }
+    },
+    {
+      "session": "2026-07-10-eap-verification-corrections",
+      "date": "2026-07-10",
+      "model": "fable-5",
+      "effort": "high",
+      "task_class": "docs-only",
+      "tokens_out": null,
+      "outcome": {
+        "ci_green_first_push": null,
+        "checker_findings": null,
+        "merged_pr": null,
+        "reverted_within_window": null
+      }
+    },
+    {
+      "session": "2026-07-10-fleet-overnight-review",
+      "date": "2026-07-10",
+      "model": "fable-5",
+      "effort": "high",
+      "task_class": "docs-only",
+      "tokens_out": null,
+      "outcome": {
+        "ci_green_first_push": null,
+        "checker_findings": null,
+        "merged_pr": null,
+        "reverted_within_window": null
+      }
+    },
+    {
+      "session": "2026-07-10-eap-journal-routine-observability",
+      "date": "2026-07-10",
+      "model": "fable-5",
+      "effort": "high",
+      "task_class": "docs-only",
+      "tokens_out": null,
+      "outcome": {
+        "ci_green_first_push": null,
+        "checker_findings": null,
+        "merged_pr": null,
+        "reverted_within_window": null
+      }
+    },
+    {
+      "session": "2026-07-10-sol-eval-scoring",
+      "date": "2026-07-10",
+      "model": "fable-5",
+      "effort": "high",
+      "task_class": "docs-only",
+      "tokens_out": null,
+      "outcome": {
+        "ci_green_first_push": null,
+        "checker_findings": null,
+        "merged_pr": null,
+        "reverted_within_window": null
+      }
+    },
+    {
+      "session": "2026-07-10-codex-review-verification",
+      "date": "2026-07-10",
+      "model": "fable-5",
+      "effort": "high",
+      "task_class": "docs-only",
+      "tokens_out": null,
+      "outcome": {
+        "ci_green_first_push": null,
+        "checker_findings": null,
+        "merged_pr": null,
+        "reverted_within_window": null
+      }
+    },
+    {
+      "session": "2026-07-10-coordinator-close-out",
+      "date": "2026-07-10",
+      "model": "fable-5",
+      "effort": "high",
+      "task_class": "docs-only",
       "tokens_out": null,
       "outcome": {
         "ci_green_first_push": null,
