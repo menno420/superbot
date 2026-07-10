@@ -9377,3 +9377,103 @@ prerequisite: enable the Codex GitHub integration on the valuable repos (owner q
 **Routing.** Round-3 pack §4b (answers) + §1 brief consumers; the manager maps the current
 game lanes (superbot-games shared repo · pokemon-mod-lab · gba-homebrew) onto the
 3-projects/3-repos shape decide-and-flag.
+
+### Q-0260 — single-writable-repo rule: every Project except the manager attaches exactly ONE repo (owner directive, 2026-07-10)
+
+> **Context.** Live dispatch session, round-3 boot day. Until now Projects often attached
+> multiple repos, mainly for read access. Two same-day findings sharpened the question:
+> Project-home ≠ repo-lane (a Venture-Lab-homed chat ran the substrate-kit lane overnight
+> — the Project boundary does not constrain repo work), and all fleet repos are public and
+> therefore raw-readable without attachment.
+
+**The directive (owner's words, expanded).** Each Project, **apart from the fleet manager**,
+gets **write access to exactly one repo** — its own lane repo. Cross-repo *reading* uses the
+public raw path (`raw.githubusercontent.com`), not attachment. The manager keeps its
+multi-repo attachment (its job is cross-repo oversight). Consequences:
+
+1. **Environments compose with the §6b registry rule** (one env per repo, named like the
+   repo): a Project selects its lane's single-repo environment; no new multi-repo envs.
+2. **The founding-package line "you are an agent of THIS Project (repo X)" plus the
+   single-repo attachment together are the lane boundary** — instruction + credential now
+   agree, closing the cross-homed-lane class the Venture-Lab screenshot exposed.
+3. **Private repos are the carve-out to watch:** raw-read only works on public repos.
+   pokemon-mod-lab went private 2026-07-10, so any *other* Project's read of it now fails —
+   in particular the manager's staleness sweep needs pokemon-mod-lab attached to the
+   manager's environment (or accepts a DARK-by-privacy verdict relayed via the owner).
+   Any future private repo inherits the same caveat.
+
+**Routing.** This entry (provenance) + round-3 dispatch runbook §1 (design decisions) +
+the founding packages (already single-repo: Idea Engine → superbot; Product Forge →
+product-forge) + the manager's environments registry (fleet-manager `environments/`,
+owner-relayed) for gen-3 env improvements per Q-0259 ruling 2.
+
+### Q-0261 — core-6 launch order: one Project at a time, finalize-first; substrate-kit is the second Q-0260 exception (write-all for distribution) (owner directive, 2026-07-10)
+
+> **Context.** Live dispatch session, after the gen-3 deployment sim (pipelined vs
+> sequential) landed. The owner chose the work order for the system's roots explicitly.
+
+**The directive (owner's words, expanded).**
+
+1. **The standing core is SIX Projects** (revised from the launch-pack-§5 four), launched
+   **strictly one at a time**: manager (live) → **substrate-kit** → **superbot-next** →
+   **Idea Engine** → **Product Forge** → [sixth seat: owner names it — the five listed
+   plus one; hub-superbot or websites are the candidates]. They run indefinitely, at
+   least until the EAP ends.
+2. **Finalize-first:** a Project does not launch until everything about it is finished —
+   if its repo has unanswered questions or open ⚑ OWNER-ACTIONS, those are fixed
+   *immediately, before* the boot, not carried as debt into the new generation. (For
+   substrate-kit that means the F-5 ruling + its settings clicks land before its boot.)
+3. **substrate-kit gets write access to ALL fleet repos** — the second Q-0260 exception
+   (manager = read-everywhere oversight; kit = write-everywhere distribution) — so it can
+   distribute kit upgrades and regenerate kit-owned conventions fleet-wide (EAP program
+   review §6 agenda). **Hard scope guard, owner-stated:** it must not start taking on
+   other repos' tasks — its founding instructions restrict lane-repo writes to kit
+   distribution only (upgrade PRs, kit-owned convention regeneration, adoption fixes);
+   never lane domain work, never another lane's inbox/status; its calibration answer must
+   recite this boundary.
+4. The deployment-standard's pipelined fast path (sim-backed) stays the method for the
+   **post-core** manual/game lanes; the core-6 deliberately takes the sequential
+   finalize-first shape — depth over speed for the system's roots.
+
+**Routing.** This entry (provenance) + Q-0260 (amended by 3) + round-3 dispatch runbook §3
+(reordered checklist) + `gen3-deployment-standard-2026-07-10.md` §0 note + the
+substrate-kit founding package (drafted same session).
+
+### Q-0262 — blanket application of the round-3 recommended answers (owner directive, 2026-07-10)
+
+> **Context.** Live dispatch session. The owner: "apply all your recommended answers to the
+> remaining owner questions wherever possible." Scope: the round-3 open decision set
+> (launch pack §4 remainder + the session's open questions). Applied wholesale, each item
+> flagged-for-veto per Q-0240; lane-inbox lines route via the manager (this session writes
+> only superbot).
+
+**The applied rulings:**
+
+1. **Kit F-5 = Reading A** (the stricter reading). Bench runs 2–3 scored under A; family
+   headline 1 PASS / 3 FAIL; B-benches unpause. (Launch pack §4.1 recommendation.)
+2. **Trading P5 holdout: UNLOCKED** — `docs/p5-holdout-protocol.md` binding for the
+   one-shot evaluation; sequencing: trading's own ORDER 007 (significance bar + AAPL
+   re-grade) executes FIRST (its status names 007 as gating any holdout use). (§4.2.)
+3. **superbot-next flag-13 corpus-red: the lane's own proposed disposition ACCEPTED** —
+   proceed; reviewable at the parity gate (Q-0240 class). (§4.5.)
+4. **Model-line policy: family-level names ONLY, everywhere** (fable-5, opus-4.8; exact
+   IDs never) — un-nulls trading's model rows; matches superbot telemetry vocabulary.
+   (§4.6.)
+5. **OWNER-ACTION grammar: the kit's field set wins by definition**; venture-lab conforms
+   at its next kit upgrade; kit §6.8 (grammar as kit-owned constant) embeds it. (§4.7.)
+6. **The 8 undeployed instruction packages STAY undeployed** until re-based on the
+   manager's gen-3 blueprint delta. (§4.8.)
+7. **Pokemon concept pick = QoL+** (the lane's own recommendation; 12 patches form its
+   foundation) — takes effect when the games program boots post-core. (§4.3; GBA
+   release-prep was already ruled in Q-0259/§4b.)
+8. **Core seat 6 (the Q-0261 open slot) = the superbot hub Project** (games-finishing /
+   maintenance seat — the dispatch session's recommendation, applied under this
+   delegation; ⚑ most-vetoable item of the set: it names a core roster member).
+
+**Not appliable by delegation (stay owner-only):** the settings sweep (physical clicks —
+consolidated by the manager's launch-readiness report), venture-lab ⚑A–D (external/money,
+frozen behind the P0 Stripe-path fix), repo creations (product-forge, superbot-plugin-hello,
+3 game repos).
+
+**Routing.** This entry (provenance) + manager relay (lane-inbox ORDERs 1–3, policy lines
+4–5) + runbook §3 updates + kit founding package §0.1 (F-5 now ruled).

@@ -31,6 +31,12 @@ only the header block is read, so a `**Subsystem:**` *example* in an idea's body
 
 Current broad captures:
 
+- [`trigger-registry-liveness-sweep-2026-07-10.md`](./trigger-registry-liveness-sweep-2026-07-10.md) —
+  **session ender (2026-07-10, round-3 dispatch session):** make `list_triggers` a standing manager
+  wake-step diffing the account trigger registry against the manifest — missing / orphaned /
+  session-bound routine detection (all three classes found by hand today; launch-readiness DECISION
+  F-1 hit the same gap). Subsystem: none.
+
 - [`telemetry-model-name-vocabulary-2026-07-10.md`](./telemetry-model-name-vocabulary-2026-07-10.md) —
   **session ender (2026-07-10, 41st Q-0107 reconciliation pass, band-#1920):** pin the
   `telemetry/model-usage.jsonl` `model` field to a canonical short-name enum + validator (reusing the
