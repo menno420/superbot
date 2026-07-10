@@ -1,5 +1,7 @@
 # External review — superbot-next band 1–5 runtime defect-class sweep (2026-07-10)
 
+> **Status:** `audit` — external (Codex/GPT-5.6-Sol) runtime review, independently verified 2026-07-10 (see addendum).
+
 Scope: public `menno420/superbot-next` HEAD `d1d7de9`, focusing on `sb/` domain/service/state-machine/persistence code, the warn-escalation regression called out in `docs/eap/fleet-quality-review-2026-07-09.md` §10, and games `Reply`-shape crash paths.
 
 Commands run:
@@ -99,3 +101,49 @@ I found one historical-style test name/comment that still asserts the successful
 1. Fix `proof_channel.end_access` compensation first; it is the only confirmed same-class residual I traced.
 2. Add a full-engine warn blocked-escalation test to supplement the direct compensator unit test.
 3. Add a manifest-wide handler return-shape smoke test for games and other command surfaces.
+
+---
+
+## Independent verification addendum (Claude, 2026-07-10)
+
+Every evidence claim above was re-verified against superbot-next HEAD `04436ab`
+(the tree moved past the reviewed `d1d7de9`; line numbers drifted slightly but
+every cited mechanism is real):
+
+- Warn compensation handles (`_escalation_row_ids` / `_pre_escalation_count`,
+  now `ops.py:89-90`), the compensator (`ops.py:300-336`), and the
+  `compensatable` + compensator declaration (`ops.py:390-391`) — **confirmed**.
+- `END_PRIZE` legs: DB `record_unlock` then EFFECT `apply_unlock` declared bare
+  `"reversible"` with no compensator — **confirmed** (contrast `GRANT_PRIZE`,
+  which declares `compensate_lock`).
+- Engine behavior (commit at step 4, effects after, failed effect without
+  compensator → operator finding only; compensator's own `StepResult` discarded
+  at `engine.py:348`) — **confirmed**, including the S1 observation.
+- The three targeted tests were re-run independently under Python 3.11 (the
+  repo's CI interpreter): `3 passed` — **confirmed**.
+
+**One correction — the completeness claim is falsified.** The review states
+`end_access` is "the only confirmed same-class residual I traced." A full sweep
+of every `LegKind.EFFECT` declaration in `sb/` (there are none outside
+`sb/domain/*/ops.py`) finds a second instance:
+
+- **`moderation.timeout` (P1, same class):** the DB leg `record_timeout`
+  durably writes a moderation-history row via `store.log_mod_action(...,
+  action="timeout")` (`ops.py:150-152`) and commits before the EFFECT leg
+  `apply_timeout` runs; the effect is declared `"reversible"` with **no
+  compensator** (`TIMEOUT = _op(...)`, `ops.py:396-398`). If Discord refuses
+  the timeout (missing permission / role hierarchy — a common live failure),
+  the history durably says the member was timed out while they weren't.
+  Same minimal fix as proposed for `end_access`: thread the row id, declare
+  `compensatable`, withdraw the row in a `moderation.compensate_timeout`, and
+  pin it with a blocked-path test like `test_warn_escalation_blocked_compensates`.
+- **Judgment case, not a defect:** `KICK` has the same record-then-effect shape,
+  but its effect is deliberately declared `irreversible` behind a typed-phrase
+  `ConfirmationSpec` (ledgered as D-0029). A Discord-refused kick still leaves a
+  phantom "kicked" history row; worth a compensator on the *record* leg even if
+  the effect stays irreversible.
+
+Recommended patch order accordingly becomes: (1) `proof_channel.end_access`
+compensation, (1b) `moderation.timeout` compensation — same pattern, same test
+shape, (2) full-engine warn blocked-escalation test, (3) manifest-wide
+handler return-shape smoke test.
