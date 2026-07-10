@@ -50,6 +50,18 @@ owner the final paste set.
 - **Friction → guard:** the kit's reachability walk roots at `docs/` only (repo-root
   README doesn't count) — bit this seed via `docs/retro/questions.md`; fix recorded in
   the brief §3 recipe (checker already enforces; the recipe now names the fix).
+- **Post-close (same session): Q-0194 gate miss + Q-0265 fold-in.** (a) First flip
+  reddened on the telemetry-row gate (card added, no `telemetry/model-usage.jsonl`
+  row) — row appended at `4c20284`. (b) conflict-guard fired: a parallel session had
+  landed **owner directive Q-0265 (continuous mode)** + forge-LIVE verification
+  (#1958–#1961) — merged main in, resolved the runbook §3.5/§5 conflicts by combining
+  both sessions' facts (their owner-screenshot/heartbeat evidence + this session's
+  registry + raw-inbox verifications), and confirmed the package's §1/§2 pastes are
+  now **continuous-native** (their Q-0265 rewrite + this session's seeded-reality
+  step 1 compose cleanly — sim-lab is the first seat born continuous). (c) sim-lab's
+  seed-status routine note was pre-Q-0265 → de-staled via **sim-lab PR #1** (squash
+  `7f149f0`), which also verified the ruleset live (direct push now rejected) and the
+  REST merge-on-green landing path — ORDER 000 still runs the coordinator's own proof.
 
 ## ⚑ Self-initiated
 
