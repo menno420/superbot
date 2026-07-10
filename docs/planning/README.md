@@ -63,6 +63,7 @@ sectors ([`repo-sector-map.md`](../repo-sector-map.md)); the live `Now/Next/Late
 
 | Plan | Status / gate | Related ideas |
 |---|---|---|
+| [round3-dispatch-runbook](round3-dispatch-runbook-2026-07-10.md) | the dispatch phase's working runbook — the FINAL fleet-manager founding package (v3), dispatch checklist, open drafting queue (Idea Engine / Product Forge / game projects) | [round3-launch-pack](round3-launch-pack-2026-07-10.md) |
 | [round3-launch-pack](round3-launch-pack-2026-07-10.md) | owner-directed round-3 (gen-3 prep) pack — manager brief · lane continuation prompts · games wave · Codex reviews · standing core (§5); **owner rulings recorded (Q-0259 → §4b)**; pastes rolling out | EAP program review §5/§6 (`../eap/eap-program-review-2026-07-10.md`) |
 | [repo-consistency-linter](repo-consistency-linter-plan-2026-06-17.md) | active buildable lane (Q-0170); **all 4 rules graduated to error** — rules 2/3/4 (#1094) + `edit_in_place` (#1375, ultracode consolidation fleet cleared the backlog to 0) | `repo-consistency-linter` |
 | [codex-review-integration](codex-review-integration-plan-2026-06-17.md) | partially wired (CI posts @codex on card flip); Hermes-timer + routine-fix-first remain | `codex-automated-pr-review` |
