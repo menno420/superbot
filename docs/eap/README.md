@@ -16,6 +16,13 @@
   draft v2 (superseded as send-candidate; kept for provenance).
 - [`gen1-gen2-doctrine-review-2026-07-10.md`](gen1-gen2-doctrine-review-2026-07-10.md) —
   independent doctrine comparison, fleet-manager vs superbot (parallel session).
+- [`fleet-winddown-audit-2026-07-09.md`](fleet-winddown-audit-2026-07-09.md) — independent,
+  adversarial audit of the 7 wind-down lanes' succession packages + the `venture-lab` seed +
+  `fleet-manager`'s ping-test report: 21/21 spot-checked incidents verified against live
+  GitHub PR/commit/CI data, zero fabrication found, 5 real (non-fabrication) inaccuracies
+  logged including a false "NO ACK" claim inside fleet-manager's own report. Complements
+  `gen1-grand-review-2026-07-09.md` §5 (structural completeness across all 6 repos) with
+  deep, per-incident evidence verification on the 7 wind-down lanes + seed + ping-test.
 
 ## Fleet reviews and instruments (2026-07-09)
 

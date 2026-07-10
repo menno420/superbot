@@ -3,6 +3,10 @@
 > **Status:** `ideas` — captured 2026-07-09 (fortieth reconciliation pass, Q-0089). One-line why:
 > the fleet-review session assembled the cross-repo verification flow by hand and lost time to a
 > 75-phantom-failure interpreter trap that a one-paragraph orientation pointer would have prevented.
+> **Implemented 2026-07-09** (groomed same day as a fleet wind-down audit lived the exact flow
+> across 9 repos): the pointer now lives at
+> [`../AGENT_ORIENTATION.md`](../AGENT_ORIENTATION.md) § "Auditing / verifying a sibling EAP
+> Project repo (cross-repo)". This capture stays as the record of the original friction.
 
 ## The friction (observed, not hypothetical)
 

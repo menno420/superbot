@@ -256,6 +256,30 @@ python3.10 -m pytest tests/unit/docs/test_agent_context_index.py -v
 4. `docs/ai/ai-service-integration-map.md` — current setup advisor integration shape.
 5. `disbot/core/runtime/ai/README.md` — package-level intent.
 
+### Auditing / verifying a sibling EAP Project repo (cross-repo)
+
+1. **`add_repo`** the sibling repo(s) for this session (each `add_repo` call must be run
+   one at a time, not in parallel — the git proxy caps each repo at 2 concurrent
+   smart-HTTP ops) → `git clone --depth 1` each → `register_repo_root` so its own
+   `CLAUDE.md`/skills load.
+2. **Don't assume superbot's own conventions hold in the sibling repo.** Different repos in
+   the fleet pin different Python versions (superbot = 3.10, `superbot-next` = 3.11 — check
+   each repo's own `ci.yml`/`.pre-commit-config.yaml` before running its tests), different
+   doc layouts (`docs/succession/` vs. a single combined file vs. no baseline instructions
+   file at all), and different retro filenames lane to lane. Read the sibling repo's own
+   docs before applying this file's rules to it.
+3. **Prefer first-party, live verification over trusting a completion report or another
+   lane's self-description.** For any specific claim (a PR merged, a commit fixed a bug, an
+   incident happened at time T), pull the actual PR/commit/CI run via the GitHub MCP tools
+   (or `git log`/`git show` in the clone) and compare — don't just re-read what the doc says
+   about itself. `docs/eap/fleet-winddown-audit-2026-07-09.md` is a worked example: 21
+   incidents across 7 repos were independently re-derived from live GitHub data by a second
+   agent instructed to try to refute each one, and one real inaccuracy (a false "NO ACK"
+   claim) was only caught this way.
+4. `docs/eap/` — the fleet corpus (fleet reviews, quality audits, wind-down audits) — is the
+   home for a new cross-repo finding; link it from `docs/current-state.md` so it stays
+   reachable (`check_docs --strict`).
+
 ---
 
 ## Document classification
