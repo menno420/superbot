@@ -1,10 +1,10 @@
 {
   "meta": {
-    "generated_at": "2026-07-10T06:07:56Z",
+    "generated_at": "2026-07-10T08:33:54Z",
     "build": {
-      "commit": "56c9bbf3",
-      "subject": "Merge pull request #1923 from menno420/claude/shift-e-manifest-freshness",
-      "committed_at": "2026-07-10T06:07:56Z"
+      "commit": "eb6a01ad",
+      "subject": "Merge pull request #1926 from menno420/claude/eap-verification-corrections",
+      "committed_at": "2026-07-10T08:33:54Z"
     },
     "schema_version": 1,
     "counts": {
@@ -1176,7 +1176,7 @@
     {
       "file": "coordinator-self-review-against-1901-2026-07-10.md",
       "title": "Coordinator lane answers its own retro question set (2026-07-10)",
-      "status": "ideas",
+      "status": "historical",
       "date": "2026-07-10",
       "summary": "only gen-1 lane that never answered the fleet retro question set it itself planted",
       "subsystems": null
@@ -3253,6 +3253,14 @@
   "reviews": [],
   "updates": [
     {
+      "file": "2026-07-10-shift-e2-coordinator-self-review.md",
+      "date": "2026-07-10",
+      "title": "2026-07-10 — coordinator self-review vs the #1901 retro question set (overnight shift, session E, PR 2)",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
       "file": "2026-07-10-shift-e-manifest-freshness.md",
       "date": "2026-07-10",
       "title": "2026-07-10 — fleet-manifest freshness checker (overnight shift, session E)",
@@ -3306,6 +3314,14 @@
       "title": "2026-07-10 — gen1-gen2-doctrine-review",
       "status": "complete",
       "run_type": "",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-07-10-eap-verification-corrections.md",
+      "date": "2026-07-10",
+      "title": "2026-07-10 — EAP docs: two verified factual corrections (from fleet-manager ultracode verification)",
+      "status": "complete",
+      "run_type": "manual",
       "self_initiated": false
     },
     {
@@ -3715,22 +3731,6 @@
       "status": "complete",
       "run_type": "",
       "self_initiated": false
-    },
-    {
-      "file": "2026-07-07-trading-market-ruling.md",
-      "date": "2026-07-07",
-      "title": "2026-07-07 — Trading-repo market ruling (Q-0250: stocks-first)",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-07-07-three-sessions-prep.md",
-      "date": "2026-07-07",
-      "title": "2026-07-07 — Three-sessions prep (Q-0252: program launch briefs)",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
     }
   ],
   "bot_changelog": [
@@ -3996,6 +3996,34 @@
       "session": "2026-07-10-reconcile-band1920",
       "date": "2026-07-10",
       "model": "opus-4.8",
+      "effort": "high",
+      "task_class": "docs-only",
+      "tokens_out": null,
+      "outcome": {
+        "ci_green_first_push": null,
+        "checker_findings": null,
+        "merged_pr": null,
+        "reverted_within_window": null
+      }
+    },
+    {
+      "session": "2026-07-10-shift-e2-coordinator-self-review",
+      "date": "2026-07-10",
+      "model": "fable-5",
+      "effort": "high",
+      "task_class": "docs-only",
+      "tokens_out": null,
+      "outcome": {
+        "ci_green_first_push": null,
+        "checker_findings": null,
+        "merged_pr": null,
+        "reverted_within_window": null
+      }
+    },
+    {
+      "session": "2026-07-10-eap-verification-corrections",
+      "date": "2026-07-10",
+      "model": "fable-5",
       "effort": "high",
       "task_class": "docs-only",
       "tokens_out": null,
