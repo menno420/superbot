@@ -245,3 +245,84 @@ def test_no_dead_end_ignores_handler_without_stop(mod, tmp_path, monkeypatch):
 def test_no_dead_end_disabled_when_unconfigured(mod, tmp_path, monkeypatch):
     f = _write(mod, tmp_path, monkeypatch, "views/games/over.py", _DEAD_END)
     assert mod.check_no_dead_end_terminal_views([f], {}) == []
+
+# ---------------------------------------------------------------------------
+# baseview_inheritance — justifying-comment recognition (shift-plan Q2,
+# 2026-07-10). The rule text always asked for "a comment"; the checker now
+# actually recognizes the in-tree convention so documented views stop warning.
+# ---------------------------------------------------------------------------
+
+_BASEVIEW_RULES = {"base_view": {"exemptions": []}}
+
+_UNDOCUMENTED_VIEW = (
+    "import discord\n"
+    "\n"
+    "class MyPanel(discord.ui.View):\n"
+    "    pass\n"
+)
+
+_DOCUMENTED_VIEW = (
+    "import discord\n"
+    "\n"
+    "# Extends discord.ui.View directly (not BaseView): specialized lifecycle —\n"
+    "# single-shot ephemeral confirm flow; nothing for on_timeout to edit.\n"
+    "class MyPanel(discord.ui.View):\n"
+    "    pass\n"
+)
+
+# The marker inside a string literal (not a comment) must NOT silence the warn.
+_MARKER_IN_STRING_VIEW = (
+    "import discord\n"
+    "\n"
+    'NOTE = "Extends discord.ui.View directly (not BaseView)"\n'
+    "class MyPanel(discord.ui.View):\n"
+    "    pass\n"
+)
+
+
+def test_baseview_undocumented_direct_view_warns(mod, tmp_path, monkeypatch):
+    f = _write(mod, tmp_path, monkeypatch, "views/x/panel.py", _UNDOCUMENTED_VIEW)
+    vs = mod.check_baseview_inheritance([f], _BASEVIEW_RULES)
+    assert [v.check for v in vs] == ["baseview_inheritance"]
+    assert vs[0].severity == "warning"
+
+
+def test_baseview_justifying_comment_silences_warn(mod, tmp_path, monkeypatch):
+    f = _write(mod, tmp_path, monkeypatch, "views/x/panel.py", _DOCUMENTED_VIEW)
+    assert mod.check_baseview_inheritance([f], _BASEVIEW_RULES) == []
+
+
+def test_baseview_marker_in_string_does_not_silence(mod, tmp_path, monkeypatch):
+    f = _write(mod, tmp_path, monkeypatch, "views/x/panel.py", _MARKER_IN_STRING_VIEW)
+    vs = mod.check_baseview_inheritance([f], _BASEVIEW_RULES)
+    assert [v.check for v in vs] == ["baseview_inheritance"]
+
+
+def test_baseview_comment_too_far_above_does_not_silence(
+    mod,
+    tmp_path,
+    monkeypatch,
+):
+    # The justification must sit DIRECTLY above the class (within the lookback
+    # window) — a file-header comment shouldn't blanket-silence every class.
+    far = (
+        "# Extends discord.ui.View directly (not BaseView): file header\n"
+        "import discord\n" + "\n" * 10 + "class MyPanel(discord.ui.View):\n"
+        "    pass\n"
+    )
+    f = _write(mod, tmp_path, monkeypatch, "views/x/panel.py", far)
+    vs = mod.check_baseview_inheritance([f], _BASEVIEW_RULES)
+    assert [v.check for v in vs] == ["baseview_inheritance"]
+
+
+def test_baseview_live_tree_has_zero_undocumented_direct_views(mod):
+    # Every direct discord.ui.View extension in the live tree is either in an
+    # exempted directory (games) or carries the justifying comment — the
+    # converged end-state this session established. A new undocumented direct
+    # view should show up here (and in check_architecture output) immediately.
+    import ast as _ast  # noqa: F401 — parity with checker import style
+
+    rules = mod._load("canonical_helpers.yaml")
+    files = sorted(mod.DISBOT_ROOT.rglob("*.py"))
+    vs = mod.check_baseview_inheritance(files, rules)
+    assert vs == [], [f"{v.file}:{v.line} {v.message}" for v in vs]

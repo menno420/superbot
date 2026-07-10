@@ -213,6 +213,10 @@ class SettingsCog(commands.Cog):
         )
 
 
+# Extends discord.ui.View directly (not BaseView): specialized lifecycle —
+# a deliberately EMPTY 60s container the help cog appends its own nav button
+# to; it has no children, no invoker lock, and no timeout edit, so BaseView's
+# machinery is a mismatch for what is essentially a placeholder shell.
 class _DisabledHelpHookView(discord.ui.View):
     """No-controls view shown in the help direct-nav path when the
     gate flag is OFF.  The help cog appends its own "↩ Back to Help"

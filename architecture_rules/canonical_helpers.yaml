@@ -19,9 +19,13 @@ base_view:
   description: >
     Discord UI views must extend BaseView (views/base.py), HubView, or
     PersistentView (core/runtime/persistent_views.py).
-    Extending discord.ui.View directly is allowed only for game-state views
-    that require specialized timeout/lifecycle ownership (documented in
-    views/base.py).
+    Extending discord.ui.View directly is allowed only for views that require
+    specialized timeout/lifecycle ownership (documented in views/base.py).
+    A justified direct extension is documented with a comment right above the
+    class carrying the in-tree convention phrase
+    "Extends discord.ui.View directly (not BaseView): <reason>" — the checker
+    recognizes that comment and stops warning (so documented views converge
+    instead of warning forever).
   canonical_class: BaseView
   canonical_module: views.base
   severity: warning

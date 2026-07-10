@@ -497,3 +497,150 @@ def test_console_unreadable_contract_is_an_error(mod, committed_console, tmp_pat
 
 def test_main_console_exits_zero(mod):
     assert mod.main(["--console"]) == 0
+
+# ---------------------------------------------------------------------------
+# dashboard feed shape contract (dashboard/data/dashboard_data_contract.json)
+# ---------------------------------------------------------------------------
+
+
+@pytest.fixture(scope="module")
+def committed_dashboard(mod):
+    import json
+
+    return json.loads(
+        (mod.REPO_ROOT / "dashboard" / "data" / "dashboard.json").read_text(
+            encoding="utf-8",
+        ),
+    )
+
+
+def test_committed_dashboard_json_passes_contract(mod):
+    # THE cross-repo guard: the committed dashboard.json (the websites repo's
+    # dashboard renders ~12 pages off it over raw GitHub) must match the
+    # committed, versioned contract's contracted families as shipped.
+    errors = [i for i in mod.check_dashboard_contract() if i.severity == "error"]
+    assert errors == [], f"committed dashboard.json breaks its contract: {errors}"
+
+
+def test_fresh_dashboard_passes_contract(mod):
+    fresh = mod._build_fresh()
+    errors = [
+        i for i in mod.check_dashboard_contract(fresh) if i.severity == "error"
+    ]
+    assert errors == [], f"fresh dashboard payload breaks the contract: {errors}"
+
+
+def test_dashboard_contract_matches_producer_constants(mod):
+    # The contract file is the cross-repo source of truth; the producer constants
+    # must match it exactly (changing one without the other = CI-red drift).
+    contract = mod.load_dashboard_contract()
+    export = mod._export_module()
+    assert contract["version"] == export.DASHBOARD_SCHEMA_VERSION
+    assert set(contract["contracted_families"]) == set(
+        export.DASHBOARD_CONTRACTED_FAMILIES
+    )
+    assert set(contract["meta"]) == set(export.DASHBOARD_META_FIELDS)
+    assert set(contract["bug"]) == set(export.DASHBOARD_BUG_FIELDS)
+
+
+def test_dashboard_slice_allows_uncontracted_family(mod, committed_dashboard):
+    # SLICE semantics (vs the console's total whitelist): a top-level family the
+    # contract has not adopted yet is NOT a finding — growth is family-by-family.
+    ok = _clone(committed_dashboard)
+    ok["future_family"] = []
+    errors = [i for i in mod.check_dashboard_contract(ok) if i.severity == "error"]
+    assert errors == []
+
+
+def test_dashboard_fails_closed_on_missing_contracted_family(
+    mod,
+    committed_dashboard,
+):
+    # The consumer-blanking class (BUG-0022): a dropped CONTRACTED family is an
+    # ERROR, not a silent shrink — websites' bugs page renders this family.
+    bad = {k: v for k, v in _clone(committed_dashboard).items() if k != "bugs"}
+    assert "dashboard_family_missing" in _codes(mod.check_dashboard_contract(bad))
+
+
+def test_dashboard_fails_closed_on_schema_version_mismatch(
+    mod,
+    committed_dashboard,
+):
+    bad = _clone(committed_dashboard)
+    bad["meta"]["schema_version"] = 999
+    assert "dashboard_schema_version_mismatch" in _codes(
+        mod.check_dashboard_contract(bad),
+    )
+
+
+def test_dashboard_fails_closed_on_uncontracted_meta_field(
+    mod,
+    committed_dashboard,
+):
+    bad = _clone(committed_dashboard)
+    bad["meta"]["surprise"] = True
+    assert "dashboard_field_not_in_contract" in _codes(
+        mod.check_dashboard_contract(bad),
+    )
+
+
+def test_dashboard_fails_closed_on_uncontracted_bug_field(mod, committed_dashboard):
+    bad = _clone(committed_dashboard)
+    assert bad["bugs"], "committed bugs family unexpectedly empty"
+    bad["bugs"][0]["reporter_id"] = 123  # the per-user-leak class
+    assert "dashboard_field_not_in_contract" in _codes(
+        mod.check_dashboard_contract(bad),
+    )
+
+
+def test_dashboard_fails_closed_on_dropped_guaranteed_bug_field(
+    mod,
+    committed_dashboard,
+):
+    bad = _clone(committed_dashboard)
+    del bad["bugs"][0]["summary"]
+    assert "dashboard_field_missing" in _codes(mod.check_dashboard_contract(bad))
+
+
+def test_dashboard_contract_producer_drift_is_flagged(
+    mod,
+    committed_dashboard,
+    tmp_path,
+):
+    import json
+
+    contract = mod.load_dashboard_contract()
+    contract["bug"] = list(contract["bug"]) + ["not_a_real_field"]
+    drifted = tmp_path / "dashboard_data_contract.json"
+    drifted.write_text(json.dumps(contract), encoding="utf-8")
+    codes = _codes(
+        mod.check_dashboard_contract(
+            _clone(committed_dashboard),
+            contract_path=drifted,
+        ),
+    )
+    assert "dashboard_contract_producer_drift" in codes
+
+
+def test_dashboard_unreadable_contract_is_an_error(
+    mod,
+    committed_dashboard,
+    tmp_path,
+):
+    missing = tmp_path / "nope.json"
+    codes = _codes(
+        mod.check_dashboard_contract(
+            _clone(committed_dashboard),
+            contract_path=missing,
+        ),
+    )
+    assert codes == ["dashboard_contract_unreadable"]
+
+
+def test_dashboard_absent_data_file_is_clean(mod, tmp_path):
+    # Generated artifact: absence is a freshness concern, not a contract error.
+    assert mod.check_dashboard_contract(data_path=tmp_path / "gone.json") == []
+
+
+def test_main_dashboard_contract_exits_zero(mod):
+    assert mod.main(["--dashboard-contract"]) == 0

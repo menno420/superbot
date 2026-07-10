@@ -368,6 +368,32 @@ def _class_bases(node: ast.ClassDef) -> list[str]:
     return names
 
 
+# The in-tree convention that documents a *justified* direct discord.ui.View
+# extension (the rule text has always asked for "a comment"; #1871 standardized
+# the wording): a comment block immediately above the class def containing this
+# phrase. The checker recognizes it so a documented view stops warning — before
+# this, documented views warned forever and the rule could never converge
+# (friction→guard Q-0194, checker tier; shift-plan Q2, 2026-07-10).
+_BASEVIEW_JUSTIFIED_MARKER = "discord.ui.View directly"
+# How many lines above the class def to scan for the justifying comment.
+_BASEVIEW_COMMENT_LOOKBACK = 6
+
+
+def _has_baseview_justification(lines: list[str], class_lineno: int) -> bool:
+    """True when a justifying comment sits directly above ``class_lineno``.
+
+    Scans the ``_BASEVIEW_COMMENT_LOOKBACK`` lines immediately preceding the
+    class definition for a ``#`` comment carrying the convention marker. Only
+    comment lines count — the marker inside code/strings is ignored.
+    """
+    start = max(0, class_lineno - 1 - _BASEVIEW_COMMENT_LOOKBACK)
+    for raw in lines[start : class_lineno - 1]:
+        stripped = raw.strip()
+        if stripped.startswith("#") and _BASEVIEW_JUSTIFIED_MARKER in stripped:
+            return True
+    return False
+
+
 def check_baseview_inheritance(files: list[Path], rules: dict) -> list[Violation]:
     cfg = rules.get("base_view", {})
     exemption_prefixes = [
@@ -389,6 +415,7 @@ def check_baseview_inheritance(files: list[Path], rules: dict) -> list[Violation
             tree = ast.parse(source, filename=str(filepath))
         except (SyntaxError, OSError):
             continue
+        source_lines = source.splitlines()
 
         for node in ast.walk(tree):
             if not isinstance(node, ast.ClassDef):
@@ -397,6 +424,10 @@ def check_baseview_inheritance(files: list[Path], rules: dict) -> list[Violation
             if "discord.ui.View" in bases or "View" in bases:
                 # Avoid flagging BaseView itself
                 if node.name in ("BaseView", "HubView", "PersistentView"):
+                    continue
+                # A documented direct extension is the rule's sanctioned path:
+                # a justifying comment right above the class silences the warn.
+                if _has_baseview_justification(source_lines, node.lineno):
                     continue
                 violations.append(
                     Violation(
@@ -407,7 +438,9 @@ def check_baseview_inheritance(files: list[Path], rules: dict) -> list[Violation
                             f"`{node.name}` extends discord.ui.View directly — "
                             "use BaseView / HubView / PersistentView unless "
                             "specialized game or lifecycle ownership is required "
-                            "(document the reason in a comment)"
+                            "(document the reason in a `# Extends "
+                            "discord.ui.View directly (not BaseView): ...` "
+                            "comment right above the class to silence this)"
                         ),
                         severity="warning",
                     ),
