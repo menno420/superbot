@@ -1,5 +1,7 @@
 # Round-3 founding package — Simulator Project (sim-lab, core seat 6 · 2026-07-10)
 
+> **SUPERSEDED as live doctrine 2026-07-10** — canonical, version-stamped copies live in fleet-manager `projects/sim-lab/` (registry PR #39); this file is frozen history.
+
 > **Status:** `plan` — the founding package for the **Simulator Project** (`sim-lab`),
 > **core seat 6 under owner ruling Q-0264** (supersedes the Q-0262.8 superbot-hub pick —
 > that item was ⚑ flagged most-vetoable and the veto arrived). The simulator is the

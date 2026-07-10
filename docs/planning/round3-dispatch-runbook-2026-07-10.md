@@ -32,6 +32,9 @@
 
 ## 2. Fleet-manager founding package v3 (FINAL — owner pasting)
 
+> **SUPERSEDED as live doctrine 2026-07-10** — canonical, version-stamped copies live
+> in fleet-manager `projects/fleet-manager/` (registry PR #39); this file is frozen history.
+
 > **⚠ AMENDED by owner directive Q-0265 (2026-07-10, post-boot):** the "one real slice
 > per wake" pacing in 2a/2b is SUPERSEDED — all six core seats run **continuous** (work
 > loop + send_later continuation chain; crons demoted to dead-man failsafes). Live seats

@@ -1,5 +1,7 @@
 # Round-3 founding package — Product Forge Project (2026-07-10)
 
+> **SUPERSEDED as live doctrine 2026-07-10** — canonical, version-stamped copies live in fleet-manager `projects/product-forge/` (registry PR #39); this file is frozen history.
+
 > **Status:** `plan` — the founding package for the **Product Forge** (seat 4 of the
 > standing four-Project autonomous core, launch pack §5): a NEW `product-forge` repo +
 > Project that builds routed ideas into finished, shippable products (the codetool-labs

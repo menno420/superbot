@@ -1,5 +1,7 @@
 # Round-3 founding package — Builder Project (superbot-next, 2026-07-10)
 
+> **SUPERSEDED as live doctrine 2026-07-10** — canonical, version-stamped copies live in fleet-manager `projects/superbot-next/` (registry PR #39); this file is frozen history.
+
 > **⚠ AMENDED by owner directive Q-0265 (2026-07-10, after this seat booted):** any
 > "one bounded slice / one real slice per wake" pacing below is SUPERSEDED — the seat
 > runs **continuous** (work loop + send_later continuation chain; the cron demoted to
