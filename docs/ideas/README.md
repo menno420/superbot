@@ -36,6 +36,13 @@ Current broad captures:
   games-testing bot etc.) instead of the one shared test bot; deferred by the owner, capture only.
   Subsystem: none.
 
+- [`games-theme-engine-website-first-2026-07-10.md`](./games-theme-engine-website-first-2026-07-10.md) —
+  **owner-raised + owner-shaped (2026-07-10, dispatch part-4e, Q-0267):** the games-program
+  design — one world-ecosystem seat on `superbot-games`, an idle-ENGINE seat with data-only
+  theme packs (egg farm = first theme, theme-gate CI), and website-first onboarding
+  (features/themes chosen before the bot is invited; setup-code interim). Input to the two
+  games founding packages. Subsystem: games / agent-ecosystem.
+
 - [`project-capability-self-awareness-2026-07-10.md`](./project-capability-self-awareness-2026-07-10.md) —
   **owner-raised (2026-07-10, dispatch part-4c):** "ask a project what its abilities are and it
   answers honestly" — platform half routed to the EAP email (§(d) item 2); buildable half = a kit
