@@ -9477,3 +9477,33 @@ frozen behind the P0 Stripe-path fix), repo creations (product-forge, superbot-p
 
 **Routing.** This entry (provenance) + manager relay (lane-inbox ORDERs 1–3, policy lines
 4–5) + runbook §3 updates + kit founding package §0.1 (F-5 now ruled).
+
+### Q-0263 — never-ask posture: SB_TEST_DB_HOSTS demoted to optional; derivable values never route to the owner (owner directive, 2026-07-10)
+
+> **Context.** The Builder env setup asked the owner to hand-derive a DB hostname for the
+> test-plane allowlist. Three chat rounds of safety justification later, the owner ruled:
+> this is a hobby project, the friction outweighs the guard, remove it so nothing ever
+> asks for it. The deeper miss was already fleet doctrine (kit ORDER 008: asks must be
+> paste-ready or not reach the owner) — this entry generalizes it.
+
+**The directives:**
+
+1. **SB_TEST_DB_HOSTS becomes fully optional and silent** (superbot-next ORDER 010):
+   absent/empty ⇒ no host restriction on the test plane — the boot proceeds and logs the
+   connected host once, loudly. The allowlist logic only engages if someone deliberately
+   sets the variable someday (e.g. at a future prod cutover). No boot refusal, no error
+   naming it, no ask. `SB_DATA_PLANE` stays required (unquestioned, one word, set once);
+   `SB_PROD_ATTEST` and the prod-refusal rail are untouched.
+2. **Agents never route derivable values or safety string-work to the owner.** If an
+   agent can compute a value (from an env var, a file, an API), it computes it — or the
+   booting seat self-reports the finished `NAME=value` line for a one-paste copy. An env
+   ask that requires the owner to parse, derive, or transform anything is a drafting
+   defect (kit ORDER 008 class), not an owner task.
+3. **Safety-posture calibration, owner's words:** "we spend way too much time on safety
+   … this is just a hobby project." Scope: friction-costing guards on the owner's own
+   surfaces. NOT rescinded: the production-data rails that run silently (plane
+   separation, prod attestation), Q-0213's live-bot brake, and the no-secrets-in-repos
+   rule — those cost the owner nothing.
+
+**Routing.** This entry (provenance) + superbot-next inbox ORDER 010 (the code change) +
+Builder founding package §3 (field removed) + future founding packages inherit rule 2.
