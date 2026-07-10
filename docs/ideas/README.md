@@ -50,6 +50,13 @@ Current broad captures:
   checker's hybrid-command blind spot was caught only by a lucky dedup look at its sibling). Factor
   one `scripts/lib/command_surface_ast.py` declaration stream and re-base all three — a concrete
   first slice of `warn-first-checker-authoring-kit-2026-07-06.md`. Subsystem: none (build hygiene).
+- [`reconcile-fleet-runtime-digest-2026-07-10.md`](./reconcile-fleet-runtime-digest-2026-07-10.md) —
+  **raised by the band-#1950 (42nd) reconciliation pass (2026-07-10):** superbot has been "entirely
+  docs-only" for ~10 bands because runtime work migrated to `superbot-next`/games/`substrate-kit` —
+  emit a one-line **fleet-runtime digest** in the pass record from the sibling repos the pass already
+  reads via `check_manifest_freshness.py` (#1923) so the ledger stops implying the program stalled.
+  Distinct from `band-archetype-classifier` (intra-repo queue ratio); gen-3 verify-and-consolidate
+  aligned (Q-0259 §2). Subsystem: docs system / engine tooling.
 - [`adopt-codetool-lab-tools-2026-07-10.md`](./adopt-codetool-lab-tools-2026-07-10.md) —
   **owner repo-disposition review (2026-07-10):** the three codetool "test" labs each built a
   real CLI (mdverify — released; envdrift; cfgdiff) — adopt them as fleet tools (mdverify

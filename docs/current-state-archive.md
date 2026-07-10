@@ -86,6 +86,43 @@
 
 ## Recently shipped — archived (newest first)
 
+- **#1863 (2026-07-08, workflow — thirty-ninth Q-0107 reconciliation pass, band-#1860)** —
+  the 39th docs-only reconciliation + planning pass
+  ([pass record](planning/reconciliation-pass-2026-07-08-band1860.md)): reconciled band #1831–#1861, trimmed
+  Recently-shipped to 20, disposed the open-PR set, confirmed the control-plane, refreshed the dashboard
+  export, reset the marker #1830 → #1861.
+- **#1865 · #1869 · #1870 · #1871 · #1872 · #1880 · #1885 · #1888 (2026-07-08/09, docs — dashboard-data refreshes, Q-0167)** —
+  eight per-source-merge refreshes keeping the committed `dashboard/data/dashboard.json` export fresh as the
+  EAP-email / fleet-founding / substrate-kit-graduation arc landed.
+- **#1762 · #1763 · #1764 · #1765 · #1766 (2026-07-09, dependabot backlog cleared under the new Q-0256 policy)** —
+  the six stuck dependabot PRs (opened 2026-07-06, CI-green ~3 days with no merge actor — `dependabot/*`
+  branches are never armed by the enabler, by design) were reviewed and dispositioned per the owner's
+  new **review-on-sight rule (Q-0256**, durable home `docs/operations/repo-settings-state.md`
+  § Dependabot PR policy**)**: **#1764** discord.py ≥2.7.1, **#1763** anthropic ≥0.116, **#1766**
+  Pillow ≥12.3, **#1762** uvicorn 0.50.2 (botsite + dashboard lockfile) — all floor/patch bumps fresh
+  builds already resolved; **#1765** psutil ≥7.2.2 (**major** 5→7) merged after a real breaking-change
+  assessment (only `Process().memory_info().rss` / `cpu_percent()` / `virtual_memory()` used — all
+  unchanged through 7.2.x; removed APIs unused; full suite green with 7.2.2 installed). **#1761 closed**
+  as a strict subset of #1762 (both bumped the same `dashboard/requirements.*` lines). Policy Q-block +
+  the not-shipped auto-arm alternative: router Q-0256/Q-0257 (session PR #1886).
+- **#1834 · #1837 · #1838 · #1839 · #1840 · #1842 · #1847 · #1852 · #1853 · #1856 · #1858 · #1859 · #1861 (2026-07-07/08, S3 rebuild / EAP-evaluation — the Anthropic-feedback email + permission-probe arc)** —
+  the band's headline: the coordinator kickoff continued (**#1834/#1837**) and the EAP evaluation produced
+  the owner's **Friday Anthropic feedback email**, refined across the band with **every claim audited to a
+  verifiable test** (**#1838** compaction + verifiability audit → **#1840** two-layer clear-path flagship
+  (classifier-vs-credential) → **#1853** refresh + forward-only Project custom instructions → **#1856**
+  two-part / two-author / two-reviewer restructure → **#1858** Part-2 first-person agent narrative). The
+  **permission-probe** thread hardened the central finding: the auto-mode first-publish push wall is
+  **`git push`-transport-specific** — the **GitHub Contents API bootstraps a fresh empty public repo
+  prompt-free** (**#1847** — both `substrate-kit` + `superbot-next` seeded, likely unblocking rebuild step 7),
+  with the clear-path (**#1839**) and standing-grant-row (**#1842**) addenda. **#1852** = the EAP-direction
+  handoff; **#1859** = the campaign self-audit (coordinator same-day recall graded **≈0.98 precision / ~1.0
+  event-level recall** vs git ground truth, 6 friction entries logged); **#1861** = the projects-testing
+  Anthropic-feedback close-out. Docs-only throughout (no `disbot/`).
+- **#1844 · #1850 · #1851 (2026-07-08, S1 — server-management subsystem audit → Wave-2 docs truth refresh)** —
+  the owner's campaign Wave-2 over the server-management subsystem: **#1844** ran the audit; **#1851**
+  shipped the **docs truth refresh** (findings F1–F5 reconciled in `docs/subsystems/server-management.md`);
+  **#1850** added the **W2-F6 AST write-boundary invariant** for the reaction-role tables (a new checker +
+  tests — tooling/tests only, no `disbot/` runtime).
 - **#1843 · #1848 · #1849 (2026-07-08, S5/ops — per-repo settings ledger: forward-only Project experiment)** —
   a readable per-repo settings ledger so future sessions **read state, not guess**: **#1843** captured the
   forward-only Project experiment idea + the ledger plan; **#1848** shipped **Phase 1** — the `superbot-next`

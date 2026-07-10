@@ -1,10 +1,10 @@
 {
   "meta": {
-    "generated_at": "2026-07-10T13:53:32Z",
+    "generated_at": "2026-07-10T16:56:21Z",
     "build": {
-      "commit": "0f1a7650",
-      "subject": "docs: gen-1 coordinator close-out — grand-review prompt + email Part 1 questions (#1949)",
-      "committed_at": "2026-07-10T13:53:32Z"
+      "commit": "96a1c054",
+      "subject": "Merge pull request #1950 from menno420/bot/dashboard-refresh",
+      "committed_at": "2026-07-10T16:56:21Z"
     },
     "schema_version": 1,
     "counts": {

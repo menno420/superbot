@@ -7726,7 +7726,7 @@ const CHANGELOG = [
   {
     "version": "2026.06.19",
     "date": "Jun 19, 2026",
-    "build": "f4da4b8b",
+    "build": "96a1c054",
     "title": "New public bot website",
     "changes": [
       {
@@ -7738,7 +7738,7 @@ const CHANGELOG = [
   {
     "version": "2026.06.12",
     "date": "Jun 12, 2026",
-    "build": "f4da4b8b",
+    "build": "96a1c054",
     "title": "Owner review inbox on the dashboard",
     "changes": [
       {
@@ -7750,7 +7750,7 @@ const CHANGELOG = [
   {
     "version": "2026.06.08",
     "date": "Jun 08, 2026",
-    "build": "f4da4b8b",
+    "build": "96a1c054",
     "title": "Command-alias suggestions",
     "changes": [
       {
@@ -9131,9 +9131,9 @@ const FEATURES = [
 ];
 
 const BUILD = {
-  "commit": "f4da4b8b",
-  "subject": "reconcile band-#1920: born-red session card + lane claim (41st Q-0107 pass)",
-  "committed_at": "2026-07-10T03:29:45Z"
+  "commit": "96a1c054",
+  "subject": "Merge pull request #1950 from menno420/bot/dashboard-refresh",
+  "committed_at": "2026-07-10T16:56:21Z"
 };
 
 const COUNTS = {
