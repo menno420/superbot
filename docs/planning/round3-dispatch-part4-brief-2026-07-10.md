@@ -35,13 +35,25 @@ Pipeline: idea-engine (even :00) → sim-lab (odd :00) → manager (:30) → lan
 
 ## §2 — Priority queue
 
-1. **Finish seat 5 (Product Forge).** Owner: create the Project + `product-forge` env
+0. **FIRST (added post-close, owner ruling Q-0265): the continuous-mode amendment
+   round.** Paste the §2b block into each of the **FIVE live seat chats (manager ·
+   substrate-kit · Builder · Idea Engine · Product Forge)** — the forge booted
+   ~19:05Z, BEFORE Q-0265 merged, so it runs the old one-slice package despite the
+   rewritten doc (corrected 2026-07-10 ~19:5xZ; only sim-lab inherits continuous
+   natively at boot). Copilot verification afterwards: each seat's next heartbeat
+   records the amendment + its re-armed failsafe cron + a live continuation chain
+   (registry: old cron prompt replaced, `send_later` continuations appearing).
+1. ~~**Finish seat 5 (Product Forge).**~~ **DONE — seat 5 is LIVE** (verified at HEAD
+   2026-07-10 ~19:5xZ: boot ~19:05Z, first heartbeat merged via its PR #3
+   `updated: 18:59Z`, routine armed per heartbeat + owner screenshot, owner's two
+   settings clicks acknowledged, first product pass dispatched). Remaining forge item
+   = the §2b amendment (item 0). Original steps kept for the record: Owner: create the Project + `product-forge` env
    (repo only, no vars, `archetype-python-lab.sh` verbatim), paste package §1/§2
    (§2 is de-staled to the seeded reality). Copilot: verify calibration per package §4,
    the routine in the registry, and that the manager's ORDER 001 landed (below).
-2. **Manager relay — forge ORDER 001 (owner-named product: games-web).** Owner pastes
-   into the manager chat; copilot verifies the append + **dedups** (part-1's trading
-   lesson: a manager dispatch can race a direct landing):
+2. ~~**Manager relay — forge ORDER 001.**~~ **DONE — verified at forge HEAD** (ORDER
+   001 games-web landed verbatim in `control/inbox.md` via the forge's PR #2, commit
+   `3179692`; no duplicate present). Paste kept for the record:
 
    ```
    DISPATCH from the owner (round-3, 2026-07-10): write the Product Forge's first ORDER.
@@ -94,6 +106,48 @@ Pipeline: idea-engine (even :00) → sim-lab (odd :00) → manager (:30) → lan
    reshape what the 3 repos should be (surface at the mapping review); then loop
    closure: all core routines with completed runs across 24h, owner-queue owner-only,
    zero stuck PRs.
+
+## §2b — The Q-0265 continuous-mode amendment (paste into each LIVE seat chat)
+
+```
+CONTINUOUS-MODE AMENDMENT (owner directive Q-0265, 2026-07-10) — this supersedes
+the "one bounded slice per wake / no excessive work — one real slice per wake"
+lines in your founding instructions AND in your standing cron's prompt. Rationale,
+owner's words: these projects produce real work that basically has no end, so they
+have no reason to stop; the projects are free through 2026-07-14 — use them
+excessively; everything produced gets a consolidation pass afterwards, and the
+volume doubles as EAP test results for Anthropic.
+
+Your new operating model:
+1. WORK CONTINUOUSLY: when a slice finishes and genuinely useful work remains
+   (inbox, queue, backlog, standing duties), start the next slice NOW, same turn.
+   Each slice still ships as its own merged-on-green PR — the throttle is removed,
+   not the ceremony. Near context limits, hand off cleanly (fresh card/branch)
+   instead of degrading. Lean into parallel child workers for independent slices.
+2. CONTINUATION CHAIN: before ending ANY turn, arm a send_later ~15 minutes out
+   ("continue the work loop: sync HEAD → inbox → next slice → re-arm"). This
+   chain, not your cron, is what keeps you running.
+3. RE-ARM YOUR CRON AS THE FAILSAFE: delete your current standing wake and create
+   it anew, same cadence, name "<seat> failsafe wake", prompt: "FAILSAFE WAKE
+   (<seat>, Q-0265): if your send_later continuation chain is alive, verify that
+   in one line and end. If it stalled, resume the work loop (sync HEAD → inbox →
+   slice after slice, each merged-on-green) and re-arm the chain (~15 min) before
+   ending." Record the delete + create calls verbatim in control/status.md (the
+   proven cutover recipe).
+4. BACKPRESSURE, not time-throttle: pause the specific activity whose downstream
+   queue is saturated (generation pauses when several outbox proposals sit
+   unpulled; building pauses at done-when + empty inbox AFTER flagging the
+   manager) — grooming, verification, hygiene, and backlog work continue.
+5. HONESTY GUARD unchanged: genuinely out of useful work → say so in status and
+   idle until the failsafe. Never invent filler — the output must stay usable as
+   evaluation data (citations, honest states).
+Record this amendment in control/status.md on your next heartbeat.
+
+[MANAGER ONLY, additional]: fold Q-0265 into the gen-3 blueprint delta + your
+doctrine ORDERs so every future seat is born continuous; and add a standing
+inventory thread so the owner's post-window consolidation session has its
+material (what every lane produced, where, in what state).
+```
 
 ## §3 — Fleet-repo seeding recipe (twice-proven; sim-lab is the next consumer)
 

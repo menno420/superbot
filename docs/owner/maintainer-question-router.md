@@ -9569,3 +9569,64 @@ Builder founding package §3 (field removed) + future founding packages inherit 
 `planning/round3-founding-package-idea-engine-2026-07-10.md` (v2, own-repo) + the new
 `planning/round3-founding-package-simulator-2026-07-10.md` (seat 6) + runbook §3
 reorder (seat-6 swap, new owner clicks) — all this session.
+
+### Q-0265 — continuous mode for ALL six core seats: the routine is a failsafe, not the pacemaker (owner directive, 2026-07-10)
+
+> **Context.** Live dispatch part-3b. The owner asked two freshly-booted seats (Product
+> Forge, Ideas Lab) "what caused you to stop working?" — both answered, correctly, that
+> they are idle by design between 2-hourly wakes. Owner: *"I thought the instructions
+> were supposed to keep you working for as long as possible"* / *"I thought you were
+> supposed to keep working on ideas indefinitely, with the routine as a failsafe trigger
+> to wake you up in case you stalled"* — and the rationale: *"since nearly all of these
+> projects are meant to produce real work that basically has no end, they really don't
+> have any reason to stop."* Diagnosis (copilot, confirmed): the founding packages
+> carried the gen-2 maintenance-seat pacing doctrine — "ONE bounded pass … no excessive
+> work — one real slice per wake" — into open-ended production seats. The seats obeyed
+> their instructions; the instructions encoded the wrong operating model.
+
+**The directive (scope chosen by the owner in a structured round: ALL SIX core seats —
+manager, substrate-kit, Builder, Idea Engine, Product Forge, Simulator):**
+
+1. **Work continuously.** When a slice finishes and genuinely useful work remains,
+   start the next slice immediately, same turn. Each slice still lands as its own
+   merged-on-green PR — reviewability is unchanged; the throttle is removed, not the
+   ceremony. Near context limits, hand off cleanly (fresh card/branch) instead of
+   degrading.
+2. **The continuation chain is the pacemaker:** before ending ANY turn, arm a
+   `send_later` ~10–15 minutes out ("continue the work loop"). This self-re-arm chain —
+   the pattern that shipped 116 PRs overnight on 2026-07-10 — is what keeps a seat
+   running.
+3. **The standing cron is demoted to dead-man failsafe** (the owner's exact framing):
+   same cadence, new prompt — on a cron wake, if the chain is alive, verify liveness in
+   one line and end; if the chain stalled, resume the work loop and re-arm it. Live
+   seats re-arm their own cron (delete + create, verbatim record in status — the
+   proven recipe).
+4. **Backpressure replaces the time throttle:** pause the specific activity whose
+   downstream queue is saturated (generation pauses when several outbox proposals sit
+   unpulled; building pauses at done-when + empty inbox AFTER flagging the manager) —
+   grooming, verification, hygiene, and backlog work continue meanwhile.
+5. **The honesty guard survives (Q-0089):** genuinely out of useful work → say so in
+   status and idle until the failsafe. Forced filler is worse than none — continuous
+   mode removes the throttle, never the quality bar.
+6. **Cost posture — the copilot's flag INVERTED by the owner (same conversation):**
+   *"especially now since the projects are still free, we should make use of them
+   excessively."* High usage during the free window (through 2026-07-14) is the point,
+   not a risk to minimize — seats lean toward MORE parallel work (child sessions,
+   fan-out) within the quality bar, not less.
+7. **Produce-then-curate (owner's words):** *"then we can use everything we produced now
+   afterwards in a consolidation session to find out what is worth keeping etc, this is
+   also a good way for us to produce a lot of test results for anthropic."* Two
+   consequences: (a) a **post-window consolidation pass** is planned owner-side — the
+   manager preps the fleet-wide inventory of what was produced so the keep/kill session
+   has its material; (b) the volume doubles as **EAP evaluation data** — seats keep the
+   reporting bar (citations, honest states) precisely so the output stays usable as
+   test results, not noise.
+
+**Rollout:** live seats (manager, kit, Builder, Idea Engine) get the owner-pasted
+amendment block (part-4 brief §2b); unbooted packages (Product Forge, Simulator)
+rewritten so their boots inherit it natively; the manager folds Q-0265 into the gen-3
+blueprint delta so every future seat is born continuous.
+
+**Routing.** This entry (provenance) + the amendment block in
+`planning/round3-dispatch-part4-brief-2026-07-10.md` + package rewrites/banners (forge,
+simulator, idea-engine, builder, runbook §2 manager) — all part 3b (PR #1958).

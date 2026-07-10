@@ -1,5 +1,11 @@
 # Round-3 founding package — Idea Engine Project (v2, own-repo · 2026-07-10)
 
+> **⚠ AMENDED by owner directive Q-0265 (2026-07-10, after this seat booted):** the
+> "ONE bounded slice / one real slice per wake" pacing below is SUPERSEDED — the seat
+> runs **continuous** (work loop + send_later continuation chain; the cron demoted to
+> dead-man failsafe). The live seat received the amendment as an owner-pasted block
+> (part-4 brief §2b); this file stays the historical boot-paste record.
+>
 > **Status:** `plan` — the founding package for the **Idea Engine** (core seat 4,
 > Q-0261 order), **v2 — rewritten under owner ruling Q-0264** by the dispatch part-3
 > session: the engine now works from its **own repo (`idea-engine`)**, sectioned per
