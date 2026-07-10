@@ -205,6 +205,19 @@ coordinator chats being archived**; websites' is fresh-session-per-fire (archive
 Before archiving kit-lab/trading chats: delete or re-arm those triggers (gen-3 founding
 packages re-arm fresh ones anyway), or the loops die silently.
 
+**Capability fact — cross-Project session messaging WORKS (owner screenshot, 2026-07-10
+~14:48 local):** the substrate-kit close-out session's report was delivered directly into
+the Venture Lab Project chat ("Received a message from another session" UI element) — so
+`send_message` crosses Project boundaries, seat-dependently (recorded send-side walls:
+codetool "tool is not enabled for this organization"; websites coordinator "target session
+could not be verified"). Same falsification class as the routines wall (blueprint §2a);
+capabilities.md needs the same correction + the same recipe rule (every send records tool/
+args/outcome verbatim). Doctrine line to mint with it: **messages move attention, files
+move truth** — a cross-session message may nudge a lane, but orders/findings still land in
+git; the delivered message itself proved the point by carrying kit's stale "routine NOT
+ARMED" claim, already corrected at HEAD by kit PR #124 and re-verified in the trigger
+registry (armed, fired 14:08Z, next 15:06Z).
+
 **Boot-time fleet facts (verified via the account trigger list, 2026-07-10 ~14:40Z):**
 routine coverage is now manager (2-hourly) + kit-lab (hourly) + trading (4-hourly) +
 **websites (4-hourly — armed 13:49Z as its ORDER 008, discovered during manager-boot
