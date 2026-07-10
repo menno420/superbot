@@ -1,1 +1,0 @@
-- `claude/gpt-5-6-sol-eval-er1kcq` · score Codex/GPT-5.6-Sol eval-PR results (#1917/#1928/#1929/#1930/#1937) against the P1–P6 rubric · expected files: `docs/owner/gpt-5-6-sol-codex-eval-2026-07-10.md` (results section), `docs/owner/cross-agent-trust-ledger.md` (new), `.sessions/` · 2026-07-10
