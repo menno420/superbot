@@ -51,3 +51,15 @@ performance and of the projects work itself.
 - **⚑ Self-initiated:** corrections/addenda written directly onto the three
   Codex PR branches (contained, reversible, evidence-cited); auto-merge armed
   on them per the standing merge doctrine.
+
+## Post-close addendum (same session, final sweep)
+
+Owner asked for a final open-PR sweep + proper close. Outcome: #1943 merged;
+#1940/#1942 merged; #1941 conflict resolved (README both-entries) and armed;
+#1930 was stuck on the top-level docs ratchet (hard pytest invariant, 21 > 20)
+— inventory moved to `docs/architecture/eventbus-wiring-inventory.md`, link
+updated, branch synced, armed. Two undocumented items routed: the §6 rubric
+amendment (trust requires re-running a claimed command) applied to the eval
+doc, and the superbot-next findings (timeout compensator + EFFECT-leg
+invariant) filed into superbot-next's own `docs/ideas/` backlog so its lanes
+discover them without reading superbot's docs.
