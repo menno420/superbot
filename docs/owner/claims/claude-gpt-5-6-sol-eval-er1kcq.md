@@ -1,0 +1,1 @@
+- `claude/gpt-5-6-sol-eval-er1kcq` · verify + improve the 3 Codex review PRs (#1940/#1941/#1942) and deliver own review of Codex + the projects work · expected files: `docs/eap/`, `docs/owner/cross-agent-trust-ledger.md`, codex branches, `.sessions/` · 2026-07-10
