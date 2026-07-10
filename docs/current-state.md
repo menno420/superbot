@@ -362,6 +362,11 @@ Source code and merged PRs win over anything written here.
   clone-and-run verification: `superbot-next` 998 pass / 1 skip under Py3.11) and the **manager-Project brief**.
   Headline finding: the substrate-kit's **render/engage half strands in every fresh adoption** (`adopt`
   plants-but-doesn't-render/wire) — an upstream-kit fix, captured for kit-lab. Docs-only.
+  **Follow-on (2026-07-10):** an independent **gen-1 → gen-2 doctrine review** comparing the new
+  `fleet-manager` doctrine against superbot's original
+  ([`eap/gen1-gen2-doctrine-review-2026-07-10.md`](eap/gen1-gen2-doctrine-review-2026-07-10.md) —
+  verified against both repos at HEAD; headline: gen-2 kept the hard-won machinery, but its
+  reconciliation gate is hollow and one env-secrets rule contradicts itself). Docs-only.
 - **#1878 · #1879 · #1881 · #1882 · #1883 · #1884 (2026-07-08/09, S3 — substrate-kit graduated to its own repo; superbot as first consumer + kit-lab companions)** —
   the substrate-kit **graduated to [menno420/substrate-kit](https://github.com/menno420/substrate-kit)** (v1.0.0)
   and superbot became its first downstream consumer: **#1878** substrate-kit planning, **#1879** pinned the kit
