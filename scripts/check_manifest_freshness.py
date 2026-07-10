@@ -129,19 +129,31 @@ def parse_manifest_rows(text: str) -> list[ManifestRow]:
     return rows
 
 
+def _iso_utc(raw: str) -> datetime:
+    """ISO-8601 string → aware datetime (naive pinned to UTC).
+
+    Normalizes a trailing ``Z`` before parsing: Python 3.10's
+    ``datetime.fromisoformat`` cannot parse it (3.11 can), and modern git
+    (CI's 2.54) emits ``Z`` for UTC committer dates under ``--format=%cI`` —
+    the exact combination behind the #1923 first-red (``Invalid isoformat
+    string: '2026-07-10T03:54:20Z'``; local git printed a numeric offset, so
+    the suite was green locally). Raises ``ValueError`` on garbage.
+    """
+    dt = datetime.fromisoformat(raw.replace("Z", "+00:00"))
+    if dt.tzinfo is None:
+        dt = dt.replace(tzinfo=timezone.utc)
+    return dt
+
+
 def parse_status_updated(text: str) -> datetime | None:
     """The ``updated:`` header of a control/status.md, as an aware datetime."""
     m = _UPDATED_HEADER.search(text)
     if not m:
         return None
-    raw = m.group(1).replace("Z", "+00:00")
     try:
-        dt = datetime.fromisoformat(raw)
+        return _iso_utc(m.group(1))
     except ValueError:
         return None
-    if dt.tzinfo is None:
-        dt = dt.replace(tzinfo=timezone.utc)
-    return dt
 
 
 def _run_git(args: list[str], cwd: Path, timeout: int) -> str:
@@ -191,7 +203,7 @@ def fetch_lane_state(repo: str, timeout: int = 60) -> LaneState:
             head = _run_git(
                 ["log", "-1", "--format=%cI", "FETCH_HEAD"], tmpdir, timeout
             ).strip()
-            state.updated = datetime.fromisoformat(head)
+            state.updated = _iso_utc(head)
             state.from_status = False
             state.error = None
             return state
