@@ -205,18 +205,27 @@ coordinator chats being archived**; websites' is fresh-session-per-fire (archive
 Before archiving kit-lab/trading chats: delete or re-arm those triggers (gen-3 founding
 packages re-arm fresh ones anyway), or the loops die silently.
 
-**Capability fact — cross-Project session messaging WORKS (owner screenshot, 2026-07-10
-~14:48 local):** the substrate-kit close-out session's report was delivered directly into
-the Venture Lab Project chat ("Received a message from another session" UI element) — so
-`send_message` crosses Project boundaries, seat-dependently (recorded send-side walls:
-codetool "tool is not enabled for this organization"; websites coordinator "target session
-could not be verified"). Same falsification class as the routines wall (blueprint §2a);
-capabilities.md needs the same correction + the same recipe rule (every send records tool/
-args/outcome verbatim). Doctrine line to mint with it: **messages move attention, files
-move truth** — a cross-session message may nudge a lane, but orders/findings still land in
-git; the delivered message itself proved the point by carrying kit's stale "routine NOT
-ARMED" claim, already corrected at HEAD by kit PR #124 and re-verified in the trigger
-registry (armed, fired 14:08Z, next 15:06Z).
+**Capability facts from the owner's two Venture-Lab screenshots (2026-07-10 ~14:48–14:53
+local; SECOND reading CORRECTS the first — recorded per Q-0120):**
+1. **Project-home ≠ repo-lane (the critical finding, owner-spotted).** The chat homed in
+   the Venture Lab Project was the overnight dual-lane coordinator: its own recap says it
+   "ran the substrate-kit gen-2 lane overnight (16 PRs, v1.7.0)", its subscribed PR chips
+   are kit PRs (#114/#88), its digest signs off with both lanes' night totals, and it
+   reports "no websites access" (a kit+venture multi-repo seat). The claude.ai Project a
+   chat sits in does NOT constrain which repos its sessions work — environment repos + the
+   prompt do. Consequence: round-3's one-Project-per-lane shape is enforced ONLY by the
+   founding packages' "you are an agent of THIS Project (repo X)" line — that line is
+   load-bearing; the manager's sweep stays robust because it verifies repos, not Projects.
+2. **Cross-SESSION messaging confirmed both directions on that seat family** ("Received a
+   message from another session" + "Message sent to another session" UI elements) — but
+   these are the coordinator's own workers reporting back, so **cross-Project delivery is
+   NOT established** (the earlier version of this note overstated it). Send-side walls
+   remain seat-dependent (codetool "not enabled for this organization"; websites "target
+   session could not be verified"). capabilities.md correction + verbatim-recipe rule per
+   send attempt still apply. Doctrine line to mint: **messages move attention, files move
+   truth** — that same thread carries the stale "kit routine externally stopped 12:54Z /
+   unarmed" relay that kit PR #124 refuted at HEAD (trigger re-verified armed here: fired
+   14:08Z, next 15:06Z).
 
 **Boot-time fleet facts (verified via the account trigger list, 2026-07-10 ~14:40Z):**
 routine coverage is now manager (2-hourly) + kit-lab (hourly) + trading (4-hourly) +
