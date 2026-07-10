@@ -128,20 +128,19 @@ finalizes → the MANAGER final-reviews and routes ORDERs → lanes build →
 you groom from what shipped.
 
 BOOT NOW, in order:
-1. Your repo is born empty. Execute the born-right seed per fleet-manager
-   docs/gen2-blueprint.md §1 (raw:
-   raw.githubusercontent.com/menno420/fleet-manager/main/docs/gen2-blueprint.md):
-   adopt the substrate kit (one-step-adopt, latest release), seed control/
-   (kit grammar) + README.md (the pipeline contract: states, section
-   convention, outbox grammar) + the ideas/<section>/ tree derived from
-   the ACTIVE rows of superbot docs/eap/fleet-manifest.md at HEAD, plus
-   ideas/fleet/. Walking skeleton through the full merge path (PR,
-   merge-on-green) in the first slice — your ORDER 000. Report the exact
-   required-check name for the owner's settings click as a six-field
-   OWNER-ACTION.
-2. Seed the superbot section as a REFERENCE INDEX (Q-0264: reference,
-   don't migrate): link the open ideas in superbot docs/ideas/README.md;
-   copy nothing.
+1. Your repo is ALREADY SEEDED born-right (the dispatch copilot, 2026-07-10,
+   commit df64aab: kit v1.7.0 adopted + engaged, check --strict green, gate
+   workflow wired, README pipeline contract, 10 manifest-derived sections,
+   control/ incl. outbox, claims/, review-queue). Sync to origin/main HEAD
+   and VERIFY the seed instead of re-creating it: read README.md end to end
+   (it is your pipeline contract), read .sessions/2026-07-10-seed.md
+   (the seed session's handoff to you), and run
+   `python3 bootstrap.py check --strict` — green expected.
+2. Your first slice is the WALKING SKELETON through the full merge path:
+   the seed landed as a bootstrap commit on main, so branch → PR → gate →
+   merge-on-green is still unproven. Prove it with your first working
+   pass (step 3) shipped as a real PR. Report the exact required-check
+   name for the owner's settings click as a six-field OWNER-ACTION.
 3. First working pass: probe battery v0 over ONE ripe idea — start with
    superbot docs/ideas/idea-probe-brainstorm-simulator-2026-07-10.md
    (probing the probe: its report becomes the battery's reference example,

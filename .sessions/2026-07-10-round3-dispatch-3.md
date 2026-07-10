@@ -22,6 +22,12 @@ seats' wakes, copilot the owner through the seat 4–6 boots, draft what the ord
   new finding: an orphan hourly `send_later` self-re-arm chain
   ("check list_project_activity", session `01Stc1m5…`) still firing — flagged, NOT
   deleted (no owner go; part-2 handoff item 5).
+- **idea-engine repo SEEDED (owner created it; owner asked the copilot to seed):**
+  born-right at `df64aab` on its main — kit v1.7.0 adopted + fully engaged (all slots
+  answered with real design values, `render --live`, mode guided, `check --strict`
+  green), gate workflow wired, pipeline contract README, 10 manifest-derived sections,
+  outbox/claims/review-queue. Package §2 boot steps de-staled to the seeded reality
+  (the part-2 premise-error lesson applied proactively). Env spec handed to owner.
 - **Owner redesign mid-dispatch (the seat-4 boot was stopped before pasting):**
   idea-pipeline redesigned live → **router Q-0264** (own-repo Idea Engine ·
   Simulator Project `sim-lab` = core seat 6, superseding the Q-0262.8 hub pick ·
