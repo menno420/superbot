@@ -1,10 +1,10 @@
 {
   "meta": {
-    "generated_at": "2026-07-09T13:58:14Z",
+    "generated_at": "2026-07-10T03:29:45Z",
     "build": {
-      "commit": "72053d26",
-      "subject": "Merge pull request #1890 from menno420/claude/projects-eap-review-9vq8oj",
-      "committed_at": "2026-07-09T13:58:14Z"
+      "commit": "f4da4b8b",
+      "subject": "reconcile band-#1920: born-red session card + lane claim (41st Q-0107 pass)",
+      "committed_at": "2026-07-10T03:29:45Z"
     }
   },
   "counts": {

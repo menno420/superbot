@@ -31,6 +31,12 @@ only the header block is read, so a `**Subsystem:**` *example* in an idea's body
 
 Current broad captures:
 
+- [`telemetry-model-name-vocabulary-2026-07-10.md`](./telemetry-model-name-vocabulary-2026-07-10.md) —
+  **session ender (2026-07-10, 41st Q-0107 reconciliation pass, band-#1920):** pin the
+  `telemetry/model-usage.jsonl` `model` field to a canonical short-name enum + validator (reusing the
+  #1894 gate) so the Q-0248 allocation feed doesn't fragment one model across `opus-4.8`/`opus 4.8`/
+  `claude-opus-4-8` spellings — and resolve the undercover-ID-vs-telemetry tension explicitly (record
+  the *family* name, never the exact `claude-*[1m]` ID). Hit live this pass. Subsystem: none.
 - [`shift-plan-premise-verify-lines-2026-07-10.md`](./shift-plan-premise-verify-lines-2026-07-10.md) —
   **session ender (2026-07-10, overnight shift D, PR #1920):** every actionable scout-report /
   shift-plan item carries a one-line `verify:` command proving its *premise* still holds at pick-up
