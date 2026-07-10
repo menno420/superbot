@@ -72,3 +72,15 @@ enforcement follow-on for the rest of the sweep.
   chat review; the record is the reversible extra).
 - **↪ Next:** manager rollup re-stamps the fleet manifest; superbot-games gate gets the
   exploration-tests line; websites reconciles the token claim.
+
+## PR 2 addendum — EAP program deep review (same session, owner-directed)
+
+Owner follow-up ask: the full story since Projects access (07-07 → 07-10), opinions,
+root causes, centralization/documentation gaps, ordering check. Three deep-read subagents
+(EAP corpus · fleet-manager doctrine · cross-repo structural diff) synthesized into
+**[`docs/eap/eap-program-review-2026-07-10.md`](../docs/eap/eap-program-review-2026-07-10.md)**
++ chat delivery. Mid-review the owner's screen recording **falsified the routines-walled
+doctrine** (two agent-armed active wake routines with completed runs; runs not inspectable
+from the Routines screen) — recorded as a new `projects-eap-evaluation-log.md` entry
+(reviving the journal, silent since 07-09 ~16:36Z) and folded into the review doc (§5.5).
+Enders for this session live above; second-PR telemetry row appended per the gate.
