@@ -84,3 +84,15 @@ doctrine** (two agent-armed active wake routines with completed runs; runs not i
 from the Routines screen) — recorded as a new `projects-eap-evaluation-log.md` entry
 (reviving the journal, silent since 07-09 ~16:36Z) and folded into the review doc (§5.5).
 Enders for this session live above; second-PR telemetry row appended per the gate.
+
+## PR 3 addendum — round-3 launch pack (same session, owner-directed)
+
+Owner directives (live): fold the review findings into the wrap-up email; give the
+fleet-manager a proper round-3 plan (incl. the routines mechanism); prepare Codex review
+dispatches; per-lane continuation + night-review prompts; a games-completion wave
+("a build is better than no build"); and the consolidated what's-asked-of-me list.
+Shipped: **[`docs/planning/round3-launch-pack-2026-07-10.md`](../docs/planning/round3-launch-pack-2026-07-10.md)**
+(§1 manager brief · §2/§2b lane prompts + games wave · §3 Codex prompts · §4 decision
+sheet with recommendations · §5 owner fleet-watching guide) and the email candidate's
+**§(g) late addendum** (routines discovery, observability bugs, model-comparison caveat,
+launch-night record). Owner list delivered in chat.
