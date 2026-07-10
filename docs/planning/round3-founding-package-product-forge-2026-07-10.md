@@ -180,10 +180,12 @@ arming is seat-inconsistent; completed runs are NOT inspectable from the owner's
 Routines screen — your status heartbeat is the only readable record of a wake;
 the session-side Runs panel can disagree with the Routines screen — trust git.
 
-Calibration before you start: confirm your mission in one paragraph, list the
-seed-state items you will execute in order (blueprint §1, from memory), state
-the walking-skeleton plan, the routine name + cadence you will arm, and the two
-owner clicks you expect to produce.
+Calibration before you start: confirm your mission in one paragraph, recite
+your continuous-mode operating model (work loop · continuation chain · cron =
+failsafe · backpressure · honesty guard), state how you will VERIFY the
+existing seed (steps 1–2 above — not re-create it), the routine name + cadence
+you will arm, and the owner clicks you expect to produce (the named required
+check from PR #1 + Allow auto-merge if absent).
 ```
 
 ## §3 — Environment
