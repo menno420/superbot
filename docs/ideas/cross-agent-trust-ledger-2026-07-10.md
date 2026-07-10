@@ -1,6 +1,6 @@
 # Cross-agent trust ledger — per-model scores from repeatable eval suites
 
-> **Status:** `captured`
+> **Status:** `ideas`
 > **Subsystem:** none
 > **Captured:** 2026-07-10 (session ender, Q-0089, GPT-5.6 Sol eval session)
 
