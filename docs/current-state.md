@@ -345,6 +345,16 @@ Source code and merged PRs win over anything written here.
 > auto-opens a `reconcile` issue at the boundary that fires the docs-reconciliation routine). Reset
 > this marker to the latest PR after a pass.
 
+- **#1924 (2026-07-10, overnight shift E PR 2 — coordinator gen-1 self-review, docs-only)** —
+  the coordinator lane's answers to the #1901 fleet retro question set, the only gen-1 lane
+  that never answered the set it planted (grand review §5 gap): new
+  `docs/retro/self-review-2026-07-09.md` at the protocol-canonical path (one glob now finds
+  all ten lanes' answers), universal core A–F answered by ID, assembled from the committed
+  corpus (grand review, campaign self-audit, EAP eval log, session cards, the CLAUDE.md
+  Q-chain) with in-line citations — "not measured" said where the record holds only
+  self-estimates. Indexed from `docs/eap/README.md`; idea
+  `coordinator-self-review-against-1901-2026-07-10` → `historical`. Gen-2 blueprint input
+  now covers 10/10 lanes.
 - **#1923 (2026-07-10, overnight shift E — fleet-manifest freshness checker)** —
   `scripts/check_manifest_freshness.py` (Q-0105 advisory, NOT CI-wired): compares each
   `docs/eap/fleet-manifest.md` row's Last-seen against the lane repo's live
@@ -511,13 +521,6 @@ Source code and merged PRs win over anything written here.
   shipped the **docs truth refresh** (findings F1–F5 reconciled in `docs/subsystems/server-management.md`);
   **#1850** added the **W2-F6 AST write-boundary invariant** for the reaction-role tables (a new checker +
   tests — tooling/tests only, no `disbot/` runtime).
-- **#1843 · #1848 · #1849 (2026-07-08, S5/ops — per-repo settings ledger: forward-only Project experiment)** —
-  a readable per-repo settings ledger so future sessions **read state, not guess**: **#1843** captured the
-  forward-only Project experiment idea + the ledger plan; **#1848** shipped **Phase 1** — the `superbot-next`
-  General settings captured from the owner's screen recording (frames extracted via a dev-only
-  `imageio-ffmpeg`) into [`operations/repo-settings-state.md`](operations/repo-settings-state.md); **#1849**
-  corrected it (new repos are **bare** + the full auto-mode API capability map). Phase 2 (a generator that
-  auto-maintains the rows) stays queued.
 - **Older merges (#1855 … #535) → [`current-state-archive.md`](current-state-archive.md).** Recently-shipped keeps the ~20 newest; older entries are trimmed to the archive (newest-first), which `scripts/check_docs.py` soft-ratchets at 20 and `check_current_state_ledger.py` treats as present. *(Thematic grouping by date means the live/archive PR-number spans overlap slightly — the floor pointer is approximate prose, not a strict bound; the per-band pass records carry the exact moved sets.)* *(The twenty-first Q-0107 pass — band-#1320, 2026-06-22 — added the band #1294–#1320 work as seven grouped entries (fishing minigame #1296/#1298/#1299/#1301/#1303/#1304, role management #1300/#1302/#1306, help surface #1294/#1297, BTD6 answerability #1295/#1316, botsite React PR1 #1305, CI/ledger/tool-pin hygiene #1308/#1317/#1320, dependency bumps + dashboard #1307/#1309/#1311/#1312/#1313/#1314/#1315); trimmed the live ledger to 20, moving #1208-band · #1226-band · #1211-band · #1210 · #1203-band · #1209-band · #1183-band to the archive.)* *(The twentieth Q-0107 pass — band-#1290, 2026-06-22 — added the band #1265–#1291 work as six grouped entries; trimmed the live ledger to 20, moving #1186 · #1156-band · #1147-band · #1143-band · #1162-band · #1149-band to the archive.)*
 
 > Older than this: see `docs/planning/*` trackers and `docs/decisions/*` ADRs.
