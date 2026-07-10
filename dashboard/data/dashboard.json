@@ -1,10 +1,10 @@
 {
   "meta": {
-    "generated_at": "2026-07-10T08:33:54Z",
+    "generated_at": "2026-07-10T13:12:20Z",
     "build": {
-      "commit": "eb6a01ad",
-      "subject": "Merge pull request #1926 from menno420/claude/eap-verification-corrections",
-      "committed_at": "2026-07-10T08:33:54Z"
+      "commit": "6e446b76",
+      "subject": "Merge pull request #1932 from menno420/claude/repo-orientation-review-uq7jo7",
+      "committed_at": "2026-07-10T13:12:20Z"
     },
     "schema_version": 1,
     "counts": {
@@ -3317,6 +3317,14 @@
       "self_initiated": false
     },
     {
+      "file": "2026-07-10-fleet-overnight-review.md",
+      "date": "2026-07-10",
+      "title": "2026-07-10 — Owner-directed cross-fleet overnight review (all 13 repos)",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": true
+    },
+    {
       "file": "2026-07-10-eap-verification-corrections.md",
       "date": "2026-07-10",
       "title": "2026-07-10 — EAP docs: two verified factual corrections (from fleet-manager ultracode verification)",
@@ -3723,14 +3731,6 @@
       "status": "complete",
       "run_type": "manual",
       "self_initiated": false
-    },
-    {
-      "file": "2026-07-07-trading-operating-model.md",
-      "date": "2026-07-07",
-      "title": "2026-07-07 — Trading operating model (Q-0251: decision ledger + sniper bucket + 3-way hybrid)",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
     }
   ],
   "bot_changelog": [
@@ -4022,6 +4022,20 @@
     },
     {
       "session": "2026-07-10-eap-verification-corrections",
+      "date": "2026-07-10",
+      "model": "fable-5",
+      "effort": "high",
+      "task_class": "docs-only",
+      "tokens_out": null,
+      "outcome": {
+        "ci_green_first_push": null,
+        "checker_findings": null,
+        "merged_pr": null,
+        "reverted_within_window": null
+      }
+    },
+    {
+      "session": "2026-07-10-fleet-overnight-review",
       "date": "2026-07-10",
       "model": "fable-5",
       "effort": "high",
