@@ -35,6 +35,10 @@
   `gen1-grand-review-2026-07-09.md` §5 (structural completeness across all 6 repos) with
   deep, per-incident evidence verification on the 7 wind-down lanes + seed + ping-test.
 
+- [`superbot-next-runtime-review-2026-07-10.md`](superbot-next-runtime-review-2026-07-10.md) —
+  external (Codex/Sol) runtime review of superbot-next bands 1–5: warn-escalation fix confirmed,
+  `end_access` compensation gap confirmed; Claude verification addendum adds the missed
+  `moderation.timeout` same-class instance.
 - [`codex-review-round-verification-2026-07-10.md`](codex-review-round-verification-2026-07-10.md) —
   Claude's ground-truth verification of the three Codex review PRs (#1940/#1941/#1942):
   scores, the missed `moderation.timeout` compensation gap, and an independent
