@@ -20,6 +20,18 @@
 > `0 */2 * * *` (even hours :00) per the §5 stagger; (e) the Q-0259 ruling-4 money protocol
 > is baked into the instructions — a spend is never executed, it becomes a conservative
 > owner plan.
+>
+> **Role in the fleet (owner-confirmed, 2026-07-10 dispatch part-3 chat):** the forge is
+> the **default executor for build-worthy work that has no owning lane** — when the
+> manager routes a finalized Q-0264 verdict and no dedicated repo owns the work, it lands
+> here as a `products/<slug>/` subtree. The test the manager applies is *"no owning lane
+> exists"*: product-shaped homeless work → forge; fleet/process work → kit/manager; work
+> in an existing lane's domain → that lane, even when its inbox is slow (the forge is not
+> a catch-all — that erosion is what Q-0260 lane boundaries prevent). **Incubator
+> mechanic:** a product that outgrows its subtree (real users, own release cadence, own
+> idea stream) **graduates to a dedicated repo and becomes a lane** — the substrate-kit's
+> own path out of superbot's tree; the repo-creation click is spent only on proven
+> winners.
 
 ## §0 — Owner pre-clicks (gate the rest)
 
