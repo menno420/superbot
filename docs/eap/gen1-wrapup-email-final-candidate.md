@@ -307,10 +307,11 @@ repos under github.com/menno420. Counts re-verified 2026-07-10 by the grand-revi
 - **websites:** 45 merged PRs in one day; three services live on Railway (site, botsite,
   dashboard) with the fleet dashboard rendering the manifest; kit v1.6.0 upgrade (#45);
   full succession pack (#46–#48) with the repo's own "#1 TRAP" honestly documented (an
-  order that *looks* executed but isn't). Known issue, disclosed: two Railway build-failure
-  mails for the dashboard 2026-07-09 03:46 UTC; the failure class was fixed in-lane the
-  same day, but liveness wasn't re-probed at handover — the successor's first task is a
-  healthcheck run.
+  order that *looks* executed but isn't). The one known issue closed clean: two Railway
+  build-failure mails for the dashboard (2026-07-09 03:46 UTC) were fixed in-lane the
+  same day, and a live probe at finalization (2026-07-10 01:02Z, the repo's own
+  `scripts/healthcheck.py`) confirmed **all three services healthy** — 200/PASS on
+  `/healthz` and `/` for site, botsite, and dashboard.
 - Model-comparison arms (codetool-lab-fable5 / -opus4.8 / -sonnet5) and trading-lab:
   identical-brief three-model experiment + quant lab; per-lane details in the external
   review pack (#1903). The quality-review's honesty check (the 63/100/66 reconciliation
