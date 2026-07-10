@@ -1,6 +1,6 @@
 # 2026-07-10 — dashboard.json pinned-feed contract, first slice (overnight shift, session D)
 
-> **Status:** `in-progress`
+> **Status:** `complete`
 > **Branch:** `claude/shift-d-dashboard-contract` · **PR:** #1920
 
 **Intent:** shift-plan item **K3** — apply the #1884 console pinned-feed-contract
@@ -68,8 +68,11 @@ Idea: `docs/ideas/pinned-feed-contract-for-dashboard-json-2026-07-09.md`.
 - `python3.10 scripts/check_dashboard_data.py --dashboard-contract --site --console` — OK, 0 warnings.
 - `python3.10 scripts/check_architecture.py --mode strict` — 0 errors, 36 warnings
   (`by check: layer_boundary=31, raw_sql=5`; baseview_inheritance gone).
-- `python3.10 scripts/check_quality.py --full` — full CI mirror (result recorded below).
-- `check_docs --strict` / `check_current_state_ledger --strict` — green.
+- `python3.10 scripts/check_quality.py --full` — full CI mirror **PASSED** on the
+  final tree (first run caught the conformance-ratchet break described above +
+  a transient `check_docs` red from a mid-edit invalid idea badge; both fixed,
+  re-run green).
+- `check_docs --strict` / `check_current_state_ledger --strict` — green (exit 0).
 
 ## ⚑ Flags
 
