@@ -86,6 +86,13 @@
 
 ## Recently shipped — archived (newest first)
 
+- **#1843 · #1848 · #1849 (2026-07-08, S5/ops — per-repo settings ledger: forward-only Project experiment)** —
+  a readable per-repo settings ledger so future sessions **read state, not guess**: **#1843** captured the
+  forward-only Project experiment idea + the ledger plan; **#1848** shipped **Phase 1** — the `superbot-next`
+  General settings captured from the owner's screen recording (frames extracted via a dev-only
+  `imageio-ffmpeg`) into [`operations/repo-settings-state.md`](operations/repo-settings-state.md); **#1849**
+  corrected it (new repos are **bare** + the full auto-mode API capability map). Phase 2 (a generator that
+  auto-maintains the rows) stays queued.
 - **#1845 · #1846 · #1854 · #1855 (2026-07-08, S4/workflow — grooming waves: idea→plan + friction→guard)** —
   the campaign's grooming lanes, all idea-lifecycle / self-improvement: **#1845** (lane C) promoted the
   **usage-limit-aware routines** idea → a 2-PR plan + roadmap S5 horizon; **#1846** (lane B) shipped the

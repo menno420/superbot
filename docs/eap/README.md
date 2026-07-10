@@ -38,3 +38,11 @@
 
 - [`campaign-self-audit-2026-07-08.md`](campaign-self-audit-2026-07-08.md) — coordinator
   memory of the 3-wave campaign graded against git (≈0.98 precision).
+
+## Retro (protocol-canonical location: `docs/retro/`)
+
+- [`../retro/self-review-2026-07-09.md`](../retro/self-review-2026-07-09.md) — the
+  coordinator lane's own answers to the #1901 fleet retro question set (written
+  2026-07-10, assembled from this corpus) — the 10th and final lane's answers, closing
+  the gap the grand review §5 flagged. Question set:
+  [`../planning/fleet-retro-questions-2026-07-09.md`](../planning/fleet-retro-questions-2026-07-09.md).

@@ -1,7 +1,15 @@
 # Coordinator lane answers its own retro question set (2026-07-10)
 
-> **Status:** `ideas` — capture, not a plan, not approval.
+> **Status:** `historical` — implemented (PR #1924, 2026-07-10) · raised 2026-07-10 (night-prep, #1915).
 > **Subsystem:** EAP program record / docs.
+>
+> **Shipped:** `docs/retro/self-review-2026-07-09.md` (PR #1924) — the universal core A–F
+> answered by ID with citations into the committed corpus, indexed from `docs/eap/README.md`.
+> **One deviation from this capture:** filed at the protocol-canonical `docs/retro/` path
+> (per the question set's §Purpose — one glob finds all ten lanes' answers) rather than a
+> `docs/eap/` filename; the "pair" framing below collapses to one document (the coordinator
+> planted the set and has no per-repo addendum; a separate project-review doc would duplicate
+> the grand review §5/§7, which already plays that role for the hub lane).
 
 **One line:** the coordinator lane (superbot + the rebuild's coordination arc) is the
 only gen-1 lane that never answered the fleet retro question set it itself planted

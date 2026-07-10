@@ -63,9 +63,11 @@ Current broad captures:
   exhort" applied to the fleet dashboard. Shipped as `scripts/check_manifest_freshness.py` (git
   transport, advisory, fail-open).
 - [`coordinator-self-review-against-1901-2026-07-10.md`](./coordinator-self-review-against-1901-2026-07-10.md) —
-  **gen-2 night-prep seed (2026-07-10, PR #1915):** the coordinator lane is the only gen-1 lane that
-  never answered the #1901 retro question set it planted — assemble its self-review pair from the
-  existing corpus so the gen-2 blueprint's input covers all ten lanes.
+  **gen-2 night-prep seed (2026-07-10, PR #1915) · `historical` — implemented PR #1924:** the
+  coordinator lane is the only gen-1 lane that never answered the #1901 retro question set it
+  planted — assemble its self-review from the existing corpus so the gen-2 blueprint's input
+  covers all ten lanes. Shipped as `docs/retro/self-review-2026-07-09.md` (protocol-canonical
+  path), indexed from `docs/eap/README.md`.
 - [`cross-repo-eap-verification-orientation-pointer-2026-07-09.md`](./cross-repo-eap-verification-orientation-pointer-2026-07-09.md) —
   **reconciliation session ender (2026-07-09, 40th Q-0107 pass):** add a short cross-repo verification
   pointer to the orientation route — verify a sibling EAP repo with *its own* CI interpreter
