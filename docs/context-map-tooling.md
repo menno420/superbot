@@ -78,6 +78,10 @@ non-`bus` receiver shows as `unresolved`, never a guess. `--check` gates only on
 "possible dead subscriber" is an advisory hint (FP-prone via forwarders), never a
 gate failure. Pinned by `tests/unit/scripts/test_wiring_map.py`.
 
+For the latest manually resolved repository snapshot, including forwarding helpers that
+the lower-bound tool reports as unresolved, see
+[`docs/eventbus-wiring-inventory.md`](eventbus-wiring-inventory.md).
+
 ## Companion — review scope (`scripts/review_scope.py`)
 
 Operationalizes [`repo-review-map.md`](repo-review-map.md): instead of remembering the
