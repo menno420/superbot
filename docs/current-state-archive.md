@@ -86,6 +86,25 @@
 
 ## Recently shipped — archived (newest first)
 
+- **#1791 · #1792 · #1793 · #1794 · #1795 · #1796 · #1797 · #1798 (2026-07-07, S3 rebuild — idea-consolidation → multi-repo program founding + owner rulings Q-0243…Q-0252)** —
+  the pre-program-launch consolidation session. **#1791** folded the day's four owner captures + hardened
+  the §3.C risks into the canonical-plan machinery (§11b amendments A-12…A-20; registry mints R-16/R-17/P-5).
+  Owner rulings: **#1792** (Q-0243 pricing-by-simulation + Q-0244 slash verification inherits prefix, never a
+  blocker), **#1796** (Q-0250 trading repo stocks-first — US large-cap tech, point-in-time universe, API-broker
+  paper lane, DEGIRO manual venue), **#1797** (Q-0251 trading operating model — decision-ledger mock trades,
+  sniper bucket, 3-way hybrid allocator). **#1794** captured the **multi-repo program** (repo-start mechanics ·
+  kit self-improvement lab · trading research repo); **#1795** the steps-6–8 kickoff-readiness brief
+  (Q-0247/Q-0248/Q-0249); **#1798** (Q-0252) prepared the **three program sessions** — kit-lab + trading
+  founding briefs + the [launch index](planning/program-three-sessions-launch-index-2026-07-07.md). #1793 =
+  format/lint + env-var-artifact regen for `EXTRA_OWNER_USER_IDS`.
+- **#1784 · #1785 · #1786 · #1787 · #1788 · #1789 · #1790 (2026-07-07, S3 rebuild-plan review + owner-idea capture, incl. an S1 automod runtime fix #1789)** —
+  an owner-review session over the rebuild plan that captured rulings/ideas and shipped one runtime fix:
+  **#1785** recorded the owner ruling on auto-collect gating (coins+XP unlock), **#1786** three
+  foundational/feature gaps, **#1787** the automod duplicate-content + cross-channel spam gaps; **#1789** then
+  *shipped* the **S1 automod fix** (cross-channel spam-evasion + duplicate-content detection —
+  `services/automod_service.py`/`automod_config.py` + `cogs/automod/schemas.py` + 3 test files; a genuine
+  `disbot/` runtime change). **#1788/#1790** = the Fable-5 ultracode brief to fold the day's ideas into the
+  plan (revised once #1789 shipped — the automod finding is shipped-not-a-fold candidate).
 - **#1778 · #1783 (2026-07-07, S3 rebuild — the FINAL rebuild-plan review session)** —
   the final review over the frozen canonical plan (verdict: **plan ready**; §11 amendments folded; readiness
   scored — [report](planning/rebuild-final-review-report-2026-07-07.md)), which also produced the §6.3
