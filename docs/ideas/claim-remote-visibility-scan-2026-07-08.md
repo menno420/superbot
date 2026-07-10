@@ -1,8 +1,11 @@
 # Claim remote-visibility scan — make claims travel without waiting for a merge
 
-> **Status:** `ideas` — session idea (2026-07-08, Q-0089, grooming wave-1 lane C, PR #1845).
+> **Status:** `ideas` — ✅ **SHIPPED 2026-07-10 (PR #1919)**: `check_lane_overlap.py --remote`
+> (tip-state `ls-tree` compare vs `origin/main` — shallow-clone-safe; graceful offline
+> degradation) + the "re-scan right after your own claim push" protocol line in
+> `docs/owner/claims/README.md`. Originally: session idea (2026-07-08, Q-0089, grooming
+> wave-1 lane C, PR #1845).
 > **Subsystem:** none (agent workflow / parallel-session safety, S3/S5 tooling).
-> Not a plan, not approval.
 
 ## The gap, observed live this session
 
