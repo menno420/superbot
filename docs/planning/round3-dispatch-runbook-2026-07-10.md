@@ -294,8 +294,15 @@ Reply here with the substrate-kit section inline + per-class totals when the PR 
    §1/§2 pastes + the OA-001 settings click. Hub games-finishing work routes to
    the games program (Q-0259 r.5) / owner-started superbot sessions instead.
 7. ☐ Post-core (pipelined standard): manual lanes (venture-lab after the holdout/settings
-   items, trading after the holdout ORDER, websites continuation) · games program once
-   the manager proposes the 3-repo mapping (Q-0259 r.5) — 3 packages on the standard.
+   items, ~~trading after the holdout ORDER~~ **trading seat NOW — owner-directed
+   (part-4b, 2026-07-10): package DRAFTED,
+   [`round3-founding-package-trading-2026-07-10.md`](round3-founding-package-trading-2026-07-10.md),
+   continuous + volume-first (Q-0265/Q-0266) with an ORDER-008-first boot and both
+   verdict branches pre-specified; owner clicks = env `trading-strategy` + Project +
+   §1/§2 pastes**, websites continuation — booted by the owner ~19:3xZ, env `websites`
+   created) · games program once
+   the manager proposes the 3-repo mapping (Q-0259 r.5) — 3 packages on the standard,
+   reshaped by the games-web pick (owner relay drafted, part-4 chat).
 8. ☐ Verify loop closure: all core routines ACTIVE with completed runs across 24h;
    owner-queue only owner-only items; zero stuck PRs (pack §5 criteria).
 
@@ -305,6 +312,9 @@ Reply here with the substrate-kit section inline + per-class totals when the PR 
 - ~~Product Forge founding package~~ **done** → [`round3-founding-package-product-forge-2026-07-10.md`](round3-founding-package-product-forge-2026-07-10.md).
 - ~~Simulator (seat 6) founding package~~ **done (Q-0264)** → [`round3-founding-package-simulator-2026-07-10.md`](round3-founding-package-simulator-2026-07-10.md); the superseded superbot-hub seat needs no package.
 - 3 × game-Project founding packages once the manager's mapping lands (Q-0259 r.5).
+- ~~Trading founding package~~ **done (part-4b, owner-directed)** →
+  [`round3-founding-package-trading-2026-07-10.md`](round3-founding-package-trading-2026-07-10.md)
+  (continuous + Q-0266 volume-first; ORDER-008-first boot; conversion of a live lane, not a birth).
 - Per-boot verification ritual: after each paste, check calibration answer · routine
   armed+verified · first heartbeat — recorded per-lane in §5 below.
 

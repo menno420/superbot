@@ -101,6 +101,15 @@ one-slice pacing).** Every gen-3 seat is **born continuous**:
 - **Free-window posture:** through 2026-07-14 use the free Projects **excessively**
   (more parallel work, child workers, fan-out — within the quality bar); everything
   produced feeds the owner's post-window consolidation pass.
+- **Volume-first founding doctrine (owner directive Q-0266, 2026-07-10):** every
+  Project is *created* to maximize output — the founding package aims the seat at "as
+  much material as we can" from its first turn. The bar is **CORRECT over BEST**:
+  honest states, citations, working increments are mandatory (and a lane's
+  non-negotiables — e.g. trading's pre-registration contract — are part of *correct*),
+  but good-enough beats polished; refinement is consolidation-phase work. Lifecycle:
+  **populate all repos now → owner-gated consolidation later → a few dedicated
+  maintenance projects** — so seats produce committed, discoverable, honestly-labeled
+  artifacts the future triage can grade.
 
 *(Superseded pre-Q-0265 text, kept for the record: "2-hourly, lanes at `0 */2 * * *`
 (even hours :00), manager offset `30 */2 * * *`; prompt = ONE bounded pass in role

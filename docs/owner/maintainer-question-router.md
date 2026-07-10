@@ -9630,3 +9630,41 @@ blueprint delta so every future seat is born continuous.
 **Routing.** This entry (provenance) + the amendment block in
 `planning/round3-dispatch-part4-brief-2026-07-10.md` + package rewrites/banners (forge,
 simulator, idea-engine, builder, runbook §2 manager) — all part 3b (PR #1958).
+
+### Q-0266 — volume-first founding doctrine: maximize output at creation, consolidate later (owner directive, 2026-07-10)
+
+> **Context.** Live dispatch part-4b, minutes after the trading founding package was
+> drafted. Owner, verbatim: *"any project should be created with the idea of as much
+> output as possible, it should be as correct as possible, but it does not always need
+> to be the best, if we get as much production as we can as early as we can, we can
+> then consolidate later into only a few dedicated projects that slowly maintain what
+> we created, but first the goal should be to really populate all repos with as much
+> material as we can."* This is the founding-time generalization of Q-0265.6/.7
+> (free-window excess + produce-then-curate), extended in three ways:
+
+1. **Scope: EVERY project, at creation.** Volume-first is a founding-doctrine default
+   for all future packages/seats (games program, trading conversion, any later repo) —
+   not a property of the six core seats only. Founding packages are written so the seat
+   maximizes output from its first turn.
+2. **The quality bar, named: CORRECT over BEST.** Output must be as correct as possible
+   (honest states, citations, working increments — the Q-0265.5 honesty guard and each
+   lane's integrity floor are untouched), but it need not be optimal or polished —
+   good-enough implementations ship now; refinement is consolidation-phase work. A
+   lane's non-negotiables (e.g. trading's pre-registration/one-shot-holdout contract)
+   are part of CORRECT, never tradeable for volume.
+3. **The fleet lifecycle, explicit: populate → consolidate → maintain.** Phase 1 (now):
+   populate ALL repos with as much material as possible. Phase 2 (later, owner-gated):
+   a consolidation pass keeps what is worth keeping and collapses the fleet into a few
+   dedicated projects that slowly MAINTAIN what was created. Seats should produce with
+   that future triage in mind — committed, discoverable, honestly-labeled artifacts
+   (the Q-0265.7 inventory thread is the mechanism).
+
+**Rollout.** Applied at birth to the trading package (same PR); future packages carry a
+volume-first clause from drafting; folded into the gen-3 deployment standard §2 next to
+the Q-0265 fold (same PR) so every future seat inherits it; live seats need no new
+paste — Q-0265 §2b already removed their throttle, and this rider primarily governs how
+NEW seats are founded.
+
+**Routing.** This entry (provenance) +
+`planning/round3-founding-package-trading-2026-07-10.md` (§1/§2 volume-first clauses) +
+`planning/gen3-deployment-standard-2026-07-10.md` §2 rider — part-4b (PR #1963).
