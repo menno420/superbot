@@ -19,7 +19,10 @@ Three companion docs capture the pipeline in increasing depth:
   do, and what the output should look like (`reference`).
 - [`gpt-5-6-sol-codex-eval-2026-07-10.md`](./gpt-5-6-sol-codex-eval-2026-07-10.md) —
   GPT-5.6 Sol launch-week research brief + the copy-paste Codex eval-prompt suite for
-  deciding what role it earns in the cross-agent pipeline (`reference`).
+  deciding what role it earns in the cross-agent pipeline; §8 records the scored
+  2026-07-10 run (`reference`).
+- [`cross-agent-trust-ledger.md`](./cross-agent-trust-ledger.md) — per-model
+  capability/trust scores from eval runs; trust decides the lane (`living-ledger`).
 
 `docs/owner/` does **not** replace active plans, `docs/current-state.md`, binding
 contracts or decisions, subsystem folios, the session journal, or brainstorms.
