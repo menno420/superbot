@@ -331,6 +331,19 @@ Source code and merged PRs win over anything written here.
 > auto-opens a `reconcile` issue at the boundary that fires the docs-reconciliation routine). Reset
 > this marker to the latest PR after a pass.
 
+- **#1923 (2026-07-10, overnight shift E — fleet-manifest freshness checker)** —
+  `scripts/check_manifest_freshness.py` (Q-0105 advisory, NOT CI-wired): compares each
+  `docs/eap/fleet-manifest.md` row's Last-seen against the lane repo's live
+  `control/status.md` `updated:` header, read over **git transport** (shallow fetch +
+  `cat-file` — the GitHub REST API is proxy-blocked in agent containers, so the idea file's
+  API design would have failed exactly where the reconciliation routine runs; deviation
+  recorded in the idea's Shipped block). Verdicts at day precision: FRESH / STALE /
+  DRIFT (HEAD-only activity fallback, never strict-fails) / SKIP (fail-open on network
+  failure); `--strict` reds on confirmed STALE only. +19 tests (git half exercised against
+  local fixture repos — zero network in tests); checklist line in the reconciliation
+  routine's runbook. First live run: 11 rows, 2 genuinely stale (trading-lab, venture-lab —
+  ground-truthed; left for the manager's sole-writer re-stamp). Idea
+  `fleet-manifest-freshness-checker-2026-07-10` → `historical`. Tooling/docs-only.
 - **#1920 (2026-07-10, overnight shift D — dashboard.json pinned-feed contract, first slice)** —
   the #1884 console-contract pattern applied to the feed websites renders ~12 pages from:
   new versioned `dashboard/data/dashboard_data_contract.json` (**slice semantics** — only
@@ -496,12 +509,6 @@ Source code and merged PRs win over anything written here.
   actions run prompt-free, destructive-git-to-a-published-ref is hard-walled with no self-clear path).
   Docs-only throughout (no `disbot/`). ⚑ Owner-parked: the step-7 first-publish push and the stranded
   scratch branch `test/permprobe-0708` (harmless; auto mode can't self-delete a remote ref).
-- **#1806 · #1809 (2026-07-07, workflow — Q-0254 understand-and-reflect rule → portable kit doctrine)** —
-  graduated the **understand-and-reflect** working-agreement rule (state back the fuller picture + implied
-  specs before substantive work; surface the possibility space when feasibility is uncertain) into the
-  portable **substrate-kit** templates (`CONSTITUTION.md.tmpl` + `collaboration-model.md.tmpl` +
-  `question-router.md.tmpl`) so it travels to every future repo, with superbot's local `.claude/CLAUDE.md`
-  copy kept in sync. Docs/kit-template only.
 - **Older merges (#1824 … #535) → [`current-state-archive.md`](current-state-archive.md).** Recently-shipped keeps the ~20 newest; older entries are trimmed to the archive (newest-first), which `scripts/check_docs.py` soft-ratchets at 20 and `check_current_state_ledger.py` treats as present. *(Thematic grouping by date means the live/archive PR-number spans overlap slightly — the floor pointer is approximate prose, not a strict bound; the per-band pass records carry the exact moved sets.)* *(The twenty-first Q-0107 pass — band-#1320, 2026-06-22 — added the band #1294–#1320 work as seven grouped entries (fishing minigame #1296/#1298/#1299/#1301/#1303/#1304, role management #1300/#1302/#1306, help surface #1294/#1297, BTD6 answerability #1295/#1316, botsite React PR1 #1305, CI/ledger/tool-pin hygiene #1308/#1317/#1320, dependency bumps + dashboard #1307/#1309/#1311/#1312/#1313/#1314/#1315); trimmed the live ledger to 20, moving #1208-band · #1226-band · #1211-band · #1210 · #1203-band · #1209-band · #1183-band to the archive.)* *(The twentieth Q-0107 pass — band-#1290, 2026-06-22 — added the band #1265–#1291 work as six grouped entries; trimmed the live ledger to 20, moving #1186 · #1156-band · #1147-band · #1143-band · #1162-band · #1149-band to the archive.)*
 
 > Older than this: see `docs/planning/*` trackers and `docs/decisions/*` ADRs.

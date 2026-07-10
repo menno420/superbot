@@ -86,6 +86,12 @@
 
 ## Recently shipped — archived (newest first)
 
+- **#1806 · #1809 (2026-07-07, workflow — Q-0254 understand-and-reflect rule → portable kit doctrine)** —
+  graduated the **understand-and-reflect** working-agreement rule (state back the fuller picture + implied
+  specs before substantive work; surface the possibility space when feasibility is uncertain) into the
+  portable **substrate-kit** templates (`CONSTITUTION.md.tmpl` + `collaboration-model.md.tmpl` +
+  `question-router.md.tmpl`) so it travels to every future repo, with superbot's local `.claude/CLAUDE.md`
+  copy kept in sync. Docs/kit-template only.
 - **#1802 · #1804 (2026-07-07, S3 rebuild — program founding briefs: website-design + kit-lab)** —
   two of the Q-0252 three-program-sessions founding artifacts closed out: the **website-design brief**
   (#1802 — verification record + proof screenshots, docs homing, card flipped green) and the **kit-lab
