@@ -226,11 +226,12 @@ Reply here with the substrate-kit section inline + per-class totals when the PR 
    session-bound) is deleted by the NEW boot itself, then the old chat can be archived.
    Package: [`round3-founding-package-substrate-kit-2026-07-10.md`](round3-founding-package-substrate-kit-2026-07-10.md)
    (write-all distribution seat per Q-0261.3). Env: attach ALL fleet repos.
-3. ☐ **superbot-next (core seat 3).** Finalize-first: flag-13 **RULED: lane's disposition
-   accepted** (Q-0262.3 — inbox line rides the manager relay) · the
-   `superbot-plugin-hello` repo creation (its ORDER 002 gate, owner click) · up-to-date
-   merge rule relax (same uncheck as kit's). Then: §2 continuation prompt +
-   standing-@codex line (Q-0259 r.3) + 2-hourly routine confirm/arm.
+3. ☐ **superbot-next (core seat 3).** Finalize-first: flag-13 **RULED + LANDED** (ORDER
+   009, PR #102 merged) · remaining owner clicks: `superbot-plugin-hello` repo creation
+   (ORDER 002 gate) + up-to-date merge rule uncheck (same as kit's). Package
+   (owner-confirmed upgrade from the §2 continuation prompt):
+   [`round3-founding-package-builder-2026-07-10.md`](round3-founding-package-builder-2026-07-10.md)
+   — routine rides its own inbox ORDER 008; ender catch-up for #99/#101 baked into boot.
 4. ☐ **Idea Engine (core seat 4).** Package **DRAFTED**:
    [`round3-founding-package-idea-engine-2026-07-10.md`](round3-founding-package-idea-engine-2026-07-10.md)
    (probe battery v0; env = existing `superbot`, zero env work). Finalize-first: superbot
@@ -261,9 +262,10 @@ Reply here with the substrate-kit section inline + per-class totals when the PR 
 | Project | Package pasted | Calibration | Routine armed+verified | First heartbeat | Verdict |
 |---|---|---|---|---|---|
 | fleet-manager | ✓ 2026-07-10 ~13:40Z | **GOOD** — corrected the brief's stale premise (#20 had pre-seeded ORDERs 001–006), caught the real gap (debt 6 → ORDER 007), evidence-based first-sweep pick (venture-lab) | ✓ **verified in the account trigger list** by the dispatch copilot: `trig_01QBrp5MjZL3F9mv6KsTXTzN`, cron `30 */2 * * *`, enabled, recurring, prompt verbatim; **first wake fired 14:36:29Z**, next 16:31Z | ✓ status.md @ `117caeb` (main): coordinator LIVE, verbatim arming record (incl. the `cse_`→`session_` id-normalization recipe detail), orders footer fixed | **LIVE** — no correction needed |
+| substrate-kit | ✓ 2026-07-10 ~15:45Z (env archetype + 2a/2b; F-5 pre-landed as ORDER 011) | calibration not paste-backed (owner: "freshly running"); §4.1 judged via registry evidence instead | ✓ **CUTOVER VERIFIED in the registry** by the dispatch copilot: old `trig_01FnqnAQjLU2T8d16iHwWQ2h` DELETED (absent from its created-order slot); new `trig_016EfUawz6KxEYqUM6f1BqDw` "substrate-kit 2-hourly standing wake" cron `0 */2 * * *`, prompt verbatim, **first wake fired 16:02:43Z**, next 18:00Z | ✓ **heartbeat @ HEAD 16:42Z** — ORDER 011 executed (F-5=A applied, headline 1 PASS/3 FAIL, B-benches unpaused; claim #127/PR #128, 819 tests green) AND first §6.1 slice shipped (#129/#130: substrate-gate.yml kit-owned) | **LIVE — fully verified, executing the brief** |
 | Idea Engine | package ready; Project not yet created (§3.2) | — | — | — | — |
 | Product Forge | package ready; repo not yet created (§3.2/§0) | — | — | — | — |
-| Builder (superbot-next) | not yet dispatched (§3.4) | — | — | — | — |
+| Builder (superbot-next) | ✓ 2026-07-10 ~16:30Z (owner pasted; booted) | not paste-backed; judged via artifacts | ✓ **verified in the registry**: `trig_01VYZQ7GHxYq3ecSw8UNZek8` "builder-wake", cron `0 */2 * * *`, ORDER-008 prompt verbatim, next fire 18:00Z | pending — first PR (ender catch-up + heartbeat) not yet at HEAD; check next sweep | **LIVE** (first slice in flight). Note: dispatch-session ORDER-number collision (both manager and copilot appended "ORDER 010") caught pre-merge and renumbered to 011 on PR #104 — the kit §6.8 order-claim convention exists for exactly this |
 
 **Six-vs-seven RESOLVED (2026-07-10):** the drafting-time note below stands as history —
 launch pack §1 lists seven debts; fleet-manager PR #20 had pre-seeded six ORDERs covering
