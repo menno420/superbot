@@ -3,6 +3,10 @@
 > [docs/planning/projects-eap-anthropic-email-interim-2026-07-09.md](../planning/projects-eap-anthropic-email-interim-2026-07-09.md)
 > as the send-candidate. Finalize once all lanes' wind-downs complete: Part 1
 > (owner slot) plus fleet-manager / websites / venture-lab placeholders remain open.
+> Finalization aids (2026-07-10 coordinator close-out): the owner's Part 1 framing
+> questions are in [gen1-wrapup-email-part1-questions-2026-07-09.md](gen1-wrapup-email-part1-questions-2026-07-09.md);
+> the paste-ready grand-review session prompt that produces the send-ready candidate is
+> [docs/planning/gen1-grand-review-session-prompt-2026-07-10.md](../planning/gen1-grand-review-session-prompt-2026-07-10.md).
 
 # DRAFT — Claude Code Projects review, gen-1 wrap-up (do not send; finalize when all lanes are wound down)
 
