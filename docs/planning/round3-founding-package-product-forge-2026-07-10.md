@@ -20,6 +20,18 @@
 > `0 */2 * * *` (even hours :00) per the §5 stagger; (e) the Q-0259 ruling-4 money protocol
 > is baked into the instructions — a spend is never executed, it becomes a conservative
 > owner plan.
+>
+> **Role in the fleet (owner-confirmed, 2026-07-10 dispatch part-3 chat):** the forge is
+> the **default executor for build-worthy work that has no owning lane** — when the
+> manager routes a finalized Q-0264 verdict and no dedicated repo owns the work, it lands
+> here as a `products/<slug>/` subtree. The test the manager applies is *"no owning lane
+> exists"*: product-shaped homeless work → forge; fleet/process work → kit/manager; work
+> in an existing lane's domain → that lane, even when its inbox is slow (the forge is not
+> a catch-all — that erosion is what Q-0260 lane boundaries prevent). **Incubator
+> mechanic:** a product that outgrows its subtree (real users, own release cadence, own
+> idea stream) **graduates to a dedicated repo and becomes a lane** — the substrate-kit's
+> own path out of superbot's tree; the repo-creation click is spent only on proven
+> winners.
 
 ## §0 — Owner pre-clicks (gate the rest)
 
@@ -104,23 +116,27 @@ runnable artifact, honest state — with nothing stuck and nothing owner-gated.
 Loop position: Idea Engine files/promotes → the manager routes ORDERs to you →
 you build → the manager consolidates what shipped.
 
-BOOT NOW — your repo is EMPTY; ORDER 000 is the gen2-blueprint §1 seed state:
-1. Read fleet-manager docs/gen2-blueprint.md §1+§2 (raw URL above if the repo
-   isn't attached) and environments/templates/smoke.yml.
-2. WALKING SKELETON FIRST (first 20 minutes): branch → trivial commit → PR →
-   CI → merge, proving the full landing path before any real work. Record which
-   landing path works (auto-merge armed / REST merge-on-green) in
-   control/status.md.
-3. Seed state, one PR train: substrate-kit adopted + engaged (check --strict
-   green) · CI tier assigned (Tier 1 fast-full, smoke.yml pattern, ≤60s) ·
-   CONVENTIONS.md day 0 (READY never draft · you always land your own PRs ·
-   R21 landing path · post-merge review via review-queue.md + @codex · forward-
-   only git) · control/ files + capability manifest + PLATFORM-LIMITS.md +
-   retro questions · claims/ dir seeded · review-queue.md empty header ·
-   products/ dir with a README stating the one-product-one-subtree rule.
-4. Report the two owner clicks your seed produced (Allow auto-merge + the named
-   required check) as one six-field OWNER-ACTION in your status ⚑ block —
-   click-level, copy-paste ready.
+BOOT NOW — your repo is ALREADY SEEDED AND SKELETON-PROVEN (dispatch copilot,
+2026-07-10: seed 5d52f45 + fix c73e3f8 via PR #1):
+1. Sync to origin/main HEAD and VERIFY the seed instead of re-creating it:
+   read README.md (role, no-owning-lane test, build ladder, money protocol)
+   + CONVENTIONS.md (your written merge-authority grant) +
+   .sessions/2026-07-10-seed.md (the seed session's handoff to you); run
+   `python3 bootstrap.py check --strict` — green expected.
+2. The walking skeleton is ALREADY PROVEN: PR #1 landed branch → PR → gate →
+   merge. Landing-path facts to record in your status: main is
+   ruleset-protected (direct push rejected — "changes must be made through a
+   pull request"); auto-merge arming on an all-green PR is declined ("already
+   in clean status") so REST merge-on-green was the working path (R21
+   born-red/clean-state rule). Re-verify on your own first PR.
+3. (Seed-state train: DONE by the copilot — CONVENTIONS.md, control/,
+   PLATFORM-LIMITS.md, retro questions, claims/, review-queue.md,
+   products/README.md are all at HEAD. Do not re-plant; fix forward if
+   something is wrong.)
+4. Report the remaining owner clicks as one six-field OWNER-ACTION in your
+   status ⚑ block — click-level, copy-paste ready: the named required check
+   (read the exact check-run string from PR #1's checks) + Allow auto-merge
+   if the repo settings lack it.
 5. ARM YOUR ROUTINE — call create_trigger with: name "product-forge 2-hourly
    standing wake", cron "0 */2 * * *" (even hours :00 — the manager reads at
    :30), firing into THIS session, prompt EXACTLY:

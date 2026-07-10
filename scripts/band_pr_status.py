@@ -68,7 +68,12 @@ CURRENT_STATE = REPO_ROOT / "docs" / "current-state.md"
 _MARKER_RE = re.compile(r"Last reconciliation pass:\*\*\s*PR #(\d+)")
 # A PR reference in a merge-commit subject: "Merge pull request #734", "Merge PR #734: …"
 # (the MCP-merge style), or "title (#734)" (squash). Mirrors check_current_state_ledger.
-_MERGE_SUBJECT_RE = re.compile(r"(?:pull request #|PR #|\(#)(\d+)")
+# Anchored to real PR-landing forms ONLY (2026-07-10, the "#104" false-red): a
+# merge commit head ("Merge pull request #N ..." / "Merge PR #N: ...") or a squash
+# suffix ("title (#N)" at end-of-subject). An UN-anchored "PR #N" also matched
+# cross-repo references inside ordinary branch-commit subjects that reach main via
+# a true merge (e.g. "... (superbot-next ORDER 010, PR #104); ..." -> phantom #104).
+_MERGE_SUBJECT_RE = re.compile(r"^Merge (?:pull request|PR) #(\d+)|\(#(\d+)\)\s*$")
 
 MERGED = "merged"
 CLOSED_UNMERGED = "closed-unmerged"
@@ -84,7 +89,7 @@ def marker_pr(text: str | None = None) -> int | None:
         except OSError:
             return None
     m = _MARKER_RE.search(text)
-    return int(m.group(1)) if m else None
+    return int(m.group(1) or m.group(2)) if m else None
 
 
 def git_merged_pr_map(limit: int = 240) -> dict[int, str]:
@@ -104,7 +109,7 @@ def git_merged_pr_map(limit: int = 240) -> dict[int, str]:
     for subject in result.stdout.splitlines():
         match = _MERGE_SUBJECT_RE.search(subject)
         if match:
-            pr = int(match.group(1))
+            pr = int(match.group(1) or match.group(2))
             mapping.setdefault(pr, subject.strip())
     return mapping
 
@@ -252,7 +257,7 @@ def git_merged_pr_shas(limit: int = 240) -> dict[int, str]:
         sha, _, subject = line.partition("\t")
         match = _MERGE_SUBJECT_RE.search(subject)
         if match:
-            mapping.setdefault(int(match.group(1)), sha.strip())
+            mapping.setdefault(int(match.group(1) or match.group(2)), sha.strip())
     return mapping
 
 

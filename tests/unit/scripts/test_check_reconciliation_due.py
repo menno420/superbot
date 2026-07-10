@@ -91,9 +91,12 @@ def test_issue_body_flag_prints_body_and_exits_zero(capsys) -> None:
 
 
 def test_merge_subject_regex_covers_all_three_styles() -> None:
-    """The 'PR #' alternative is load-bearing: MCP merges ("Merge PR #N: …")
+    """The 'Merge PR #' alternative is load-bearing: MCP merges ("Merge PR #N: …")
     are the dominant style since 2026-06, and missing them froze the latest-PR
-    detection at #751 while #762 was merged (the 2026-06-12 night pass bug)."""
+    detection at #751 while #762 was merged (the 2026-06-12 night pass bug).
+    Anchoring is equally load-bearing since 2026-07-10: an un-anchored "PR #N"
+    also matched cross-repo references inside ordinary branch-commit subjects
+    (the phantom-"#104" false-red)."""
     subjects = (
         ("Merge pull request #730 from menno420/branch", 730),
         ("docs(hermes): live-verified 2026-06-12 (#751)", 751),
@@ -101,4 +104,12 @@ def test_merge_subject_regex_covers_all_three_styles() -> None:
     )
     for subject, expected in subjects:
         match = crd._MERGE_SUBJECT_RE.search(subject)
-        assert match and int(match.group(1)) == expected, subject
+        assert match, subject
+        assert int(match.group(1) or match.group(2)) == expected, subject
+    # Cross-repo reference mid-subject: must NOT match (phantom-#104 class).
+    assert (
+        crd._MERGE_SUBJECT_RE.search(
+            "docs: never-ask ruling (superbot-next ORDER 010, PR #104); pkg updated"
+        )
+        is None
+    )

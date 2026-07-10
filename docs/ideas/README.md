@@ -36,6 +36,13 @@ Current broad captures:
   games-testing bot etc.) instead of the one shared test bot; deferred by the owner, capture only.
   Subsystem: none.
 
+- [`kit-seed-command-fleet-repo-bootstrap-2026-07-10.md`](./kit-seed-command-fleet-repo-bootstrap-2026-07-10.md) —
+  **session ender (2026-07-10, round-3 dispatch part 3):** a kit `bootstrap.py seed --profile <shape>`
+  collapsing the now-twice-proven ~10-step fleet-repo birth (adopt → slot answers → render → gate →
+  lane layer → card/heartbeat → check → push) into one command; sim-lab + 3 games repos are imminent
+  consumers, and it's the natural home for the #1890 render/engage-stranding fix. Subsystem:
+  agent-ecosystem / substrate-kit.
+
 - [`trigger-registry-liveness-sweep-2026-07-10.md`](./trigger-registry-liveness-sweep-2026-07-10.md) —
   **session ender (2026-07-10, round-3 dispatch session):** make `list_triggers` a standing manager
   wake-step diffing the account trigger registry against the manifest — missing / orphaned /

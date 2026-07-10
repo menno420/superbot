@@ -9507,3 +9507,65 @@ frozen behind the P0 Stripe-path fix), repo creations (product-forge, superbot-p
 
 **Routing.** This entry (provenance) + superbot-next inbox ORDER 010 (the code change) +
 Builder founding package §3 (field removed) + future founding packages inherit rule 2.
+
+### Q-0264 — idea-pipeline redesign: own-repo Idea Engine + a Simulator Project as core seat 6; evidence-gated routing through the manager (owner directive, 2026-07-10)
+
+> **Context.** Live dispatch part-3 session, at the seat-4 boot. The owner stopped the
+> original superbot-homed Idea Engine boot: *"we are currently overcomplicating it and
+> also missing a step."* The redesign came in his words across the same conversation;
+> the sub-forks were settled in two structured-choice rounds (all recommendations
+> taken). The owner was the live reviewer — this entry is the provenance record.
+
+**The directives (owner's words, expanded):**
+
+1. **The Idea Engine works from its OWN repo (`idea-engine`)**, not superbot — so
+   multiple agents can work in parallel in that Project. The repo is divided into
+   **sections, one per main part of the repo system** (derived from the fleet manifest's
+   active lanes + one `fleet/` cross-cutting section — never a hardcoded list), plus the
+   ideas each section generates *for* that target. Supersedes the v1 package's
+   superbot-homed design (env, sole-writer control seeding, in-place promotion).
+2. **The missing step: a dedicated SIMULATOR Project (`sim-lab`) — core seat 6**,
+   superseding the Q-0262.8 superbot-hub pick (that item was ⚑ flagged most-vetoable;
+   the veto arrived). The Idea Engine routes its ideas there; the simulator creates
+   **simulation-based results and suggestions — best implementations,
+   rejections/approvals — based on facts that it reproduces, as well as its own
+   judgement.** Precedents generalized: `tools/sim/claim_layout_sim.py` (settled
+   Q-0195) and `tools/sim/gen3_deployment_sim.py` (settled the gen-3 deployment
+   method) — decisions settled by reproducible evidence, not vibes.
+3. **Validity gate:** each simulator result goes through a fixed question set before
+   its verdict counts — are these results comparable to the real live situation? are
+   they not corrupted (bugs, seeded luck, parameter cherry-picking)? do they survive
+   variation? can someone else re-run them? what do they NOT show?
+4. **Codex review before finalization:** every finalized verdict gets an @codex review
+   (Q-0258 path; Q-0120 verify-never-obey; the #1945 sandbox-reply caveat applies).
+5. **No extra coordinator/builder step.** Finalized evidence packages go to the fleet
+   manager — coordination is its job, so **final review is its job too** — and it
+   routes them as ORDERs into the proper repos; lanes build their own orders. The
+   dedicated hub-executor seat the dispatch copilot had proposed is dissolved; hub
+   games-finishing work routes to the games program (Q-0259 r.5) / owner-started
+   superbot sessions instead.
+6. **Flow mechanics (structured-choice round 2):** sim scope = **all build-worthy ideas,
+   cheapest adequate method** (numeric sim / measured prototype / explicitly-labeled
+   JUDGMENT-ONLY analysis — the manager always sees the evidence strength); intake =
+   **direct pull** (the Idea Engine marks sim-ready ideas in its own outbox; the
+   simulator reads it on wake via public raw; the manager touches only the output side).
+7. **Reusable simulator templates (owner rider, same conversation):** the simulator's
+   product is not just verdicts — it builds **reusable sim templates/harness scripts on
+   its public repo** that other Projects can consume (raw/copy), and **other Projects
+   that come across substantial simulator work route it to sim-lab** rather than
+   building one-off sims inline (trivial inline scripts stay allowed; the routing rule
+   is for substantial/reusable work — lanes flag it, the manager routes it). If the
+   harness matures into fleet-wide adoption, it graduates to kit distribution (the
+   substrate-kit §6 centralization pattern) — start as sim-lab's own public product.
+8. **Standing sub-decisions carried from round 1 (still in force where compatible):**
+   superbot's existing `docs/ideas/` is **referenced, not migrated** (the engine's
+   superbot section indexes by link); the engine works **all three idea classes**
+   (product / process-doctrine / venture-revenue) **priority-weighted** per Q-0259
+   (games completion wave + rebuild pace first); lane intake = **harvest-on-wake**
+   (lanes keep filing ideas locally; the engine sweeps via public raw). The round-1
+   "seat-6 hub executor" fork is superseded by directive 5.
+
+**Routing.** This entry (provenance) + the rewritten
+`planning/round3-founding-package-idea-engine-2026-07-10.md` (v2, own-repo) + the new
+`planning/round3-founding-package-simulator-2026-07-10.md` (seat 6) + runbook §3
+reorder (seat-6 swap, new owner clicks) — all this session.
