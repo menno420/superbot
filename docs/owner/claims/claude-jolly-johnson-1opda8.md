@@ -1,1 +1,0 @@
-- branch `claude/jolly-johnson-1opda8` · scope: Q-0107 docs-only reconciliation pass band-#1920 · files: docs/current-state.md, docs/current-state/S4-docs.md, docs/planning/reconciliation-pass-2026-07-10-band1920.md, docs/ideas/*, .sessions/, dashboard/data/dashboard.json · 2026-07-10

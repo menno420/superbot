@@ -1,15 +1,15 @@
 {
   "meta": {
-    "generated_at": "2026-07-10T02:58:25Z",
+    "generated_at": "2026-07-10T03:29:45Z",
     "build": {
-      "commit": "ed8a2189",
-      "subject": "session: born-red card + claim + telemetry row (shift D — dashboard.json contract slice)",
-      "committed_at": "2026-07-10T02:58:25Z"
+      "commit": "f4da4b8b",
+      "subject": "reconcile band-#1920: born-red session card + lane claim (41st Q-0107 pass)",
+      "committed_at": "2026-07-10T03:29:45Z"
     },
     "schema_version": 1,
     "counts": {
       "functions": 43,
-      "ideas": 225,
+      "ideas": 226,
       "bugs": 31,
       "reviews": 0,
       "reviews_open": 0,
@@ -1195,6 +1195,14 @@
       "status": "ideas",
       "date": "2026-07-10",
       "summary": "`docs/eap/fleet-manifest.md` row's last-seen cell against the lane repo's",
+      "subsystems": null
+    },
+    {
+      "file": "shift-plan-premise-verify-lines-2026-07-10.md",
+      "title": "Idea — shift-plan / scout-report items carry a one-line `verify:` premise command",
+      "status": "ideas",
+      "date": "2026-07-10",
+      "summary": "The 2026-07-10 overnight shift plan's item **Q2** stated that 6 views \"lack a justifying",
       "subsystems": null
     },
     {
@@ -3240,8 +3248,24 @@
       "file": "2026-07-10-shift-d-dashboard-contract.md",
       "date": "2026-07-10",
       "title": "2026-07-10 — dashboard.json pinned-feed contract, first slice (overnight shift, session D)",
-      "status": "in-progress",
+      "status": "complete",
       "run_type": "",
+      "self_initiated": true
+    },
+    {
+      "file": "2026-07-10-shift-b-lane-overlap-remote.md",
+      "date": "2026-07-10",
+      "title": "2026-07-10 — Overnight shift B: `check_lane_overlap.py --remote` + docs hygiene",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-07-10-reconcile-band1920.md",
+      "date": "2026-07-10",
+      "title": "Session — forty-first Q-0107 reconciliation pass (band-#1920)",
+      "status": "in-progress",
+      "run_type": "routine",
       "self_initiated": false
     },
     {
@@ -3699,22 +3723,6 @@
       "status": "complete",
       "run_type": "",
       "self_initiated": true
-    },
-    {
-      "file": "2026-07-07-session1-recut-websites.md",
-      "date": "2026-07-07",
-      "title": "2026-07-07 — Session-1 re-cut: websites on the last Fable day (Q-0253)",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-07-07-reconcile-band1800.md",
-      "date": "2026-07-07",
-      "title": "Session — thirty-seventh Q-0107 reconciliation pass (band-#1800)",
-      "status": "complete",
-      "run_type": "routine",
-      "self_initiated": true
     }
   ],
   "bot_changelog": [
@@ -3912,6 +3920,20 @@
       "model": "fable-5",
       "effort": "high",
       "task_class": "docs-only",
+      "tokens_out": null,
+      "outcome": {
+        "ci_green_first_push": null,
+        "checker_findings": null,
+        "merged_pr": null,
+        "reverted_within_window": null
+      }
+    },
+    {
+      "session": "2026-07-10-shift-b-lane-overlap-remote",
+      "date": "2026-07-10",
+      "model": "fable-5",
+      "effort": "high",
+      "task_class": "test writing",
       "tokens_out": null,
       "outcome": {
         "ci_green_first_push": null,
