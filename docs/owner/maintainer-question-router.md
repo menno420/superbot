@@ -9668,3 +9668,44 @@ NEW seats are founded.
 **Routing.** This entry (provenance) +
 `planning/round3-founding-package-trading-2026-07-10.md` (§1/§2 volume-first clauses) +
 `planning/gen3-deployment-standard-2026-07-10.md` §2 rider — part-4b (PR #1963).
+
+### Q-0267 — games mapping owner-shaped: world seat + idle-engine seat, theme-skin architecture, website-first onboarding (owner directive, 2026-07-10)
+
+> **Context.** Live dispatch part-4e, ~40 minutes after the Q-0259 r.5 mapping relay was
+> pasted to the manager. The owner gave the shape himself. Verbatim: *"now for the games,
+> I already have the superbot-plugin-hello repo, and there is one repo where both
+> exploration and mining live, I think we should get one project on that repo working on
+> those 2 pieces of the game, also add in the fishing and anything that belongs in the
+> exploration/world ecosystem etc, and then there should be another repo and project for
+> the egg farm idle game, and that shoud work on shipping some templates, which should
+> eventually be choosable before you even invite the bot to your server, my idea is tha
+> tyou'll first go on the website to select which features you want, and it would be
+> great if we can make th games we have customizable in theme, so the core will be the
+> same, but we can ship differed skins over it so every discord server can have an idle
+> game that mathces its theme etc, do you understand what I mean? can you expand and
+> improve on my ideas"*
+
+1. **The mapping is owner-shaped, superseding the open manager-proposal step as the
+   source of the shape.** The manager's Q-0259 r.5 deliverable becomes a *conformed*
+   mapping — fill in details (data-API placement, theme-contract home, new repo name,
+   first-shippable sequencing), not propose an alternative frame.
+2. **Seat A:** ONE Project on `superbot-games` owning the whole world ecosystem —
+   exploration + mining + fishing + world-adjacent systems. Gen-2 merges the two
+   terminal gen-1 lanes into one seat (their committed succession packages are the boot
+   input).
+3. **Seat B:** a new repo + Project for the egg-farm idle game, **template-first** —
+   the deliverable is themeable templates, eventually choosable before invite.
+4. **Website-first onboarding** (product direction): select features/themes on the
+   website BEFORE inviting the bot; the bot arrives configured.
+5. **Core/skin split:** same game core, data-only theme packs per server — every
+   Discord server can run an idle game matching its own theme.
+
+**Expansion (owner-requested "expand and improve"), decided-and-flagged per Q-0240:**
+`docs/ideas/games-theme-engine-website-first-2026-07-10.md` — theme packs as validated
+data manifests (theme-gate CI; the best Q-0266 populate-phase fit in the program), egg
+farm as first theme of an idle ENGINE, setup-code interim provisioning before join-time
+manifests, plugin-seam convergence (superbot-next ORDER 002 / `superbot-plugin-hello`),
+sim-lab as the idle-economy verdict path.
+
+**Routing.** This entry (provenance) + the idea file above (expanded design) + dispatch
+runbook §3.7 re-point + §6.2 conformed-mapping paste block — part-4e (PR #1966).

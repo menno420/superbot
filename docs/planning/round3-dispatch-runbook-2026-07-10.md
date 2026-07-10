@@ -308,17 +308,18 @@ Reply here with the substrate-kit section inline + per-class totals when the PR 
    continuous + volume-first (Q-0265/Q-0266) with an ORDER-008-first boot and both
    verdict branches pre-specified; owner clicks = env `trading-strategy` + Project +
    §1/§2 pastes**, websites continuation — booted by the owner ~19:3xZ, env `websites`
-   created) · games program once
-   the manager proposes the repo mapping (Q-0259 r.5) — packages on the standard,
-   reshaped by the games-web pick. **Relay PASTED to the manager (owner-confirmed
-   live, part-4d ~21:3xZ)** with one input added at paste time: the mapping must
-   also **place the read-only data API** (over superbot's dashboard-data-contract,
-   PR #1920) that both games-web phase 2 and the websites stats/explorer pages are
-   blocked on — one of the games repos, a superbot lane, or its own Project.
-   Awaiting the manager's ⚑ mapping proposal. Same owner report: **the manager is
-   preparing a centralized prompt registry** (one home for all Custom Instructions /
-   briefs / wake prompts) — one-source-of-truth rule in the gen-3 standard §4;
-   ingest inventory in §6 below.
+   created) · **games program — mapping now OWNER-SHAPED (Q-0267, part-4e ~21:5xZ,
+   superseding the wait-for-proposal step):** Seat A = ONE Project on
+   `superbot-games` (world ecosystem: exploration + mining + fishing + world
+   systems; gen-2 merges the two terminal gen-1 lanes), Seat B = new repo + Project
+   for the idle ENGINE (egg farm = first data-only theme pack; website-first
+   onboarding). Expanded design:
+   [`../ideas/games-theme-engine-website-first-2026-07-10.md`](../ideas/games-theme-engine-website-first-2026-07-10.md).
+   The part-4d relay (pasted ~21:3xZ) asked the manager to *propose* — the §6.2
+   follow-up block converts that to a **conformed** mapping: manager fills in the
+   data-API placement, theme-contract home, repo name, and sequencing. Same owner
+   report (part-4d): **the manager is preparing a centralized prompt registry** —
+   one-source-of-truth rule in the gen-3 standard §4; ingest inventory in §6.1.
 8. ☐ Verify loop closure: all core routines ACTIVE with completed runs across 24h;
    owner-queue only owner-only items; zero stuck PRs (pack §5 criteria).
 
@@ -327,9 +328,10 @@ Reply here with the substrate-kit section inline + per-class totals when the PR 
 - ~~Idea Engine founding package~~ **done, then REWRITTEN v2 (own-repo) per Q-0264** → [`round3-founding-package-idea-engine-2026-07-10.md`](round3-founding-package-idea-engine-2026-07-10.md).
 - ~~Product Forge founding package~~ **done** → [`round3-founding-package-product-forge-2026-07-10.md`](round3-founding-package-product-forge-2026-07-10.md).
 - ~~Simulator (seat 6) founding package~~ **done (Q-0264)** → [`round3-founding-package-simulator-2026-07-10.md`](round3-founding-package-simulator-2026-07-10.md); the superseded superbot-hub seat needs no package.
-- Game-Project founding packages once the manager's mapping lands (Q-0259 r.5) —
-  relay pasted 2026-07-10 (part-4d); repo count may change with the proposal, which
-  now must also place the read-only data API (see §3.7).
+- Game-Project founding packages: **two seats, owner-shaped (Q-0267)** — World Games
+  on `superbot-games` + Idle Engine on a new repo. Draftable as soon as the manager's
+  *conformed* mapping lands (or directly on owner go — the shape is decided; only
+  data-API placement, theme-contract home, and the repo name are still open, see §3.7).
 - ~~Trading founding package~~ **done (part-4b, owner-directed)** →
   [`round3-founding-package-trading-2026-07-10.md`](round3-founding-package-trading-2026-07-10.md)
   (continuous + Q-0266 volume-first; ORDER-008-first boot; conversion of a live lane, not a birth).
@@ -410,7 +412,7 @@ there) · fleet-manager visibility joins the account-wide review (non-urgent).
 
 ### 6.1 Prompt-registry ingest inventory (for the manager chat — pending paste)
 
-Context: the owner reported (part-4d, 2026-07-10 ~21:3xZ) the manager is preparing a
+Context (status: PENDING PASTE — flip to "pasted <time>" on owner confirmation): the owner reported (part-4d, ~21:3xZ) the manager is preparing a
 centralized prompt home. This block starts it *complete* instead of letting it
 rediscover where prompts live. Delivered to the owner in-chat; committed here so a
 lost chat never re-drafts it.
@@ -438,4 +440,35 @@ seat can be asked to quote its version header to detect drift. (c) Once ingested
 flag the superbot copies for superseded-by pointers — they stay as frozen history;
 the registry copy is canonical from then on.
 After ingest: flag the registry location in your status so the copilot can verify.
+```
+
+### 6.2 Games mapping — owner-shaped follow-up (for the manager chat — pending paste)
+
+Context (status: PENDING PASTE — flip to "pasted <time>" on owner confirmation): part-4e (~21:5xZ, Q-0267) — the owner gave the games shape himself
+~40 min after the 6.1-era relay asked the manager to *propose* one. This block converts
+the manager's deliverable from "propose" to "conform + fill in".
+
+```
+DISPATCH from the owner (round-3 part-4e, 2026-07-10): the games mapping is now
+OWNER-SHAPED (superbot router Q-0267) — treat this as the decided frame; your
+Q-0259 r.5 deliverable becomes a CONFORMED mapping that fills in details, not an
+alternative shape:
+1. Seat A — ONE Project on menno420/superbot-games (existing): the whole world
+   ecosystem — exploration + mining + fishing + anything world-adjacent. Gen-2
+   relaunch merges the two terminal gen-1 lanes into one seat; their committed
+   succession packages (docs/retro/, docs/gen2-custom-instructions-exploration.md)
+   are boot inputs.
+2. Seat B — a NEW repo + Project for the idle game (egg farm = the FIRST THEME).
+   Template-first: the deliverable is an idle-engine CORE plus data-only THEME
+   PACKS (same mechanics, different skin per server), themes validated by CI.
+3. Product direction both seats build toward: website-first onboarding — features
+   and themes chosen on the website BEFORE the bot is invited (the websites lane
+   owns the selector UI; the games seats own the manifests it renders).
+4. Games ship as plugin packages on superbot-next's manifest/plugin contract
+   (superbot-plugin-hello is its owner-created validation repo).
+Still yours to place in the conformed mapping: the read-only data API (previous
+relay) · the theme-manifest contract's home · the new repo's name proposal ·
+first-shippable sequencing per seat. Full expanded design: superbot
+docs/ideas/games-theme-engine-website-first-2026-07-10.md.
+Flag the conformed mapping as an owner-queue ⚑ in your status for the owner's react.
 ```
