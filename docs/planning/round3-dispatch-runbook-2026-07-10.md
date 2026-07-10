@@ -212,8 +212,13 @@ Reply here with the substrate-kit section inline + per-class totals when the PR 
 > standard.
 
 2. ☐ **substrate-kit (core seat 2 — NEXT).** Finalize-first: F-5 ruling into kit's inbox
-   (recommendation: Reading A, launch pack §4.1) · kit repo settings ("automatically
-   update branches"; verify auto-merge/required-check state) · drain its ⚑ list · owner
+   (recommendation: Reading A, launch pack §4.1) · repo settings **verified from the
+   owner's 17:20 recording, unchanged since creation**: auto-merge ✓, auto-delete
+   branches ✓, ruleset active with required checks "Kit test suite" + "Cold-adoption
+   smoke" ✓ — the ONE change: **uncheck "Require branches to be up to date before
+   merging"** in the main-branch-protection ruleset (root of kit's recorded green-PR-
+   stalls-behind wall; the "automatically update branches" setting its ⚑ asked for does
+   not exist as full-auto on GitHub — ask corrected) · drain its remaining ⚑ list · owner
    deletes NOTHING yet: the old hourly trigger (`trig_01FnqnAQjLU2T8d16iHwWQ2h`,
    session-bound) is deleted by the NEW boot itself, then the old chat can be archived.
    Package: [`round3-founding-package-substrate-kit-2026-07-10.md`](round3-founding-package-substrate-kit-2026-07-10.md)

@@ -23,8 +23,14 @@
 
 1. **F-5 ruling** into substrate-kit's `control/inbox.md` (one line; recommendation:
    **Reading A**, launch pack §4.1 — honest-negative headlines are the credibility asset).
-2. Kit repo settings: tick **"automatically update branches"** (its standing ⚑ ask);
-   confirm *Allow auto-merge* + required checks unchanged.
+2. Kit repo settings — verified from the owner's 2026-07-10 17:20 recording (unchanged
+   since creation): auto-merge ✓, auto-delete branches ✓, required checks "Kit test
+   suite" + "Cold-adoption smoke" ✓. **One change: uncheck "Require branches to be up to
+   date before merging"** (ruleset → Require status checks → additional settings) — the
+   root of the recorded green-PR-stalls-`behind` wall. The "automatically update
+   branches" setting the old ⚑ asked for does not exist as a full-auto GitHub option
+   (only suggest-update + merge queue) — that ask is herewith corrected. Optional: tick
+   "Block force pushes" (forward-only doctrine, free).
 3. Skim kit's remaining ⚑ OWNER-ACTIONS in `control/status.md` — answer or explicitly
    defer each (a deferred item gets one line in the inbox so the new seat knows).
 4. Environment update (§3): attach the fleet repos to the `substrate-kit` env.
