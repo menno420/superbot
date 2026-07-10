@@ -1,5 +1,7 @@
 # Hostile audit: checking the checkers (2026-07-10)
 
+> **Status:** `audit` — external (Codex/GPT-5.6-Sol) factual re-verification, independently spot-checked 2026-07-10 (see addendum).
+
 Scope: read-only re-verification of factual claims in:
 
 - `docs/eap/gen1-grand-review-2026-07-09.md`
@@ -204,3 +206,36 @@ Evidence for the document/PR existence only: <https://api.github.com/repos/menno
 1. In `fleet-overnight-review-2026-07-10.md`, replace the `superbot-next` one-liner’s “~20 PRs up the testing ladder” with a narrower statement such as: “2 overnight PRs (#98/#99) landed status/backlog prep after the prior evening's band-5 work.”
 2. Timestamp or qualify the “zero open PRs” headline, or change it to “zero open PRs at review snapshot” and include the snapshot time plus API query transcript.
 3. Clarify whether `fleet-manager` “18 PRs” is cumulative project output or overnight output; if overnight, correct it to 3 for 00:00–06:15Z.
+
+---
+
+## Independent verification addendum (Claude, 2026-07-10)
+
+Five of the fifteen claims were re-verified by a second, independent method
+(local git history in superbot; fresh clones + pytest for superbot-games;
+GitHub API for superbot-next). **All five reproduced exactly:**
+
+| Claim | This audit said | Independent re-check | Verdict |
+|---|---|---|---|
+| 1 (superbot overnight count) | 13 | 13 distinct PRs on first-parent `main`, 00:00–06:15Z | exact |
+| 4 (superbot-next window) | only #98, #99 | #98 merged 00:57:42Z, #99 merged 01:10:01Z; titles verbatim; #95/#97 merged pre-midnight | exact |
+| 7 (superbot-games tests) | 73 + 48 | `pytest --collect-only`: 73 and 48 | exact |
+| 8 (CI gap) | workflow runs only `tests/` | `substrate-gate.yml:62` = `python3 -m pytest tests/ -q`; the step comment itself says the gate ran zero tests before it | exact |
+| 9 (#1910 merge time) | 23:18:36Z | `git log`: 2026-07-09T23:18:36Z | exact |
+
+Corroboration: fleet-manager's own `docs/planning/gen2-launch-record-2026-07-10.md`
+§5.1 independently corrected "~80 fleet PRs" to the same **116** this audit
+reproduced.
+
+**One verdict-precision note:** claim 3 ("zero open PRs") is labeled REFUTED,
+but the audit's own caveat concedes the statement may have been true at the
+review snapshot and only provably differs *later*. For a time-indexed snapshot
+claim, the accurate verdict under this audit's own definitions is
+**UNVERIFIABLE as written** (with the fix it already recommends: timestamp +
+API transcript). The refutation stands only against the *durable/unqualified*
+reading.
+
+The three recommended corrections at the end of this audit are endorsed; the
+`superbot-next` "~20 PRs up the testing ladder" correction (claim 4) is the
+load-bearing one and should be applied to
+`docs/eap/fleet-overnight-review-2026-07-10.md`.
