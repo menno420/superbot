@@ -30,6 +30,11 @@ the exact append point the split removed.
    recently-closed PRs (`list_pull_requests`). If your task is already claimed or in flight,
    coordinate or pick something else — don't duplicate it. The mechanical scan is
    `python3.10 scripts/check_lane_overlap.py <scope> ...` (it reads this directory).
+   **In a known-parallel wave, add `--remote`** — it also reads claim files pushed on
+   un-merged sibling branches (`origin/claude/*` / `origin/bot/*`), so a sibling's born-red
+   first push is visible *before its PR exists*; and re-run the scan **once more right after
+   your own claim push** (if both lanes do this, the second pusher always sees the first —
+   the cheap mitigation for the simultaneous-start race).
 2. **Create one claim file** named for your branch — `<branch-with-slashes-as-__>.md` — containing
    a single bullet line in the format:
    `` - `branch` · **scope** — detail · `path` `path` · date · PR/status ``

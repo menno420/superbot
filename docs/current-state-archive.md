@@ -86,6 +86,86 @@
 
 ## Recently shipped — archived (newest first)
 
+- **#1843 · #1848 · #1849 (2026-07-08, S5/ops — per-repo settings ledger: forward-only Project experiment)** —
+  a readable per-repo settings ledger so future sessions **read state, not guess**: **#1843** captured the
+  forward-only Project experiment idea + the ledger plan; **#1848** shipped **Phase 1** — the `superbot-next`
+  General settings captured from the owner's screen recording (frames extracted via a dev-only
+  `imageio-ffmpeg`) into [`operations/repo-settings-state.md`](operations/repo-settings-state.md); **#1849**
+  corrected it (new repos are **bare** + the full auto-mode API capability map). Phase 2 (a generator that
+  auto-maintains the rows) stays queued.
+- **#1845 · #1846 · #1854 · #1855 (2026-07-08, S4/workflow — grooming waves: idea→plan + friction→guard)** —
+  the campaign's grooming lanes, all idea-lifecycle / self-improvement: **#1845** (lane C) promoted the
+  **usage-limit-aware routines** idea → a 2-PR plan + roadmap S5 horizon; **#1846** (lane B) shipped the
+  **supersede-banner integrity checker** (`scripts/check_supersede_integrity.py` + a warn-first `check_docs`
+  soft check, 16 tests); **#1854** groomed the #1846 follow-ons; **#1855** closed the "green-by-skip" gap by
+  wiring **`check_plan_homing --strict` as an always-run pre-setup gate** in `code-quality.yml` so the
+  docs-only fast path can no longer land an unhomed plan (Q-0194 friction→guard).
+- **#1833 (2026-07-08, workflow — thirty-eighth Q-0107 reconciliation pass, band-#1830)** —
+  the 38th docs-only reconciliation + planning pass
+  ([pass record](planning/reconciliation-pass-2026-07-08-band1830.md)): reconciled band #1801–#1830,
+  trimmed Recently-shipped to 20, disposed the open-PR set (6 dependabot bumps in flight), confirmed the
+  control-plane, refreshed the dashboard export, reset the marker #1800 → #1830.
+- **#1835 · #1836 · #1841 (2026-07-07/08, docs — dashboard-data refreshes, Q-0167)** —
+  three per-source-merge refreshes keeping the committed `dashboard/data/dashboard.json` export fresh as the
+  EAP-email / settings-ledger / grooming arc landed.
+- **#1807 · #1810 · #1811 · #1812 · #1813 · #1814 · #1816 · #1817 · #1818 · #1819 · #1820 · #1821 · #1822 · #1823 · #1825 · #1826 · #1827 · #1828 · #1829 · #1830 (2026-07-07/08, S3 rebuild — the SuperBot Project coordinator kickoff → live calibration → EAP-evaluation arc)** —
+  the band's headline: the **Claude Code Projects (EAP) coordinator went live** and ran the rebuild
+  program's first stretch. **#1807/#1810** stood up the early-access / repo-first kickoff (owner creates
+  `superbot-next` first, multi-repo picker test) + fixed pre-existing badge/plan-homing drift on sight
+  (#1808, Q-0166). **#1811…#1823** rewrote the [coordinator kickoff + calibration doc](planning/projects-eap-coordinator-kickoff-2026-07-07.md)
+  through ~13 owner-steered addenda — thin pointer-first Custom Instructions, the 13-item **calibration
+  exchange** (the coordinator scored a strong pass, Q7 verified against live GitHub), the **SECOND MANDATE**
+  evaluation guidebook (**#1820** — the Projects-EAP journal + seven EAP axes, so the Project both *executes*
+  the rebuild and *evaluates Claude Code Projects* for the owner's standing-Anthropic-channel goal), tempo
+  correction (3-day free-window *stretch goal*, correctness first), the Q-0247 kit-extraction sequence made
+  explicit, the don't-spare-on-agents fan-out mandate, and the §7 **working-relationship inquiry** →
+  a durable operating model (kickoff §8). **The EAP findings for the owner's Friday Anthropic feedback**
+  (the evaluation's whole point) landed across #1821…#1830: the **auto-mode permission / consent-wall**
+  (falsified-then-corrected several times as the owner probed the UI — headline = the first-publish push
+  wall is likely **un-self-clearable in cloud Projects** (auto-mode-only, no permissions UI)); the
+  **secrets-field** thread raised → recalibrated → **dropped as a non-incident** (#1826/#1827/#1828, owner
+  editorial call — feedback stays incident-backed only); the **4 KiB `start_project_session` dispatch cap**
+  (#1829); and the direct **11-test permission-boundary probe report** (**#1830** — constructive/reversible
+  actions run prompt-free, destructive-git-to-a-published-ref is hard-walled with no self-clear path).
+  Docs-only throughout (no `disbot/`). ⚑ Owner-parked: the step-7 first-publish push and the stranded
+  scratch branch `test/permprobe-0708` (harmless; auto mode can't self-delete a remote ref).
+- **#1806 · #1809 (2026-07-07, workflow — Q-0254 understand-and-reflect rule → portable kit doctrine)** —
+  graduated the **understand-and-reflect** working-agreement rule (state back the fuller picture + implied
+  specs before substantive work; surface the possibility space when feasibility is uncertain) into the
+  portable **substrate-kit** templates (`CONSTITUTION.md.tmpl` + `collaboration-model.md.tmpl` +
+  `question-router.md.tmpl`) so it travels to every future repo, with superbot's local `.claude/CLAUDE.md`
+  copy kept in sync. Docs/kit-template only.
+- **#1802 · #1804 (2026-07-07, S3 rebuild — program founding briefs: website-design + kit-lab)** —
+  two of the Q-0252 three-program-sessions founding artifacts closed out: the **website-design brief**
+  (#1802 — verification record + proof screenshots, docs homing, card flipped green) and the **kit-lab
+  founding brief** (#1804). Part of the [three-program-sessions launch](planning/program-three-sessions-launch-index-2026-07-07.md).
+- **#1801 · #1803 (2026-07-07, workflow — thirty-seventh Q-0107 reconciliation pass, band-#1800)** —
+  the 37th docs-only reconciliation + planning pass
+  ([pass record](planning/reconciliation-pass-2026-07-07-band1800.md)): reconciled band #1771–#1800,
+  trimmed Recently-shipped to 20, closed the 5 consumed Codex Gate-V evidence PRs, confirmed the
+  control-plane, refreshed the dashboard export, reset the marker #1770 → #1800.
+- **#1805 · #1815 · #1824 (2026-07-07/08, docs — dashboard-data refreshes, Q-0167)** —
+  three per-source-merge refreshes keeping the committed `dashboard/data/dashboard.json` export fresh as
+  the coordinator-kickoff / EAP-evaluation arc landed.
+- **#1791 · #1792 · #1793 · #1794 · #1795 · #1796 · #1797 · #1798 (2026-07-07, S3 rebuild — idea-consolidation → multi-repo program founding + owner rulings Q-0243…Q-0252)** —
+  the pre-program-launch consolidation session. **#1791** folded the day's four owner captures + hardened
+  the §3.C risks into the canonical-plan machinery (§11b amendments A-12…A-20; registry mints R-16/R-17/P-5).
+  Owner rulings: **#1792** (Q-0243 pricing-by-simulation + Q-0244 slash verification inherits prefix, never a
+  blocker), **#1796** (Q-0250 trading repo stocks-first — US large-cap tech, point-in-time universe, API-broker
+  paper lane, DEGIRO manual venue), **#1797** (Q-0251 trading operating model — decision-ledger mock trades,
+  sniper bucket, 3-way hybrid allocator). **#1794** captured the **multi-repo program** (repo-start mechanics ·
+  kit self-improvement lab · trading research repo); **#1795** the steps-6–8 kickoff-readiness brief
+  (Q-0247/Q-0248/Q-0249); **#1798** (Q-0252) prepared the **three program sessions** — kit-lab + trading
+  founding briefs + the [launch index](planning/program-three-sessions-launch-index-2026-07-07.md). #1793 =
+  format/lint + env-var-artifact regen for `EXTRA_OWNER_USER_IDS`.
+- **#1784 · #1785 · #1786 · #1787 · #1788 · #1789 · #1790 (2026-07-07, S3 rebuild-plan review + owner-idea capture, incl. an S1 automod runtime fix #1789)** —
+  an owner-review session over the rebuild plan that captured rulings/ideas and shipped one runtime fix:
+  **#1785** recorded the owner ruling on auto-collect gating (coins+XP unlock), **#1786** three
+  foundational/feature gaps, **#1787** the automod duplicate-content + cross-channel spam gaps; **#1789** then
+  *shipped* the **S1 automod fix** (cross-channel spam-evasion + duplicate-content detection —
+  `services/automod_service.py`/`automod_config.py` + `cogs/automod/schemas.py` + 3 test files; a genuine
+  `disbot/` runtime change). **#1788/#1790** = the Fable-5 ultracode brief to fold the day's ideas into the
+  plan (revised once #1789 shipped — the automod finding is shipped-not-a-fold candidate).
 - **#1778 · #1783 (2026-07-07, S3 rebuild — the FINAL rebuild-plan review session)** —
   the final review over the frozen canonical plan (verdict: **plan ready**; §11 amendments folded; readiness
   scored — [report](planning/rebuild-final-review-report-2026-07-07.md)), which also produced the §6.3

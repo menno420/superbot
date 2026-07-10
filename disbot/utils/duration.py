@@ -47,7 +47,10 @@ def parse_duration(text: str) -> int | None:
 
 
 def format_duration(seconds: int) -> str:
-    """Render seconds as a compact human string (``5400`` → ``"1h 30m"``)."""
+    """Render seconds as a compact human string (``5400`` → ``"1h 30m"``).
+
+    Returns a space-separated duration string using day/hour/minute/second units.
+    """
     if seconds <= 0:
         return "0s"
     parts: list[str] = []

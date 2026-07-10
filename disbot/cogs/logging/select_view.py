@@ -126,6 +126,10 @@ class _ClearBindingButton(discord.ui.Button):
         await _commit_clear(interaction, kind=self.kind)
 
 
+# Extends discord.ui.View directly (not BaseView): specialized lifecycle —
+# a single-shot ephemeral select flow that self-stops after a successful
+# interaction and edits no parent message; the ephemeral message is
+# auto-dismissed by Discord, so BaseView's on_timeout edit has no target.
 class LogChannelSelectView(discord.ui.View):
     """Invoker-locked view with one ChannelSelect + a Clear button.
 

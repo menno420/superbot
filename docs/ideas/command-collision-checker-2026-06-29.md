@@ -1,7 +1,16 @@
 # Idea — `check_command_collisions.py`: static guard against duplicate command names
 
-> **Status:** `ideas` · raised 2026-06-29 (twenty-ninth Q-0107 reconciliation pass, band-#1560).
+> **Status:** `historical` — implemented (PR #1918, 2026-07-10) · raised 2026-06-29 (twenty-ninth Q-0107 reconciliation pass, band-#1560).
 > Lane: S3 (agent-workflow / self-improving guards). Gate: `ready` (offline, stdlib, CI-wired).
+>
+> **Shipped:** `scripts/check_command_collisions.py` + `tests/unit/scripts/test_check_command_collisions.py`
+> (PR #1918). Live tree at implementation: 403 token claims (368 prefix incl. aliases, 35 slash), 0
+> collisions. The suite includes a standing live-tree regression test
+> (`test_live_tree_has_zero_collisions`) so every full pytest run already exercises the real cog tree.
+> **Follow-up (deliberately deferred — workflow edits were out of the implementing session's overnight
+> scope):** wire the script into `.github/workflows/code-quality.yml` as its own step so a collision
+> reds the PR check directly, not just the pytest job. Until then the regression test is the CI
+> enforcement path and the script is the local pre-push tool.
 
 ## The problem this prevents (a real prod outage, this band)
 

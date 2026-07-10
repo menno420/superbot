@@ -96,8 +96,11 @@ more PRs merged afterward, including the lane's own official wind-down-complete 
 error-message sequence is attributed to one doc but only actually appears in a different one.
 
 ### codetool-lab-sonnet5
-Only lane to ship an actual shell script (not prose) as its environment deliverable, and it
-reads as genuinely defensive/tested. A differential-testing incident (3 real parser bugs
+Shipped an actual shell script (not prose) as its environment deliverable — though not the
+only lane to do so: five other lanes (opus4.8, websites, trading-strategy, fable5,
+superbot-games) also shipped real setup scripts — and it reads as genuinely
+defensive/tested. *(Correction 2026-07-10: this sentence originally called sonnet5 the only
+such lane; refuted by fleet-manager `docs/findings/ultracode-verification-2026-07-10.md`.)* A differential-testing incident (3 real parser bugs
 found and fixed, with an exact before/after test count) checked out exactly against the
 merge diffs. Minor slip: one retro item is attributed to PR #8; it actually shipped in PR #7.
 

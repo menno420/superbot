@@ -31,6 +31,41 @@ only the header block is read, so a `**Subsystem:**` *example* in an idea's body
 
 Current broad captures:
 
+- [`telemetry-model-name-vocabulary-2026-07-10.md`](./telemetry-model-name-vocabulary-2026-07-10.md) —
+  **session ender (2026-07-10, 41st Q-0107 reconciliation pass, band-#1920):** pin the
+  `telemetry/model-usage.jsonl` `model` field to a canonical short-name enum + validator (reusing the
+  #1894 gate) so the Q-0248 allocation feed doesn't fragment one model across `opus-4.8`/`opus 4.8`/
+  `claude-opus-4-8` spellings — and resolve the undercover-ID-vs-telemetry tension explicitly (record
+  the *family* name, never the exact `claude-*[1m]` ID). Hit live this pass. Subsystem: none.
+- [`shift-plan-premise-verify-lines-2026-07-10.md`](./shift-plan-premise-verify-lines-2026-07-10.md) —
+  **session ender (2026-07-10, overnight shift D, PR #1920):** every actionable scout-report /
+  shift-plan item carries a one-line `verify:` command proving its *premise* still holds at pick-up
+  time (distinct from "Verification:", which proves the fix). Born from a live miss: the shift plan's
+  Q2 claimed 6 views lacked baseview justifying comments, but all 6 had them since #1871 — a 5-second
+  `grep -L` in the plan would have killed the stale item before any session picked it up.
+- [`command-surface-extractor-consolidation-2026-07-10.md`](./command-surface-extractor-consolidation-2026-07-10.md) —
+  **session ender (2026-07-10, command-collision-checker session, PR #1918):** three stdlib-AST tools
+  (`scan_commands.py`, `check_command_collisions.py`, `check_command_reachability.py`) now each
+  re-implement the cog-decorator command-surface parse with different edge coverage (the collision
+  checker's hybrid-command blind spot was caught only by a lucky dedup look at its sibling). Factor
+  one `scripts/lib/command_surface_ast.py` declaration stream and re-base all three — a concrete
+  first slice of `warn-first-checker-authoring-kit-2026-07-06.md`. Subsystem: none (build hygiene).
+- [`adopt-codetool-lab-tools-2026-07-10.md`](./adopt-codetool-lab-tools-2026-07-10.md) —
+  **owner repo-disposition review (2026-07-10):** the three codetool "test" labs each built a
+  real CLI (mdverify — released; envdrift; cfgdiff) — adopt them as fleet tools (mdverify
+  over docs/ first), then archive sonnet5+fable5 repos after harvest. Subsystem: tooling.
+- [`idea-probe-brainstorm-simulator-2026-07-10.md`](./idea-probe-brainstorm-simulator-2026-07-10.md) —
+  **owner-raised (2026-07-10, round-3 planning day):** a brainstorming simulator — probe any
+  idea with a structured question battery (+ panel-simulation mode) to get the filled-in
+  picture and the way forward; Q-0254 understand-and-reflect turned from habit into tool,
+  and the natural core method of the new Idea Engine (round-3 pack §5). One engine, two
+  skins with the suggestion copilot below. Subsystem: Idea Engine / agent workflow.
+- [`website-suggestion-copilot-2026-07-10.md`](./website-suggestion-copilot-2026-07-10.md) —
+  **owner-raised (2026-07-10, round-3 planning day):** an AI helper on the websites that
+  turns vague suggestions/bug reports (from the owner or visitors) into structured,
+  routable intake via a short clarifying interview — the public skin of the idea-probe
+  battery; lands on the `/submit` path. Needs a capped server-side API key (owner-gated).
+  Subsystem: websites / intake pipeline.
 - [`cross-agent-trust-ledger-2026-07-10.md`](./cross-agent-trust-ledger-2026-07-10.md) —
   **session ender (2026-07-10, GPT-5.6 Sol eval session):** generalize the Sol Codex
   eval suite (`docs/owner/gpt-5-6-sol-codex-eval-2026-07-10.md`) into a standing
@@ -38,13 +73,17 @@ Current broad captures:
   re-run on every model release — so cross-agent routing (Q-0120) is data-driven
   instead of tribal knowledge.
 - [`fleet-manifest-freshness-checker-2026-07-10.md`](./fleet-manifest-freshness-checker-2026-07-10.md) —
-  **gen-2 night-prep seed (2026-07-10, PR #1915):** a checker comparing each fleet-manifest row's
-  last-seen against the lane repo's `control/status.md` header — the manifest cells went stale within
-  hours all through gen-1 (grand review §5); "enforce, don't exhort" applied to the fleet dashboard.
+  **gen-2 night-prep seed (2026-07-10, PR #1915) · `historical` — implemented PR #1923:** a checker
+  comparing each fleet-manifest row's last-seen against the lane repo's `control/status.md` header —
+  the manifest cells went stale within hours all through gen-1 (grand review §5); "enforce, don't
+  exhort" applied to the fleet dashboard. Shipped as `scripts/check_manifest_freshness.py` (git
+  transport, advisory, fail-open).
 - [`coordinator-self-review-against-1901-2026-07-10.md`](./coordinator-self-review-against-1901-2026-07-10.md) —
-  **gen-2 night-prep seed (2026-07-10, PR #1915):** the coordinator lane is the only gen-1 lane that
-  never answered the #1901 retro question set it planted — assemble its self-review pair from the
-  existing corpus so the gen-2 blueprint's input covers all ten lanes.
+  **gen-2 night-prep seed (2026-07-10, PR #1915) · `historical` — implemented PR #1924:** the
+  coordinator lane is the only gen-1 lane that never answered the #1901 retro question set it
+  planted — assemble its self-review from the existing corpus so the gen-2 blueprint's input
+  covers all ten lanes. Shipped as `docs/retro/self-review-2026-07-09.md` (protocol-canonical
+  path), indexed from `docs/eap/README.md`.
 - [`cross-repo-eap-verification-orientation-pointer-2026-07-09.md`](./cross-repo-eap-verification-orientation-pointer-2026-07-09.md) —
   **reconciliation session ender (2026-07-09, 40th Q-0107 pass):** add a short cross-repo verification
   pointer to the orientation route — verify a sibling EAP repo with *its own* CI interpreter
@@ -52,10 +91,12 @@ Current broad captures:
   ~75 phantom failures) and name the `add_repo` → GitHub-MCP → clone-and-run first-party flow, so every
   manager-Project run stops re-deriving it.
 - [`pinned-feed-contract-for-dashboard-json-2026-07-09.md`](./pinned-feed-contract-for-dashboard-json-2026-07-09.md) —
-  **session ender (2026-07-09, PR #1884):** extend the pinned-feed-contract pattern (the console.json
-  shape contract, `botsite/data/console_data_contract.json`) to `dashboard.json` — the websites repo's
-  dashboard renders ~12 pages off that feed with no contract at all, the same silent-break class the
-  console contract just closed (and whose first consumer-side pass caught a live dict-vs-list defect).
+  **session ender (2026-07-09, PR #1884); first slice SHIPPED (PR #1920)** — extend the
+  pinned-feed-contract pattern (the console.json shape contract) to `dashboard.json` — the websites
+  repo's dashboard renders ~12 pages off that feed with no contract at all. #1920 shipped
+  `dashboard/data/dashboard_data_contract.json` (slice semantics; `meta` + `bugs`) + producer parity +
+  fail-closed checker; remaining families (catalogue / cogs / settings / env_usage / ideas / updates /
+  synonyms / access) land family-by-family with version bumps.
 - [`live-tree-test-culprit-attribution-2026-07-08.md`](./live-tree-test-culprit-attribution-2026-07-08.md) —
   **grooming capture (2026-07-08, PR #1846 follow-on pass):** live-tree ground-truth tests
   (plan homing etc.) fail on innocent fresh branches whenever an earlier merge shipped tree
@@ -71,7 +112,7 @@ Current broad captures:
   lane hasn't). Adds a cross-pass memory step that escalates a runtime PR deferred ≥3 passes into a loud
   one-line owner/dispatch hand-off, so "not my lane" stops becoming "no lane forever."
 - [`claim-remote-visibility-scan-2026-07-08.md`](./claim-remote-visibility-scan-2026-07-08.md) —
-  **session idea (2026-07-08, Q-0089, grooming wave-1 lane C, #1845):** claims only become visible
+  **session idea (2026-07-08, Q-0089, grooming wave-1 lane C, #1845) — ✅ SHIPPED (PR #1919):** claims only become visible
   to siblings via the open PR — `check_lane_overlap.py` reads the *local* claims dir, so a claim on
   an un-merged sibling branch (and any lane in the pre-first-push window of a simultaneous-start
   wave) is invisible to the tool. Add a `--remote` mode that scans recent `origin/claude/*` refs for
@@ -409,7 +450,8 @@ Current broad captures:
   `!aireview list`). Reads existing redacted rows + the shared `normalize_question` key; no new table; pairs
   with a preset hit-counter. Completes the operator-pull loop with a bot-push direction. Subsystem: ai.
 - [`command-collision-checker-2026-06-29.md`](./command-collision-checker-2026-06-29.md) —
-  **captured 2026-06-29 (band-#1560 reconciliation pass, Q-0089):** a `check_command_collisions.py` (offline,
+  **implemented (PR #1918, 2026-07-10 — script + tests shipped; the `code-quality.yml` step wiring is
+  the noted follow-up in the idea file); captured 2026-06-29 (band-#1560 reconciliation pass, Q-0089):** a `check_command_collisions.py` (offline,
   stdlib AST, CI-wired) that fails when two cogs register the same top-level command name/alias — turning the
   band's `give`-collision **prod boot-crash** (#1541/#1544, statically detectable yet it reached production)
   into a red PR. The cheapest-tier (CI) half of the Q-0194 friction→guard escalation; pairs with #1544's

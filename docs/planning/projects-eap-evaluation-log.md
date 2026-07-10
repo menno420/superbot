@@ -292,3 +292,45 @@ product review's analysis — confirm, contradict, or deepen it with lived examp
   10-Project call volume this recurs ~hourly. Manager workaround: direct REST merge on green as
   fallback. · expected: auto-merge arming to be REST-reachable, or per-Project token quotas — a
   10-agent fleet on one user token saturates GraphQL. · weight: friction · reproducible: yes
+- 2026-07-10 ~11:01Z · axis: scheduling/routines + sidebar states · observed: **owner
+  screen-recording (13:01 CEST, Samsung browser) falsifies the "routine creation is walled on
+  both sides" doctrine** (fleet-manager `docs/capabilities.md` had it verified-walled earlier
+  the same day): the claude.ai **Routines** screen shows two agent-armed, ACTIVE, firing
+  routines — "trading-strategy 4-hourly standing ritual wake" (Created by Claude, every 4h,
+  next run 14:05, completed run 10:09) and "kit-lab gen2 hourly wake" (Created by Claude,
+  hourly, next run 14:00, three completed runs 12:28/12:28/12:30) — alongside the two older
+  owner-era superbot routines. So agent self-arming works (at least from some seats — cf. the
+  per-seat classifier inconsistency class), and the console DOES have a Routines pane on this
+  device. **The residual gap is observability:** each routine says "Session — continues in the
+  same session across runs" with RECENT ACTIVITY ticks, but the owner cannot open the completed
+  runs from the routine screen ("Open session" ineffective) — completed work is visible only as
+  a timestamp, not inspectable. · expected: routine runs link to the actual session
+  transcript/summary from the Routines screen. · weight: capability-unlock (self-wake works!)
+  + friction (runs not inspectable) · reproducible: yes (recording on file; routines still
+  armed) · follow-ups: correct fleet-manager `capabilities.md` + blueprint §2a wake doctrine;
+  re-test which seat types can self-arm; owner-queue "arm the routines" items are partially
+  self-served. **Second owner recording (13:04 CEST) confirms the loop end-to-end and adds a
+  view inconsistency:** the kit-lab coordinator session (driven by the self-armed hourly
+  routine) is live and reporting the B1 run-4 bench honestly (FAIL under both F-5 readings,
+  #115/#116/#117 merged on green, 819 tests — matches the repo record exactly), and it
+  autonomously paused build dispatch pending the owner's F-5 ruling; but the session-side
+  "Runs" panel shows "No runs yet" while the Routines screen shows 3 completed runs — two
+  surfaces disagreeing about the same routine's history.
+- 2026-07-10 ~11:01–11:04Z · axis: routines/scheduling + sidebar states · observed: the two
+  **routine-observability bugs** embedded in the capability-unlock entry above, split out as
+  their own bug record on the round-3 brief's order
+  ([`round3-launch-pack-2026-07-10.md`](round3-launch-pack-2026-07-10.md) §1(d)) — lived owner
+  incidents (screen recordings 13:01 + 13:04 CEST, Samsung browser), not staged. **(1) Completed
+  routine runs are not inspectable from the Routines screen:** each routine shows RECENT
+  ACTIVITY ticks and completed-run timestamps (trading-strategy run 10:09; kit-lab runs
+  12:28/12:28/12:30), but "Open session" is ineffective, so completed autonomous work is
+  visible only as a timestamp — never as a session transcript or summary the owner can open.
+  **(2) The session-side Runs panel contradicts the Routines screen for the same routine:**
+  the live kit-lab coordinator session — demonstrably driven by its self-armed hourly routine —
+  shows "No runs yet" in its Runs panel while the Routines screen shows 3 completed runs; two
+  surfaces disagree about one routine's history, so neither can be trusted alone. Together they
+  gut the audit trail for exactly the capability that just unlocked (agent self-arming): an
+  owner supervising unattended routines can see *that* runs happened but not *what* they did
+  · expected: routine runs link to the actual session transcript/summary from the Routines
+  screen, and both surfaces report one consistent run history · weight: friction (both bugs)
+  · reproducible: yes (recordings on file; routines still armed and firing)

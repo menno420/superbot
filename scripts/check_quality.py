@@ -131,6 +131,17 @@ def run_check_docs() -> int:
     )
 
 
+def run_check_plan_homing() -> int:
+    # CI runs `python3 scripts/check_plan_homing.py --strict` as its own code-quality step
+    # (a `plan` doc must be homed in planning/README + roadmap/folio, not just reachable).
+    # Mirrored here 2026-07-10 after a docs-only PR went green locally (check_docs) and
+    # red in CI on exactly this checker (Q-0194 local/CI parity).
+    return _run(
+        "check_plan_homing",
+        [_PY, str(REPO_ROOT / "scripts" / "check_plan_homing.py"), "--strict"],
+    )
+
+
 def run_check_consistency() -> int:
     # CI runs `python scripts/check_consistency.py --mode strict` (in the deps block).
     # Only GRADUATED rules fail strict (error severity); warn-only rules just print.
@@ -208,6 +219,8 @@ def main() -> int:
             failed.append("check_tool_pins")
         if run_check_docs() != 0:
             failed.append("check_docs")
+        if run_check_plan_homing() != 0:
+            failed.append("check_plan_homing")
         if run_check_consistency() != 0:
             failed.append("check_consistency")
         if run_check_artifacts_fresh() != 0:

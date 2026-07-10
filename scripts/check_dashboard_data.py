@@ -24,6 +24,11 @@ Checks:
   ``botsite/data/console_data_contract.json`` (two repos consume the feed:
   superbot's botsite console + the websites repo's dashboard ``/console``).
   See :func:`check_console_subset`.
+* **dashboard shape contract** (``--dashboard-contract``) — the committed
+  ``dashboard/data/dashboard.json`` must match the versioned cross-repo contract
+  ``dashboard/data/dashboard_data_contract.json`` for its *contracted families*
+  (slice semantics — the websites repo renders ~12 pages off this feed).
+  See :func:`check_dashboard_contract`.
 
 Pure stdlib so it runs in CI with no extra dependencies (the dashboard's web deps
 never enter the bot's ``requirements.txt``). Run::
@@ -59,6 +64,9 @@ from typing import Any
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 DATA_FILE = REPO_ROOT / "dashboard" / "data" / "dashboard.json"
+DASHBOARD_CONTRACT_FILE = (
+    REPO_ROOT / "dashboard" / "data" / "dashboard_data_contract.json"
+)
 SITE_DATA_FILE = REPO_ROOT / "botsite" / "data" / "site.json"
 CONSOLE_DATA_FILE = REPO_ROOT / "botsite" / "data" / "console.json"
 CONSOLE_CONTRACT_FILE = REPO_ROOT / "botsite" / "data" / "console_data_contract.json"
@@ -648,6 +656,173 @@ def check_console_subset(
     return issues
 
 
+def load_dashboard_contract(path: Path = DASHBOARD_CONTRACT_FILE) -> dict[str, Any]:
+    """Load the committed dashboard-feed shape contract (cross-repo source of truth)."""
+    return json.loads(path.read_text(encoding="utf-8"))
+
+
+def _dashboard_record_field_issues(
+    label: str,
+    records: list[Any],
+    allowed: set[str],
+    *,
+    exact: bool = False,
+) -> list[Issue]:
+    """Field findings for one *contracted* dashboard family's records.
+
+    Same posture as :func:`_console_record_field_issues` (kept separate so the
+    console codes/messages stay byte-stable): keys must be a subset of the
+    contract's guaranteed fields; with ``exact=True`` every contract field must
+    also be present (the producer builds bug records with fixed keys, so a
+    missing one means the producer dropped a field a consumer relies on).
+    """
+    issues: list[Issue] = []
+    extra: set[str] = set()
+    missing: set[str] = set()
+    for record in records:
+        if not isinstance(record, dict):
+            continue
+        extra |= set(record) - allowed
+        if exact:
+            missing |= allowed - set(record)
+    if extra:
+        issues.append(
+            _err(
+                "dashboard_field_not_in_contract",
+                f"dashboard.json {label} carries field(s) {sorted(extra)} not in "
+                f"the contract {sorted(allowed)} — this family is contracted "
+                f"(websites' dashboard consumes it); add the field to "
+                f"dashboard_data_contract.json and bump its version instead of "
+                f"shipping it implicitly",
+            ),
+        )
+    if missing:
+        issues.append(
+            _err(
+                "dashboard_field_missing",
+                f"dashboard.json {label} is missing guaranteed field(s) "
+                f"{sorted(missing)} — a consumer built against the contract "
+                f"relies on them; restore the field or change the contract "
+                f"(version bump)",
+            ),
+        )
+    return issues
+
+
+def check_dashboard_contract(
+    committed: dict[str, Any] | None = None,
+    *,
+    data_path: Path = DATA_FILE,
+    contract_path: Path = DASHBOARD_CONTRACT_FILE,
+) -> list[Issue]:
+    """Validate ``dashboard/data/dashboard.json`` against its shape contract.
+
+    The console pattern (PR #1884 / :func:`check_console_subset`) applied to the
+    feed the websites repo's dashboard renders ~12 pages from
+    (``dashboard_data_contract.json``; idea
+    ``docs/ideas/pinned-feed-contract-for-dashboard-json-2026-07-09.md``), with
+    one deliberate difference — **slice semantics**: only the contract's
+    ``contracted_families`` are pinned; other top-level families stay free until
+    they are added to the contract, family by family, with a version bump. So an
+    *extra* un-contracted family is NOT a finding here (unlike the console's
+    total whitelist), but a *missing* contracted family is the consumer-blanking
+    class (BUG-0022) and fails closed. Assertion groups:
+
+    * **producer⇄contract parity** — the exporter's ``DASHBOARD_*`` constants
+      must match the contract file exactly (change both in the same commit).
+    * **contracted families present** + ``meta.schema_version`` equals the
+      contract ``version``.
+    * **per-record guaranteed fields** — ``meta`` keys stay a subset of the
+      contract's; every ``bugs`` record carries exactly the contract fields.
+
+    Returns ``[]`` when the dashboard file is absent (generated artifact;
+    freshness is reported elsewhere). A missing/unparseable *contract* file is
+    an error — the contract itself is load-bearing.
+    """
+    issues: list[Issue] = []
+    if committed is None:
+        if not data_path.exists():
+            return issues
+        committed = json.loads(data_path.read_text(encoding="utf-8"))
+
+    try:
+        contract = load_dashboard_contract(contract_path)
+    except (OSError, json.JSONDecodeError) as exc:
+        return [
+            _err(
+                "dashboard_contract_unreadable",
+                f"cannot load {contract_path.name}: {exc} — the dashboard feed's "
+                f"cross-repo shape contract must stay committed and valid",
+            ),
+        ]
+
+    # -- producer⇄contract parity (the contract file is the source of truth) --
+    export = _export_module()
+    parity: tuple[tuple[str, Any, Any], ...] = (
+        ("version", contract.get("version"), export.DASHBOARD_SCHEMA_VERSION),
+        (
+            "contracted_families",
+            set(contract.get("contracted_families", [])),
+            set(export.DASHBOARD_CONTRACTED_FAMILIES),
+        ),
+        ("meta", set(contract.get("meta", [])), set(export.DASHBOARD_META_FIELDS)),
+        ("bug", set(contract.get("bug", [])), set(export.DASHBOARD_BUG_FIELDS)),
+    )
+    for surface, contracted, produced in parity:
+        if contracted != produced:
+            issues.append(
+                _err(
+                    "dashboard_contract_producer_drift",
+                    f"contract {surface!r} = {contracted!r} but the producer "
+                    f"(export_dashboard_data) emits {produced!r} — change "
+                    f"dashboard_data_contract.json and the DASHBOARD_* constants "
+                    f"in the same commit (version bump) so both repos see the "
+                    f"move",
+                ),
+            )
+
+    # -- contracted families must be present (missing = blanked consumer page) --
+    missing_families = set(contract.get("contracted_families", [])) - set(committed)
+    if missing_families:
+        issues.append(
+            _err(
+                "dashboard_family_missing",
+                f"dashboard.json is missing contracted famil(ies) "
+                f"{sorted(missing_families)} — a consumer page renders blank on "
+                f"this (the BUG-0022 class); restore the family or change the "
+                f"contract (version bump)",
+            ),
+        )
+
+    # -- schema version --
+    meta = committed.get("meta", {}) if isinstance(committed.get("meta"), dict) else {}
+    if meta.get("schema_version") != contract.get("version"):
+        issues.append(
+            _err(
+                "dashboard_schema_version_mismatch",
+                f"dashboard.json meta.schema_version="
+                f"{meta.get('schema_version')!r} but the contract pins "
+                f"version={contract.get('version')!r} — regenerate the feed "
+                f"(export_dashboard_data --targets dashboard) or reconcile the "
+                f"contract",
+            ),
+        )
+
+    # -- per-record guaranteed fields (contracted families only) --
+    issues += _dashboard_record_field_issues(
+        "meta",
+        [meta],
+        set(contract.get("meta", [])),
+    )
+    issues += _dashboard_record_field_issues(
+        "bugs",
+        list(committed.get("bugs", []) or []),
+        set(contract.get("bug", [])),
+        exact=True,
+    )
+    return issues
+
+
 def main(argv: list[str] | None = None) -> int:
     """CLI entry point: validate the export, print findings, exit non-zero on error."""
     parser = argparse.ArgumentParser(description="Validate the dashboard data export.")
@@ -673,6 +848,12 @@ def main(argv: list[str] | None = None) -> int:
         help="also validate botsite/data/console.json against its cross-repo shape "
         "contract (console_data_contract.json)",
     )
+    parser.add_argument(
+        "--dashboard-contract",
+        action="store_true",
+        help="also validate dashboard/data/dashboard.json against its cross-repo "
+        "shape contract (dashboard_data_contract.json; contracted families only)",
+    )
     args = parser.parse_args(argv)
 
     if args.fresh:
@@ -685,6 +866,8 @@ def main(argv: list[str] | None = None) -> int:
         issues.extend(check_site_subset())
     if args.console:
         issues.extend(check_console_subset())
+    if args.dashboard_contract:
+        issues.extend(check_dashboard_contract())
     if args.drift:
         # Compare the committed artifact (never the fresh one, even under --fresh)
         # against a fresh build so the report names what the *committed* file is

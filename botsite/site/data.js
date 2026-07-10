@@ -7726,7 +7726,7 @@ const CHANGELOG = [
   {
     "version": "2026.06.19",
     "date": "Jun 19, 2026",
-    "build": "72053d26",
+    "build": "f4da4b8b",
     "title": "New public bot website",
     "changes": [
       {
@@ -7738,7 +7738,7 @@ const CHANGELOG = [
   {
     "version": "2026.06.12",
     "date": "Jun 12, 2026",
-    "build": "72053d26",
+    "build": "f4da4b8b",
     "title": "Owner review inbox on the dashboard",
     "changes": [
       {
@@ -7750,7 +7750,7 @@ const CHANGELOG = [
   {
     "version": "2026.06.08",
     "date": "Jun 08, 2026",
-    "build": "72053d26",
+    "build": "f4da4b8b",
     "title": "Command-alias suggestions",
     "changes": [
       {
@@ -9131,9 +9131,9 @@ const FEATURES = [
 ];
 
 const BUILD = {
-  "commit": "72053d26",
-  "subject": "Merge pull request #1890 from menno420/claude/projects-eap-review-9vq8oj",
-  "committed_at": "2026-07-09T13:58:14Z"
+  "commit": "f4da4b8b",
+  "subject": "reconcile band-#1920: born-red session card + lane claim (41st Q-0107 pass)",
+  "committed_at": "2026-07-10T03:29:45Z"
 };
 
 const COUNTS = {

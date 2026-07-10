@@ -1,7 +1,17 @@
 # Fleet-manifest freshness checker (2026-07-10)
 
-> **Status:** `ideas` — capture, not a plan, not approval.
+> **Status:** `historical` — implemented (PR #1923, 2026-07-10) · raised 2026-07-10 (night-prep, #1915).
 > **Subsystem:** tooling / EAP program record.
+>
+> **Shipped:** `scripts/check_manifest_freshness.py` + `tests/unit/scripts/test_check_manifest_freshness.py`
+> (PR #1923), plus the reconciliation-routine checklist line in
+> `docs/operations/autonomous-routines.md`. **One design change from this capture:** the network
+> half reads over **git transport** (shallow `git fetch --depth 1` + `git cat-file`), not the
+> GitHub REST API named below — the REST API is proxy-blocked in agent containers ("GitHub access
+> is not enabled for this session") while git is credential-injected, so the API version would fail
+> exactly where the routine runs. First live run (2026-07-10): 11 rows — 9 fresh, **2 stale**
+> (trading-lab, venture-lab; both ground-truthed by hand), 0 drift, 0 skipped. Advisory-only,
+> fail-open, not CI-wired (it needs network + sibling-repo credentials, so it must never gate).
 
 **One line:** a small checker (`scripts/check_manifest_freshness.py`) that compares each
 `docs/eap/fleet-manifest.md` row's last-seen cell against the lane repo's

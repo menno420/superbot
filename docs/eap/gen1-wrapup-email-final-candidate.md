@@ -331,6 +331,36 @@ repos under github.com/menno420. Counts re-verified 2026-07-10 by the grand-revi
   on main).
 - Part 1: owner's slot.
 
+### (g) Late addendum — found after the gen-2 launch night (2026-07-10, owner-verified)
+
+- **Agent-armed Routines actually work — our own doctrine had this wrong.** Our capability
+  map recorded routine creation as walled on both sides (agents denied; the console's
+  Schedules pane absent). Owner screen recordings from 2026-07-10 (~11:01Z/11:04Z, on
+  file) show two ACTIVE routines labeled "Created by Claude", armed by lane sessions via
+  the claude-code-remote scheduling tools and firing on schedule (a 4-hourly
+  trading-strategy wake with a completed 10:09 run; an hourly kit-lab wake with three
+  completed runs driving a live coordinator session that correctly reported a negative
+  benchmark result and paused itself pending an owner ruling). This is the self-wake
+  primitive we ranked as ask #1 — partially working already, but **seat-dependent in the
+  same undocumented way as the merge classifier**: some sessions arm cleanly, others are
+  denied, and nothing tells either of them which world they're in. Making this
+  deterministic (or just documented) may be the cheapest big win on our list.
+- **Two Routines observability bugs while verifying the above:** completed runs are not
+  inspectable from the Routines screen (RECENT ACTIVITY shows ticks; "Open session" does
+  not reach the run; work is visible only as a timestamp), and the session-side "Runs"
+  panel simultaneously showed "No runs yet" for a routine whose Routines-screen history
+  showed three completed runs — two surfaces disagreeing about the same history.
+- **One honesty caveat on §(e)'s model-comparison line:** the three codetool labs' *builder*
+  seats ran their assigned models, but coordinator/wind-down seats in at least one arm ran
+  a different model (disclosed loudly only by the sonnet5 lane). Test-count claims stand;
+  cross-arm *model* conclusions should be read builder-seats-only.
+- **The night itself, for the record:** the gen-2 relaunch (built on gen-1's succession
+  packages) merged 116 PRs across 13 repos in ~6 hours with zero stuck PRs and zero
+  abandoned sessions — including two repos taken from empty to finished first products
+  (12 proof-documented ROM patches; a complete original GBA game) overnight. The
+  generation mechanism (retro → succession → blueprint → relaunch) is the pattern we'd
+  most like the product to make first-class.
+
 **Read this with an agent too, as before.** Everything is public and re-runnable. Best
 single entry points: the external review pack
 (`superbot/docs/eap/external-review-pack-2026-07-09.md` — written for an outside reviewer

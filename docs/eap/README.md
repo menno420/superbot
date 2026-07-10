@@ -7,6 +7,17 @@
 
 ## Gen-1 wrap-up (2026-07-09 → 10)
 
+- [`../planning/round3-launch-pack-2026-07-10.md`](../planning/round3-launch-pack-2026-07-10.md) —
+  the round-3 (gen-3 prep) launch pack: manager brief, per-lane continuation prompts, games
+  wave, Codex review prompts, owner decision sheet (§4b records the Q-0259 owner rulings),
+  standing autonomous core (§5), fleet-watching guide.
+- [`eap-program-review-2026-07-10.md`](eap-program-review-2026-07-10.md) — owner-directed deep
+  review of the whole EAP period (07-07 → 07-10): day-by-day story, verdicts, root-cause log,
+  the 10 structural findings, the centralization agenda, and the consolidated next-action queue.
+- [`fleet-overnight-review-2026-07-10.md`](fleet-overnight-review-2026-07-10.md) — owner-directed
+  morning-after review of the launch night itself (all 13 repos, one subagent per lane):
+  headline verdict, per-repo table, ender-compliance exceptions, ranked findings, the
+  consolidated cross-fleet owner-action queue.
 - [`gen1-grand-review-2026-07-09.md`](gen1-grand-review-2026-07-09.md) — the independent
   fleet-wide verification: old-vs-new gap map, open-PR sweep, email fact audit, wind-down
   audit, gen-2 synthesis, efficiency verdict, ⚑ owner actions.
@@ -24,6 +35,15 @@
   `gen1-grand-review-2026-07-09.md` §5 (structural completeness across all 6 repos) with
   deep, per-incident evidence verification on the 7 wind-down lanes + seed + ping-test.
 
+- [`codex-review-round-verification-2026-07-10.md`](codex-review-round-verification-2026-07-10.md) —
+  Claude's ground-truth verification of the three Codex review PRs (#1940/#1941/#1942):
+  scores, the missed `moderation.timeout` compensation gap, and an independent
+  assessment of the gen-1/gen-2 program work.
+- [`hostile-audit-checking-the-checkers-2026-07-10.md`](hostile-audit-checking-the-checkers-2026-07-10.md) —
+  external (Codex/Sol) hostile re-verification of the grand review + overnight review: 12/15
+  claims confirmed, the superbot-next "~20 PRs" narrative refuted; Claude addendum re-verifies
+  5 claims by a second method (all exact).
+
 ## Fleet reviews and instruments (2026-07-09)
 
 - [`fleet-manifest.md`](fleet-manifest.md) — living Project registry (manager-maintained).
@@ -38,3 +58,11 @@
 
 - [`campaign-self-audit-2026-07-08.md`](campaign-self-audit-2026-07-08.md) — coordinator
   memory of the 3-wave campaign graded against git (≈0.98 precision).
+
+## Retro (protocol-canonical location: `docs/retro/`)
+
+- [`../retro/self-review-2026-07-09.md`](../retro/self-review-2026-07-09.md) — the
+  coordinator lane's own answers to the #1901 fleet retro question set (written
+  2026-07-10, assembled from this corpus) — the 10th and final lane's answers, closing
+  the gap the grand review §5 flagged. Question set:
+  [`../planning/fleet-retro-questions-2026-07-09.md`](../planning/fleet-retro-questions-2026-07-09.md).

@@ -145,6 +145,11 @@
   [ADR-006](decisions/006-btd6-data-provenance-ownership.md).
 
 ### S3 — AI-Memory system  ·  *the mechanism — the self-improving-agent engine (shippable on its own)*
+- **Now:** **▶ round 3 (gen-3 prep) is live (2026-07-10)** — the owner is pasting the
+  **[round3-launch-pack](planning/round3-launch-pack-2026-07-10.md)** (manager brief · lane
+  continuation + night-review prompts · games completion wave · Codex external reviews · owner
+  decision sheet); doctrine input = the
+  [EAP program review](eap/eap-program-review-2026-07-10.md) §5/§6.
 - **Now:** **the rebuild is UN-GATED and in motion (2026-07-07).** Plan of record =
   **[rebuild-canonical-plan-2026-07-06.md](planning/rebuild-canonical-plan-2026-07-06.md)** (#1770;
   supersedes the design-spec / linchpin / handoff framing below). **Q-0241 (#1776)** retired the owner

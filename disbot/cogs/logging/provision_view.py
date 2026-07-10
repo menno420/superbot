@@ -178,6 +178,10 @@ class _CancelButton(discord.ui.Button):
             view.stop()
 
 
+# Extends discord.ui.View directly (not BaseView): specialized lifecycle —
+# a single-shot ephemeral confirm flow whose buttons stop() the view after
+# one resolution; the ephemeral message is auto-dismissed by Discord, so
+# BaseView's on_timeout message-edit has nothing to edit.
 class LogChannelProvisionView(discord.ui.View):
     """Invoker-locked preview-then-confirm view.
 
