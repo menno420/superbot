@@ -323,6 +323,11 @@ Reply here with the substrate-kit section inline + per-class totals when the PR 
    data-API placement, theme-contract home, repo name, and sequencing. Same owner
    report (part-4d): **the manager is preparing a centralized prompt registry** —
    one-source-of-truth rule in the gen-3 standard §4; ingest inventory in §6.1.
+   **Part-4f (owner go, ~22:1xZ): both founding packages DRAFTED** —
+   [`world`](round3-founding-package-games-world-2026-07-10.md) ·
+   [`idle`](round3-founding-package-games-idle-2026-07-10.md); owner clicks in each
+   §0 (world: env + Project + pastes; idle: create empty `superbot-idle` → copilot
+   seeds → settings → env + Project + pastes). §5 rows open on boot.
 8. ☐ Verify loop closure: all core routines ACTIVE with completed runs across 24h;
    owner-queue only owner-only items; zero stuck PRs (pack §5 criteria).
 
@@ -331,10 +336,13 @@ Reply here with the substrate-kit section inline + per-class totals when the PR 
 - ~~Idea Engine founding package~~ **done, then REWRITTEN v2 (own-repo) per Q-0264** → [`round3-founding-package-idea-engine-2026-07-10.md`](round3-founding-package-idea-engine-2026-07-10.md).
 - ~~Product Forge founding package~~ **done** → [`round3-founding-package-product-forge-2026-07-10.md`](round3-founding-package-product-forge-2026-07-10.md).
 - ~~Simulator (seat 6) founding package~~ **done (Q-0264)** → [`round3-founding-package-simulator-2026-07-10.md`](round3-founding-package-simulator-2026-07-10.md); the superseded superbot-hub seat needs no package.
-- Game-Project founding packages: **two seats, owner-shaped (Q-0267)** — World Games
-  on `superbot-games` + Idle Engine on a new repo. Draftable as soon as the manager's
-  *conformed* mapping lands (or directly on owner go — the shape is decided; only
-  data-API placement, theme-contract home, and the repo name are still open, see §3.7).
+- ~~Game-Project founding packages~~ **done (part-4f, owner go: "help me get the 2
+  games projects running")** →
+  [`round3-founding-package-games-world-2026-07-10.md`](round3-founding-package-games-world-2026-07-10.md) +
+  [`round3-founding-package-games-idle-2026-07-10.md`](round3-founding-package-games-idle-2026-07-10.md).
+  The manager's conformed mapping (§6.2 relay) is now a cross-check, not a gate: its
+  remaining open items (data-API placement · theme-contract promotion home) feed the
+  seats' inboxes as later ORDERs, not the boots.
 - ~~Trading founding package~~ **done (part-4b, owner-directed)** →
   [`round3-founding-package-trading-2026-07-10.md`](round3-founding-package-trading-2026-07-10.md)
   (continuous + Q-0266 volume-first; ORDER-008-first boot; conversion of a live lane, not a birth).
