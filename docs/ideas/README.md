@@ -31,6 +31,12 @@ only the header block is read, so a `**Subsystem:**` *example* in an idea's body
 
 Current broad captures:
 
+- [`cross-agent-trust-ledger-2026-07-10.md`](./cross-agent-trust-ledger-2026-07-10.md) —
+  **session ender (2026-07-10, GPT-5.6 Sol eval session):** generalize the Sol Codex
+  eval suite (`docs/owner/gpt-5-6-sol-codex-eval-2026-07-10.md`) into a standing
+  per-model trust ledger — capability/trust scores + allowed lanes per external model,
+  re-run on every model release — so cross-agent routing (Q-0120) is data-driven
+  instead of tribal knowledge.
 - [`cross-repo-eap-verification-orientation-pointer-2026-07-09.md`](./cross-repo-eap-verification-orientation-pointer-2026-07-09.md) —
   **reconciliation session ender (2026-07-09, 40th Q-0107 pass):** add a short cross-repo verification
   pointer to the orientation route — verify a sibling EAP repo with *its own* CI interpreter
