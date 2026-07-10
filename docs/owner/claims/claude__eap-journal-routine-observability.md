@@ -1,0 +1,1 @@
+- `claude/eap-journal-routine-observability` · **EAP journal entry** — round-3 brief §1(d): append the two routine-observability bugs (runs not inspectable; Runs panel vs Routines screen mismatch) to the evaluation journal · `docs/planning/projects-eap-evaluation-log.md` `.sessions/2026-07-10-eap-journal-routine-observability.md` · 2026-07-10 · in-flight
