@@ -316,3 +316,21 @@ product review's analysis — confirm, contradict, or deepen it with lived examp
   autonomously paused build dispatch pending the owner's F-5 ruling; but the session-side
   "Runs" panel shows "No runs yet" while the Routines screen shows 3 completed runs — two
   surfaces disagreeing about the same routine's history.
+- 2026-07-10 ~11:01–11:04Z · axis: routines/scheduling + sidebar states · observed: the two
+  **routine-observability bugs** embedded in the capability-unlock entry above, split out as
+  their own bug record on the round-3 brief's order
+  ([`round3-launch-pack-2026-07-10.md`](round3-launch-pack-2026-07-10.md) §1(d)) — lived owner
+  incidents (screen recordings 13:01 + 13:04 CEST, Samsung browser), not staged. **(1) Completed
+  routine runs are not inspectable from the Routines screen:** each routine shows RECENT
+  ACTIVITY ticks and completed-run timestamps (trading-strategy run 10:09; kit-lab runs
+  12:28/12:28/12:30), but "Open session" is ineffective, so completed autonomous work is
+  visible only as a timestamp — never as a session transcript or summary the owner can open.
+  **(2) The session-side Runs panel contradicts the Routines screen for the same routine:**
+  the live kit-lab coordinator session — demonstrably driven by its self-armed hourly routine —
+  shows "No runs yet" in its Runs panel while the Routines screen shows 3 completed runs; two
+  surfaces disagree about one routine's history, so neither can be trusted alone. Together they
+  gut the audit trail for exactly the capability that just unlocked (agent self-arming): an
+  owner supervising unattended routines can see *that* runs happened but not *what* they did
+  · expected: routine runs link to the actual session transcript/summary from the Routines
+  screen, and both surfaces report one consistent run history · weight: friction (both bugs)
+  · reproducible: yes (recordings on file; routines still armed and firing)
