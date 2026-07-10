@@ -1,15 +1,15 @@
 {
   "meta": {
-    "generated_at": "2026-07-10T21:47:52Z",
+    "generated_at": "2026-07-11T00:55:27Z",
     "build": {
-      "commit": "f1fbb9cf",
-      "subject": "Merge pull request #1959 from menno420/claude/forge-calibration-destale",
-      "committed_at": "2026-07-10T21:47:52Z"
+      "commit": "c5f501e4",
+      "subject": "Merge pull request #1969 from menno420/claude/sim-lab-repo-setup-ujglev",
+      "committed_at": "2026-07-11T00:55:27Z"
     },
     "schema_version": 1,
     "counts": {
       "functions": 43,
-      "ideas": 234,
+      "ideas": 237,
       "bugs": 31,
       "reviews": 0,
       "reviews_open": 0,
@@ -1206,6 +1206,14 @@
       "subsystems": null
     },
     {
+      "file": "games-theme-engine-website-first-2026-07-10.md",
+      "title": "Games program: theme-engine architecture + website-first provisioning",
+      "status": "ideas",
+      "date": "2026-07-10",
+      "summary": "1. **Seat A — one Project on `menno420/superbot-games`** (the repo where exploration and",
+      "subsystems": null
+    },
+    {
       "file": "idea-probe-brainstorm-simulator-2026-07-10.md",
       "title": "Idea probe / brainstorming simulator (2026-07-10)",
       "status": "ideas",
@@ -1222,6 +1230,14 @@
       "subsystems": null
     },
     {
+      "file": "project-capability-self-awareness-2026-07-10.md",
+      "title": "Project capability self-awareness — ask a seat what it can do, get an honest answer",
+      "status": "ideas",
+      "date": "2026-07-10",
+      "summary": "good improvement, if you could just ask a project what it's abilities are, and it could",
+      "subsystems": null
+    },
+    {
       "file": "purpose-specific-test-bot-fleet-2026-07-10.md",
       "title": "Purpose-specific test-bot fleet (2026-07-10)",
       "status": "ideas",
@@ -1235,6 +1251,14 @@
       "status": "ideas",
       "date": "2026-07-10",
       "summary": "For roughly the last **ten consecutive bands**, the superbot Q-0107 pass has recorded the same",
+      "subsystems": null
+    },
+    {
+      "file": "seat-boot-verification-harness-2026-07-10.md",
+      "title": "Seat boot-verification harness — script the dispatch copilot's §5 row",
+      "status": "ideas",
+      "date": "2026-07-10",
+      "summary": "The dispatch copilot's per-seat verification ritual is now a **four-times-repeated",
       "subsystems": null
     },
     {
@@ -3357,6 +3381,62 @@
       "self_initiated": false
     },
     {
+      "file": "2026-07-10-round3-dispatch-4g-world-destale.md",
+      "date": "2026-07-10",
+      "title": "Session — round-3 dispatch, part 4g: world-package de-stale (check-in sweep findings)",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-07-10-round3-dispatch-4f-games-packages.md",
+      "date": "2026-07-10",
+      "title": "Session — round-3 dispatch, part 4f: the two games founding packages",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-07-10-round3-dispatch-4e-games-mapping.md",
+      "date": "2026-07-10",
+      "title": "Session — round-3 dispatch, part 4e: owner shapes the games mapping (theme engine + website-first)",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-07-10-round3-dispatch-4d-prompt-registry.md",
+      "date": "2026-07-10",
+      "title": "Session — round-3 dispatch, part 4d: games relay pasted + manager prompt registry",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-07-10-round3-dispatch-4c-selfawareness.md",
+      "date": "2026-07-10",
+      "title": "Session — round-3 dispatch, part 4c: capability self-awareness + boot verifications",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-07-10-round3-dispatch-4b-trading-package.md",
+      "date": "2026-07-10",
+      "title": "Session — round-3 dispatch, part 4b: trading founding package",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-07-10-round3-dispatch-4-sim-lab.md",
+      "date": "2026-07-10",
+      "title": "Session — round-3 dispatch, part 4: sim-lab repo setup (seat 6)",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
       "file": "2026-07-10-round3-dispatch-3b.md",
       "date": "2026-07-10",
       "title": "Session — round-3 dispatch part 3b: Q-0265 continuous mode (live copilot)",
@@ -3728,62 +3808,6 @@
       "file": "2026-07-08-forward-only-and-settings-plan.md",
       "date": "2026-07-08",
       "title": "2026-07-08 — Capture: forward-only Project experiment + per-repo settings ledger",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-07-08-email-two-layer-flagship.md",
-      "date": "2026-07-08",
-      "title": "2026-07-08 — Email flagship: fold in the two-layer clear-path finding",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-07-08-email-compaction-verifiability.md",
-      "date": "2026-07-08",
-      "title": "2026-07-08 — Anthropic feedback email: compaction + verifiability audit",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-07-08-eap-permission-probe.md",
-      "date": "2026-07-08",
-      "title": "2026-07-08 — EAP auto-mode permission-boundary probe",
-      "status": "complete",
-      "run_type": "manual",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-07-08-eap-email-two-part-two-reviewer.md",
-      "date": "2026-07-08",
-      "title": "Session — EAP email: two-part / two-author / two-reviewer restructure",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-07-08-eap-email-sign-part2.md",
-      "date": "2026-07-08",
-      "title": "Session — Sign Part 2 of the EAP email as Claude",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-07-08-eap-email-refresh-forward-only-project.md",
-      "date": "2026-07-08",
-      "title": "Session — EAP email refresh + forward-only Project instructions",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-07-08-eap-email-finalize.md",
-      "date": "2026-07-08",
-      "title": "Session — Finalize the Anthropic EAP email",
       "status": "complete",
       "run_type": "",
       "self_initiated": false
@@ -4217,7 +4241,105 @@
       }
     },
     {
+      "session": "2026-07-10-round3-dispatch-4-sim-lab",
+      "date": "2026-07-10",
+      "model": "fable-5",
+      "effort": "high",
+      "task_class": "docs-only",
+      "tokens_out": null,
+      "outcome": {
+        "ci_green_first_push": null,
+        "checker_findings": null,
+        "merged_pr": null,
+        "reverted_within_window": null
+      }
+    },
+    {
       "session": "2026-07-10-round3-dispatch-3b",
+      "date": "2026-07-10",
+      "model": "fable-5",
+      "effort": "high",
+      "task_class": "docs-only",
+      "tokens_out": null,
+      "outcome": {
+        "ci_green_first_push": null,
+        "checker_findings": null,
+        "merged_pr": null,
+        "reverted_within_window": null
+      }
+    },
+    {
+      "session": "2026-07-10-round3-dispatch-4b-trading-package",
+      "date": "2026-07-10",
+      "model": "fable-5",
+      "effort": "high",
+      "task_class": "docs-only",
+      "tokens_out": null,
+      "outcome": {
+        "ci_green_first_push": null,
+        "checker_findings": null,
+        "merged_pr": null,
+        "reverted_within_window": null
+      }
+    },
+    {
+      "session": "2026-07-10-round3-dispatch-4c-selfawareness",
+      "date": "2026-07-10",
+      "model": "fable-5",
+      "effort": "high",
+      "task_class": "docs-only",
+      "tokens_out": null,
+      "outcome": {
+        "ci_green_first_push": null,
+        "checker_findings": null,
+        "merged_pr": null,
+        "reverted_within_window": null
+      }
+    },
+    {
+      "session": "2026-07-10-round3-dispatch-4d-prompt-registry",
+      "date": "2026-07-10",
+      "model": "fable-5",
+      "effort": "high",
+      "task_class": "docs-only",
+      "tokens_out": null,
+      "outcome": {
+        "ci_green_first_push": null,
+        "checker_findings": null,
+        "merged_pr": null,
+        "reverted_within_window": null
+      }
+    },
+    {
+      "session": "2026-07-10-round3-dispatch-4e-games-mapping",
+      "date": "2026-07-10",
+      "model": "fable-5",
+      "effort": "high",
+      "task_class": "docs-only",
+      "tokens_out": null,
+      "outcome": {
+        "ci_green_first_push": null,
+        "checker_findings": null,
+        "merged_pr": null,
+        "reverted_within_window": null
+      }
+    },
+    {
+      "session": "2026-07-10-round3-dispatch-4f-games-packages",
+      "date": "2026-07-10",
+      "model": "fable-5",
+      "effort": "high",
+      "task_class": "docs-only",
+      "tokens_out": null,
+      "outcome": {
+        "ci_green_first_push": null,
+        "checker_findings": null,
+        "merged_pr": null,
+        "reverted_within_window": null
+      }
+    },
+    {
+      "session": "2026-07-10-round3-dispatch-4g-world-destale",
       "date": "2026-07-10",
       "model": "fable-5",
       "effort": "high",
