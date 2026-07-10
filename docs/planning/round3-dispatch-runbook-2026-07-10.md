@@ -148,6 +148,12 @@ script: `fleet-manager/environments/archetype-coordinator.sh` **verbatim** (raw:
 
 ## 3. Dispatch order (the launch checklist)
 
+> **Execution method (2026-07-10, owner-requested):** the remaining boots run per the
+> **[gen-3 deployment standard](gen3-deployment-standard-2026-07-10.md)** — pipelined
+> with the calibration gate kept (simulation-backed: `tools/sim/gen3_deployment_sim.py`;
+> 113m median vs 296m sequential, 5× less error exposure than gate-less big-bang).
+> Owner clicks batch up front (its §3 phase 0); this checklist stays the state tracker.
+
 1. ☑ **Manager LIVE** (2026-07-10 ~13:45Z) — env + 2a + 2b pasted; calibration reviewed
    (verdict GOOD, §5); routine armed + verified + **first wake fired 14:36Z**; boot PR
    fleet-manager#26 squash-merged as `117caeb`. Verification record in §5.
