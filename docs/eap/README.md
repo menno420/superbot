@@ -7,6 +7,10 @@
 
 ## Gen-1 wrap-up (2026-07-09 → 10)
 
+- [`fleet-overnight-review-2026-07-10.md`](fleet-overnight-review-2026-07-10.md) — owner-directed
+  morning-after review of the launch night itself (all 13 repos, one subagent per lane):
+  headline verdict, per-repo table, ender-compliance exceptions, ranked findings, the
+  consolidated cross-fleet owner-action queue.
 - [`gen1-grand-review-2026-07-09.md`](gen1-grand-review-2026-07-09.md) — the independent
   fleet-wide verification: old-vs-new gap map, open-PR sweep, email fact audit, wind-down
   audit, gen-2 synthesis, efficiency verdict, ⚑ owner actions.
