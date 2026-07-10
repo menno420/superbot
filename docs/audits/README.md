@@ -10,6 +10,8 @@ moment, and the reasoning behind it. Read the binding docs (`architecture.md`, `
 
 ## Investigations
 
+- [`fleet-doctrine-enforcement-audit-2026-07-10.md`](fleet-doctrine-enforcement-audit-2026-07-10.md)
+  — adversarial audit of fleet-manager gen-2 blueprint/playbook doctrine against public repo evidence: enforcement inventory, falsified claims, and top prose-only risks.
 - [`../analysis/server-management-audit-2026-07-08.md`](../analysis/server-management-audit-2026-07-08.md)
   — server-management contract-vs-code audit (Wave-1 lane A, docs-only): runtime seams conform
   (0 RISKY); 6 LOW findings — ownership.md/folio drift on reaction-role tables, channel-lifecycle
