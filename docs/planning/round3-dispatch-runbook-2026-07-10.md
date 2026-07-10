@@ -146,6 +146,55 @@ variables: **none** (platform injects the GitHub credential for attached repos; 
 script: `fleet-manager/environments/archetype-coordinator.sh` **verbatim** (raw:
 `https://raw.githubusercontent.com/menno420/fleet-manager/main/environments/archetype-coordinator.sh`).
 
+### 2d — Manager dispatch: launch-readiness research (owner-requested, 2026-07-10)
+
+Paste into the manager chat to generate the Q-0261 finalize-first checklists for every
+repo (deliverable: `fleet-manager docs/launch-readiness-2026-07-10.md`):
+
+```
+DISPATCH from the owner (round-3, 2026-07-10): LAUNCH-READINESS RESEARCH — all repos.
+
+Context first: superbot docs/planning/round3-dispatch-runbook-2026-07-10.md §3 (the
+Q-0261 core-6 one-at-a-time, finalize-first launch order: manager → substrate-kit →
+superbot-next → Idea Engine → Product Forge → sixth seat TBN, then post-core lanes)
++ router Q-0261 in superbot docs/owner/maintainer-question-router.md + your own
+archive-readiness sweep from earlier today.
+
+THE JOB: for EVERY fleet repo, research its actual requirements and produce ONE
+launch-readiness checklist — the complete list of what must be answered, clicked,
+fixed, or dispatched BEFORE its Project (re)launches under finalize-first. Verify
+every item against git/settings evidence at HEAD, never against status self-reports
+(your standing rule).
+
+Per repo, mine at HEAD: control/status.md ⚑ blocks · control/inbox.md unexecuted or
+unacked ORDERs · OWNER-ACTIONS.md / PLATFORM-LIMITS.md / CAPABILITIES.md · retro +
+next-boot/succession briefs · review-queue rows · open PRs and stale branches · repo
+settings state (Allow auto-merge, required checks, update-branches, visibility) ·
+environment spec currency (your environments registry) · routine state (armed / bound
+to which session / absent) · kit version vs latest release.
+
+Classify EVERY item into exactly one class:
+- OWNER-CLICK — only the owner can (settings, money, repo/env creation, rulings):
+  six-field form, click-level, deduplicated against docs/owner-queue.md.
+- AGENT-DOABLE — an agent can fix it: do NOT park these on the owner; route each as
+  an ORDER with a named executor (or mark "rides the seat's own boot" where the
+  founding package already covers it).
+- DECISION — needs an owner ruling: state the question + your recommendation + one
+  line of why (decide-and-flag; the owner usually takes the recommendation).
+
+DELIVERABLE: one committed file — fleet-manager docs/launch-readiness-2026-07-10.md —
+a section per repo IN THE Q-0261 LAUNCH ORDER (substrate-kit FIRST: that section
+gates the very next boot; product-forge gets a pre-birth expected-seed checklist),
+each section headed by a one-line verdict: READY or BLOCKED-ON-<n> items. Update
+docs/owner-queue.md in the same PR so /queue matches. Merge on green; heartbeat after.
+
+BOUNDS: research + checklists, not a fix-everything pass — dispatch AGENT-DOABLE
+items as ORDERs, don't execute them inline. If a repo is unreadable from your seat
+(pokemon-mod-lab is private — its env attach may itself be an OWNER-CLICK row), say
+UNREADABLE explicitly, never guess. Cite a commit / file@SHA / PR for every claim.
+Reply here with the substrate-kit section inline + per-class totals when the PR lands.
+```
+
 ## 3. Dispatch order (the launch checklist)
 
 > **Execution method (2026-07-10, owner-requested):** the remaining boots run per the
