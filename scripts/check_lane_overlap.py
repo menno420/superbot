@@ -252,7 +252,7 @@ def _git(args: list[str], timeout: int = 60) -> str:
 
 
 def parse_ref_lines(text: str, cutoff_epoch: int) -> list[str]:
-    """Pure: ``<unix-committerdate>\\t<refname>`` lines -> refs at/after *cutoff_epoch*."""
+    """Pure: tab-separated ``<unix-committerdate> <refname>`` lines -> refs at/after cutoff."""
     refs: list[str] = []
     for ln in text.splitlines():
         stamp, _, ref = ln.strip().partition("\t")
