@@ -26,9 +26,11 @@
    (both lanes' knowledge is committed in-repo).
 3. Paste §1 into the Project's Custom Instructions, §2 as the first message in the
    fresh coordinator chat.
-4. Repo settings: `substrate-gate` CI is already live (kit v1.2.0, gen-1). The boot's
-   walking-skeleton PR re-verifies the merge path; it files a six-field OWNER-ACTION
-   only if auto-merge/required-check settings turn out off.
+4. Repo settings: `substrate-gate` CI is already live (kit **v1.7.0** since games
+   PR #22, 2026-07-10 20:22Z — de-staled part-4g; the per-lane heartbeats saying
+   v1.2.0 are recorded drift). The boot's walking-skeleton PR (= inbox ORDER 001)
+   re-verifies the merge path; it files a six-field OWNER-ACTION only if
+   auto-merge/required-check settings turn out off.
 
 ## §1 — Custom Instructions (paste into the Project's Custom Instructions field)
 
@@ -122,19 +124,34 @@ BOOT NOW, in order:
    (gen-1 history), both founding plans, docs/retro/queue-state-*.md,
    docs/succession-exploration.md, docs/gen2-custom-instructions-
    exploration.md (your instruction set's ancestor).
-2. GEN-2 UNIFICATION SLICE (your first PR — it is also your walking
-   skeleton): create unified control/inbox.md + control/status.md
-   (kit grammar, one writer each: manager writes ORDER blocks to the
-   inbox, you overwrite status); add a one-line GEN-1 HISTORY banner
-   atop lanes.md and the four per-lane control files (do not delete
-   them); update README's two-Project paragraph to the single-seat
-   reality (cite Q-0267). Open the PR READY, arm auto-merge, and learn
-   the live merge path on this cheap diff per your §1 AUTHORITY block —
+2. KNOW YOUR INHERITED STATE (verified at HEAD 4493292, 2026-07-10
+   ~22:4xZ — re-verify, don't re-create): the unified control bus
+   ALREADY EXISTS — control/inbox.md is manager-written and holds
+   ORDER 001 (P0) + ORDER 002 (P1), both status: new; control/status.md
+   is the kit heartbeat file. The kit is ALREADY v1.7.0 (PR #22, merged
+   20:22Z) — the per-lane heartbeats still SAYING v1.2.0 is recorded
+   drift, not tree state. Do NOT re-adopt, re-upgrade, or re-create any
+   of this.
+   YOUR FIRST PR = ORDER 001, and it is also your walking skeleton:
+   the P0 CI collection-scope fix (the gate runs `pytest tests/` and
+   collects 73 of 121 tests — exploration's 48 under
+   games/exploration/tests/ are invisible; fix the workflow to collect
+   ALL suites + add the collected-count floor assertion + paste the
+   evidence per the ORDER's own text). Fold into the same PR: the
+   one-line GEN-1 HISTORY banner atop lanes.md and the four per-lane
+   control files (do not delete them, and fix their stale kit lines
+   while you're in them); README's two-Project paragraph → the
+   single-seat reality (cite Q-0267). Open READY, arm auto-merge, and
+   learn the live merge path on this diff per your §1 AUTHORITY block —
    if the classifier denies the one merge attempt, park READY+green,
    ⚑ the owner click, and proceed: the wall is known, not news.
-3. ARM YOUR ROUTINE (Q-0265): create_trigger with name "superbot-games
-   failsafe wake", cron "15 */2 * * *", firing into THIS session,
-   prompt EXACTLY:
+3. ARM YOUR ROUTINE — this EXECUTES inbox ORDER 002's intent under the
+   newer owner directive Q-0265 (002 predates it and says "hourly
+   Class A"; the Q-0265 shape below supersedes the cadence, NOT the
+   task — record exactly that supersession in status and mark 002 done
+   with the verbatim call, which is what the ORDER really wants):
+   create_trigger with name "superbot-games failsafe wake", cron
+   "15 */2 * * *", firing into THIS session, prompt EXACTLY:
 
    "FAILSAFE WAKE (superbot-games, Q-0265): if your send_later
    continuation chain is alive, verify that in one line and end. If it
@@ -151,8 +168,9 @@ BOOT NOW, in order:
    block for the owner's Routines screen. Then arm your first
    send_later chain link (~15 min, "continue the work loop").
 4. QUEUED SLICES (each its own merged-on-green PR, in order):
-   a. Kit upgrade v1.2.0 -> v1.7.0 (bootstrap.py from the kit repo's
-      dist; archives first; keep the status kit: line truthful).
+   a. ~~Kit upgrade v1.2.0 -> v1.7.0~~ ALREADY LANDED (PR #22, 20:22Z)
+      — covered by step 2's heartbeat-drift fix; verify
+      substrate.config.json says 1.7.0 and move on.
    b. FISHING walking skeleton: games/fishing/ pure-domain package
       reusing mining's encounter/energy substrate (extend, never
       duplicate) — one catchable fish, energy cost, deterministic
@@ -181,12 +199,14 @@ across the fleet's token — on "rate limit exceeded", record verbatim,
 back off, don't hammer.
 
 Calibration before you start: confirm your mission in one paragraph;
-state what gen-1 already shipped (so we know you won't rebuild it);
-recite the integrity floor (deterministic core · sim-pinned balance ·
-no pay-to-win · bounded-menu AI DM) and your merge-authority ladder
-(arm -> one attempt -> park+⚑); state the routine you will arm
-(name + cron) and the unification slice's exact file list; name the
-first slice after unification.
+state what gen-1 already shipped (so we know you won't rebuild it) AND
+your inherited state per step 2 (unified inbox with ORDERs 001/002,
+kit already v1.7.0); recite the integrity floor (deterministic core ·
+sim-pinned balance · no pay-to-win · bounded-menu AI DM) and your
+merge-authority ladder (arm -> one attempt -> park+⚑); state the
+routine you will arm (name + cron) and how it supersedes ORDER 002's
+cadence; describe your ORDER-001 walking-skeleton PR's contents; name
+the first slice after it.
 ```
 
 ## §3 — Environment
@@ -198,11 +218,15 @@ python-lab; the repo is stdlib+pytest Python, same class as gen-1 ran).
 ## §4 — Boot verification (what the dispatch copilot checks)
 
 1. Calibration answer names: gen-1's shipped inventory (mining port + encounters +
-   quest engine), the four-item integrity floor, the merge ladder, "superbot-games
-   failsafe wake" @ `15 */2 * * *`, the unification file list, fishing as the first
-   post-unification slice. **Red flags:** proposes re-porting what gen-1 shipped;
-   plans to delete lanes.md/per-lane files instead of bannering them; treats the
-   merge wall as unknown; skips the worker-seat retry on a walled scheduler tool.
+   quest engine), the inherited state (ORDERs 001/002 in the unified inbox; kit
+   already v1.7.0), the four-item integrity floor, the merge ladder, "superbot-games
+   failsafe wake" @ `15 */2 * * *` with the ORDER-002 supersession stated, the
+   ORDER-001 walking-skeleton contents (121+ collected tests + count floor), fishing
+   as the first slice after it. **Red flags:** proposes re-porting what gen-1
+   shipped; plans to re-upgrade the kit (PR #22 already landed it) or re-create the
+   unified control files; plans to delete lanes.md/per-lane files instead of
+   bannering them; treats the merge wall as unknown; skips the worker-seat retry on
+   a walled scheduler tool.
 2. Registry: the failsafe trigger exists with exact name/cron; chain link armed.
 3. Git: unification PR merged (or READY+green+⚑ if the classifier denied — that is a
    PASS with an owner click queued); unified control files at HEAD; heartbeat

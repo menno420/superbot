@@ -483,3 +483,29 @@ first-shippable sequencing per seat. Full expanded design: superbot
 docs/ideas/games-theme-engine-website-first-2026-07-10.md.
 Flag the conformed mapping as an owner-queue ⚑ in your status for the owner's react.
 ```
+
+### 6.3 Games packages → registry ingest (for the manager chat — pending paste)
+
+Context (status: PENDING PASTE — flip to "pasted <time>" on owner confirmation):
+part-4g (~22:4xZ) — the check-in sweep found the manager's conformed mapping (fm PR
+#46) in full agreement with the part-4f packages, but its ORDER-013 record still says
+"drafting founding packages is next manager work", and the registry's
+`projects/superbot-games/meta.md` carries a pre-part-4f cadence line (`0 */2 * * *`).
+This block prevents a duplicate draft and reconciles the registry.
+
+```
+DISPATCH from the owner (round-3 part-4g, 2026-07-10): games founding packages are
+ALREADY DRAFTED + MERGED — do not re-draft (your ORDER 013 "drafting is next manager
+work" is satisfied). Canonical texts, verify at superbot origin/main HEAD:
+docs/planning/round3-founding-package-games-world-2026-07-10.md (Seat A; §2 de-staled
+part-4g against superbot-games HEAD 4493292: ORDER 001 is the walking skeleton,
+ORDER 002 executes with the Q-0265 shape as a recorded supersession, kit v1.7.0
+acknowledged) and docs/planning/round3-founding-package-games-idle-2026-07-10.md
+(Seat B, repo name superbot-idle pending the owner's creation click). INGEST both
+into projects/ as the canonical copies (projects/superbot-games/ now;
+projects/superbot-idle/ once seeded) per your registry doctrine — note their
+failsafe crons are 15 */2 * * * (world) and 45 */2 * * * (idle), a deliberate
+stagger off the even-hour spike (flagged part-4f); update the superbot-games meta
+cadence line accordingly. The superbot planning copies become frozen history with
+superseded-by pointers once your ingest lands, per the one-source-of-truth rule.
+```
