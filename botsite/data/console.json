@@ -1,14 +1,78 @@
 {
   "meta": {
-    "generated_at": "2026-07-09T13:58:14Z",
+    "generated_at": "2026-07-10T03:29:45Z",
     "build": {
-      "commit": "72053d26",
-      "subject": "Merge pull request #1890 from menno420/claude/projects-eap-review-9vq8oj",
-      "committed_at": "2026-07-09T13:58:14Z"
+      "commit": "f4da4b8b",
+      "subject": "reconcile band-#1920: born-red session card + lane claim (41st Q-0107 pass)",
+      "committed_at": "2026-07-10T03:29:45Z"
     },
     "schema_version": 1
   },
   "sessions": [
+    {
+      "file": "2026-07-10-shift-d-dashboard-contract.md",
+      "date": "2026-07-10",
+      "title": "2026-07-10 — dashboard.json pinned-feed contract, first slice (overnight shift, session D)",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": true
+    },
+    {
+      "file": "2026-07-10-shift-b-lane-overlap-remote.md",
+      "date": "2026-07-10",
+      "title": "2026-07-10 — Overnight shift B: `check_lane_overlap.py --remote` + docs hygiene",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-07-10-reconcile-band1920.md",
+      "date": "2026-07-10",
+      "title": "Session — forty-first Q-0107 reconciliation pass (band-#1920)",
+      "status": "in-progress",
+      "run_type": "routine",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-07-10-gpt-5-6-sol-eval.md",
+      "date": "2026-07-10",
+      "title": "2026-07-10 — GPT-5.6 Sol research + Codex eval-prompt suite",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": true
+    },
+    {
+      "file": "2026-07-10-gen2-night-prep.md",
+      "date": "2026-07-10",
+      "title": "2026-07-10 — Gen-2 night prep (fleet boot-readiness)",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-07-10-gen1-gen2-doctrine-review.md",
+      "date": "2026-07-10",
+      "title": "2026-07-10 — gen1-gen2-doctrine-review",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-07-10-command-collision-checker.md",
+      "date": "2026-07-10",
+      "title": "2026-07-10 — command-collision checker (overnight shift, session A)",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": true
+    },
+    {
+      "file": "2026-07-09-telemetry-gate-guard.md",
+      "date": "2026-07-09",
+      "title": "2026-07-09 — telemetry-gate-guard",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
     {
       "file": "2026-07-09-remove-intree-kit.md",
       "date": "2026-07-09",
@@ -16,6 +80,14 @@
       "status": "complete",
       "run_type": "",
       "self_initiated": false
+    },
+    {
+      "file": "2026-07-09-reconcile-band1890.md",
+      "date": "2026-07-09",
+      "title": "2026-07-09 — Fortieth Q-0107 reconciliation pass (band-#1890)",
+      "status": "complete",
+      "run_type": "routine",
+      "self_initiated": true
     },
     {
       "file": "2026-07-09-projects-eap-fleet-review.md",
@@ -50,11 +122,43 @@
       "self_initiated": false
     },
     {
+      "file": "2026-07-09-gen1-grand-review.md",
+      "date": "2026-07-09",
+      "title": "2026-07-09 — Gen-1 grand review + cleanup (fleet-wide)",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-07-09-fleet-spec-heartbeat-mirror.md",
+      "date": "2026-07-09",
+      "title": "2026-07-09 — fleet-spec-heartbeat-mirror",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-07-09-fleet-manifest-venture-lab.md",
+      "date": "2026-07-09",
+      "title": "2026-07-09 — fleet-manifest-venture-lab",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
       "file": "2026-07-09-fleet-coordination-plan.md",
       "date": "2026-07-09",
       "title": "2026-07-09 — Fleet coordination protocol + manager Project v2 (plan)",
       "status": "complete",
       "run_type": "manual",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-07-09-external-review-pack.md",
+      "date": "2026-07-09",
+      "title": "2026-07-09 — external-review-pack",
+      "status": "complete",
+      "run_type": "",
       "self_initiated": false
     },
     {
@@ -74,6 +178,14 @@
       "self_initiated": false
     },
     {
+      "file": "2026-07-09-eap-email-draft-v2.md",
+      "date": "2026-07-09",
+      "title": "2026-07-09 — EAP gen-1 wrap-up email draft v2 drop",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
       "file": "2026-07-09-dependabot-policy-backlog.md",
       "date": "2026-07-09",
       "title": "2026-07-09 — Dependabot PR policy (owner decision) + backlog review/merge",
@@ -88,6 +200,14 @@
       "status": "complete",
       "run_type": "manual",
       "self_initiated": false
+    },
+    {
+      "file": "2026-07-09-code-projects-winddown-audit.md",
+      "date": "2026-07-09",
+      "title": "Session 2026-07-09 — Independent fleet wind-down audit (external auditor role)",
+      "status": "complete",
+      "run_type": "manual",
+      "self_initiated": true
     },
     {
       "file": "2026-07-08-wave1-lane-b-supersede-checker.md",
@@ -368,133 +488,13 @@
       "status": "complete",
       "run_type": "",
       "self_initiated": true
-    },
-    {
-      "file": "2026-07-07-session1-recut-websites.md",
-      "date": "2026-07-07",
-      "title": "2026-07-07 — Session-1 re-cut: websites on the last Fable day (Q-0253)",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-07-07-reconcile-band1800.md",
-      "date": "2026-07-07",
-      "title": "Session — thirty-seventh Q-0107 reconciliation pass (band-#1800)",
-      "status": "complete",
-      "run_type": "routine",
-      "self_initiated": true
-    },
-    {
-      "file": "2026-07-07-rebuild-plan-review-and-automation-idea.md",
-      "date": "2026-07-07",
-      "title": "2026-07-07 — Rebuild plan review (owner Q&A) + user-automation idea capture",
-      "status": "complete",
-      "run_type": "manual",
-      "self_initiated": true
-    },
-    {
-      "file": "2026-07-07-rebuild-idea-consolidation.md",
-      "date": "2026-07-07",
-      "title": "2026-07-07 — Rebuild idea consolidation (fold 4 captures + §3.C re-verify)",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-07-07-rebuild-gate-runners-fable5.md",
-      "date": "2026-07-07",
-      "title": "2026-07-07 — Rebuild gate-runners: kit tail ① + Phase-2.5 A/B + check_amendments (canonical-plan §5 steps 1–3)",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": true
-    },
-    {
-      "file": "2026-07-07-rebuild-final-review-fable5.md",
-      "date": "2026-07-07",
-      "title": "2026-07-07 — Rebuild FINAL review (Fable 5, ultracode) + Projects-EAP repo prep",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": true
-    },
-    {
-      "file": "2026-07-07-projects-eap-kickoff-repo-first.md",
-      "date": "2026-07-07",
-      "title": "2026-07-07 — Kickoff doc: owner creates `superbot-next` first",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-07-07-projects-eap-eval-journal.md",
-      "date": "2026-07-07",
-      "title": "2026-07-07 — Projects-EAP evaluation journal (guidebook-prescribed) + seed entries",
-      "status": "complete",
-      "run_type": "manual",
-      "self_initiated": true
-    },
-    {
-      "file": "2026-07-07-projects-eap-coordinator-kickoff.md",
-      "date": "2026-07-07",
-      "title": "2026-07-07 — Projects EAP: wiring the coordinator onto the rebuild §5 sequence",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-07-07-projects-eap-and-full-autonomy-q0241.md",
-      "date": "2026-07-07",
-      "title": "2026-07-07 — Claude Code Projects EAP for the rebuild + Q-0241 (remove owner gates, never-wait)",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-07-07-projects-eap-activation.md",
-      "date": "2026-07-07",
-      "title": "2026-07-07 — Claude Code Projects EAP: access granted, activation window",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-07-07-permission-allowlist-rediagnosis-q0242.md",
-      "date": "2026-07-07",
-      "title": "2026-07-07 — Permission-allowlist re-diagnosis (Q-0242): Q-0229's fix was unverified, and mostly unnecessary",
-      "status": "complete",
-      "run_type": "manual",
-      "self_initiated": true
-    },
-    {
-      "file": "2026-07-07-owner-rulings-followup.md",
-      "date": "2026-07-07",
-      "title": "2026-07-07 — Owner rulings follow-up (pricing-by-sim + slash-verification model)",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-07-07-owner-rulings-2-test-account-permission-tiers.md",
-      "date": "2026-07-07",
-      "title": "2026-07-07 — Owner rulings #2 (test-driver account + permission-tiered operation)",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-07-07-multi-repo-program-capture.md",
-      "date": "2026-07-07",
-      "title": "2026-07-07 — Multi-repo program capture (kit lab + trading repo + repo-start mechanics)",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
     }
   ],
   "ideas": {
-    "total": 220,
+    "total": 226,
     "by_status": {
-      "historical": 23,
-      "ideas": 194,
+      "historical": 24,
+      "ideas": 199,
       "reference": 3
     }
   },
@@ -616,6 +616,188 @@
       "model": "fable-5",
       "effort": "high",
       "task_class": "review/verify",
+      "tokens_out": null,
+      "outcome": {
+        "ci_green_first_push": null,
+        "checker_findings": null,
+        "merged_pr": null,
+        "reverted_within_window": null
+      }
+    },
+    {
+      "session": "2026-07-09-telemetry-gate-guard",
+      "date": "2026-07-09",
+      "model": "fable-5",
+      "effort": "high",
+      "task_class": "runtime bugfix",
+      "tokens_out": null,
+      "outcome": {
+        "ci_green_first_push": null,
+        "checker_findings": null,
+        "merged_pr": null,
+        "reverted_within_window": null
+      }
+    },
+    {
+      "session": "2026-07-09-fleet-spec-heartbeat-mirror",
+      "date": "2026-07-09",
+      "model": "fable-5",
+      "effort": "high",
+      "task_class": "docs-only",
+      "tokens_out": null,
+      "outcome": {
+        "ci_green_first_push": null,
+        "checker_findings": null,
+        "merged_pr": null,
+        "reverted_within_window": null
+      }
+    },
+    {
+      "session": "2026-07-09-external-review-pack",
+      "date": "2026-07-09",
+      "model": "fable-5",
+      "effort": "high",
+      "task_class": "docs-only",
+      "tokens_out": null,
+      "outcome": {
+        "ci_green_first_push": null,
+        "checker_findings": null,
+        "merged_pr": null,
+        "reverted_within_window": null
+      }
+    },
+    {
+      "session": "2026-07-09-fleet-manifest-venture-lab",
+      "date": "2026-07-09",
+      "model": "fable-5",
+      "effort": "high",
+      "task_class": "docs-only",
+      "tokens_out": null,
+      "outcome": {
+        "ci_green_first_push": null,
+        "checker_findings": null,
+        "merged_pr": null,
+        "reverted_within_window": null
+      }
+    },
+    {
+      "session": "2026-07-09-eap-email-draft-v2",
+      "date": "2026-07-09",
+      "model": "fable-5",
+      "effort": "high",
+      "task_class": "docs-only",
+      "tokens_out": null,
+      "outcome": {
+        "ci_green_first_push": null,
+        "checker_findings": null,
+        "merged_pr": null,
+        "reverted_within_window": null
+      }
+    },
+    {
+      "session": "2026-07-09-code-projects-winddown-audit",
+      "date": "2026-07-09",
+      "model": "sonnet-5",
+      "effort": "high",
+      "task_class": "docs-only",
+      "tokens_out": null,
+      "outcome": {
+        "ci_green_first_push": null,
+        "checker_findings": null,
+        "merged_pr": null,
+        "reverted_within_window": null
+      }
+    },
+    {
+      "session": "2026-07-10-gen1-gen2-doctrine-review",
+      "date": "2026-07-10",
+      "model": "opus-4.8",
+      "effort": "high",
+      "task_class": "docs-only",
+      "tokens_out": null,
+      "outcome": {
+        "ci_green_first_push": null,
+        "checker_findings": null,
+        "merged_pr": null,
+        "reverted_within_window": null
+      }
+    },
+    {
+      "session": "2026-07-09-gen1-grand-review",
+      "date": "2026-07-10",
+      "model": "fable-5",
+      "effort": "high",
+      "task_class": "docs-only",
+      "tokens_out": null,
+      "outcome": {
+        "ci_green_first_push": null,
+        "checker_findings": null,
+        "merged_pr": null,
+        "reverted_within_window": null
+      }
+    },
+    {
+      "session": "2026-07-10-gpt-5-6-sol-eval",
+      "date": "2026-07-10",
+      "model": "fable-5",
+      "effort": "high",
+      "task_class": "docs-only",
+      "tokens_out": null,
+      "outcome": {
+        "ci_green_first_push": null,
+        "checker_findings": null,
+        "merged_pr": null,
+        "reverted_within_window": null
+      }
+    },
+    {
+      "session": "2026-07-10-gen2-night-prep",
+      "date": "2026-07-10",
+      "model": "fable-5",
+      "effort": "high",
+      "task_class": "docs-only",
+      "tokens_out": null,
+      "outcome": {
+        "ci_green_first_push": null,
+        "checker_findings": null,
+        "merged_pr": null,
+        "reverted_within_window": null
+      }
+    },
+    {
+      "session": "2026-07-10-shift-b-lane-overlap-remote",
+      "date": "2026-07-10",
+      "model": "fable-5",
+      "effort": "high",
+      "task_class": "test writing",
+      "tokens_out": null,
+      "outcome": {
+        "ci_green_first_push": null,
+        "checker_findings": null,
+        "merged_pr": null,
+        "reverted_within_window": null
+      }
+    },
+    {
+      "session": "2026-07-10-command-collision-checker",
+      "date": "2026-07-10",
+      "model": "fable-5",
+      "effort": "high",
+      "task_class": "test writing",
+      "tokens_out": null,
+      "outcome": {
+        "ci_green_first_push": null,
+        "checker_findings": null,
+        "merged_pr": null,
+        "reverted_within_window": null
+      }
+    },
+    {
+      "session": "2026-07-10-shift-d-dashboard-contract",
+      "date": "2026-07-10",
+      "model": "fable-5",
+      "effort": "high",
+      "task_class": "test writing",
       "tokens_out": null,
       "outcome": {
         "ci_green_first_push": null,

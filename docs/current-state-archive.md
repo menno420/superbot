@@ -86,6 +86,41 @@
 
 ## Recently shipped — archived (newest first)
 
+- **#1833 (2026-07-08, workflow — thirty-eighth Q-0107 reconciliation pass, band-#1830)** —
+  the 38th docs-only reconciliation + planning pass
+  ([pass record](planning/reconciliation-pass-2026-07-08-band1830.md)): reconciled band #1801–#1830,
+  trimmed Recently-shipped to 20, disposed the open-PR set (6 dependabot bumps in flight), confirmed the
+  control-plane, refreshed the dashboard export, reset the marker #1800 → #1830.
+- **#1835 · #1836 · #1841 (2026-07-07/08, docs — dashboard-data refreshes, Q-0167)** —
+  three per-source-merge refreshes keeping the committed `dashboard/data/dashboard.json` export fresh as the
+  EAP-email / settings-ledger / grooming arc landed.
+- **#1807 · #1810 · #1811 · #1812 · #1813 · #1814 · #1816 · #1817 · #1818 · #1819 · #1820 · #1821 · #1822 · #1823 · #1825 · #1826 · #1827 · #1828 · #1829 · #1830 (2026-07-07/08, S3 rebuild — the SuperBot Project coordinator kickoff → live calibration → EAP-evaluation arc)** —
+  the band's headline: the **Claude Code Projects (EAP) coordinator went live** and ran the rebuild
+  program's first stretch. **#1807/#1810** stood up the early-access / repo-first kickoff (owner creates
+  `superbot-next` first, multi-repo picker test) + fixed pre-existing badge/plan-homing drift on sight
+  (#1808, Q-0166). **#1811…#1823** rewrote the [coordinator kickoff + calibration doc](planning/projects-eap-coordinator-kickoff-2026-07-07.md)
+  through ~13 owner-steered addenda — thin pointer-first Custom Instructions, the 13-item **calibration
+  exchange** (the coordinator scored a strong pass, Q7 verified against live GitHub), the **SECOND MANDATE**
+  evaluation guidebook (**#1820** — the Projects-EAP journal + seven EAP axes, so the Project both *executes*
+  the rebuild and *evaluates Claude Code Projects* for the owner's standing-Anthropic-channel goal), tempo
+  correction (3-day free-window *stretch goal*, correctness first), the Q-0247 kit-extraction sequence made
+  explicit, the don't-spare-on-agents fan-out mandate, and the §7 **working-relationship inquiry** →
+  a durable operating model (kickoff §8). **The EAP findings for the owner's Friday Anthropic feedback**
+  (the evaluation's whole point) landed across #1821…#1830: the **auto-mode permission / consent-wall**
+  (falsified-then-corrected several times as the owner probed the UI — headline = the first-publish push
+  wall is likely **un-self-clearable in cloud Projects** (auto-mode-only, no permissions UI)); the
+  **secrets-field** thread raised → recalibrated → **dropped as a non-incident** (#1826/#1827/#1828, owner
+  editorial call — feedback stays incident-backed only); the **4 KiB `start_project_session` dispatch cap**
+  (#1829); and the direct **11-test permission-boundary probe report** (**#1830** — constructive/reversible
+  actions run prompt-free, destructive-git-to-a-published-ref is hard-walled with no self-clear path).
+  Docs-only throughout (no `disbot/`). ⚑ Owner-parked: the step-7 first-publish push and the stranded
+  scratch branch `test/permprobe-0708` (harmless; auto mode can't self-delete a remote ref).
+- **#1806 · #1809 (2026-07-07, workflow — Q-0254 understand-and-reflect rule → portable kit doctrine)** —
+  graduated the **understand-and-reflect** working-agreement rule (state back the fuller picture + implied
+  specs before substantive work; surface the possibility space when feasibility is uncertain) into the
+  portable **substrate-kit** templates (`CONSTITUTION.md.tmpl` + `collaboration-model.md.tmpl` +
+  `question-router.md.tmpl`) so it travels to every future repo, with superbot's local `.claude/CLAUDE.md`
+  copy kept in sync. Docs/kit-template only.
 - **#1802 · #1804 (2026-07-07, S3 rebuild — program founding briefs: website-design + kit-lab)** —
   two of the Q-0252 three-program-sessions founding artifacts closed out: the **website-design brief**
   (#1802 — verification record + proof screenshots, docs homing, card flipped green) and the **kit-lab
