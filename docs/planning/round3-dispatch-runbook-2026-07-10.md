@@ -32,6 +32,13 @@
 
 ## 2. Fleet-manager founding package v3 (FINAL — owner pasting)
 
+> **⚠ AMENDED by owner directive Q-0265 (2026-07-10, post-boot):** the "one real slice
+> per wake" pacing in 2a/2b is SUPERSEDED — all six core seats run **continuous** (work
+> loop + send_later continuation chain; crons demoted to dead-man failsafes). Live seats
+> get the owner-pasted amendment block (part-4 brief §2b); this section stays the
+> historical boot-paste record. The manager additionally folds Q-0265 into the gen-3
+> blueprint delta so future seats are born continuous.
+
 ### 2a. Custom Instructions (paste into the Project's Custom Instructions field)
 
 ```

@@ -1,5 +1,12 @@
 # Round-3 founding package — Builder Project (superbot-next, 2026-07-10)
 
+> **⚠ AMENDED by owner directive Q-0265 (2026-07-10, after this seat booted):** any
+> "one bounded slice / one real slice per wake" pacing below is SUPERSEDED — the seat
+> runs **continuous** (work loop + send_later continuation chain; the cron demoted to
+> dead-man failsafe), consistent with its Q-0241 never-wait/overnight-pace mandate. The
+> live seat receives the amendment as an owner-pasted block (part-4 brief §2b); this
+> file stays the historical boot-paste record.
+>
 > **Status:** `plan` — the founding package for the **Builder** core seat (Q-0261 seat 3:
 > the superbot-next rebuild Project, "SuperBot 2.0"). Owner-confirmed upgrade from the
 > launch-pack §2 continuation prompt to the standard package shape. Drafted by the
