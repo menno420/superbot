@@ -68,6 +68,14 @@ port, the games lanes' exploration/mining slices, and the Game Lab tracks. Bias 
 games dispatch to "a build is better than no build": ship playable, imperfect increments
 every session; polish later. Sequence game lanes accordingly when you write orders.
 
+STANDING AUTONOMOUS CORE (owner design — read §5 of this pack):
+Four Projects run permanently on ~2-hourly routines and loop without the owner: you
+(manager), a NEW dedicated Idea Engine Project on the superbot repo, the superbot-next
+builder, and a Product Forge (venture-lab once its merge-path click lands). Your role in
+the loop: route the Idea Engine's proposals as ORDERs, consolidate the owner-queue, and
+watch the four routines' liveness in your staleness sweep. All other Projects are
+owner-started manually, one by one.
+
 GEN-3 PREP:
 Collect every lane's night self-review (the owner is pasting a continuation+review prompt
 into each lane; their answers land in their repos), plus the Codex external reviews the
@@ -208,7 +216,51 @@ checkers — be hostile."
 10. **venture-lab first-revenue clicks (⚑A–D — whenever you feel like it, not urgent):**
     publish the two zips, optional Stripe test keys. This is the actual first-revenue path.
 
-## §5 — Owner fleet-watching guide (for today's slow lap)
+## §5 — The standing autonomous core (owner design, 2026-07-10)
+
+Owner directive: **four Projects always running on ~2-hourly routines, looping together
+without regular owner input.** They resolve owner questions themselves wherever the
+decision is reversible (Q-0240 decide-and-flag) and park only true owner-only asks in the
+owner-queue. All *other* Projects are started manually one at a time whenever the owner
+feels like it (routines optional there — more steering, or temporary test cases).
+
+| # | Role | Seat (recommendation) | Mission in one line |
+|---|---|---|---|
+| 1 | **Manager** | fleet-manager (existing) | Staleness sweep · route orders · consolidate the owner-queue · keep doctrine current (§1 debts) |
+| 2 | **Idea Engine** | **NEW dedicated Project on the superbot repo** — *not* substrate-kit: the ideas pipeline (docs/ideas/, router, grooming doctrine) lives in superbot, and kit-lab already has its own mission; fleet ideation inside the mechanism repo repeats the §7 ordering inversion | Generate + groom ideas into docs/ideas/, promote the best into plans, and propose routing ORDERs to the manager for lane repos |
+| 3 | **Builder** | superbot-next coordinator (existing SuperBot Project) | Work the band order (band-6 games next) under the build-over-perfect bias |
+| 4 | **Product Forge** | **venture-lab** once its merge-path click lands (mission-match: ideas → finished products); else seed `product-forge` born-right with a required check | Take routed ideas and build them into finished, shippable products end-to-end |
+
+**Loop shape:** Idea Engine files/promotes → Manager routes as ORDERs → Builder + Forge
+consume → Manager consolidates results + owner-queue → Idea Engine grooms from what
+shipped. Stagger the cadence so the manager reads fresh heartbeats: lanes wake at even
+hours (:00), the manager at odd hours (or +1h offset).
+
+**Routine text (paste into each of the four Projects — each arms its own routine, which
+two lanes have already proven possible):**
+
+```
+Arm a recurring routine for this Project yourself using the scheduling tools
+(create_trigger; cron every 2 hours). If your seat is walled, output the exact routine
+name + instruction text for the owner to create manually, and record the verbatim denial
+in control/status.md. The routine instruction text:
+
+"2-HOURLY WAKE (<role>): sync to origin/main HEAD; read control/inbox.md at HEAD; do your
+role's standing job [Manager: staleness sweep + order routing + owner-queue consolidation
+| Idea Engine: groom docs/ideas/, promote one idea, propose routing orders | Builder:
+advance the current band | Product Forge: advance the current product]; decide-and-flag
+owner questions (resolve reversible ones yourself; park true owner-only asks as six-field
+OWNER-ACTION entries); ship something real every wake (a build is better than no build);
+heartbeat overwrite last. If this trigger is one-shot rather than recurring, re-arm it
+for +120 minutes before ending the turn."
+```
+
+**Success criteria for "correctly set":** all four routines show ACTIVE + Created-by-
+Claude with completed runs across 24h; the owner-queue grows only with genuinely
+owner-only items; zero stuck PRs. Then the manual start-up of the remaining Projects
+begins, one by one.
+
+## §6 — Owner fleet-watching guide (for today's slow lap)
 
 The tracking you're after already exists on the control-plane site
 (`https://control-plane-production-abb0.up.railway.app`):
