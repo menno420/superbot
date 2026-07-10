@@ -1,15 +1,15 @@
 {
   "meta": {
-    "generated_at": "2026-07-10T03:29:45Z",
+    "generated_at": "2026-07-10T06:07:56Z",
     "build": {
-      "commit": "f4da4b8b",
-      "subject": "reconcile band-#1920: born-red session card + lane claim (41st Q-0107 pass)",
-      "committed_at": "2026-07-10T03:29:45Z"
+      "commit": "56c9bbf3",
+      "subject": "Merge pull request #1923 from menno420/claude/shift-e-manifest-freshness",
+      "committed_at": "2026-07-10T06:07:56Z"
     },
     "schema_version": 1,
     "counts": {
       "functions": 43,
-      "ideas": 226,
+      "ideas": 227,
       "bugs": 31,
       "reviews": 0,
       "reviews_open": 0,
@@ -1192,7 +1192,7 @@
     {
       "file": "fleet-manifest-freshness-checker-2026-07-10.md",
       "title": "Fleet-manifest freshness checker (2026-07-10)",
-      "status": "ideas",
+      "status": "historical",
       "date": "2026-07-10",
       "summary": "`docs/eap/fleet-manifest.md` row's last-seen cell against the lane repo's",
       "subsystems": null
@@ -1203,6 +1203,14 @@
       "status": "ideas",
       "date": "2026-07-10",
       "summary": "The 2026-07-10 overnight shift plan's item **Q2** stated that 6 views \"lack a justifying",
+      "subsystems": null
+    },
+    {
+      "file": "telemetry-model-name-vocabulary-2026-07-10.md",
+      "title": "Idea — pin the telemetry `model` short-name vocabulary (enum + validator)",
+      "status": "ideas",
+      "date": "2026-07-10",
+      "summary": "The `telemetry/model-usage.jsonl` feed (Q-0248/PL-004 model-allocation record, guard-enforced since",
       "subsystems": null
     },
     {
@@ -3245,6 +3253,14 @@
   "reviews": [],
   "updates": [
     {
+      "file": "2026-07-10-shift-e-manifest-freshness.md",
+      "date": "2026-07-10",
+      "title": "2026-07-10 — fleet-manifest freshness checker (overnight shift, session E)",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
       "file": "2026-07-10-shift-d-dashboard-contract.md",
       "date": "2026-07-10",
       "title": "2026-07-10 — dashboard.json pinned-feed contract, first slice (overnight shift, session D)",
@@ -3264,7 +3280,7 @@
       "file": "2026-07-10-reconcile-band1920.md",
       "date": "2026-07-10",
       "title": "Session — forty-first Q-0107 reconciliation pass (band-#1920)",
-      "status": "in-progress",
+      "status": "complete",
       "run_type": "routine",
       "self_initiated": false
     },
@@ -3715,14 +3731,6 @@
       "status": "complete",
       "run_type": "",
       "self_initiated": false
-    },
-    {
-      "file": "2026-07-07-substrate-kit-enforcement.md",
-      "date": "2026-07-07",
-      "title": "2026-07-07 — substrate-kit: adopt installs the enforcement (the forcing functions)",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": true
     }
   ],
   "bot_changelog": [
@@ -3962,6 +3970,34 @@
       "model": "fable-5",
       "effort": "high",
       "task_class": "test writing",
+      "tokens_out": null,
+      "outcome": {
+        "ci_green_first_push": null,
+        "checker_findings": null,
+        "merged_pr": null,
+        "reverted_within_window": null
+      }
+    },
+    {
+      "session": "2026-07-10-shift-e-manifest-freshness",
+      "date": "2026-07-10",
+      "model": "fable-5",
+      "effort": "high",
+      "task_class": "test writing",
+      "tokens_out": null,
+      "outcome": {
+        "ci_green_first_push": null,
+        "checker_findings": null,
+        "merged_pr": null,
+        "reverted_within_window": null
+      }
+    },
+    {
+      "session": "2026-07-10-reconcile-band1920",
+      "date": "2026-07-10",
+      "model": "opus-4.8",
+      "effort": "high",
+      "task_class": "docs-only",
       "tokens_out": null,
       "outcome": {
         "ci_green_first_push": null,
