@@ -1,6 +1,6 @@
 # Quiet hours design
 
-Status: design only — not implemented.
+> **Status:** `plan` — design only, not implemented.
 
 ## Goal
 
