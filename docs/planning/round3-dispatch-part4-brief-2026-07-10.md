@@ -36,19 +36,24 @@ Pipeline: idea-engine (even :00) → sim-lab (odd :00) → manager (:30) → lan
 ## §2 — Priority queue
 
 0. **FIRST (added post-close, owner ruling Q-0265): the continuous-mode amendment
-   round.** Paste the §2b block into each of the four LIVE seat chats (manager ·
-   substrate-kit · Builder · Idea Engine). Product Forge and sim-lab inherit it
-   natively — their packages were rewritten before boot. Copilot verification
-   afterwards: each seat's next heartbeat records the amendment + its re-armed
-   failsafe cron + a live continuation chain (registry: old cron prompt replaced,
-   `send_later` continuations appearing).
-1. **Finish seat 5 (Product Forge).** Owner: create the Project + `product-forge` env
+   round.** Paste the §2b block into each of the **FIVE live seat chats (manager ·
+   substrate-kit · Builder · Idea Engine · Product Forge)** — the forge booted
+   ~19:05Z, BEFORE Q-0265 merged, so it runs the old one-slice package despite the
+   rewritten doc (corrected 2026-07-10 ~19:5xZ; only sim-lab inherits continuous
+   natively at boot). Copilot verification afterwards: each seat's next heartbeat
+   records the amendment + its re-armed failsafe cron + a live continuation chain
+   (registry: old cron prompt replaced, `send_later` continuations appearing).
+1. ~~**Finish seat 5 (Product Forge).**~~ **DONE — seat 5 is LIVE** (verified at HEAD
+   2026-07-10 ~19:5xZ: boot ~19:05Z, first heartbeat merged via its PR #3
+   `updated: 18:59Z`, routine armed per heartbeat + owner screenshot, owner's two
+   settings clicks acknowledged, first product pass dispatched). Remaining forge item
+   = the §2b amendment (item 0). Original steps kept for the record: Owner: create the Project + `product-forge` env
    (repo only, no vars, `archetype-python-lab.sh` verbatim), paste package §1/§2
    (§2 is de-staled to the seeded reality). Copilot: verify calibration per package §4,
    the routine in the registry, and that the manager's ORDER 001 landed (below).
-2. **Manager relay — forge ORDER 001 (owner-named product: games-web).** Owner pastes
-   into the manager chat; copilot verifies the append + **dedups** (part-1's trading
-   lesson: a manager dispatch can race a direct landing):
+2. ~~**Manager relay — forge ORDER 001.**~~ **DONE — verified at forge HEAD** (ORDER
+   001 games-web landed verbatim in `control/inbox.md` via the forge's PR #2, commit
+   `3179692`; no duplicate present). Paste kept for the record:
 
    ```
    DISPATCH from the owner (round-3, 2026-07-10): write the Product Forge's first ORDER.
