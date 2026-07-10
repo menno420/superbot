@@ -9343,3 +9343,37 @@ Consequences:
 **Routing.** This entry (provenance) + the codex-review-integration plan (mechanics) +
 round-3 launch pack §1 (fleet propagation via a manager playbook rule). Owner-side
 prerequisite: enable the Codex GitHub integration on the valuable repos (owner queue).
+
+### Q-0259 — five round-3 rulings: budget posture · gen-3 scope · rebuild pace · venture mandate · games program (owner, 2026-07-10)
+
+> **Context.** The round-3 launch pack (§4 decision sheet + the five forward questions the
+> review session asked) — owner answered all five live. Recorded verbatim-in-substance:
+
+1. **Budget posture:** billing model unknown; if Projects stay within normal session
+   limits, the 4 core projects can run **indefinitely — as long as they don't work
+   excessively**. Consequence: cadence stands, but "no excessive work" is a design
+   principle for routine prompts (bounded slices per wake), and the economics ledger's
+   job is to *detect* excess, not to gate.
+2. **Gen-3 scope = verify-and-consolidate, not a fresh break:** verify gen-2's results
+   and find **the cause of the improvements**; improve the per-repo environments; give
+   **every project a clear goal** and a **confirmed method of arming an hourly/2-hourly
+   routine**. (The manager's gen-3 report should be structured around exactly these four.)
+3. **Rebuild pace:** completion **as fast as reasonably possible** — keep the overnight
+   pace; **use more Codex reviews on superbot-next** to catch errors quickly (owner: Codex
+   is quite good at PR reviews → standing @codex review on substantive Builder PRs,
+   extending Q-0258). Games run in parallel in separate projects and are finetuned for
+   bot use later.
+4. **Venture mandate:** yes — try to get it profitable to **fund the fleet's expenses**;
+   no specific target beyond **durable, sustainable growth**; any methods allowed. Hard
+   protocol: if a step needs money, venture-lab produces a plan showing **exactly what the
+   owner must do/enable/buy**, plus a **conservative** earnings expectation and
+   payback-time estimate — expect bad results, never overstate.
+5. **Games program:** the owner will play the builds **after** the EAP, not now. Standing
+   instruction: **3 dedicated game projects, each with their own repo**, that continuously
+   improve existing games, invent new games, or mod other games — presenting **a few
+   options wherever that feels wise** rather than asking. A capability test by design; the
+   owner tests everything later and improvement rounds follow.
+
+**Routing.** Round-3 pack §4b (answers) + §1 brief consumers; the manager maps the current
+game lanes (superbot-games shared repo · pokemon-mod-lab · gba-homebrew) onto the
+3-projects/3-repos shape decide-and-flag.
