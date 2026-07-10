@@ -160,6 +160,16 @@ criteria). The manager's staleness sweep is the standing safety net under all of
 This standard is round-3 material; its durable home for gen-3+ is the manager's
 doctrine (gen2-blueprint successor / playbook) via the Q-0259 r.2 gen-3 report — the
 manager should fold §2 in as the environment/instructions standard and cite the sim.
+
+**Fold-back is materializing (owner-reported live, 2026-07-10 part-4d):** the manager
+is preparing a **centralized prompt registry** — one home for Custom Instructions,
+coordinator briefs, and wake prompts. One-source-of-truth rule once it exists: the
+registry copy is canonical; the founding packages' §1/§2 blocks in this repo become
+frozen historical copies with superseded-by pointers; any prompt change is made in the
+registry FIRST and then re-pasted by the owner (pasted instruction text is otherwise
+invisible to the fleet — version-stamp every prompt `vN · YYYY-MM-DD` so a seat can be
+asked to quote its header and drift becomes detectable). Ingest inventory + registry
+rules: the dispatch runbook §6.1 paste block.
 The sim itself follows Q-0105: parameters are estimates pending the next real boots;
 re-run with measured durations before trusting fine-grained minutes (the *ranking* is
 robust across the sweep).
