@@ -226,11 +226,12 @@ Reply here with the substrate-kit section inline + per-class totals when the PR 
    session-bound) is deleted by the NEW boot itself, then the old chat can be archived.
    Package: [`round3-founding-package-substrate-kit-2026-07-10.md`](round3-founding-package-substrate-kit-2026-07-10.md)
    (write-all distribution seat per Q-0261.3). Env: attach ALL fleet repos.
-3. ☐ **superbot-next (core seat 3).** Finalize-first: flag-13 **RULED: lane's disposition
-   accepted** (Q-0262.3 — inbox line rides the manager relay) · the
-   `superbot-plugin-hello` repo creation (its ORDER 002 gate, owner click) · up-to-date
-   merge rule relax (same uncheck as kit's). Then: §2 continuation prompt +
-   standing-@codex line (Q-0259 r.3) + 2-hourly routine confirm/arm.
+3. ☐ **superbot-next (core seat 3).** Finalize-first: flag-13 **RULED + LANDED** (ORDER
+   009, PR #102 merged) · remaining owner clicks: `superbot-plugin-hello` repo creation
+   (ORDER 002 gate) + up-to-date merge rule uncheck (same as kit's). Package
+   (owner-confirmed upgrade from the §2 continuation prompt):
+   [`round3-founding-package-builder-2026-07-10.md`](round3-founding-package-builder-2026-07-10.md)
+   — routine rides its own inbox ORDER 008; ender catch-up for #99/#101 baked into boot.
 4. ☐ **Idea Engine (core seat 4).** Package **DRAFTED**:
    [`round3-founding-package-idea-engine-2026-07-10.md`](round3-founding-package-idea-engine-2026-07-10.md)
    (probe battery v0; env = existing `superbot`, zero env work). Finalize-first: superbot
