@@ -309,8 +309,16 @@ Reply here with the substrate-kit section inline + per-class totals when the PR 
    verdict branches pre-specified; owner clicks = env `trading-strategy` + Project +
    §1/§2 pastes**, websites continuation — booted by the owner ~19:3xZ, env `websites`
    created) · games program once
-   the manager proposes the 3-repo mapping (Q-0259 r.5) — 3 packages on the standard,
-   reshaped by the games-web pick (owner relay drafted, part-4 chat).
+   the manager proposes the repo mapping (Q-0259 r.5) — packages on the standard,
+   reshaped by the games-web pick. **Relay PASTED to the manager (owner-confirmed
+   live, part-4d ~21:3xZ)** with one input added at paste time: the mapping must
+   also **place the read-only data API** (over superbot's dashboard-data-contract,
+   PR #1920) that both games-web phase 2 and the websites stats/explorer pages are
+   blocked on — one of the games repos, a superbot lane, or its own Project.
+   Awaiting the manager's ⚑ mapping proposal. Same owner report: **the manager is
+   preparing a centralized prompt registry** (one home for all Custom Instructions /
+   briefs / wake prompts) — one-source-of-truth rule in the gen-3 standard §4;
+   ingest inventory in §6 below.
 8. ☐ Verify loop closure: all core routines ACTIVE with completed runs across 24h;
    owner-queue only owner-only items; zero stuck PRs (pack §5 criteria).
 
@@ -319,7 +327,9 @@ Reply here with the substrate-kit section inline + per-class totals when the PR 
 - ~~Idea Engine founding package~~ **done, then REWRITTEN v2 (own-repo) per Q-0264** → [`round3-founding-package-idea-engine-2026-07-10.md`](round3-founding-package-idea-engine-2026-07-10.md).
 - ~~Product Forge founding package~~ **done** → [`round3-founding-package-product-forge-2026-07-10.md`](round3-founding-package-product-forge-2026-07-10.md).
 - ~~Simulator (seat 6) founding package~~ **done (Q-0264)** → [`round3-founding-package-simulator-2026-07-10.md`](round3-founding-package-simulator-2026-07-10.md); the superseded superbot-hub seat needs no package.
-- 3 × game-Project founding packages once the manager's mapping lands (Q-0259 r.5).
+- Game-Project founding packages once the manager's mapping lands (Q-0259 r.5) —
+  relay pasted 2026-07-10 (part-4d); repo count may change with the proposal, which
+  now must also place the read-only data API (see §3.7).
 - ~~Trading founding package~~ **done (part-4b, owner-directed)** →
   [`round3-founding-package-trading-2026-07-10.md`](round3-founding-package-trading-2026-07-10.md)
   (continuous + Q-0266 volume-first; ORDER-008-first boot; conversion of a live lane, not a birth).
@@ -395,3 +405,37 @@ raw fetches 404 unauthenticated vs 200 on public controls; the manager's 13:45Z 
 pre-dated the flip and clears on its next pass) · Codex has no
 environment for fleet-manager (chatgpt.com/codex settings — gates ORDER 007's @codex relay
 there) · fleet-manager visibility joins the account-wide review (non-urgent).
+
+## 6. Durable owner paste blocks (part-4d convention: blocks that gate downstream work get committed, not chat-only)
+
+### 6.1 Prompt-registry ingest inventory (for the manager chat — pending paste)
+
+Context: the owner reported (part-4d, 2026-07-10 ~21:3xZ) the manager is preparing a
+centralized prompt home. This block starts it *complete* instead of letting it
+rediscover where prompts live. Delivered to the owner in-chat; committed here so a
+lost chat never re-drafts it.
+
+```
+DISPATCH from the owner's copilot (round-3 part-4d, 2026-07-10): prompt-registry
+ingest inventory. You are building the centralized prompt home — start it complete.
+Canonical locations of every live prompt artifact today:
+1. Founding packages (§1 Custom Instructions + §2 coordinator briefs), superbot
+   docs/planning/: round3-founding-package-{idea-engine, product-forge, simulator,
+   trading}-2026-07-10.md, plus your own v3 package in
+   round3-dispatch-runbook-2026-07-10.md §2.
+2. The template they instantiate: gen3-deployment-standard-2026-07-10.md §2
+   (continuous Q-0265 + volume-first Q-0266 already folded in).
+3. Kit doctrine templates: substrate-kit src/engine/templates/*.tmpl.
+4. Wake prompts: these live ONLY inside the trigger registry (list_triggers) — the
+   "<seat> failsafe wake" prompts and the send_later continuation-chain text; copy
+   them out verbatim or they stay invisible to the fleet.
+5. Environment setup scripts: fleet-manager environments/archetype-*.sh.
+Registry rules to adopt: (a) ONE WRITER — the registry lives in YOUR repo; lanes
+propose changes via INTAKE, never direct writes. (b) VERSION-STAMP every prompt
+("vN - YYYY-MM-DD" as its first line): pasted Custom Instructions are invisible to
+the fleet, so the flow is edit-registry-FIRST, then the owner re-pastes — and any
+seat can be asked to quote its version header to detect drift. (c) Once ingested,
+flag the superbot copies for superseded-by pointers — they stay as frozen history;
+the registry copy is canonical from then on.
+After ingest: flag the registry location in your status so the copilot can verify.
+```
