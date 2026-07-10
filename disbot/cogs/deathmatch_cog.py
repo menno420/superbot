@@ -92,6 +92,11 @@ async def _tick_duel_gear_wear(
     return notes
 
 
+# Extends discord.ui.View directly (not BaseView): specialized game-state
+# lifecycle — settle-once duel semantics (SettleOnceMixin) with an on_timeout
+# that SETTLES the duel (W/L write, gear wear, active-duel cleanup), not
+# BaseView's disable-and-edit; same ownership class as views/rps/ and
+# views/blackjack/.
 class _DuelView(SettleOnceMixin, discord.ui.View):
     def __init__(
         self,
@@ -280,6 +285,11 @@ class _DuelView(SettleOnceMixin, discord.ui.View):
             )
 
 
+# Extends discord.ui.View directly (not BaseView): specialized game-state
+# lifecycle — a 30s accept/decline window whose on_timeout EXPIRES the
+# challenge (result view swap + rematch nav) guarded against the
+# accept-vs-timeout race via self._resolved; not BaseView's invoker-locked
+# disable-and-edit shape (the opponent, not the invoker, must click).
 class _ChallengeView(discord.ui.View):
     def __init__(
         self,

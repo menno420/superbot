@@ -54,6 +54,32 @@ from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 OUTPUT_FILE = REPO_ROOT / "dashboard" / "data" / "dashboard.json"
+# The dashboard feed's CROSS-REPO shape contract — the console pattern (PR #1884)
+# applied to the feed the websites repo renders ~12 pages from. SLICE semantics:
+# only ``DASHBOARD_CONTRACTED_FAMILIES`` are pinned (growth is family-by-family
+# with a version bump); un-contracted families stay free. These producer constants
+# must MATCH ``dashboard/data/dashboard_data_contract.json`` —
+# ``check_dashboard_data.check_dashboard_contract`` enforces the parity (CI via
+# tests/unit/scripts/) — and every emitted ``dashboard.json`` carries the contract
+# version as ``meta.schema_version`` so consumers can cheaply verify the shape
+# they were built against. Changing a contracted surface = edit the contract file
+# and these constants in the same commit and bump the version.
+DASHBOARD_CONTRACT_FILE = (
+    REPO_ROOT / "dashboard" / "data" / "dashboard_data_contract.json"
+)
+DASHBOARD_SCHEMA_VERSION = 1
+DASHBOARD_CONTRACTED_FAMILIES: frozenset[str] = frozenset({"meta", "bugs"})
+# Guaranteed keys of the ``meta`` envelope (the version-carrying family every
+# consumer reads first).
+DASHBOARD_META_FIELDS: tuple[str, ...] = (
+    "generated_at",
+    "build",
+    "counts",
+    "schema_version",
+)
+# Guaranteed per-record fields of the ``bugs`` family (``parse_bugs`` constructs
+# exactly these keys from docs/health/bug-book.md; websites' bugs page consumes).
+DASHBOARD_BUG_FIELDS: tuple[str, ...] = ("id", "title", "status", "summary")
 SITE_OUTPUT_FILE = REPO_ROOT / "botsite" / "data" / "site.json"
 # The SPA data layer regenerated alongside site.json. Exposed as a CLI arg
 # (``--data-js-output``) so a test driving ``main()`` with tmp paths cannot clobber
@@ -882,6 +908,9 @@ def build_data(repo_root: Path = REPO_ROOT) -> dict:
         "meta": {
             "generated_at": generated_at,
             "build": build,
+            # The dashboard feed's shape-contract version (slice semantics; see
+            # DASHBOARD_SCHEMA_VERSION above) — consumers pin against this.
+            "schema_version": DASHBOARD_SCHEMA_VERSION,
             "counts": {
                 "functions": len(catalogue),
                 "ideas": len(ideas),

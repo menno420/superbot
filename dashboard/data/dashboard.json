@@ -1,14 +1,15 @@
 {
   "meta": {
-    "generated_at": "2026-07-09T23:18:36Z",
+    "generated_at": "2026-07-10T02:58:25Z",
     "build": {
-      "commit": "77b76dea",
-      "subject": "docs(eap): gen-1 wrap-up email draft v2 (2026-07-09) (#1910)",
-      "committed_at": "2026-07-09T23:18:36Z"
+      "commit": "ed8a2189",
+      "subject": "session: born-red card + claim + telemetry row (shift D — dashboard.json contract slice)",
+      "committed_at": "2026-07-10T02:58:25Z"
     },
+    "schema_version": 1,
     "counts": {
       "functions": 43,
-      "ideas": 221,
+      "ideas": 225,
       "bugs": 31,
       "reviews": 0,
       "reviews_open": 0,
@@ -1165,6 +1166,38 @@
   ],
   "ideas": [
     {
+      "file": "command-surface-extractor-consolidation-2026-07-10.md",
+      "title": "Idea — one shared command-surface AST extractor for the three scripts that each re-implement it",
+      "status": "ideas",
+      "date": "2026-07-10",
+      "summary": "Three stdlib-AST tools now independently parse the same `disbot/cogs/**` decorator surface, each",
+      "subsystems": null
+    },
+    {
+      "file": "coordinator-self-review-against-1901-2026-07-10.md",
+      "title": "Coordinator lane answers its own retro question set (2026-07-10)",
+      "status": "ideas",
+      "date": "2026-07-10",
+      "summary": "only gen-1 lane that never answered the fleet retro question set it itself planted",
+      "subsystems": null
+    },
+    {
+      "file": "cross-agent-trust-ledger-2026-07-10.md",
+      "title": "Cross-agent trust ledger — per-model scores from repeatable eval suites",
+      "status": "ideas",
+      "date": "2026-07-10",
+      "summary": "`docs/owner/gpt-5-6-sol-codex-eval-2026-07-10.md` ships a repeatable prompt suite",
+      "subsystems": []
+    },
+    {
+      "file": "fleet-manifest-freshness-checker-2026-07-10.md",
+      "title": "Fleet-manifest freshness checker (2026-07-10)",
+      "status": "ideas",
+      "date": "2026-07-10",
+      "summary": "`docs/eap/fleet-manifest.md` row's last-seen cell against the lane repo's",
+      "subsystems": null
+    },
+    {
       "file": "cross-repo-eap-verification-orientation-pointer-2026-07-09.md",
       "title": "Idea — a cross-repo EAP verification orientation pointer (per-repo interpreter + clone-and-run flow)",
       "status": "ideas",
@@ -1703,7 +1736,7 @@
     {
       "file": "command-collision-checker-2026-06-29.md",
       "title": "Idea — `check_command_collisions.py`: static guard against duplicate command names",
-      "status": "ideas",
+      "status": "historical",
       "date": "2026-06-29",
       "summary": "PR #1541 added a `!give`/`!pay` economy command. It **collided** with mining's admin `give` — a command",
       "subsystems": null
@@ -3204,6 +3237,46 @@
   "reviews": [],
   "updates": [
     {
+      "file": "2026-07-10-shift-d-dashboard-contract.md",
+      "date": "2026-07-10",
+      "title": "2026-07-10 — dashboard.json pinned-feed contract, first slice (overnight shift, session D)",
+      "status": "in-progress",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-07-10-gpt-5-6-sol-eval.md",
+      "date": "2026-07-10",
+      "title": "2026-07-10 — GPT-5.6 Sol research + Codex eval-prompt suite",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": true
+    },
+    {
+      "file": "2026-07-10-gen2-night-prep.md",
+      "date": "2026-07-10",
+      "title": "2026-07-10 — Gen-2 night prep (fleet boot-readiness)",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-07-10-gen1-gen2-doctrine-review.md",
+      "date": "2026-07-10",
+      "title": "2026-07-10 — gen1-gen2-doctrine-review",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-07-10-command-collision-checker.md",
+      "date": "2026-07-10",
+      "title": "2026-07-10 — command-collision checker (overnight shift, session A)",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": true
+    },
+    {
       "file": "2026-07-09-telemetry-gate-guard.md",
       "date": "2026-07-09",
       "title": "2026-07-09 — telemetry-gate-guard",
@@ -3255,6 +3328,14 @@
       "file": "2026-07-09-kit-version-pin.md",
       "date": "2026-07-09",
       "title": "2026-07-09 — substrate-kit v1.0.0 pin file (kit-lab D2, consumer half)",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-07-09-gen1-grand-review.md",
+      "date": "2026-07-09",
+      "title": "2026-07-09 — Gen-1 grand review + cleanup (fleet-wide)",
       "status": "complete",
       "run_type": "",
       "self_initiated": false
@@ -3330,6 +3411,14 @@
       "status": "complete",
       "run_type": "manual",
       "self_initiated": false
+    },
+    {
+      "file": "2026-07-09-code-projects-winddown-audit.md",
+      "date": "2026-07-09",
+      "title": "Session 2026-07-09 — Independent fleet wind-down audit (external auditor role)",
+      "status": "complete",
+      "run_type": "manual",
+      "self_initiated": true
     },
     {
       "file": "2026-07-08-wave1-lane-b-supersede-checker.md",
@@ -3626,62 +3715,6 @@
       "status": "complete",
       "run_type": "routine",
       "self_initiated": true
-    },
-    {
-      "file": "2026-07-07-rebuild-plan-review-and-automation-idea.md",
-      "date": "2026-07-07",
-      "title": "2026-07-07 — Rebuild plan review (owner Q&A) + user-automation idea capture",
-      "status": "complete",
-      "run_type": "manual",
-      "self_initiated": true
-    },
-    {
-      "file": "2026-07-07-rebuild-idea-consolidation.md",
-      "date": "2026-07-07",
-      "title": "2026-07-07 — Rebuild idea consolidation (fold 4 captures + §3.C re-verify)",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-07-07-rebuild-gate-runners-fable5.md",
-      "date": "2026-07-07",
-      "title": "2026-07-07 — Rebuild gate-runners: kit tail ① + Phase-2.5 A/B + check_amendments (canonical-plan §5 steps 1–3)",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": true
-    },
-    {
-      "file": "2026-07-07-rebuild-final-review-fable5.md",
-      "date": "2026-07-07",
-      "title": "2026-07-07 — Rebuild FINAL review (Fable 5, ultracode) + Projects-EAP repo prep",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": true
-    },
-    {
-      "file": "2026-07-07-projects-eap-kickoff-repo-first.md",
-      "date": "2026-07-07",
-      "title": "2026-07-07 — Kickoff doc: owner creates `superbot-next` first",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-07-07-projects-eap-eval-journal.md",
-      "date": "2026-07-07",
-      "title": "2026-07-07 — Projects-EAP evaluation journal (guidebook-prescribed) + seed entries",
-      "status": "complete",
-      "run_type": "manual",
-      "self_initiated": true
-    },
-    {
-      "file": "2026-07-07-projects-eap-coordinator-kickoff.md",
-      "date": "2026-07-07",
-      "title": "2026-07-07 — Projects EAP: wiring the coordinator onto the rebuild §5 sequence",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
     }
   ],
   "bot_changelog": [
@@ -3809,6 +3842,104 @@
       "model": "fable-5",
       "effort": "high",
       "task_class": "docs-only",
+      "tokens_out": null,
+      "outcome": {
+        "ci_green_first_push": null,
+        "checker_findings": null,
+        "merged_pr": null,
+        "reverted_within_window": null
+      }
+    },
+    {
+      "session": "2026-07-09-code-projects-winddown-audit",
+      "date": "2026-07-09",
+      "model": "sonnet-5",
+      "effort": "high",
+      "task_class": "docs-only",
+      "tokens_out": null,
+      "outcome": {
+        "ci_green_first_push": null,
+        "checker_findings": null,
+        "merged_pr": null,
+        "reverted_within_window": null
+      }
+    },
+    {
+      "session": "2026-07-10-gen1-gen2-doctrine-review",
+      "date": "2026-07-10",
+      "model": "opus-4.8",
+      "effort": "high",
+      "task_class": "docs-only",
+      "tokens_out": null,
+      "outcome": {
+        "ci_green_first_push": null,
+        "checker_findings": null,
+        "merged_pr": null,
+        "reverted_within_window": null
+      }
+    },
+    {
+      "session": "2026-07-09-gen1-grand-review",
+      "date": "2026-07-10",
+      "model": "fable-5",
+      "effort": "high",
+      "task_class": "docs-only",
+      "tokens_out": null,
+      "outcome": {
+        "ci_green_first_push": null,
+        "checker_findings": null,
+        "merged_pr": null,
+        "reverted_within_window": null
+      }
+    },
+    {
+      "session": "2026-07-10-gpt-5-6-sol-eval",
+      "date": "2026-07-10",
+      "model": "fable-5",
+      "effort": "high",
+      "task_class": "docs-only",
+      "tokens_out": null,
+      "outcome": {
+        "ci_green_first_push": null,
+        "checker_findings": null,
+        "merged_pr": null,
+        "reverted_within_window": null
+      }
+    },
+    {
+      "session": "2026-07-10-gen2-night-prep",
+      "date": "2026-07-10",
+      "model": "fable-5",
+      "effort": "high",
+      "task_class": "docs-only",
+      "tokens_out": null,
+      "outcome": {
+        "ci_green_first_push": null,
+        "checker_findings": null,
+        "merged_pr": null,
+        "reverted_within_window": null
+      }
+    },
+    {
+      "session": "2026-07-10-command-collision-checker",
+      "date": "2026-07-10",
+      "model": "fable-5",
+      "effort": "high",
+      "task_class": "test writing",
+      "tokens_out": null,
+      "outcome": {
+        "ci_green_first_push": null,
+        "checker_findings": null,
+        "merged_pr": null,
+        "reverted_within_window": null
+      }
+    },
+    {
+      "session": "2026-07-10-shift-d-dashboard-contract",
+      "date": "2026-07-10",
+      "model": "fable-5",
+      "effort": "high",
+      "task_class": "test writing",
       "tokens_out": null,
       "outcome": {
         "ci_green_first_push": null,

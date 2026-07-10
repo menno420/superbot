@@ -31,6 +31,12 @@ only the header block is read, so a `**Subsystem:**` *example* in an idea's body
 
 Current broad captures:
 
+- [`shift-plan-premise-verify-lines-2026-07-10.md`](./shift-plan-premise-verify-lines-2026-07-10.md) —
+  **session ender (2026-07-10, overnight shift D, PR #1920):** every actionable scout-report /
+  shift-plan item carries a one-line `verify:` command proving its *premise* still holds at pick-up
+  time (distinct from "Verification:", which proves the fix). Born from a live miss: the shift plan's
+  Q2 claimed 6 views lacked baseview justifying comments, but all 6 had them since #1871 — a 5-second
+  `grep -L` in the plan would have killed the stale item before any session picked it up.
 - [`command-surface-extractor-consolidation-2026-07-10.md`](./command-surface-extractor-consolidation-2026-07-10.md) —
   **session ender (2026-07-10, command-collision-checker session, PR #1918):** three stdlib-AST tools
   (`scan_commands.py`, `check_command_collisions.py`, `check_command_reachability.py`) now each
@@ -59,10 +65,12 @@ Current broad captures:
   ~75 phantom failures) and name the `add_repo` → GitHub-MCP → clone-and-run first-party flow, so every
   manager-Project run stops re-deriving it.
 - [`pinned-feed-contract-for-dashboard-json-2026-07-09.md`](./pinned-feed-contract-for-dashboard-json-2026-07-09.md) —
-  **session ender (2026-07-09, PR #1884):** extend the pinned-feed-contract pattern (the console.json
-  shape contract, `botsite/data/console_data_contract.json`) to `dashboard.json` — the websites repo's
-  dashboard renders ~12 pages off that feed with no contract at all, the same silent-break class the
-  console contract just closed (and whose first consumer-side pass caught a live dict-vs-list defect).
+  **session ender (2026-07-09, PR #1884); first slice SHIPPED (PR #1920)** — extend the
+  pinned-feed-contract pattern (the console.json shape contract) to `dashboard.json` — the websites
+  repo's dashboard renders ~12 pages off that feed with no contract at all. #1920 shipped
+  `dashboard/data/dashboard_data_contract.json` (slice semantics; `meta` + `bugs`) + producer parity +
+  fail-closed checker; remaining families (catalogue / cogs / settings / env_usage / ideas / updates /
+  synonyms / access) land family-by-family with version bumps.
 - [`live-tree-test-culprit-attribution-2026-07-08.md`](./live-tree-test-culprit-attribution-2026-07-08.md) —
   **grooming capture (2026-07-08, PR #1846 follow-on pass):** live-tree ground-truth tests
   (plan homing etc.) fail on innocent fresh branches whenever an earlier merge shipped tree

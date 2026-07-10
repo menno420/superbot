@@ -86,6 +86,18 @@
 
 ## Recently shipped — archived (newest first)
 
+- **#1802 · #1804 (2026-07-07, S3 rebuild — program founding briefs: website-design + kit-lab)** —
+  two of the Q-0252 three-program-sessions founding artifacts closed out: the **website-design brief**
+  (#1802 — verification record + proof screenshots, docs homing, card flipped green) and the **kit-lab
+  founding brief** (#1804). Part of the [three-program-sessions launch](planning/program-three-sessions-launch-index-2026-07-07.md).
+- **#1801 · #1803 (2026-07-07, workflow — thirty-seventh Q-0107 reconciliation pass, band-#1800)** —
+  the 37th docs-only reconciliation + planning pass
+  ([pass record](planning/reconciliation-pass-2026-07-07-band1800.md)): reconciled band #1771–#1800,
+  trimmed Recently-shipped to 20, closed the 5 consumed Codex Gate-V evidence PRs, confirmed the
+  control-plane, refreshed the dashboard export, reset the marker #1770 → #1800.
+- **#1805 · #1815 · #1824 (2026-07-07/08, docs — dashboard-data refreshes, Q-0167)** —
+  three per-source-merge refreshes keeping the committed `dashboard/data/dashboard.json` export fresh as
+  the coordinator-kickoff / EAP-evaluation arc landed.
 - **#1791 · #1792 · #1793 · #1794 · #1795 · #1796 · #1797 · #1798 (2026-07-07, S3 rebuild — idea-consolidation → multi-repo program founding + owner rulings Q-0243…Q-0252)** —
   the pre-program-launch consolidation session. **#1791** folded the day's four owner captures + hardened
   the §3.C risks into the canonical-plan machinery (§11b amendments A-12…A-20; registry mints R-16/R-17/P-5).
