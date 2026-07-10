@@ -394,7 +394,23 @@ def _has_baseview_justification(lines: list[str], class_lineno: int) -> bool:
     return False
 
 
-def check_baseview_inheritance(files: list[Path], rules: dict) -> list[Violation]:
+def check_baseview_inheritance(
+    files: list[Path],
+    rules: dict,
+    *,
+    respect_justifying_comments: bool = True,
+) -> list[Violation]:
+    """Warn on direct ``discord.ui.View`` extension outside the sanctioned lanes.
+
+    By default a class carrying the justifying comment
+    (:func:`_has_baseview_justification`) is *not* reported — documented views
+    converge instead of warning forever. The conformance ratchet
+    (``tests/unit/views/test_view_base_class_conformance.py``) passes
+    ``respect_justifying_comments=False`` to pin the RAW inventory, so a new
+    direct view cannot slip in on the strength of a self-written comment alone:
+    the comment silences the day-to-day warning, the ratchet still demands the
+    conscious allowlist review.
+    """
     cfg = rules.get("base_view", {})
     exemption_prefixes = [
         e["pattern"].replace("disbot/", "") for e in cfg.get("exemptions", [])
@@ -426,8 +442,12 @@ def check_baseview_inheritance(files: list[Path], rules: dict) -> list[Violation
                 if node.name in ("BaseView", "HubView", "PersistentView"):
                     continue
                 # A documented direct extension is the rule's sanctioned path:
-                # a justifying comment right above the class silences the warn.
-                if _has_baseview_justification(source_lines, node.lineno):
+                # a justifying comment right above the class silences the warn
+                # (the conformance ratchet still pins the raw inventory).
+                if respect_justifying_comments and _has_baseview_justification(
+                    source_lines,
+                    node.lineno,
+                ):
                     continue
                 violations.append(
                     Violation(

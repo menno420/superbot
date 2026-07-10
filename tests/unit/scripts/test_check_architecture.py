@@ -315,14 +315,6 @@ def test_baseview_comment_too_far_above_does_not_silence(
     assert [v.check for v in vs] == ["baseview_inheritance"]
 
 
-def test_baseview_live_tree_has_zero_undocumented_direct_views(mod):
-    # Every direct discord.ui.View extension in the live tree is either in an
-    # exempted directory (games) or carries the justifying comment — the
-    # converged end-state this session established. A new undocumented direct
-    # view should show up here (and in check_architecture output) immediately.
-    import ast as _ast  # noqa: F401 — parity with checker import style
-
-    rules = mod._load("canonical_helpers.yaml")
-    files = sorted(mod.DISBOT_ROOT.rglob("*.py"))
-    vs = mod.check_baseview_inheritance(files, rules)
-    assert vs == [], [f"{v.file}:{v.line} {v.message}" for v in vs]
+# NOTE: the live-tree "zero undocumented direct views" pin deliberately lives in
+# tests/unit/views/test_view_base_class_conformance.py (its historical home,
+# referenced from architecture_rules/consistency_exceptions.yml) — not here.

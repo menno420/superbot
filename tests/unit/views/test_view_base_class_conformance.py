@@ -7,11 +7,19 @@ views under ``views/rps`` and ``views/blackjack`` are exempt by config).  The
 scan covers both ``views/`` and ``cogs/`` (cog-layer panels were a blind spot
 until 2026-06-20).  Those warnings are tracked UI-adoption debt, not errors.
 
-This test PINS the exact current set so the debt cannot grow silently: adding a
-new direct subclass fails here — forcing the author to either use a base view or
-consciously extend the allowlist — and migrating one off the list also fails,
-ratcheting the debt down.  It reuses the checker's own logic (so the exemptions
-stay in one place) rather than re-deriving the AST scan.
+Since 2026-07-10 (shift-plan Q2) the checker's *warn path* recognizes the
+justifying-comment convention (``# Extends discord.ui.View directly (not
+BaseView): <reason>`` right above the class) and stays silent for documented
+views — all 13 inventory entries below now carry it, so day-to-day
+``check_architecture`` output is clean.  This test therefore scans with
+``respect_justifying_comments=False``: it PINS the **raw** direct-View set so
+the debt cannot grow silently even behind a self-written comment — adding a new
+direct subclass fails here, forcing the author to either use a base view or
+consciously extend the allowlist (comment AND allowlist entry AND
+``consistency_exceptions.yml`` reason, kept in lockstep by
+``test_panel_base_class_allowlist_parity.py``) — and migrating one off the list
+also fails, ratcheting the debt down.  It reuses the checker's own logic (so the
+exemptions stay in one place) rather than re-deriving the AST scan.
 """
 
 from __future__ import annotations
@@ -87,7 +95,13 @@ def _checker():
 
 def _current_direct_subclasses(checker) -> set[tuple[str, str]]:
     rules = checker._load("canonical_helpers.yaml")
-    violations = checker.check_baseview_inheritance(checker._all_files(), rules)
+    violations = checker.check_baseview_inheritance(
+        checker._all_files(),
+        rules,
+        # Raw inventory: the ratchet must see documented views too (a justifying
+        # comment silences the day-to-day warning, not this review gate).
+        respect_justifying_comments=False,
+    )
     return {
         (str(v.file.relative_to(checker.DISBOT_ROOT)), v.message.split("`")[1])
         for v in violations

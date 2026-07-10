@@ -41,8 +41,17 @@ Idea: `docs/ideas/pinned-feed-contract-for-dashboard-json-2026-07-09.md`.
   (deathmatch `_DuelView`/`_ChallengeView`, logging provision/select views,
   settings `_DisabledHelpHookView`) were each verified genuinely
   lifecycle-justified against source and documented (comment-only, zero runtime
-  delta). baseview warnings **13 → 0**; +5 checker tests incl. a live-tree
-  zero-undocumented regression.
+  delta). baseview warnings **13 → 0**; +4 checker tests (documented-silences,
+  marker-in-string and far-comment negatives, undocumented-warns).
+  **Ratchet preserved:** the first cut re-pointed the conformance frozenset
+  (`test_view_base_class_conformance.py`) at the now-empty warning set, which
+  broke its lockstep partner (`test_panel_base_class_allowlist_parity.py`) and
+  — worse — would have let any NEW direct view in on the strength of a
+  self-written comment. Final design: the checker takes
+  `respect_justifying_comments` (default True for the warn path); the
+  conformance ratchet passes `False` and keeps pinning the **raw** 13-entry
+  inventory, so the comment silences the day-to-day warning while the conscious
+  allowlist review gate stays. Parity test and YAML allowlist untouched.
 - **Q1 — ledger trim.** #1920 entry added, then `trim_recently_shipped.py
   --apply` moved the 3 oldest bullets to the archive (23 → 20); archive span
   eyeballed, `check_current_state_ledger.py --strict` exit 0 (24-PR benign

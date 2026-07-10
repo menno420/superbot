@@ -342,8 +342,10 @@ Source code and merged PRs win over anything written here.
   now *recognizes* the in-tree justifying-comment convention (`# Extends discord.ui.View directly
   (not BaseView): …` right above the class) so documented direct-View extensions converge instead of
   warning forever; the 5 remaining undocumented sites got genuine lifecycle comments (comment-only,
-  zero runtime delta) — baseview warnings 13 → 0, +5 checker tests, and a live-tree
-  zero-undocumented regression test. Tooling/data/docs/comments-only.
+  zero runtime delta) — baseview warnings 13 → 0, +4 checker tests. The conformance ratchet
+  (`test_view_base_class_conformance.py`) still pins the raw 13-entry inventory via
+  `respect_justifying_comments=False`, so a new direct view can't slip in behind a self-written
+  comment. Tooling/data/docs/comments-only.
 - **#1919 (2026-07-10, overnight shift B — claim visibility across un-merged branches)** —
   `check_lane_overlap.py --remote` scans recent un-merged `origin/claude/*` / `origin/bot/*`
   branch tips for `docs/owner/claims/` files not on `main` (tip-state `ls-tree` compare —
