@@ -80,7 +80,7 @@ gate failure. Pinned by `tests/unit/scripts/test_wiring_map.py`.
 
 For the latest manually resolved repository snapshot, including forwarding helpers that
 the lower-bound tool reports as unresolved, see
-[`docs/eventbus-wiring-inventory.md`](eventbus-wiring-inventory.md).
+[`docs/architecture/eventbus-wiring-inventory.md`](architecture/eventbus-wiring-inventory.md).
 
 ## Companion — review scope (`scripts/review_scope.py`)
 
