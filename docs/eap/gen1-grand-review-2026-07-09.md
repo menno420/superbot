@@ -46,10 +46,11 @@ adapter that does not exist anywhere** in the new tree), `general` (8 cmds, smal
 product call). Parity rows exist for each in `parity/parity.yml`, i.e. the rebuild plan
 already intends them.
 
-**Missing — depth inside ported subsystems (named-successor'd in the decision ledger):**
-mining 10,276 lines old vs 732 new; fishing 6,113 vs 566; creature-battle, poker, and
-tournament engines; full setup-wizard flows; BTD6 ingestion pipeline; Pillow image cards
-(rank/profile/welcome); botsite/dashboard.
+**Missing — depth inside ported subsystems (named-successor'd in the decision ledger,
+with one exception):** mining 10,276 lines old vs 732 new; fishing 6,113 vs 566;
+creature-battle, poker, and tournament engines; full setup-wizard flows; BTD6 ingestion
+pipeline; botsite/dashboard. The exception: **Pillow image cards** (rank/profile/welcome)
+have *no* explicit successor named — the repo's own diff overview marks them outstanding.
 
 **Verified better in the rebuild:** manifest compiler with drift-red CI; 22-checker fleet
 + 6 required named gates; 465-golden replay system pinned to superbot @`7f7628e1` with
@@ -103,9 +104,16 @@ under the owner's review-and-merge authorization for this session).
 | fleet-manager **#12** (CI-tier standard §2b + sim) | merge (post-merge review) | self-merged by its lane 23:40:31Z; independent post-merge review **concurs** (5 minor sim caveats recorded, none conclusion-changing) |
 | fleet-manager **#13** (external-review prompts + wall entry) | merge (post-merge review) | self-merged by its lane 23:37:03Z; review **concurs** (1 wording nit: the messaging wall is org-disabled cross-session targeting, not tool nonexistence) |
 
-**End state: zero open PRs across all six repos except #1911 (this session), which
-auto-merges when its born-red card flips.** No PR was closed-unsound; every verdict was
-merge or fix-then-merge — the parked backlog was authorization debt, not quality debt.
+**End state (verified 2026-07-10 00:19Z): zero open PRs across all six repos except
+#1911 (this session; auto-merges when its born-red card flips) and superbot #1913 — ⚑ a
+LIVE parallel session's in-flight docs PR (opened 00:07Z: an independent wind-down audit
+whose headline corroborates this report — "all 7 lanes shipped complete succession
+packages; 21/21 spot-checked incidents resolved to real GitHub evidence; zero fabricated
+content"; left to its own session per lane discipline).** No PR was closed-unsound; every
+verdict was merge or fix-then-merge — the parked backlog was authorization debt, not
+quality debt. The fleet also kept moving *during* the sweep (fleet-manager #12/#13/#14
+and superbot #1913 all self-landed or opened mid-review) — the program is live, not
+frozen.
 
 ## 4. Email draft v2 — fact audit
 
@@ -113,12 +121,15 @@ merge or fix-then-merge — the parked backlog was authorization debt, not quali
 (found verbatim in committed docs), the ping-latency pair (17:54:33Z → 19:54:00Z), the
 games#8 timestamp trap (GitHub: `merged_at 2026-07-09T17:06:06Z` — the draft's friction 13
 already states it correctly), 67 files / 48 tests / ~35 min / Opus 4.8, the ~1.5 h merge
-wait (#3 open 14:47:26Z → owner-merged 16:42:21Z), and the kit-collision window (#3
-14:47:26Z vs #4 14:54:45Z = 7 m 19 s).
+wait (#3 ready 15:17:13Z after its final commit → owner-merged 16:42:21Z ≈ 1.4 h; open
+14:47:26Z → merged is 1.9 h — the retro's "~1.5 h" measures from ready; keep that basis
+when quoting), and the kit-collision window (#3 14:47:26Z vs #4 14:54:45Z = 7 m 19 s).
 
 **Material corrections (3):**
-1. "~1,900 merged PRs" → **1,815 merged** (`search_pull_requests repo:menno420/superbot
-   is:merged`, `incomplete_results: false`; PR *numbering* is past #1900 — say both).
+1. "~1,900 merged PRs" → **1,815 merged at audit time** (23:45Z; 1,816 after the
+   automated #1912 refresh — recount at send) (`search_pull_requests
+   repo:menno420/superbot is:merged`, `incomplete_results: false`; PR *numbering* is past
+   #1900 — say both).
 2. "zero test-count inflation across three **model arms** (63/100/66)" → three **labs**:
    63 = trading-strategy, 100 = codetool-lab-opus4.8, 66 = codetool-lab-fable5; the
    sonnet5 arm had nothing landed to audit.
@@ -237,9 +248,9 @@ in descending order, to:
 4. **Orientation re-assembly** — the rebuild's biggest per-session sink (~25%,
    append-only handoff prose × 18 workers); the wake-up session's ~40% re-verification
    (which paid — it caught the phantom flag).
-5. **CI/merge mechanics** — branch-update dance (~15–30 min/incident; stranded #86/#87
-   and #95 — #95's fix this session was exactly that dance), runner queues, GraphQL
-   quota (10498/5000).
+5. **CI/merge mechanics** — branch-update dance (~15–30 min/incident; it stranded
+   #86/#87 for a session tail before an API branch-update un-stuck them, and held #95
+   until this session ran the same dance), runner queues, GraphQL quota (10498/5000).
 
 **Deliberate costs that paid:** verification (~30% of rebuild time; the fix train, the
 live-boot bug, D-0060/D-0061, and this session's worldcard bug are all verification

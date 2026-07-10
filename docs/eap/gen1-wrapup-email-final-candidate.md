@@ -267,8 +267,8 @@ read our workarounds: each one is a feature spec written in scar tissue.
 *(Support for the findings above, not the story. Everything verifiable per-PR in the public
 repos under github.com/menno420. Counts re-verified 2026-07-10 by the grand-review audit.)*
 
-- **superbot** (production Discord bot, **1,815 merged PRs** — numbering past #1,900 —
-  live): served as the EAP evaluation home — the running evaluation log, permission
+- **superbot** (production Discord bot, **1,816 merged PRs** recounted 2026-07-10 —
+  numbering past #1,900 — live): served as the EAP evaluation home — the running evaluation log, permission
   probes, the fleet retro question set (#1901), the setup-script finding (#1902), an
   external review pack as a single audit entry point for outside reviewers (#1903), the
   GraphQL-quota finding (#1904), the fleet manifest (updated #1905), the wrap-up email
@@ -325,8 +325,9 @@ repos under github.com/menno420. Counts re-verified 2026-07-10 by the grand-revi
 - Remaining owner-side items are consolidated in the grand-review report §8 (flag-13
   parity ruling, plugin-hello repo, API key for band 7, kit required-check swap, routine
   arming, venture-lab clicks, branch-deletion housekeeping).
-- Counts in §(e) re-verified at write time: 1,815 superbot merged PRs; kit 35 sessions /
-  41+ PRs / 705→722 tests; games 48+62 tests (both suites now on main).
+- Counts in §(e) re-verified at write time: 1,816 superbot merged PRs (2026-07-10
+  recount); kit 35 sessions / 41+ PRs / 705→722 tests; games 48+62 tests (both suites now
+  on main).
 - Part 1: owner's slot.
 
 **Read this with an agent too, as before.** Everything is public and re-runnable. Best
