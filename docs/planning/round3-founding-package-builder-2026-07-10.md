@@ -19,14 +19,20 @@
 
 ## §0 — Finalize-first (owner, BEFORE the boot — Q-0261.2)
 
-1. Create the **`superbot-plugin-hello`** repo (github.com/new → public, empty, no
-   template; 1 min) — verified agent 403 wall; gates the lane's ORDER 002 and the game
-   Projects' reference plugin pattern.
-2. **Relax the require-up-to-date merge rule** on superbot-next (same uncheck as kit's:
-   ruleset → "Require status checks to pass" → uncheck "Require branches to be up to
-   date") — the report flags it as directly degrading an unattended 2-hourly loop.
-3. Already done, no action: flag-13 ruling at HEAD (ORDER 009, PR #102) · F-5 is a kit
-   matter · kit 1.6.0→1.7.0 upgrade rides the kit distribution seat.
+1. ☑ **DONE (owner, 2026-07-10 ~16:1xZ):** `superbot-plugin-hello` created (public,
+   empty — existence verified via ls-remote by the dispatch copilot).
+2. ☑ **DONE (owner, 2026-07-10 ~16:1xZ):** require-up-to-date unchecked on
+   superbot-next's ruleset (owner-confirmed; behavior verifies at the first behind-PR).
+3. Already done earlier: flag-13 ruling at HEAD (ORDER 009, PR #102) · kit 1.6.0→1.7.0
+   rides the kit distribution seat.
+4. **Live-drive grants (gate the LIVE leg, not the boot — grand-review item 3; do before
+   or during the seat's first sessions):** a sacrificial **test Discord app/bot** (its
+   token becomes `DISCORD_BOT_TOKEN_PRODUCTION` in this env — never the live bot's) ·
+   enable its **privileged intents** (message content + members) in the dev portal ·
+   **remove the old bot's `!` prefix from the test guild** (or remove the old bot) so
+   both bots don't answer the same commands · note the **test guild id** for
+   `SB_APPCMD_SYNC_GUILD_ID`. The seat boots and does non-live work without these
+   (never-wait); it verifies them present before the live leg and flags what's missing.
 
 ## §1 — Custom Instructions (paste into the Project's Custom Instructions field)
 
@@ -48,9 +54,13 @@ public and read-only to you: it is the ORACLE, never a write target.
 YOUR TYPICAL TASKS, AND HOW TO DO THEM:
 - ADVANCE THE BAND: work the canonical band order (band-5 live-drive leg next,
   then band-6 games). One bounded slice per session/wake: code + tests +
-  merged-on-green PR. Verify the warn-escalation semantic-regression status
-  (quality-review §10) before any live-drive leg — if unfixed, it jumps the
-  queue.
+  merged-on-green PR. Before the live-drive leg, land the VERIFIED residual
+  runtime fixes (runtime-review 2026-07-10: proof_channel.end_access commits
+  the DB unlock before the Discord effect with no compensator;
+  moderation.timeout carries the same reversible-label-without-compensator
+  class) plus the unit invariant that every non-optional reversible EFFECT
+  leg after a DB leg declares a compensator. Warn-escalation itself is FIXED
+  at HEAD — verified; do not re-litigate it.
 - PARITY DISCIPLINE: parity tests pin the ORACLE behavior (the old bot's
   semantics, documented in the parity corpus) — never the new code's current
   behavior. A test that enshrines a regression is itself a bug (the
@@ -110,10 +120,15 @@ BOOT NOW, in order:
    (list_triggers) and record the EXACT call + outcome verbatim in
    control/status.md — or the verbatim denial + manual fallback block ending
    your first reply to the owner.
-4. First working slice: verify the warn-escalation semantic-regression status
-   (quality-review §10; Codex review B targeted it) — if unfixed, fix it with
-   a test pinning the ORACLE behavior; if fixed, start the band-5 live-drive
-   leg (testing ladder step 7).
+4. First working slice: the verified pre-live-drive runtime fixes —
+   proof_channel.end_access compensator (DB unlock currently commits before
+   the Discord effect; a refused unlock strands external state) +
+   moderation.timeout same-class check + the compensator-declaring unit
+   invariant (superbot docs/eap/superbot-next-runtime-review-2026-07-10.md;
+   warn-escalation is already FIXED at HEAD — don't redo it). THEN the
+   band-5 live-drive leg (testing ladder step 7), after verifying the §0.4
+   live-drive grants are present (test app token, intents, prefix conflict
+   cleared, guild id) — flag any missing grant, don't stall on it.
 5. Heartbeat (status overwrite): band position, routine state + arming record,
    ORDER acks (008/009/@codex), parity counts.
 
@@ -127,18 +142,36 @@ Calibration before you start: confirm your mission in one paragraph; state
 the band order and your first slice (with the warn-escalation check named);
 recite the @codex-review rule (what gets it, when you merge, how you treat
 replies); state the ORDER 008 routine plan (name/cron/prompt source); and
-name the two owner clicks you are NOT waiting on (plugin-hello repo,
-up-to-date uncheck) with what you'll do if they land mid-session.
+confirm the §0 pre-boot clicks as VERIFIED-done at boot (plugin-hello exists;
+up-to-date unchecked) plus which §0.4 live-drive grants you'll check before
+the live leg — never stalling on a missing one (flag it and do non-live work).
 ```
 
 ## §3 — Environment
 
 Name **`superbot-next`** · repos: `menno420/superbot-next` only (Q-0260; the old bot is
-read via public raw — it is the ORACLE, not a workspace) · variables: **none** · setup
-script: `fleet-manager/environments/archetype-bot-prod.sh` **verbatim** (raw:
+read via public raw — it is the ORACLE, not a workspace) · setup script:
+`fleet-manager/environments/archetype-bot-prod.sh` **verbatim** (raw:
 `https://raw.githubusercontent.com/menno420/fleet-manager/main/environments/archetype-bot-prod.sh`;
 its named case covers the superbot-next lockfile shape). If a `superbot-next` env already
 exists from gen-2, keep it and just verify the setup script matches the archetype.
+
+**Variables (names; values owner-set in the claude.ai variables panel — never in a repo):**
+
+- Boot-required fail-fast trio (`sb/spec/config.py` CONFIG_FIELDS):
+  `DISCORD_BOT_TOKEN_PRODUCTION` (the TEST bot's token — verbatim harvested name; never
+  the live bot's) · `DATABASE_URL` (the TEST-plane Postgres DSN) · `SB_DATA_PLANE` =
+  `test`.
+- Live-drive set (band-5 step 7): `SB_TEST_DB_HOSTS` (CSV allowlist containing the test
+  DSN's host) · `SB_APPCMD_SYNC_GUILD_ID` (the test guild id — guild-scoped command
+  sync; the GLOBAL command set stays the old bot's until CUT-3) ·
+  `SB_INTENT_MSGCONTENT_OK` = `true` and `SB_INTENT_MEMBERS_OK` = `true` (only after
+  the §0.4 dev-portal intent toggles).
+- Deferred-but-known (band 7, grand-review item 3 — grant when band 7 starts, not now):
+  `ANTHROPIC_API_KEY` (capped) · `AI_ENABLED`.
+- **NEVER in this env** (4th-rail design + env-vars.md DANGER rule): the Railway trio,
+  `SB_PROD_ATTEST`, the production DSN or the live bot's token — prod-pointing boots are
+  structurally refused without attestation, and this seat must never hold attestation.
 
 ## §4 — Boot verification (what the dispatch copilot checks)
 
