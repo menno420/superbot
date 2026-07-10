@@ -1,1 +1,0 @@
-- `claude/code-projects-winddown-audit-6w0r6r` · **docs (EAP)** — independent integrity audit of the 2026-07-09 fleet wind-down (7 lanes' succession packages + venture-lab seed + fleet-manager ping-test, verified against live GitHub data across 9 repos) · `docs/eap/fleet-winddown-audit-2026-07-09.md` `docs/current-state.md` · 2026-07-09 · in-progress

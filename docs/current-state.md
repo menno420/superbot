@@ -331,6 +331,21 @@ Source code and merged PRs win over anything written here.
 > auto-opens a `reconcile` issue at the boundary that fires the docs-reconciliation routine). Reset
 > this marker to the latest PR after a pass.
 
+- **#1913 (2026-07-09/10, EAP — independent fleet wind-down audit)** — a fresh `superbot`
+  session ran an adversarial, evidence-based audit of the 2026-07-09 gen-1 fleet wind-down:
+  cloned all 9 EAP repos fresh, then had one agent per lane read its succession package and
+  a **separate** agent per cited incident try to refute it against live GitHub PR/commit/CI
+  data. Result: all 7 wind-down lanes (substrate-kit, websites, trading-strategy, the three
+  codetool-lab arms, superbot-games/exploration) shipped complete, substantive succession
+  packages — 21/21 spot-checked incidents resolved to real evidence, zero fabricated content
+  found — plus the new `venture-lab` seed (11/11 files, genuinely lesson-derived, not
+  boilerplate). Five real (non-fabrication) inaccuracies surfaced and are logged with exact
+  evidence; the most consequential is inside **fleet-manager's own ping-test report**, which
+  falsely claims `websites` never acknowledged a coordination test — a real, delayed ack
+  (PR #44, +1h39m) contradicts it. Full report:
+  [`eap/fleet-winddown-audit-2026-07-09.md`](eap/fleet-winddown-audit-2026-07-09.md). Also
+  groomed the `cross-repo-eap-verification-orientation-pointer` idea into a new
+  `AGENT_ORIENTATION.md` task route, having just lived the exact flow. Docs-only.
 - **#1864 · #1866 · #1867 · #1868 (2026-07-08/09, S3 rebuild / EAP — the Anthropic-feedback email assembled + sent, close-out)** —
   the owner's Friday Anthropic feedback email reached final form and was sent: **#1864** assembled the full
   two-part email (landed Menno's **Part 1**, made the agent **Part 2** complementary), **#1866** signed Part 2
