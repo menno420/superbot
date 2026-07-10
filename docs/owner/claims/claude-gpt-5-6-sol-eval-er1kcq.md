@@ -1,0 +1,1 @@
+- `claude/gpt-5-6-sol-eval-er1kcq` · GPT-5.6 Sol research + Codex eval-prompt suite · expected files: `docs/owner/cross-agent/` (new doc), `.sessions/` · 2026-07-10
