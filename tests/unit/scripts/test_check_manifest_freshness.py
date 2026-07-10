@@ -102,6 +102,32 @@ def test_parse_status_updated_mid_document(mod):
     assert got == datetime(2026, 7, 10, 3, 26, 55, tzinfo=timezone.utc)
 
 
+@pytest.mark.parametrize(
+    "raw",
+    [
+        # verbatim from the #1923 CI first-red: git 2.54 renders %cI UTC dates
+        # with a 'Z' suffix, which py3.10 fromisoformat cannot parse
+        "2026-07-10T03:54:20Z",
+        "2026-07-10T03:54:20+00:00",
+        "2026-07-10T05:54:20+02:00",  # same instant, offset form (local-git rendering)
+    ],
+)
+def test_iso_utc_z_suffix_and_offsets(mod, raw):
+    got = mod._iso_utc(raw)
+    assert got.tzinfo is not None
+    assert got.astimezone(timezone.utc) == datetime(
+        2026, 7, 10, 3, 54, 20, tzinfo=timezone.utc
+    )
+
+
+def test_iso_utc_naive_pinned_utc_and_garbage_raises(mod):
+    assert mod._iso_utc("2026-07-09T12:00:00") == datetime(
+        2026, 7, 9, 12, 0, tzinfo=timezone.utc
+    )
+    with pytest.raises(ValueError):
+        mod._iso_utc("not-a-date")
+
+
 # ---------------------------------------------------------------- classify
 
 
@@ -162,6 +188,12 @@ def _git(cwd: Path, *args: str) -> None:
             "GIT_AUTHOR_EMAIL": "t@t",
             "GIT_COMMITTER_NAME": "t",
             "GIT_COMMITTER_EMAIL": "t@t",
+            # Pin the commit instant in UTC: newer git (CI's 2.54) renders the
+            # %cI committer date with a 'Z' suffix, older git with '+00:00' —
+            # the HEAD-fallback assertion must hold under BOTH renderings
+            # (the #1923 CI-red regression).
+            "GIT_AUTHOR_DATE": "2026-07-09 12:00:00 +0000",
+            "GIT_COMMITTER_DATE": "2026-07-09 12:00:00 +0000",
             "PATH": "/usr/bin:/bin:/usr/local/bin",
             "HOME": str(cwd),
         },
@@ -199,7 +231,11 @@ def test_fetch_lane_state_local(mod, fixture_repos, monkeypatch):
 
     fallback = mod.fetch_lane_state("o/without-status")
     assert fallback.from_status is False
-    assert fallback.updated is not None  # HEAD committer date
+    # exact pinned committer instant, whichever way this git renders %cI
+    assert fallback.updated is not None
+    assert fallback.updated.astimezone(timezone.utc) == datetime(
+        2026, 7, 9, 12, 0, tzinfo=timezone.utc
+    )
 
 
 def test_fetch_lane_state_unreachable_is_fail_open(mod, tmp_path, monkeypatch):
