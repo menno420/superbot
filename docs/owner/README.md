@@ -17,6 +17,9 @@ Three companion docs capture the pipeline in increasing depth:
 - [`agent-workflow-spec.md`](./agent-workflow-spec.md) — the operational spec for each
   stage (Analysis, Decisions, Revision, Prompt Forge, Executor): what to do, what not to
   do, and what the output should look like (`reference`).
+- [`gpt-5-6-sol-codex-eval-2026-07-10.md`](./gpt-5-6-sol-codex-eval-2026-07-10.md) —
+  GPT-5.6 Sol launch-week research brief + the copy-paste Codex eval-prompt suite for
+  deciding what role it earns in the cross-agent pipeline (`reference`).
 
 `docs/owner/` does **not** replace active plans, `docs/current-state.md`, binding
 contracts or decisions, subsystem folios, the session journal, or brainstorms.

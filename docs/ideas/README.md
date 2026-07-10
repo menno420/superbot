@@ -31,6 +31,12 @@ only the header block is read, so a `**Subsystem:**` *example* in an idea's body
 
 Current broad captures:
 
+- [`cross-agent-trust-ledger-2026-07-10.md`](./cross-agent-trust-ledger-2026-07-10.md) —
+  **session ender (2026-07-10, GPT-5.6 Sol eval session):** generalize the Sol Codex
+  eval suite (`docs/owner/gpt-5-6-sol-codex-eval-2026-07-10.md`) into a standing
+  per-model trust ledger — capability/trust scores + allowed lanes per external model,
+  re-run on every model release — so cross-agent routing (Q-0120) is data-driven
+  instead of tribal knowledge.
 - [`fleet-manifest-freshness-checker-2026-07-10.md`](./fleet-manifest-freshness-checker-2026-07-10.md) —
   **gen-2 night-prep seed (2026-07-10, PR #1915):** a checker comparing each fleet-manifest row's
   last-seen against the lane repo's `control/status.md` header — the manifest cells went stale within
