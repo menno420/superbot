@@ -26,7 +26,7 @@ Legend: **Machinery** means an actual checker, CI gate, template, or generated f
 | No PR waits for review; needs-second-review ledger and/or Codex mention | **Prose-only** | `docs/review-queue.md` exists, but `docs/ideas/review-queue-drainer-2026-07-10.md` says no lane/routine/order owns draining it. |
 | Forward-only git; repo conventions override harness defaults | **Prose-only** | No hook/CI rule found that rejects force-push, rewrite, or harness-default deviations. |
 | `control/` files, capability manifest, `PLATFORM-LIMITS.md`, retro questions planted day 0 | **Partial machinery** | Fleet-manager contains `control/`, `docs/capabilities.md`, and substrate files. I found no `PLATFORM-LIMITS.md` in fleet-manager, and no birth-time checker for the complete file set. |
-| `claims/` dir seeded and shared surfaces pre-resolved | **Prose-only in fleet-manager; partial in superbot only** | Superbot has `scripts/check_stale_claims.py` and `scripts/check_lane_overlap.py`, but the EAP log notes overlap scans local claims only; fleet-manager has no comparable checker. |
+| `claims/` dir seeded and shared surfaces pre-resolved | **Prose-only in fleet-manager; partial in superbot only** | Superbot has `scripts/check_stale_claims.py` and `scripts/check_lane_overlap.py`; since superbot #1919 (merged 2026-07-10 02:59Z, before this audit) `check_lane_overlap.py --remote` also reads sibling claims at un-merged branch heads, so the EAP-log "local claims only" line this audit relied on is stale for the cross-*branch* case. Cross-*repo* overlap remains uncovered, and fleet-manager has no comparable checker. |
 | Environment spec from `environments/SPEC-TEMPLATE.md`; setup script tested, shape-agnostic, `exit 0` | **Prose-only / template** | Fleet-manager has the template and archetype scripts. I found no CI job that executes every environment script or verifies `exit 0`. |
 | Heartbeat-before-work: first act is status/WIP commit | **Partial machinery** | `substrate-gate` requires a session log for non-control diffs and has a control status gate, but it cannot prove the first act occurred before work or within a time budget. |
 | Walking skeleton through full merge path in first 20 minutes | **Prose-only** | No timestamp checker ties branch/PR/CI/merge proof to the first 20 minutes. |
@@ -73,7 +73,7 @@ Legend: **Machinery** means an actual checker, CI gate, template, or generated f
 | High | “Needs-second-eyes post-merge review is safe if logged.” | The review queue has no owner: fleet-manager idea `review-queue-drainer-2026-07-10.md` explicitly says no lane, routine, or order owns draining it. A logged concern can silently rot. |
 | High | “One-writer/inbox serialization prevents order races.” | R19 records substrate-kit ORDER 008/009 and ORDER 005 races that cost PRs; I found no lock machinery in fleet-manager. |
 | High | “Mid-flight comments/scopes are deliverable to running sessions.” | R20 records fleet-manager PR #8 merged after a Task-4 PR comment went unread and evaporated. |
-| Medium | “Claims/overlap machinery prevents shared-surface races.” | Superbot EAP log says `check_lane_overlap.py` reads only local claims, leaving cross-repo overlap under-covered. |
+| Medium | “Claims/overlap machinery prevents shared-surface races.” | Partially stale as sourced: the EAP-log line (“local claims only”) predates superbot #1919, whose `--remote` mode scans sibling-branch claims. The surviving gap is cross-*repo* overlap, which no checker covers. |
 | Medium | “READY-never-draft is handled by templates.” | Templates are present, but no repo gate rejects draft PRs; the grand review lists superbot-games PR #5 and #11 as draft/stacked work needing manual recovery. |
 | Medium | “Owner-queue wake-routine asks are owner-only.” | The EAP log and fleet-manager capabilities correction say at least some routine creation can be self-armed; prior owner-click queue items were partially invalid. |
 
@@ -95,3 +95,18 @@ Legend: **Machinery** means an actual checker, CI gate, template, or generated f
 - I did not inspect private repos or private Project UI state; routine run history and branch-protection rulesets are not fully verifiable from public tree contents.
 - I treated public PR numbers and commit names cited inside the audited docs as record pointers, but did not re-query every GitHub PR timeline. Where a mechanism was alleged, I looked for a corresponding file/checker/workflow/template in the public trees before classifying it as machinery.
 - “Platform machinery” such as the self-merge classifier and GitHub auto-merge behavior is real only to the extent the cited records report it; it is not controlled by either repo.
+
+## Independent verification addendum (Claude, 2026-07-10)
+
+Spot-checked against fresh clones of both repos: the substrate-gate control
+fast lane, the absent `PLATFORM-LIMITS.md`, the stale "walled on BOTH sides"
+wording at `gen2-launch-record-2026-07-10.md:83-85` (coexisting with the
+corrected `capabilities.md:92-102` and the blueprint §2a rider), and the
+unowned review queue (`review-queue-drainer-2026-07-10.md:16-18`) — **all
+confirmed verbatim**. One correction applied above: the superbot lane-overlap
+row was stale at publication time (superbot #1919 shipped `--remote`
+cross-branch claim scanning ~9.5h before this audit); the cross-repo gap and
+the fleet-manager gap survive the correction. The top-10 cheapest-enforcement
+proposals are sound and several (inbox lease, routines manifest checker,
+review-queue staleness gate) are direct candidates for the fleet-manager
+backlog.
