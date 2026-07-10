@@ -1,15 +1,15 @@
 {
   "meta": {
-    "generated_at": "2026-07-10T13:12:20Z",
+    "generated_at": "2026-07-10T13:53:32Z",
     "build": {
-      "commit": "6e446b76",
-      "subject": "Merge pull request #1932 from menno420/claude/repo-orientation-review-uq7jo7",
-      "committed_at": "2026-07-10T13:12:20Z"
+      "commit": "0f1a7650",
+      "subject": "docs: gen-1 coordinator close-out — grand-review prompt + email Part 1 questions (#1949)",
+      "committed_at": "2026-07-10T13:53:32Z"
     },
     "schema_version": 1,
     "counts": {
       "functions": 43,
-      "ideas": 227,
+      "ideas": 230,
       "bugs": 31,
       "reviews": 0,
       "reviews_open": 0,
@@ -1166,6 +1166,14 @@
   ],
   "ideas": [
     {
+      "file": "adopt-codetool-lab-tools-2026-07-10.md",
+      "title": "Adopt the codetool-lab tools as fleet tools (2026-07-10)",
+      "status": "ideas",
+      "date": "2026-07-10",
+      "summary": "The three codetool-lab \"test\" repos each produced a real, working CLI product; instead of",
+      "subsystems": null
+    },
+    {
       "file": "command-surface-extractor-consolidation-2026-07-10.md",
       "title": "Idea — one shared command-surface AST extractor for the three scripts that each re-implement it",
       "status": "ideas",
@@ -1198,6 +1206,14 @@
       "subsystems": null
     },
     {
+      "file": "idea-probe-brainstorm-simulator-2026-07-10.md",
+      "title": "Idea probe / brainstorming simulator (2026-07-10)",
+      "status": "ideas",
+      "date": "2026-07-10",
+      "summary": "A **brainstorming simulator**: a structured way to probe a set of questions against an",
+      "subsystems": null
+    },
+    {
       "file": "shift-plan-premise-verify-lines-2026-07-10.md",
       "title": "Idea — shift-plan / scout-report items carry a one-line `verify:` premise command",
       "status": "ideas",
@@ -1211,6 +1227,14 @@
       "status": "ideas",
       "date": "2026-07-10",
       "summary": "The `telemetry/model-usage.jsonl` feed (Q-0248/PL-004 model-allocation record, guard-enforced since",
+      "subsystems": null
+    },
+    {
+      "file": "website-suggestion-copilot-2026-07-10.md",
+      "title": "Website suggestion copilot (2026-07-10)",
+      "status": "ideas",
+      "date": "2026-07-10",
+      "summary": "An **AI helper embedded in the websites for suggestions and bug reports**: when the owner",
       "subsystems": null
     },
     {
@@ -3253,6 +3277,14 @@
   "reviews": [],
   "updates": [
     {
+      "file": "2026-07-10-sol-eval-scoring.md",
+      "date": "2026-07-10",
+      "title": "2026-07-10 — GPT-5.6 Sol eval results: scoring the Codex PRs",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": true
+    },
+    {
       "file": "2026-07-10-shift-e2-coordinator-self-review.md",
       "date": "2026-07-10",
       "title": "2026-07-10 — coordinator self-review vs the #1901 retro question set (overnight shift, session E, PR 2)",
@@ -3333,9 +3365,33 @@
       "self_initiated": false
     },
     {
+      "file": "2026-07-10-eap-journal-routine-observability.md",
+      "date": "2026-07-10",
+      "title": "2026-07-10 — EAP journal: routine-observability bug entry (round-3 brief §1(d))",
+      "status": "complete",
+      "run_type": "manual",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-07-10-coordinator-close-out.md",
+      "date": "2026-07-10",
+      "title": "2026-07-10 — Gen-1 games-lane coordinator close-out (grand-review prompt + Part 1 questions)",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
       "file": "2026-07-10-command-collision-checker.md",
       "date": "2026-07-10",
       "title": "2026-07-10 — command-collision checker (overnight shift, session A)",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": true
+    },
+    {
+      "file": "2026-07-10-codex-review-verification.md",
+      "date": "2026-07-10",
+      "title": "2026-07-10 — Verifying the 3 Codex review PRs (#1940/#1941/#1942)",
       "status": "complete",
       "run_type": "",
       "self_initiated": true
@@ -3699,38 +3755,6 @@
       "status": "complete",
       "run_type": "",
       "self_initiated": false
-    },
-    {
-      "file": "2026-07-08-audit-server-management.md",
-      "date": "2026-07-08",
-      "title": "2026-07-08 — Audit: server-management contract-vs-code audit (docs-only)",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-07-08-api-publish-finding.md",
-      "date": "2026-07-08",
-      "title": "2026-07-08 — Finding: GitHub-API publish bypasses the git-push first-publish wall",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-07-07-website-design-system-fable.md",
-      "date": "2026-07-07",
-      "title": "2026-07-07 — Program websites: design system + botsite v2 + console shell (Fable session 1/4)",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-07-07-understand-and-reflect-rule.md",
-      "date": "2026-07-07",
-      "title": "2026-07-07 — Understand-and-reflect workflow rule (owner-directed in-session)",
-      "status": "complete",
-      "run_type": "manual",
-      "self_initiated": false
     }
   ],
   "bot_changelog": [
@@ -4036,6 +4060,62 @@
     },
     {
       "session": "2026-07-10-fleet-overnight-review",
+      "date": "2026-07-10",
+      "model": "fable-5",
+      "effort": "high",
+      "task_class": "docs-only",
+      "tokens_out": null,
+      "outcome": {
+        "ci_green_first_push": null,
+        "checker_findings": null,
+        "merged_pr": null,
+        "reverted_within_window": null
+      }
+    },
+    {
+      "session": "2026-07-10-eap-journal-routine-observability",
+      "date": "2026-07-10",
+      "model": "fable-5",
+      "effort": "high",
+      "task_class": "docs-only",
+      "tokens_out": null,
+      "outcome": {
+        "ci_green_first_push": null,
+        "checker_findings": null,
+        "merged_pr": null,
+        "reverted_within_window": null
+      }
+    },
+    {
+      "session": "2026-07-10-sol-eval-scoring",
+      "date": "2026-07-10",
+      "model": "fable-5",
+      "effort": "high",
+      "task_class": "docs-only",
+      "tokens_out": null,
+      "outcome": {
+        "ci_green_first_push": null,
+        "checker_findings": null,
+        "merged_pr": null,
+        "reverted_within_window": null
+      }
+    },
+    {
+      "session": "2026-07-10-codex-review-verification",
+      "date": "2026-07-10",
+      "model": "fable-5",
+      "effort": "high",
+      "task_class": "docs-only",
+      "tokens_out": null,
+      "outcome": {
+        "ci_green_first_push": null,
+        "checker_findings": null,
+        "merged_pr": null,
+        "reverted_within_window": null
+      }
+    },
+    {
+      "session": "2026-07-10-coordinator-close-out",
       "date": "2026-07-10",
       "model": "fable-5",
       "effort": "high",
