@@ -165,11 +165,12 @@ exists from gen-2, keep it and just verify the setup script matches the archetyp
   `DISCORD_BOT_TOKEN_PRODUCTION` (the TEST bot's token — verbatim harvested name; never
   the live bot's) · `DATABASE_URL` (the TEST-plane Postgres DSN) · `SB_DATA_PLANE` =
   `test`.
-- Live-drive set (band-5 step 7): `SB_TEST_DB_HOSTS` (CSV allowlist containing the test
-  DSN's host) · `SB_APPCMD_SYNC_GUILD_ID` (the test guild id — guild-scoped command
-  sync; the GLOBAL command set stays the old bot's until CUT-3) ·
+- Live-drive set (band-5 step 7): `SB_APPCMD_SYNC_GUILD_ID` (the test guild id —
+  guild-scoped command sync; the GLOBAL command set stays the old bot's until CUT-3) ·
   `SB_INTENT_MSGCONTENT_OK` = `true` and `SB_INTENT_MEMBERS_OK` = `true` (only after
-  the §0.4 dev-portal intent toggles).
+  the §0.4 dev-portal intent toggles). `SB_TEST_DB_HOSTS` is **NOT set and never asked
+  for** (owner directive Q-0263.1 → its ORDER 010: absent ⇒ any host accepted on the
+  test plane, one loud log; the allowlist is opt-in for a future prod cutover only).
 - Deferred-but-known (band 7, grand-review item 3 — grant when band 7 starts, not now):
   `ANTHROPIC_API_KEY` (capped) · `AI_ENABLED`.
 - **NEVER in this env** (4th-rail design + env-vars.md DANGER rule): the Railway trio,
