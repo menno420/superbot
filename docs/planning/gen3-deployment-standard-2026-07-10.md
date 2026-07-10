@@ -63,8 +63,9 @@ multi-repo exception). Setup script = the matching fleet archetype **verbatim**
 Project's agents are + the ONE repo they work · "the repo's doctrine governs mechanics"
 pointer (never restate ceremony) · typical-tasks list with how-to · reporting bar
 (cite commits/PRs, family model names, negatives are headlines, no secrets) · session
-shape (HEAD-first, one bounded slice, heartbeat last, decide-and-flag, walls quoted
-verbatim and never re-probed).
+shape (HEAD-first, **work loop per Q-0265** — slice after slice, each its own
+merged-on-green PR *(amended 2026-07-10; was "one bounded slice")* — heartbeat last,
+decide-and-flag, walls quoted verbatim and never re-probed).
 
 **Coordinator chat brief (first message; the routine fires into this chat):** mission +
 done-when · durable-twin pointer (committed file to re-read when context thins) ·
@@ -73,11 +74,38 @@ and wake prompt · verify-the-trigger + record-the-recipe-verbatim step, with th
 owner-manual fallback block if walled · known-platform-facts block · **calibration ask**
 (mission back in one paragraph + the concrete first moves + the routine name/cadence).
 
-**Routine (the standing wake):** 2-hourly, lanes at `0 */2 * * *` (even hours :00),
-manager offset `30 */2 * * *`; prompt = ONE bounded pass in role vocabulary + "no
-excessive work" (Q-0259 r.1) + heartbeat-last + the one-shot re-arm fallback line.
-Verify in the trigger registry immediately (`list_triggers`) — **never wait for the
-first fire as proof** (runs aren't inspectable owner-side; the registry is).
+**Operating model + routine — AMENDED 2026-07-10 (owner directive Q-0265, folded by the
+manager per the part-4 brief §2b MANAGER-ONLY rider; supersedes this section's original
+one-slice pacing).** Every gen-3 seat is **born continuous**:
+
+- **Work loop, not one bounded pass:** when a slice finishes and genuinely useful work
+  remains, the seat starts the next slice the same turn — slice after slice, each still
+  its own merged-on-green PR (the throttle is removed, not the ceremony; near context
+  limits, hand off cleanly to a fresh card/branch instead of degrading).
+- **The `send_later` continuation chain (~15 min out, "continue the work loop") is the
+  pacemaker**, armed before ending any turn — where the seat's toolset has the tool;
+  if absent, record that verbatim and the cron below becomes the pacemaker.
+- **The standing cron is demoted to a dead-man failsafe**, named "<seat> failsafe wake",
+  keeping the 2-hourly stagger (lanes `0 */2 * * *`, manager `30 */2 * * *`); its prompt:
+  if the chain is alive, verify liveness in one line and end; if it stalled, resume the
+  work loop and re-arm the chain. Verify in the trigger registry immediately
+  (`list_triggers`) — **never wait for the first fire as proof** (runs aren't
+  inspectable owner-side; the registry is).
+- **Backpressure, not time, is the brake:** pause the specific activity whose downstream
+  queue is saturated (generation pauses on several unpulled outbox proposals; building
+  pauses at done-when + empty inbox after flagging the manager) — grooming,
+  verification, hygiene, and backlog work continue.
+- **The Q-0089 honesty guard survives:** genuinely out of useful work → say so in
+  status and idle until the failsafe; never invent filler — the output stays usable as
+  evaluation data.
+- **Free-window posture:** through 2026-07-14 use the free Projects **excessively**
+  (more parallel work, child workers, fan-out — within the quality bar); everything
+  produced feeds the owner's post-window consolidation pass.
+
+*(Superseded pre-Q-0265 text, kept for the record: "2-hourly, lanes at `0 */2 * * *`
+(even hours :00), manager offset `30 */2 * * *`; prompt = ONE bounded pass in role
+vocabulary + 'no excessive work' (Q-0259 r.1) + heartbeat-last + the one-shot re-arm
+fallback line.")*
 
 **Boot verification ritual (dispatch copilot, per boot):** calibration reviewed (gate)
 → trigger in registry with exact name/cron → boot PR merged + heartbeat at HEAD (verify
