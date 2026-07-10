@@ -146,10 +146,12 @@ script: `fleet-manager/environments/archetype-coordinator.sh` **verbatim** (raw:
 2. ☐ Owner clicks that gate the core: create the **Idea Engine** Project (superbot
    repo) · create the **product-forge** repo + Project (repo creation = agent wall) ·
    venture-lab settings (Allow auto-merge + required check).
-3. ☐ Founding packages for Idea Engine + Product Forge (2a/2b/2c-shaped, role-scoped) —
-   **NOT yet drafted; the dispatch-coordination session drafts them** on this file's
-   pattern (+ probe battery v0 for the Idea Engine, from
-   `docs/ideas/idea-probe-brainstorm-simulator-2026-07-10.md`).
+3. ☑ Founding packages for Idea Engine + Product Forge **DRAFTED** (2026-07-10, dispatch
+   session): [`round3-founding-package-idea-engine-2026-07-10.md`](round3-founding-package-idea-engine-2026-07-10.md)
+   (probe battery v0 baked in; env = existing `superbot`, zero owner env work) ·
+   [`round3-founding-package-product-forge-2026-07-10.md`](round3-founding-package-product-forge-2026-07-10.md)
+   (born-right ORDER 000 = blueprint §1 seed; env = `archetype-python-lab.sh`). Boots
+   still pending the owner's §3.2 clicks — tracked in §5 below.
 4. ☐ Builder (superbot-next Project): §2 continuation prompt + standing-@codex-review
    line (Q-0259 ruling 3); confirm/arm its 2-hourly routine.
 5. ☐ Manual lanes as the owner feels like it: §2 per-lane prompts (websites, trading
@@ -161,11 +163,22 @@ script: `fleet-manager/environments/archetype-coordinator.sh` **verbatim** (raw:
 
 ## 4. Open drafting queue (for the dispatch-coordination session)
 
-- Idea Engine founding package (instructions scoped to idea grooming/probing/routing;
-  chat brief + routine text; env: superbot repo, python-lab-style script or superbot's
-  own SessionStart flow).
-- Product Forge founding package (instructions scoped to building routed ideas into
-  finished products; born-right repo seed checklist per gen2-blueprint §1).
-- 3 × game-Project founding packages once the manager's mapping lands.
+- ~~Idea Engine founding package~~ **done** → [`round3-founding-package-idea-engine-2026-07-10.md`](round3-founding-package-idea-engine-2026-07-10.md).
+- ~~Product Forge founding package~~ **done** → [`round3-founding-package-product-forge-2026-07-10.md`](round3-founding-package-product-forge-2026-07-10.md).
+- 3 × game-Project founding packages once the manager's mapping lands (Q-0259 r.5).
 - Per-boot verification ritual: after each paste, check calibration answer · routine
-  armed+verified · first heartbeat — record per-lane in this file's checklist.
+  armed+verified · first heartbeat — recorded per-lane in §5 below.
+
+## 5. Boot verification log (dispatch copilot, live)
+
+| Project | Package pasted | Calibration | Routine armed+verified | First heartbeat | Verdict |
+|---|---|---|---|---|---|
+| fleet-manager | in progress (owner, 2026-07-10 afternoon) | pending owner paste-back | pending | pending | — |
+| Idea Engine | package ready; Project not yet created (§3.2) | — | — | — | — |
+| Product Forge | package ready; repo not yet created (§3.2/§0) | — | — | — | — |
+| Builder (superbot-next) | not yet dispatched (§3.4) | — | — | — | — |
+
+**Known drafting-time correction (2026-07-10, dispatch session):** §2b/the calibration ask
+say "six doctrine-debt ORDERs", but launch pack §1 lists **seven** standing debts. Judge
+the manager's calibration on coverage of all seven, not the count; a manager that flags
+the discrepancy itself is calibrating well.
