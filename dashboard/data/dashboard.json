@@ -1,15 +1,15 @@
 {
   "meta": {
-    "generated_at": "2026-07-10T19:13:55Z",
+    "generated_at": "2026-07-10T21:47:52Z",
     "build": {
-      "commit": "0c4f7dbb",
-      "subject": "Merge pull request #1953 from menno420/claude/round3-dispatch-2",
-      "committed_at": "2026-07-10T19:13:55Z"
+      "commit": "f1fbb9cf",
+      "subject": "Merge pull request #1959 from menno420/claude/forge-calibration-destale",
+      "committed_at": "2026-07-10T21:47:52Z"
     },
     "schema_version": 1,
     "counts": {
       "functions": 43,
-      "ideas": 233,
+      "ideas": 234,
       "bugs": 31,
       "reviews": 0,
       "reviews_open": 0,
@@ -1211,6 +1211,14 @@
       "status": "ideas",
       "date": "2026-07-10",
       "summary": "A **brainstorming simulator**: a structured way to probe a set of questions against an",
+      "subsystems": null
+    },
+    {
+      "file": "kit-seed-command-fleet-repo-bootstrap-2026-07-10.md",
+      "title": "Kit `seed` command — one-shot fleet-repo bootstrap (adopt + engage + lane layer)",
+      "status": "ideas",
+      "date": "2026-07-10",
+      "summary": "`dist/bootstrap.py` → `adopt` → answer the ~13 interview slots → `render --live` →",
       "subsystems": null
     },
     {
@@ -3349,6 +3357,22 @@
       "self_initiated": false
     },
     {
+      "file": "2026-07-10-round3-dispatch-3b.md",
+      "date": "2026-07-10",
+      "title": "Session — round-3 dispatch part 3b: Q-0265 continuous mode (live copilot)",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-07-10-round3-dispatch-3.md",
+      "date": "2026-07-10",
+      "title": "Session — round-3 dispatch coordination, part 3 (live copilot)",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
       "file": "2026-07-10-round3-dispatch-2.md",
       "date": "2026-07-10",
       "title": "Session — round-3 dispatch coordination, part 2 (live copilot)",
@@ -3763,22 +3787,6 @@
       "status": "complete",
       "run_type": "",
       "self_initiated": false
-    },
-    {
-      "file": "2026-07-08-eap-email-assemble-part1.md",
-      "date": "2026-07-08",
-      "title": "Session — Assemble the full EAP email (Part 1 landed + Part 2 made complementary)",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-07-08-eap-email-agent-narrative.md",
-      "date": "2026-07-08",
-      "title": "Session — EAP email: Part 2 as a parallel agent narrative",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
     }
   ],
   "bot_changelog": [
@@ -4181,7 +4189,35 @@
       }
     },
     {
+      "session": "2026-07-10-round3-dispatch-3",
+      "date": "2026-07-10",
+      "model": "fable-5",
+      "effort": "high",
+      "task_class": "docs-only",
+      "tokens_out": null,
+      "outcome": {
+        "ci_green_first_push": null,
+        "checker_findings": null,
+        "merged_pr": null,
+        "reverted_within_window": null
+      }
+    },
+    {
       "session": "2026-07-10-round3-dispatch-2",
+      "date": "2026-07-10",
+      "model": "fable-5",
+      "effort": "high",
+      "task_class": "docs-only",
+      "tokens_out": null,
+      "outcome": {
+        "ci_green_first_push": null,
+        "checker_findings": null,
+        "merged_pr": null,
+        "reverted_within_window": null
+      }
+    },
+    {
+      "session": "2026-07-10-round3-dispatch-3b",
       "date": "2026-07-10",
       "model": "fable-5",
       "effort": "high",
