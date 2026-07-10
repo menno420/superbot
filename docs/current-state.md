@@ -339,6 +339,18 @@ Source code and merged PRs win over anything written here.
   (idea `claim-remote-visibility-scan-2026-07-08`, now shipped; +5 unit tests, protocol line
   in `docs/owner/claims/README.md`). Ride-alongs: Recently-shipped trimmed to the 20 ratchet,
   fresh-container dev-tools bootstrap row in the journal ⚡ Quick reference (Q-0194). Tooling/docs-only.
+- **#1918 (2026-07-10, tooling — static command-collision checker)** — new
+  `scripts/check_command_collisions.py` + 18-test suite: pure-stdlib AST walk over `disbot/cogs/**`
+  that fails when two declarations claim the same top-level command name/alias within a namespace
+  (prefix registry incl. aliases · slash tree incl. `app_commands.Group` assignments) — the static,
+  pre-merge half of the #1541/#1544 `give`-collision prod-outage guard (the #1544 boot guard stays
+  the runtime backstop). Live tree at ship: 403 token claims, 0 collisions; a standing
+  `test_live_tree_has_zero_collisions` regression runs in every pytest pass. Q-0105 unverified-tier
+  header; `code-quality.yml` step wiring deliberately deferred (noted in the idea file).
+- **#1917 (2026-07-10, codex — docstring)** — codex-authored one-liner adding a return description
+  to `format_duration` in `disbot/utils/duration.py`; verified accurate against source (Q-0120) and
+  merged on green CI by the overnight session (codex branches don't auto-arm, so it was merged
+  directly after confirming green on head).
 - **#1913 (2026-07-09/10, EAP — independent fleet wind-down audit)** — a fresh `superbot`
   session ran an adversarial, evidence-based audit of the 2026-07-09 gen-1 fleet wind-down:
   cloned all 9 EAP repos fresh, then had one agent per lane read its succession package and

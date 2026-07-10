@@ -31,6 +31,13 @@ only the header block is read, so a `**Subsystem:**` *example* in an idea's body
 
 Current broad captures:
 
+- [`command-surface-extractor-consolidation-2026-07-10.md`](./command-surface-extractor-consolidation-2026-07-10.md) —
+  **session ender (2026-07-10, command-collision-checker session, PR #1918):** three stdlib-AST tools
+  (`scan_commands.py`, `check_command_collisions.py`, `check_command_reachability.py`) now each
+  re-implement the cog-decorator command-surface parse with different edge coverage (the collision
+  checker's hybrid-command blind spot was caught only by a lucky dedup look at its sibling). Factor
+  one `scripts/lib/command_surface_ast.py` declaration stream and re-base all three — a concrete
+  first slice of `warn-first-checker-authoring-kit-2026-07-06.md`. Subsystem: none (build hygiene).
 - [`cross-agent-trust-ledger-2026-07-10.md`](./cross-agent-trust-ledger-2026-07-10.md) —
   **session ender (2026-07-10, GPT-5.6 Sol eval session):** generalize the Sol Codex
   eval suite (`docs/owner/gpt-5-6-sol-codex-eval-2026-07-10.md`) into a standing
@@ -409,7 +416,8 @@ Current broad captures:
   `!aireview list`). Reads existing redacted rows + the shared `normalize_question` key; no new table; pairs
   with a preset hit-counter. Completes the operator-pull loop with a bot-push direction. Subsystem: ai.
 - [`command-collision-checker-2026-06-29.md`](./command-collision-checker-2026-06-29.md) —
-  **captured 2026-06-29 (band-#1560 reconciliation pass, Q-0089):** a `check_command_collisions.py` (offline,
+  **implemented (PR #1918, 2026-07-10 — script + tests shipped; the `code-quality.yml` step wiring is
+  the noted follow-up in the idea file); captured 2026-06-29 (band-#1560 reconciliation pass, Q-0089):** a `check_command_collisions.py` (offline,
   stdlib AST, CI-wired) that fails when two cogs register the same top-level command name/alias — turning the
   band's `give`-collision **prod boot-crash** (#1541/#1544, statically detectable yet it reached production)
   into a red PR. The cheapest-tier (CI) half of the Q-0194 friction→guard escalation; pairs with #1544's
