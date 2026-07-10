@@ -55,7 +55,14 @@ dangling "some future session"):
    session/run counts and whatever cost signal is visible; the cadence table was built on
    zero cost data.
 5. Fix your own ping-test report's known-false websites "NO ACK" row (two ⚑ flags old).
-6. Correct the codetool release-wall contradiction: opus4.8 PROVED workflow_dispatch
+6. **Mint the @codex review-relay playbook rule (owner directive Q-0258, 2026-07-10):**
+   any lane session with a review-worthy-but-not-owner-only question posts it as a PR
+   comment mentioning @codex (one specific question, on the final head; template in
+   superbot docs/planning/codex-review-integration-plan-2026-06-17.md Part C) instead of
+   parking it in the owner-queue. Codex is the named standing drainer of the post-merge
+   review convention; Q-0120 governs the return path (verify, never obey). The owner is
+   enabling the Codex GitHub integration across the valuable repos.
+7. Correct the codetool release-wall contradiction: opus4.8 PROVED workflow_dispatch
    releases work (2 live releases); fable5's succession doc says the route is "closed
    permanently". Reconcile before any gen-3 lane inherits the wrong lesson, and fold the
    model-comparison seat-contamination caveat (overnight-review finding 6) into the
