@@ -1,6 +1,6 @@
 # EventBus wiring inventory
 
-> **Status:** reference snapshot. Source wins.
+> **Status:** `reference` — manually-audited wiring snapshot; source wins.
 >
 > **Last audited:** 2026-07-10.
 >
