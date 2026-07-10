@@ -1,6 +1,6 @@
 # 2026-07-10 — command-collision checker (overnight shift, session A)
 
-> **Status:** `in-progress`
+> **Status:** `complete`
 > **Branch:** `claude/command-collision-checker` · **PR:** #1918
 
 **Intent:** implement `scripts/check_command_collisions.py` + tests — the static
