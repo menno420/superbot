@@ -181,6 +181,13 @@ safety net, not the primary invalidation mechanism.  Hot-path guild
 configuration flows through the `core/runtime/guild_config` primitive
 — no ad-hoc per-cog caches.
 
+There is no `services/quantum_cache.py` cache layer.  Do not add or
+revive a service-level cache with that name as a shortcut around this
+taxonomy: pick the row above, then use the documented owner (`guild_config`
+for hot-path guild settings, `governance.cache` for governance-derived
+lookups, or a feature-owned process-local cache with explicit invalidation
+and teardown hooks).
+
 ### Ephemeral session
 
 Lives in `runtime_sessions` + `runtime_session_state` (TTL = 2 h by

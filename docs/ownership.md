@@ -244,6 +244,16 @@ Adding a new event:
 
 Without step 1 the bus warns (`unknown_event_total{event, op}`).
 
+### EventBus subscriber failure and retry policy
+
+`EventBus.emit` is **publish-accepted**: returning normally means the bus
+accepted the emission and attempted the registered handlers, not that every
+subscriber succeeded. Subscriber exceptions and timeouts are isolated per
+handler, logged/counted, swallowed, and dispatch continues to the remaining
+handlers. The EventBus does **not** retry a failed subscriber during the same
+emit; re-running a subscriber requires a fresh emit/replay from the caller or a
+future durable replay layer.
+
 ---
 
 ## Dependency direction (allow / disallow)
@@ -261,6 +271,11 @@ utils/db/<sub>    →  utils/db/pool, utils/db/codec
 utils/db/pool     →  asyncpg
 utils/<helper>    →  standard library, discord (no I/O)
 ```
+
+`utils.db.get_widget_config()` is not a supported DB helper. If a widget or
+panel needs configuration, use the subsystem's documented read seam (usually a
+`services/*_config.py` policy loader over `utils/settings_keys/*`) or document a
+new owner and helper here before adding it.
 
 ### Disallowed imports
 
