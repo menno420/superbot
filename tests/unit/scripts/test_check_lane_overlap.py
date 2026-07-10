@@ -8,6 +8,7 @@ or commit. These cover the pure parse + overlap logic (no git, no real file).
 from __future__ import annotations
 
 import importlib.util
+import subprocess
 from pathlib import Path
 
 _SPEC = importlib.util.spec_from_file_location(
@@ -141,3 +142,117 @@ def test_load_claims_reads_directory_and_skips_readme(tmp_path, monkeypatch):
 def test_load_claims_missing_directory_is_empty(tmp_path, monkeypatch):
     monkeypatch.setattr(clo, "_CLAIMS_DIR", tmp_path / "nope")
     assert clo._load_claims() == []
+
+
+# --- remote-branch claim scan (--remote, 2026-07-10) ------------------------
+
+_NOW = 1_800_000_000
+
+
+def _freeze_now(monkeypatch):
+    monkeypatch.setattr(
+        clo,
+        "time",
+        type("_T", (), {"time": staticmethod(lambda: _NOW)}),
+    )
+
+
+def test_parse_ref_lines_filters_by_cutoff_and_tolerates_garbage():
+    text = (
+        f"{_NOW}\torigin/claude/fresh\n"
+        f"{_NOW - 10 * 86400}\torigin/claude/stale\n"
+        "not-a-number\torigin/claude/bad-stamp\n"
+        "\n"
+        f"{_NOW}\n"  # stamp without a ref
+    )
+    refs = clo.parse_ref_lines(text, _NOW - 4 * 86400)
+    assert refs == ["origin/claude/fresh"]
+
+
+def test_load_remote_claims_reads_sibling_claim_and_tags_ref(monkeypatch):
+    ls_tree_outputs = iter(
+        [
+            "docs/owner/claims/README.md\n",  # origin/main baseline
+            # sibling tip adds one claim file beyond the baseline
+            "docs/owner/claims/README.md\ndocs/owner/claims/claude__sibling.md\n",
+        ],
+    )
+
+    def fake_git(args, timeout=60):
+        if args[0] == "fetch":
+            return ""
+        if args[0] == "rev-parse":
+            return "main\n"
+        if args[0] == "for-each-ref":
+            return f"{_NOW}\torigin/claude/sibling\n"
+        if args[0] == "ls-tree":
+            return next(ls_tree_outputs)
+        if args[0] == "show":
+            assert args[1] == "origin/claude/sibling:docs/owner/claims/claude__sibling.md"
+            return "- `claude/sibling` · **lane S** · `scripts/s.py` · 2026-07-10 · PR\n"
+        raise AssertionError(f"unexpected git call: {args}")
+
+    monkeypatch.setattr(clo, "_git", fake_git)
+    _freeze_now(monkeypatch)
+    claims, warnings = clo.load_remote_claims(days=4, fetch=True)
+    assert warnings == []
+    assert len(claims) == 1
+    assert claims[0]["ref"] == "origin/claude/sibling"
+    assert claims[0]["branch"] == "claude/sibling"
+    assert "scripts/s.py" in claims[0]["paths"]
+    # And it folds into the standard scope scan, ref intact.
+    hits = clo.scan_claims(["scripts/s.py"], claims)
+    assert hits["scripts/s.py"][0]["ref"] == "origin/claude/sibling"
+
+
+def test_load_remote_claims_skips_own_branch(monkeypatch):
+    def fake_git(args, timeout=60):
+        if args[0] == "rev-parse":
+            return "claude/me\n"
+        if args[0] == "for-each-ref":
+            return f"{_NOW}\torigin/claude/me\n"
+        if args[0] == "ls-tree":  # origin/main baseline only — own ref never inspected
+            return "docs/owner/claims/README.md\n"
+        raise AssertionError(f"unexpected git call: {args}")
+
+    monkeypatch.setattr(clo, "_git", fake_git)
+    _freeze_now(monkeypatch)
+    claims, warnings = clo.load_remote_claims(days=4, fetch=False)
+    assert claims == []
+    assert warnings == []
+
+
+def test_load_remote_claims_degrades_when_git_unavailable(monkeypatch):
+    def fake_git(args, timeout=60):
+        raise subprocess.SubprocessError("no git / offline")
+
+    monkeypatch.setattr(clo, "_git", fake_git)
+    claims, warnings = clo.load_remote_claims(days=4, fetch=True)
+    assert claims == []
+    assert len(warnings) == 2  # fetch failed + ref scan unavailable
+    assert "fetch failed" in warnings[0]
+    assert "local-only" in warnings[1]
+
+
+def test_load_remote_claims_aggregates_uninspectable_refs(monkeypatch):
+    ls_tree_outputs = iter(["docs/owner/claims/README.md\n", None])
+
+    def fake_git(args, timeout=60):
+        if args[0] == "rev-parse":
+            return "main\n"
+        if args[0] == "for-each-ref":
+            return f"{_NOW}\torigin/claude/broken\n"
+        if args[0] == "ls-tree":
+            out = next(ls_tree_outputs)
+            if out is None:  # the broken ref (e.g. shallow-clone miss)
+                raise subprocess.SubprocessError("bad object")
+            return out
+        raise AssertionError(f"unexpected git call: {args}")
+
+    monkeypatch.setattr(clo, "_git", fake_git)
+    _freeze_now(monkeypatch)
+    claims, warnings = clo.load_remote_claims(days=4, fetch=False)
+    assert claims == []
+    assert len(warnings) == 1
+    assert "could not inspect 1 ref(s)" in warnings[0]
+    assert "origin/claude/broken" in warnings[0]
