@@ -331,6 +331,19 @@ Source code and merged PRs win over anything written here.
 > auto-opens a `reconcile` issue at the boundary that fires the docs-reconciliation routine). Reset
 > this marker to the latest PR after a pass.
 
+- **#1920 (2026-07-10, overnight shift D — dashboard.json pinned-feed contract, first slice)** —
+  the #1884 console-contract pattern applied to the feed websites renders ~12 pages from:
+  new versioned `dashboard/data/dashboard_data_contract.json` (**slice semantics** — only
+  `contracted_families` are pinned; growth is family-by-family with a version bump; first slice
+  `meta` + `bugs`), producer `DASHBOARD_*` parity constants + `meta.schema_version` stamp in
+  `export_dashboard_data.py` (feed regenerated), fail-closed `check_dashboard_contract` +
+  `--dashboard-contract` flag in `check_dashboard_data.py`, +14 tests incl. a
+  committed-file-passes-contract guard. Ride-along (Q2): `check_architecture` `baseview_inheritance`
+  now *recognizes* the in-tree justifying-comment convention (`# Extends discord.ui.View directly
+  (not BaseView): …` right above the class) so documented direct-View extensions converge instead of
+  warning forever; the 5 remaining undocumented sites got genuine lifecycle comments (comment-only,
+  zero runtime delta) — baseview warnings 13 → 0, +5 checker tests, and a live-tree
+  zero-undocumented regression test. Tooling/data/docs/comments-only.
 - **#1919 (2026-07-10, overnight shift B — claim visibility across un-merged branches)** —
   `check_lane_overlap.py --remote` scans recent un-merged `origin/claude/*` / `origin/bot/*`
   branch tips for `docs/owner/claims/` files not on `main` (tip-state `ls-tree` compare —
@@ -487,19 +500,7 @@ Source code and merged PRs win over anything written here.
   portable **substrate-kit** templates (`CONSTITUTION.md.tmpl` + `collaboration-model.md.tmpl` +
   `question-router.md.tmpl`) so it travels to every future repo, with superbot's local `.claude/CLAUDE.md`
   copy kept in sync. Docs/kit-template only.
-- **#1802 · #1804 (2026-07-07, S3 rebuild — program founding briefs: website-design + kit-lab)** —
-  two of the Q-0252 three-program-sessions founding artifacts closed out: the **website-design brief**
-  (#1802 — verification record + proof screenshots, docs homing, card flipped green) and the **kit-lab
-  founding brief** (#1804). Part of the [three-program-sessions launch](planning/program-three-sessions-launch-index-2026-07-07.md).
-- **#1801 · #1803 (2026-07-07, workflow — thirty-seventh Q-0107 reconciliation pass, band-#1800)** —
-  the 37th docs-only reconciliation + planning pass
-  ([pass record](planning/reconciliation-pass-2026-07-07-band1800.md)): reconciled band #1771–#1800,
-  trimmed Recently-shipped to 20, closed the 5 consumed Codex Gate-V evidence PRs, confirmed the
-  control-plane, refreshed the dashboard export, reset the marker #1770 → #1800.
-- **#1805 · #1815 · #1824 (2026-07-07/08, docs — dashboard-data refreshes, Q-0167)** —
-  three per-source-merge refreshes keeping the committed `dashboard/data/dashboard.json` export fresh as
-  the coordinator-kickoff / EAP-evaluation arc landed.
-- **Older merges (#1799 … #535) → [`current-state-archive.md`](current-state-archive.md).** Recently-shipped keeps the ~20 newest; older entries are trimmed to the archive (newest-first), which `scripts/check_docs.py` soft-ratchets at 20 and `check_current_state_ledger.py` treats as present. *(Thematic grouping by date means the live/archive PR-number spans overlap slightly — the floor pointer is approximate prose, not a strict bound; the per-band pass records carry the exact moved sets.)* *(The twenty-first Q-0107 pass — band-#1320, 2026-06-22 — added the band #1294–#1320 work as seven grouped entries (fishing minigame #1296/#1298/#1299/#1301/#1303/#1304, role management #1300/#1302/#1306, help surface #1294/#1297, BTD6 answerability #1295/#1316, botsite React PR1 #1305, CI/ledger/tool-pin hygiene #1308/#1317/#1320, dependency bumps + dashboard #1307/#1309/#1311/#1312/#1313/#1314/#1315); trimmed the live ledger to 20, moving #1208-band · #1226-band · #1211-band · #1210 · #1203-band · #1209-band · #1183-band to the archive.)* *(The twentieth Q-0107 pass — band-#1290, 2026-06-22 — added the band #1265–#1291 work as six grouped entries; trimmed the live ledger to 20, moving #1186 · #1156-band · #1147-band · #1143-band · #1162-band · #1149-band to the archive.)*
+- **Older merges (#1824 … #535) → [`current-state-archive.md`](current-state-archive.md).** Recently-shipped keeps the ~20 newest; older entries are trimmed to the archive (newest-first), which `scripts/check_docs.py` soft-ratchets at 20 and `check_current_state_ledger.py` treats as present. *(Thematic grouping by date means the live/archive PR-number spans overlap slightly — the floor pointer is approximate prose, not a strict bound; the per-band pass records carry the exact moved sets.)* *(The twenty-first Q-0107 pass — band-#1320, 2026-06-22 — added the band #1294–#1320 work as seven grouped entries (fishing minigame #1296/#1298/#1299/#1301/#1303/#1304, role management #1300/#1302/#1306, help surface #1294/#1297, BTD6 answerability #1295/#1316, botsite React PR1 #1305, CI/ledger/tool-pin hygiene #1308/#1317/#1320, dependency bumps + dashboard #1307/#1309/#1311/#1312/#1313/#1314/#1315); trimmed the live ledger to 20, moving #1208-band · #1226-band · #1211-band · #1210 · #1203-band · #1209-band · #1183-band to the archive.)* *(The twentieth Q-0107 pass — band-#1290, 2026-06-22 — added the band #1265–#1291 work as six grouped entries; trimmed the live ledger to 20, moving #1186 · #1156-band · #1147-band · #1143-band · #1162-band · #1149-band to the archive.)*
 
 > Older than this: see `docs/planning/*` trackers and `docs/decisions/*` ADRs.
 

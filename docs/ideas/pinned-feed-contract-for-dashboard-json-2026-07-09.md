@@ -1,7 +1,14 @@
 # Idea — extend the pinned-feed-contract pattern to `dashboard.json`
 
-> **Status:** `ideas` — not a plan, not approval. Captured 2026-07-09 (Q-0089 session
-> ender, console-feed-contract session / PR #1884).
+> **Status:** `ideas` — still live (remaining families below), not a plan, not approval.
+> **First slice SHIPPED in PR #1920 (2026-07-10, overnight shift D):**
+> `dashboard/data/dashboard_data_contract.json` (version 1, slice semantics — only
+> `contracted_families` are pinned), families `meta` + `bugs`, producer `DASHBOARD_*` parity
+> constants + `meta.schema_version` stamp, fail-closed `check_dashboard_contract` +
+> `--dashboard-contract` flag, 14 tests. **Remaining:** contract the other websites-rendered
+> families (catalogue / cogs / settings / env_usage / ideas / updates / synonyms / access)
+> family-by-family with a version bump each; then websites pins the version + validates at
+> render time. Captured 2026-07-09 (Q-0089 session ender, console-feed-contract session / PR #1884).
 > **Subsystem:** none (cross-cutting, `scripts/` + `dashboard/data/` tooling)
 
 ## The gap
