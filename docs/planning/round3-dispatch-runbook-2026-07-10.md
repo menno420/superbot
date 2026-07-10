@@ -211,7 +211,9 @@ Reply here with the substrate-kit section inline + per-class totals when the PR 
 > its boot). Items 2–6 below are the core order; post-core lanes follow the pipelined
 > standard.
 
-2. ☐ **substrate-kit (core seat 2 — NEXT).** Finalize-first: F-5 **RULED: Reading A —
+2. ☑ **substrate-kit (core seat 2) — LIVE** (2026-07-10 ~15:45Z boot; §5 row: cutover
+   verified, heartbeats + §6.1 slices flowing). Original finalize-first record kept below
+   for provenance: F-5 **RULED: Reading A —
    LANDED at kit HEAD** (kit ORDER 011, PR #126 merged 2026-07-10 ~15:34Z; the owner
    granted this session lane-repo write access, so all four Q-0262 ORDERs were routed
    directly: kit #126 · trading #35 `fd5e9fe` · superbot-next #102 · fleet-manager #29
@@ -226,23 +228,37 @@ Reply here with the substrate-kit section inline + per-class totals when the PR 
    session-bound) is deleted by the NEW boot itself, then the old chat can be archived.
    Package: [`round3-founding-package-substrate-kit-2026-07-10.md`](round3-founding-package-substrate-kit-2026-07-10.md)
    (write-all distribution seat per Q-0261.3). Env: attach ALL fleet repos.
-3. ☐ **superbot-next (core seat 3).** Finalize-first: flag-13 **RULED + LANDED** (ORDER
-   009, PR #102 merged) · remaining owner clicks: `superbot-plugin-hello` repo creation
-   (ORDER 002 gate) + up-to-date merge rule uncheck (same as kit's). Package
+3. ☑ **superbot-next (core seat 3) — LIVE** (booted ~16:30Z; heartbeat verified 18:25Z —
+   band-5 live-drive complete via its #109, ENDER-MISSING cleared; `superbot-plugin-hello`
+   repo **created by the owner 16:03Z**, clearing the ORDER 002 gate). Original
+   finalize-first record: flag-13 **RULED + LANDED** (ORDER
+   009, PR #102 merged) · remaining owner click: up-to-date merge rule uncheck (same as
+   kit's). Package
    (owner-confirmed upgrade from the §2 continuation prompt):
    [`round3-founding-package-builder-2026-07-10.md`](round3-founding-package-builder-2026-07-10.md)
    — routine rides its own inbox ORDER 008; ender catch-up for #99/#101 baked into boot.
-4. ☐ **Idea Engine (core seat 4) — REDESIGNED per owner ruling Q-0264.** Package
+4. ☑ **Idea Engine (core seat 4) — LIVE, fully verified** (repo owner-created + copilot-
+   seeded `df64aab`; booted ~17:55Z; §5 row: calibration GOOD, routine registry-verified,
+   walking skeleton PROVED on its PR #1, first probe → sim-ready with **PROPOSAL 001
+   waiting in its outbox for sim-lab**, section-sync checker self-built via PR #2).
+   **REDESIGNED per owner ruling Q-0264.** Package
    **rewritten v2 (own-repo)**:
    [`round3-founding-package-idea-engine-2026-07-10.md`](round3-founding-package-idea-engine-2026-07-10.md)
    (own `idea-engine` repo, sections per fleet lane derived from the manifest, parallel
    agents; finalizes nothing — sim-ready ideas go to seat 6). Finalize-first: owner
    creates the `idea-engine` repo + env + Project (§0 of the package — batches with
    §3.5/§3.6 clicks).
-5. ☐ **Product Forge (core seat 5).** Package **DRAFTED**:
-   [`round3-founding-package-product-forge-2026-07-10.md`](round3-founding-package-product-forge-2026-07-10.md)
-   (born-right ORDER 000 = blueprint §1 seed). Finalize-first: owner creates the
-   `product-forge` repo + env + Project (§0 of the package).
+5. ☐ **Product Forge (core seat 5) — repo READY, Project boot next.** Repo owner-created
+   ~18:08Z (as `product-force`, renamed → `product-forge` on the copilot's catch, owner
+   click) **+ copilot-SEEDED born-right** (seed `5d52f45` + fix via its PR #1 → squash
+   `c73e3f8`; kit v1.7.0 engaged, `check --strict` green at HEAD, role contract +
+   CONVENTIONS + products/ skeleton) **+ walking skeleton PROVED** (PR #1: main is
+   ruleset-protected, REST merge-on-green is the working landing path). Package §2 boot
+   steps de-staled to seeded reality. **First ORDER owner-named: the games-web
+   experience** (Shakes & Fidget-style visual web frontend for the bot's games; mock-
+   data-first phase 1) — rides the manager relay (dispatch paste handed to owner).
+   Remaining owner clicks: create the **Product Forge** Project + `product-forge` env
+   (archetype-python-lab), paste §1/§2.
 6. ☐ **Sixth core seat = the SIMULATOR Project (`sim-lab`) — owner ruling Q-0264,
    superseding the Q-0262.8 superbot-hub pick** (the flagged veto arrived). The fleet's
    evidence stage: reproduces facts (sim / measured prototype / labeled JUDGMENT-ONLY),
@@ -274,10 +290,10 @@ Reply here with the substrate-kit section inline + per-class totals when the PR 
 |---|---|---|---|---|---|
 | fleet-manager | ✓ 2026-07-10 ~13:40Z | **GOOD** — corrected the brief's stale premise (#20 had pre-seeded ORDERs 001–006), caught the real gap (debt 6 → ORDER 007), evidence-based first-sweep pick (venture-lab) | ✓ **verified in the account trigger list** by the dispatch copilot: `trig_01QBrp5MjZL3F9mv6KsTXTzN`, cron `30 */2 * * *`, enabled, recurring, prompt verbatim; **first wake fired 14:36:29Z**, next 16:31Z | ✓ status.md @ `117caeb` (main): coordinator LIVE, verbatim arming record (incl. the `cse_`→`session_` id-normalization recipe detail), orders footer fixed | **LIVE** — no correction needed |
 | substrate-kit | ✓ 2026-07-10 ~15:45Z (env archetype + 2a/2b; F-5 pre-landed as ORDER 011) | calibration not paste-backed (owner: "freshly running"); §4.1 judged via registry evidence instead | ✓ **CUTOVER VERIFIED in the registry** by the dispatch copilot: old `trig_01FnqnAQjLU2T8d16iHwWQ2h` DELETED (absent from its created-order slot); new `trig_016EfUawz6KxEYqUM6f1BqDw` "substrate-kit 2-hourly standing wake" cron `0 */2 * * *`, prompt verbatim, **first wake fired 16:02:43Z**, next 18:00Z | ✓ **heartbeat @ HEAD 16:42Z** — ORDER 011 executed (F-5=A applied, headline 1 PASS/3 FAIL, B-benches unpaused; claim #127/PR #128, 819 tests green) AND first §6.1 slice shipped (#129/#130: substrate-gate.yml kit-owned) | **LIVE — fully verified, executing the brief** |
-| Idea Engine | repo CREATED (owner) + **SEEDED born-right by the dispatch copilot ~17:5xZ** (`df64aab`: kit v1.7.0 adopted+engaged, gate wired, contract + 10 sections); ✓ **package v2 §1/§2 pasted ~17:55Z** (owner; env `idea-engine` created) | **GOOD** — mission/boundary/probe/routine/sections all exact; battery recitation correctly deferred to a verbatim README read (verify-over-memory), recited exactly one message later; zero red flags | ✓ **verified in the registry** by the dispatch copilot: `trig_01KBoHPaquSCDHysip67PQBh`, cron `0 */2 * * *`, enabled, **prompt verbatim**, bound to the coordinator session, first fire 18:04Z. Recipe fact (seat-reported): `create_trigger` absent from the top-level toolset but callable from a worker seat, first-try success | pending — walking-skeleton PR (first probe + PROPOSAL 001 + heartbeat) in flight at ~18:00Z; verify at the 18:23Z sweep | **LIVE** (boot verified through routine arm; merge-path proof in flight) |
-| Product Forge | package ready; repo not yet created (§3.5/§0) | — | — | — | — |
+| Idea Engine | repo CREATED (owner) + **SEEDED born-right by the dispatch copilot ~17:5xZ** (`df64aab`: kit v1.7.0 adopted+engaged, gate wired, contract + 10 sections); ✓ **package v2 §1/§2 pasted ~17:55Z** (owner; env `idea-engine` created) | **GOOD** — mission/boundary/probe/routine/sections all exact; battery recitation correctly deferred to a verbatim README read (verify-over-memory), recited exactly one message later; zero red flags | ✓ **verified in the registry** by the dispatch copilot: `trig_01KBoHPaquSCDHysip67PQBh`, cron `0 */2 * * *`, enabled, **prompt verbatim**, bound to the coordinator session, first fire 18:04Z. Recipe fact (seat-reported): `create_trigger` absent from the top-level toolset but callable from a worker seat, first-try success | ✓ **heartbeat @ HEAD 18:08Z** (BOOTED) — walking skeleton **PROVED** (its PR #1 merged: the heartbeat itself only lands via that merge, self-proving construction); first probe → **sim-ready**, PROPOSAL 001 in outbox for sim-lab (mode-1-vs-panel question, done-when included); PR #2 self-built the section-sync checker (the seed card's 💡, picked up unprompted) | **LIVE — fully verified, pipeline flowing** (outbox has sim-lab's first pull waiting) |
+| Product Forge | repo owner-created ~18:08Z (`product-force` → renamed `product-forge`) + **copilot-seeded born-right** (`5d52f45` + PR #1 fix → `c73e3f8`: kit v1.7.0 engaged, `check --strict` green, role contract + CONVENTIONS + products/ skeleton); Project/§1/§2 pastes = owner next | — (Project not booted) | — (first ORDER 001 games-web rides the manager relay) | seed heartbeat 18:40Z (`control/status.md` @ HEAD; coordinator NOT booted) | seeded + skeleton PROVED (PR #1: ruleset-protected main, REST merge-on-green is the landing path), awaiting Project boot |
 | Simulator (sim-lab) | package ready (Q-0264 seat 6); `sim-lab` repo/Project/Codex-integration not yet created (§3.6/§0) | — | — | — | — |
-| Builder (superbot-next) | ✓ 2026-07-10 ~16:30Z (owner pasted; booted) | not paste-backed; judged via artifacts | ✓ **verified in the registry**: `trig_01VYZQ7GHxYq3ecSw8UNZek8` "builder-wake", cron `0 */2 * * *`, ORDER-008 prompt verbatim, next fire 18:00Z | pending — first PR (ender catch-up + heartbeat) not yet at HEAD; check next sweep | **LIVE** (first slice in flight). Note: dispatch-session ORDER-number collision (both manager and copilot appended "ORDER 010") caught pre-merge and renumbered to 011 on PR #104 — the kit §6.8 order-claim convention exists for exactly this |
+| Builder (superbot-next) | ✓ 2026-07-10 ~16:30Z (owner pasted; booted) | not paste-backed; judged via artifacts | ✓ **verified in the registry**: `trig_01VYZQ7GHxYq3ecSw8UNZek8` "builder-wake", cron `0 */2 * * *`, ORDER-008 prompt verbatim, next fire 18:00Z | ✓ **heartbeat @ HEAD 18:25Z** (18:0xZ sweep, git transport — the 01:05Z ENDER-MISSING is CLEARED): band-5 testing-ladder step 7 COMPLETE incl. the live-drive leg (its #109; 3 live-only bugs found + queued as the next lane); `superbot-plugin-hello` created by the owner 16:03Z (ORDER 002 gate cleared) | **LIVE — fully verified.** Note: dispatch-session ORDER-number collision (both manager and copilot appended "ORDER 010") caught pre-merge and renumbered to 011 on PR #104 — the kit §6.8 order-claim convention exists for exactly this |
 
 **Six-vs-seven RESOLVED (2026-07-10):** the drafting-time note below stands as history —
 launch pack §1 lists seven debts; fleet-manager PR #20 had pre-seeded six ORDERs covering

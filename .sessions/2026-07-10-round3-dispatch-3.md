@@ -28,6 +28,27 @@ seats' wakes, copilot the owner through the seat 4–6 boots, draft what the ord
   green), gate workflow wired, pipeline contract README, 10 manifest-derived sections,
   outbox/claims/review-queue. Package §2 boot steps de-staled to the seeded reality
   (the part-2 premise-error lesson applied proactively). Env spec handed to owner.
+- **Seat 4 BOOTED + fully verified LIVE:** calibration GOOD (battery correctly deferred
+  to a verbatim README read, recited exactly next message); routine registry-verified
+  (`trig_01KBoHPaquSC…`, prompt verbatim, bound to coordinator); walking skeleton PROVED
+  (its PR #1 — self-proving heartbeat construction); first probe → sim-ready, PROPOSAL
+  001 in outbox for sim-lab; section-sync checker self-built (PR #2) from the seed
+  card's 💡. Sweep also cleared the Builder open item (heartbeat 18:25Z, band-5
+  live-drive complete) — seat 3 fully verified; owner created `superbot-plugin-hello`.
+- **product-forge repo seeded** (owner-created as `product-force` → renamed on the
+  copilot's catch): seed `5d52f45` + strict-fix via its PR #1 (squash `c73e3f8`) —
+  which doubled as the walking-skeleton proof (main ruleset-protected; REST
+  merge-on-green is the landing path; auto-merge declines on all-green PRs). Forge
+  package §2 boot steps de-staled. **Owner named the first product: games-web**
+  (Shakes & Fidget-style visual web frontend for the bot's games; mock-data-first) —
+  manager dispatch paste handed to owner. One process slip logged: the seed push ran
+  before reading the strict-check exit (echo swallowed it — the masked-exit class);
+  caught same-minute, fixed forward via PR #1.
+- **Owner websites idea captured → idea-engine `ideas/websites/`** (its PR #4, merged
+  on green): per-server stats (OAuth trust-gated) + game-data explorer + scrollytelling
+  story page; review-and-improve pass applied (risk-staged story→explorer→stats,
+  static-export-first, flagged superbot API dependency, OAuth gate as sim-lab
+  candidate).
 - **Owner redesign mid-dispatch (the seat-4 boot was stopped before pasting):**
   idea-pipeline redesigned live → **router Q-0264** (own-repo Idea Engine ·
   Simulator Project `sim-lab` = core seat 6, superseding the Q-0262.8 hub pick ·
