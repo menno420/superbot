@@ -158,7 +158,10 @@ banner names with the repo's REAL design values (never placeholders); `render --
 `mode guided`; copy `.substrate/ci/substrate-gate.yml` → `.github/workflows/`; plant the
 lane layer (role README as the binding contract, CONVENTIONS.md, claims/README,
 review-queue.md, PLATFORM-LIMITS.md, docs/retro/questions.md — **badge every new doc and
-link it from a read-path doc** or `check --strict` reds); seed card with the kit's ender
+link it from a read-path doc** or `check --strict` reds; the kit's reachability walk
+roots at `docs/` only — the repo-root README does NOT count, so link any `docs/`-tree
+doc from `docs/AGENT_ORIENTATION.md` (bit the sim-lab seed; third-consumer lesson));
+seed card with the kit's ender
 lines (📊 Model · 💡 idea · ⟲ review) + status heartbeat overwrite; `session-close`;
 **`check --strict` as the DIRECT `&&` predecessor of the push** (a `; echo` in between
 masks a red — bit part 3); push. Gotchas: the first push to an empty ruleset-protected

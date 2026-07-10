@@ -257,10 +257,13 @@ Reply here with the substrate-kit section inline + per-class totals when the PR 
    §3.5/§3.6 clicks).
 5. ☑ **Product Forge (core seat 5) — LIVE** (booted ~19:05Z by the owner; verified at
    HEAD ~19:5xZ: first heartbeat merged via its PR #3 — `updated: 18:59Z`, HEAD
-   `3179692`, health green — routine armed per heartbeat + owner screenshot, both
-   settings clicks acknowledged, **ORDER 001 games-web in its inbox via its PR #2**,
-   first product pass dispatched. ⚠ booted PRE-Q-0265 → needs the §2b amendment paste,
-   brief item 0). Original prep record: Repo owner-created
+   `3179692`, health green — routine armed per heartbeat + owner screenshot **and
+   independently registry-verified by the part-4 copilot ~19:3xZ**
+   (`trig_01XjviWNduYqF5jeRnRBMSFN` "product-forge 2-hourly standing wake", cron
+   `0 */2 * * *`, enabled, created 18:53Z), both settings clicks acknowledged,
+   **ORDER 001 games-web in its inbox via its PR #2** (also raw-verified @ HEAD, no
+   duplicate), first product pass dispatched. ⚠ booted PRE-Q-0265 → needs the §2b
+   amendment paste, brief item 0). Original prep record: Repo owner-created
    ~18:08Z (as `product-force`, renamed → `product-forge` on the copilot's catch, owner
    click) **+ copilot-SEEDED born-right** (seed `5d52f45` + fix via its PR #1 → squash
    `c73e3f8`; kit v1.7.0 engaged, `check --strict` green at HEAD, role contract +
@@ -277,10 +280,18 @@ Reply here with the substrate-kit section inline + per-class totals when the PR 
    evidence stage: reproduces facts (sim / measured prototype / labeled JUDGMENT-ONLY),
    validity-gates + @codex-reviews every verdict, and ships reusable sim templates as a
    public product; the manager final-reviews + routes finalized verdicts as ORDERs.
-   Package **DRAFTED**:
-   [`round3-founding-package-simulator-2026-07-10.md`](round3-founding-package-simulator-2026-07-10.md).
-   Finalize-first: owner creates the `sim-lab` repo + env + Project **+ enables the
-   Codex integration for it** (§0 of the package). Hub games-finishing work routes to
+   **Repo owner-created + copilot-SEEDED born-right (part-4 session, ~19:17Z):** seed
+   `32dc75d` direct-pushed to empty `main` (recipe: part-4 brief §3, third consumer) —
+   kit v1.7.0 adopted + engaged (all 9 slots real design values, `check --strict`
+   green), **gate LIVE (run #1 green, check name `substrate-gate`)**, lab-contract
+   README (validity gate verbatim, verdict grammar), control/ bus incl. outbox +
+   INTAKE-pull convention, sims/ + harness/ skeletons, OA-001/OA-002 pre-filed in the
+   seed status. Package §0.1 done + §0.5 clickable-now + §2 step 1 **de-staled**;
+   idea-engine **PROPOSAL 001 re-verified waiting** (sim-ready, 18:05Z) — deliberately
+   NOT pre-pulled (the first wake's pull is the pipeline's end-to-end proof). Walking
+   skeleton deliberately left to the coordinator's ORDER 000. Remaining owner clicks
+   (package §0): Project + env (archetype-python-lab) + **Codex integration toggle** +
+   §1/§2 pastes + the OA-001 settings click. Hub games-finishing work routes to
    the games program (Q-0259 r.5) / owner-started superbot sessions instead.
 7. ☐ Post-core (pipelined standard): manual lanes (venture-lab after the holdout/settings
    items, trading after the holdout ORDER, websites continuation) · games program once
@@ -304,8 +315,8 @@ Reply here with the substrate-kit section inline + per-class totals when the PR 
 | fleet-manager | ✓ 2026-07-10 ~13:40Z | **GOOD** — corrected the brief's stale premise (#20 had pre-seeded ORDERs 001–006), caught the real gap (debt 6 → ORDER 007), evidence-based first-sweep pick (venture-lab) | ✓ **verified in the account trigger list** by the dispatch copilot: `trig_01QBrp5MjZL3F9mv6KsTXTzN`, cron `30 */2 * * *`, enabled, recurring, prompt verbatim; **first wake fired 14:36:29Z**, next 16:31Z | ✓ status.md @ `117caeb` (main): coordinator LIVE, verbatim arming record (incl. the `cse_`→`session_` id-normalization recipe detail), orders footer fixed | **LIVE** — no correction needed |
 | substrate-kit | ✓ 2026-07-10 ~15:45Z (env archetype + 2a/2b; F-5 pre-landed as ORDER 011) | calibration not paste-backed (owner: "freshly running"); §4.1 judged via registry evidence instead | ✓ **CUTOVER VERIFIED in the registry** by the dispatch copilot: old `trig_01FnqnAQjLU2T8d16iHwWQ2h` DELETED (absent from its created-order slot); new `trig_016EfUawz6KxEYqUM6f1BqDw` "substrate-kit 2-hourly standing wake" cron `0 */2 * * *`, prompt verbatim, **first wake fired 16:02:43Z**, next 18:00Z | ✓ **heartbeat @ HEAD 16:42Z** — ORDER 011 executed (F-5=A applied, headline 1 PASS/3 FAIL, B-benches unpaused; claim #127/PR #128, 819 tests green) AND first §6.1 slice shipped (#129/#130: substrate-gate.yml kit-owned) | **LIVE — fully verified, executing the brief** |
 | Idea Engine | repo CREATED (owner) + **SEEDED born-right by the dispatch copilot ~17:5xZ** (`df64aab`: kit v1.7.0 adopted+engaged, gate wired, contract + 10 sections); ✓ **package v2 §1/§2 pasted ~17:55Z** (owner; env `idea-engine` created) | **GOOD** — mission/boundary/probe/routine/sections all exact; battery recitation correctly deferred to a verbatim README read (verify-over-memory), recited exactly one message later; zero red flags | ✓ **verified in the registry** by the dispatch copilot: `trig_01KBoHPaquSCDHysip67PQBh`, cron `0 */2 * * *`, enabled, **prompt verbatim**, bound to the coordinator session, first fire 18:04Z. Recipe fact (seat-reported): `create_trigger` absent from the top-level toolset but callable from a worker seat, first-try success | ✓ **heartbeat @ HEAD 18:08Z** (BOOTED) — walking skeleton **PROVED** (its PR #1 merged: the heartbeat itself only lands via that merge, self-proving construction); first probe → **sim-ready**, PROPOSAL 001 in outbox for sim-lab (mode-1-vs-panel question, done-when included); PR #2 self-built the section-sync checker (the seed card's 💡, picked up unprompted) | **LIVE — fully verified, pipeline flowing** (outbox has sim-lab's first pull waiting) |
-| Product Forge | repo owner-created ~18:08Z (`product-force` → renamed `product-forge`) + **copilot-seeded born-right** (`5d52f45` + PR #1 fix → `c73e3f8`); ✓ **§1/§2 pasted + booted by the owner ~19:05Z** (pre-Q-0265 package — needs the §2b amendment, brief item 0) | boot self-report GOOD per owner screenshot (seat verified seed, acknowledged both clicks, spot-checked the ruleset); not paste-backed — judged via artifacts | ✓ per heartbeat + owner screenshot ("routine armed"); registry re-verify rides the next sweep | ✓ **first heartbeat @ HEAD 18:59Z** (its PR #3, HEAD-verified `3179692`, health green) — **ORDER 001 games-web in inbox (its PR #2)**, first product pass dispatched ~19:15Z with a 10-min liveness check on the spawn | **LIVE — working its first product** |
-| Simulator (sim-lab) | package ready (Q-0264 seat 6); `sim-lab` repo/Project/Codex-integration not yet created (§3.6/§0) | — | — | — | — |
+| Product Forge | repo owner-created ~18:08Z (`product-force` → renamed `product-forge`) + **copilot-seeded born-right** (`5d52f45` + PR #1 fix → `c73e3f8`); ✓ **§1/§2 pasted + booted by the owner ~19:05Z** (pre-Q-0265 package — needs the §2b amendment, brief item 0) | boot self-report GOOD per owner screenshot (seat verified seed, acknowledged both clicks, spot-checked the ruleset); not paste-backed — judged via artifacts | ✓ per heartbeat + owner screenshot ("routine armed") **and registry-verified by the part-4 copilot ~19:3xZ**: `trig_01XjviWNduYqF5jeRnRBMSFN` "product-forge 2-hourly standing wake", cron `0 */2 * * *`, enabled, created 18:53Z, next 20:02Z | ✓ **first heartbeat @ HEAD 18:59Z** (its PR #3, HEAD-verified `3179692`, health green) — **ORDER 001 games-web in inbox (its PR #2**; also raw-verified @ HEAD by the part-4 copilot, no duplicate**)**, first product pass dispatched ~19:15Z with a 10-min liveness check on the spawn | **LIVE — working its first product** |
+| Simulator (sim-lab) | repo CREATED (owner) + **SEEDED born-right by the part-4 dispatch copilot ~19:17Z** (`32dc75d` direct-push to empty `main`: kit v1.7.0 adopted+engaged — 9 slots real values, `check --strict` green — gate **LIVE, run #1 green**, check `substrate-gate`; lab contract + verdict grammar + control bus incl. outbox; sims/+harness/ skeletons; OA-001/OA-002 pre-filed); package §0/§2 de-staled (incl. Q-0265 continuous-native §2); **§1/§2 pastes + Project + env + Codex toggle = owner next** | — (Project not booted) | — (no sim-lab trigger in the registry — verified ~19:3xZ; coordinator arms the `0 1-23/2 * * *` DEAD-MAN failsafe at boot, Q-0265) | seed heartbeat 19:30Z (`control/status.md` @ HEAD; coordinator NOT booted) | seeded + engaged; walking skeleton deliberately left to ORDER 000; first-wake proof = pulling idea-engine PROPOSAL 001 (**re-verified waiting**, sim-ready, 18:05Z) |
 | Builder (superbot-next) | ✓ 2026-07-10 ~16:30Z (owner pasted; booted) | not paste-backed; judged via artifacts | ✓ **verified in the registry**: `trig_01VYZQ7GHxYq3ecSw8UNZek8` "builder-wake", cron `0 */2 * * *`, ORDER-008 prompt verbatim, next fire 18:00Z | ✓ **heartbeat @ HEAD 18:25Z** (18:0xZ sweep, git transport — the 01:05Z ENDER-MISSING is CLEARED): band-5 testing-ladder step 7 COMPLETE incl. the live-drive leg (its #109; 3 live-only bugs found + queued as the next lane); `superbot-plugin-hello` created by the owner 16:03Z (ORDER 002 gate cleared) | **LIVE — fully verified.** Note: dispatch-session ORDER-number collision (both manager and copilot appended "ORDER 010") caught pre-merge and renumbered to 011 on PR #104 — the kit §6.8 order-claim convention exists for exactly this |
 
 **Six-vs-seven RESOLVED (2026-07-10):** the drafting-time note below stands as history —
