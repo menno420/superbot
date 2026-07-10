@@ -71,8 +71,8 @@ every session; polish later. Sequence game lanes accordingly when you write orde
 STANDING AUTONOMOUS CORE (owner design — read §5 of this pack):
 Four Projects run permanently on ~2-hourly routines and loop without the owner: you
 (manager), a NEW dedicated Idea Engine Project on the superbot repo, the superbot-next
-builder, and a Product Forge (venture-lab once its merge-path click lands). Your role in
-the loop: route the Idea Engine's proposals as ORDERs, consolidate the owner-queue, and
+builder, and a Product Forge in a NEW `product-forge` repo (owner-corrected: NOT
+venture-lab, which stays a revenue-specialist manual lane). Your role in the loop: route the Idea Engine's proposals as ORDERs, consolidate the owner-queue, and
 watch the four routines' liveness in your staleness sweep. All other Projects are
 owner-started manually, one by one.
 
@@ -229,7 +229,7 @@ feels like it (routines optional there — more steering, or temporary test case
 | 1 | **Manager** | fleet-manager (existing) | Staleness sweep · route orders · consolidate the owner-queue · keep doctrine current (§1 debts) |
 | 2 | **Idea Engine** | **NEW dedicated Project on the superbot repo** — *not* substrate-kit: the ideas pipeline (docs/ideas/, router, grooming doctrine) lives in superbot, and kit-lab already has its own mission; fleet ideation inside the mechanism repo repeats the §7 ordering inversion | Generate + groom ideas into docs/ideas/, promote the best into plans, and propose routing ORDERs to the manager for lane repos |
 | 3 | **Builder** | superbot-next coordinator (existing SuperBot Project) | Work the band order (band-6 games next) under the build-over-perfect bias |
-| 4 | **Product Forge** | **venture-lab** once its merge-path click lands (mission-match: ideas → finished products); else seed `product-forge` born-right with a required check | Take routed ideas and build them into finished, shippable products end-to-end |
+| 4 | **Product Forge** | **NEW dedicated repo + Project (`product-forge`), born-right per the gen-2 blueprint** (required check from day 1 so auto-merge works; owner creates the repo — repo creation is an agent wall). Builds each routed idea as a self-contained product in its own subtree (the codetool-labs pattern). *Owner-corrected 2026-07-10: NOT venture-lab — that lane is specifically revenue-focused and stays a manually-started specialist* | Take routed ideas and build them into finished, shippable products end-to-end |
 
 **Loop shape:** Idea Engine files/promotes → Manager routes as ORDERs → Builder + Forge
 consume → Manager consolidates results + owner-queue → Idea Engine grooms from what
