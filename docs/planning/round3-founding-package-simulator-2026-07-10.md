@@ -13,7 +13,9 @@
 > generalizes: superbot `tools/sim/claim_layout_sim.py` (settled Q-0195) and
 > `tools/sim/gen3_deployment_sim.py` (settled the gen-3 deployment method).
 > Paste order: owner pre-clicks (§0) → environment (§3) → Custom Instructions (§1) →
-> chat brief (§2, first message in a fresh chat). Companions:
+> chat brief (§2, first message in a fresh chat). **Repo SEEDED born-right 2026-07-10
+> (`32dc75d` on main, gate run #1 green) — §0.1 done, §2 step 1 de-staled to the seeded
+> reality (part-4 session).** Companions:
 > [`round3-dispatch-runbook-2026-07-10.md`](round3-dispatch-runbook-2026-07-10.md) ·
 > [`round3-founding-package-idea-engine-2026-07-10.md`](round3-founding-package-idea-engine-2026-07-10.md)
 > · router **Q-0264**.
@@ -32,8 +34,8 @@
 
 ## §0 — Owner pre-clicks (gate the boot — Q-0261.2)
 
-1. Create the **`sim-lab`** repo (public, empty, default branch `main`) — repo creation
-   is a documented agent wall.
+1. ~~Create the **`sim-lab`** repo~~ **DONE 2026-07-10** (owner-created; copilot-seeded
+   born-right at `32dc75d` on `main` — see the de-staled §2 step 1 below).
 2. Create the **Simulator** Project in claude.ai/code, attach the repo.
 3. Create the **`sim-lab`** environment: repo `menno420/sim-lab` only (Q-0260), no
    variables, setup script = `fleet-manager/environments/archetype-python-lab.sh`
@@ -42,9 +44,12 @@
 4. Enable the **Codex GitHub integration** for `sim-lab` (chatgpt.com/codex settings) —
    every finalized verdict needs an @codex review (Q-0264.4), so this click gates the
    seat's full loop (same class as the fleet-manager Codex gap already in the queue).
-5. (After first boot, when the seed PR adds CI:) tick *Allow auto-merge* and make the
-   substrate gate / smoke check **required** — the boot's ORDER 000 report will name
-   the exact check and ask once, click-level.
+   Pre-filed as **OA-002** in the seed `control/status.md`.
+5. **Clickable NOW (no need to wait for boot — the seed already wired CI and verified
+   the check name live, gate run #1 green):** tick *Allow auto-merge* (Settings →
+   General → Pull Requests) and make **`substrate-gate`** required (Settings → Rules →
+   the `main` ruleset → Require status checks). Pre-filed six-field as **OA-001** in
+   the seed `control/status.md` — same check name product-forge verified on its PR #1.
 
 ## §1 — Custom Instructions (paste into the Project's Custom Instructions field)
 
@@ -142,16 +147,21 @@ position: Idea Engine marks sim-ready → YOU reproduce evidence + finalize
 → the manager final-reviews + routes ORDERs → lanes build.
 
 BOOT NOW, in order:
-1. Your repo is born empty. Execute the born-right seed per fleet-manager
-   docs/gen2-blueprint.md §1 (raw:
-   raw.githubusercontent.com/menno420/fleet-manager/main/docs/gen2-blueprint.md):
-   adopt the substrate kit (one-step-adopt, latest release), seed control/
-   (kit grammar) + README.md (the lab contract: method ladder, the
-   validity-gate question set verbatim, verdict grammar, harness
-   consumption note) + the sims/ and harness/ skeletons. Walking skeleton
-   through the full merge path in the first slice — your ORDER 000. Report
-   the exact required-check name for the owner's settings click as a
-   six-field OWNER-ACTION.
+1. Your repo is NOT born empty — it was seeded born-right by the dispatch
+   copilot on 2026-07-10 (seed 32dc75d on main: kit v1.7.0 adopted +
+   engaged, check --strict green, CI gate live — run #1 green, check name
+   substrate-gate; lab-contract README with the validity gate verbatim;
+   CONVENTIONS.md; control/ bus incl. your outbox; sims/ + harness/
+   skeletons; seed card + heartbeat). So step 1 is: sync to origin/main
+   HEAD, read README.md + CONVENTIONS.md + control/README.md + the seed
+   card (.sessions/2026-07-10-seed.md), and verify the seed artifacts at
+   HEAD. Your ORDER 000 = prove the walking skeleton the seed deliberately
+   left to you: one small PR through the full merge path (branch -> PR ->
+   substrate-gate -> merge), recording which landing path worked in
+   control/status.md. The required-check OWNER-ACTION is already pre-filed
+   (OA-001 in the seed status, exact string substrate-gate) — verify it,
+   don't re-derive; if the owner's click already happened, record that
+   instead.
 2. Reference pass (your calibration-by-doing): read superbot
    tools/sim/gen3_deployment_sim.py + its consumer
    docs/planning/gen3-deployment-standard-2026-07-10.md via raw, and write

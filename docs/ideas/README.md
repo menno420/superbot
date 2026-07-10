@@ -36,6 +36,13 @@ Current broad captures:
   games-testing bot etc.) instead of the one shared test bot; deferred by the owner, capture only.
   Subsystem: none.
 
+- [`seat-boot-verification-harness-2026-07-10.md`](./seat-boot-verification-harness-2026-07-10.md) —
+  **session ender (2026-07-10, round-3 dispatch part 4):** script the dispatch copilot's
+  four-times-repeated per-seat boot verification (trigger-registry match + raw heartbeat/inbox/outbox
+  checks) into `scripts/check_seat.py`, emitting a ready-to-paste runbook §5 row with the verified
+  facts filled and only the verdict left to judgment — the 3 games-seat boots are imminent consumers.
+  Subsystem: agent-ecosystem / dispatch.
+
 - [`kit-seed-command-fleet-repo-bootstrap-2026-07-10.md`](./kit-seed-command-fleet-repo-bootstrap-2026-07-10.md) —
   **session ender (2026-07-10, round-3 dispatch part 3):** a kit `bootstrap.py seed --profile <shape>`
   collapsing the now-twice-proven ~10-step fleet-repo birth (adopt → slot answers → render → gate →
