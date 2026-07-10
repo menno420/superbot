@@ -37,6 +37,14 @@ Current broad captures:
   per-model trust ledger — capability/trust scores + allowed lanes per external model,
   re-run on every model release — so cross-agent routing (Q-0120) is data-driven
   instead of tribal knowledge.
+- [`fleet-manifest-freshness-checker-2026-07-10.md`](./fleet-manifest-freshness-checker-2026-07-10.md) —
+  **gen-2 night-prep seed (2026-07-10, PR #1915):** a checker comparing each fleet-manifest row's
+  last-seen against the lane repo's `control/status.md` header — the manifest cells went stale within
+  hours all through gen-1 (grand review §5); "enforce, don't exhort" applied to the fleet dashboard.
+- [`coordinator-self-review-against-1901-2026-07-10.md`](./coordinator-self-review-against-1901-2026-07-10.md) —
+  **gen-2 night-prep seed (2026-07-10, PR #1915):** the coordinator lane is the only gen-1 lane that
+  never answered the #1901 retro question set it planted — assemble its self-review pair from the
+  existing corpus so the gen-2 blueprint's input covers all ten lanes.
 - [`cross-repo-eap-verification-orientation-pointer-2026-07-09.md`](./cross-repo-eap-verification-orientation-pointer-2026-07-09.md) —
   **reconciliation session ender (2026-07-09, 40th Q-0107 pass):** add a short cross-repo verification
   pointer to the orientation route — verify a sibling EAP repo with *its own* CI interpreter
