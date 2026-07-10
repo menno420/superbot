@@ -11,6 +11,16 @@
 > packages: [`idea-engine`](round3-founding-package-idea-engine-2026-07-10.md) ·
 > [`product-forge`](round3-founding-package-product-forge-2026-07-10.md).
 
+## 0. Owner ruling on scope (Q-0261, 2026-07-10 — supersedes §1's recommendation for the core)
+
+The **core-6 Projects** (manager · substrate-kit · superbot-next · Idea Engine · Product
+Forge · sixth seat TBN) deploy **one at a time, finalize-first**: a Project launches only
+after its repo's open owner-actions/questions are drained and its settings are done — a
+conscious depth-over-speed trade for the system's roots. The pipelined fast path below
+remains the standard for the **post-core** manual and game lanes. substrate-kit is the
+second Q-0260 exception (write-all for kit distribution, hard-scoped by its founding
+instructions).
+
 ## 1. The verdict — pipeline the boots, keep the calibration gate
 
 Three strategies simulated over the 6 remaining boots (Idea Engine · Product Forge ·

@@ -157,23 +157,38 @@ script: `fleet-manager/environments/archetype-coordinator.sh` **verbatim** (raw:
 1. ☑ **Manager LIVE** (2026-07-10 ~13:45Z) — env + 2a + 2b pasted; calibration reviewed
    (verdict GOOD, §5); routine armed + verified + **first wake fired 14:36Z**; boot PR
    fleet-manager#26 squash-merged as `117caeb`. Verification record in §5.
-2. ☐ Owner clicks that gate the core: create the **Idea Engine** Project (superbot
-   repo) · create the **product-forge** repo + Project (repo creation = agent wall) ·
-   venture-lab settings (Allow auto-merge + required check).
-3. ☑ Founding packages for Idea Engine + Product Forge **DRAFTED** (2026-07-10, dispatch
-   session): [`round3-founding-package-idea-engine-2026-07-10.md`](round3-founding-package-idea-engine-2026-07-10.md)
-   (probe battery v0 baked in; env = existing `superbot`, zero owner env work) ·
+> **Order revised by owner ruling Q-0261 (2026-07-10): the core is SIX Projects, launched
+> one at a time, finalize-first** (drain the repo's open owner-actions/questions before
+> its boot). Items 2–6 below are the core order; post-core lanes follow the pipelined
+> standard.
+
+2. ☐ **substrate-kit (core seat 2 — NEXT).** Finalize-first: F-5 ruling into kit's inbox
+   (recommendation: Reading A, launch pack §4.1) · kit repo settings ("automatically
+   update branches"; verify auto-merge/required-check state) · drain its ⚑ list · owner
+   deletes NOTHING yet: the old hourly trigger (`trig_01FnqnAQjLU2T8d16iHwWQ2h`,
+   session-bound) is deleted by the NEW boot itself, then the old chat can be archived.
+   Package: [`round3-founding-package-substrate-kit-2026-07-10.md`](round3-founding-package-substrate-kit-2026-07-10.md)
+   (write-all distribution seat per Q-0261.3). Env: attach ALL fleet repos.
+3. ☐ **superbot-next (core seat 3).** Finalize-first: flag-13 corpus-red disposition
+   (Q-0240-class — accept the lane's proposed disposition, launch pack §4.5) · the
+   `superbot-plugin-hello` repo creation (its ORDER 002 gate) · up-to-date merge rule
+   relax. Then: §2 continuation prompt + standing-@codex line (Q-0259 r.3) + 2-hourly
+   routine confirm/arm.
+4. ☐ **Idea Engine (core seat 4).** Package **DRAFTED**:
+   [`round3-founding-package-idea-engine-2026-07-10.md`](round3-founding-package-idea-engine-2026-07-10.md)
+   (probe battery v0; env = existing `superbot`, zero env work). Finalize-first: superbot
+   has no open owner-gates for it (verify at its turn).
+5. ☐ **Product Forge (core seat 5).** Package **DRAFTED**:
    [`round3-founding-package-product-forge-2026-07-10.md`](round3-founding-package-product-forge-2026-07-10.md)
-   (born-right ORDER 000 = blueprint §1 seed; env = `archetype-python-lab.sh`). Boots
-   still pending the owner's §3.2 clicks — tracked in §5 below.
-4. ☐ Builder (superbot-next Project): §2 continuation prompt + standing-@codex-review
-   line (Q-0259 ruling 3); confirm/arm its 2-hourly routine.
-5. ☐ Manual lanes as the owner feels like it: §2 per-lane prompts (websites, trading
-   after the holdout ORDER, kit-lab after the F-5 ruling, venture-lab, games).
-6. ☐ Games program: manager proposes the 3-projects/3-repos mapping (Q-0259 ruling 5,
-   decide-and-flag); founding packages follow the same pattern.
-7. ☐ Verify loop closure: all four core routines ACTIVE with completed runs across
-   24h; owner-queue only owner-only items; zero stuck PRs (pack §5 success criteria).
+   (born-right ORDER 000 = blueprint §1 seed). Finalize-first: owner creates the
+   `product-forge` repo + env + Project (§0 of the package).
+6. ☐ **Sixth core seat — owner to name** (candidates: hub-superbot games/maintenance
+   seat · websites). Package drafted once named.
+7. ☐ Post-core (pipelined standard): manual lanes (venture-lab after the holdout/settings
+   items, trading after the holdout ORDER, websites continuation) · games program once
+   the manager proposes the 3-repo mapping (Q-0259 r.5) — 3 packages on the standard.
+8. ☐ Verify loop closure: all core routines ACTIVE with completed runs across 24h;
+   owner-queue only owner-only items; zero stuck PRs (pack §5 criteria).
 
 ## 4. Open drafting queue (for the dispatch-coordination session)
 

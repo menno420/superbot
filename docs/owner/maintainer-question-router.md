@@ -9406,3 +9406,35 @@ multi-repo attachment (its job is cross-repo oversight). Consequences:
 the founding packages (already single-repo: Idea Engine → superbot; Product Forge →
 product-forge) + the manager's environments registry (fleet-manager `environments/`,
 owner-relayed) for gen-3 env improvements per Q-0259 ruling 2.
+
+### Q-0261 — core-6 launch order: one Project at a time, finalize-first; substrate-kit is the second Q-0260 exception (write-all for distribution) (owner directive, 2026-07-10)
+
+> **Context.** Live dispatch session, after the gen-3 deployment sim (pipelined vs
+> sequential) landed. The owner chose the work order for the system's roots explicitly.
+
+**The directive (owner's words, expanded).**
+
+1. **The standing core is SIX Projects** (revised from the launch-pack-§5 four), launched
+   **strictly one at a time**: manager (live) → **substrate-kit** → **superbot-next** →
+   **Idea Engine** → **Product Forge** → [sixth seat: owner names it — the five listed
+   plus one; hub-superbot or websites are the candidates]. They run indefinitely, at
+   least until the EAP ends.
+2. **Finalize-first:** a Project does not launch until everything about it is finished —
+   if its repo has unanswered questions or open ⚑ OWNER-ACTIONS, those are fixed
+   *immediately, before* the boot, not carried as debt into the new generation. (For
+   substrate-kit that means the F-5 ruling + its settings clicks land before its boot.)
+3. **substrate-kit gets write access to ALL fleet repos** — the second Q-0260 exception
+   (manager = read-everywhere oversight; kit = write-everywhere distribution) — so it can
+   distribute kit upgrades and regenerate kit-owned conventions fleet-wide (EAP program
+   review §6 agenda). **Hard scope guard, owner-stated:** it must not start taking on
+   other repos' tasks — its founding instructions restrict lane-repo writes to kit
+   distribution only (upgrade PRs, kit-owned convention regeneration, adoption fixes);
+   never lane domain work, never another lane's inbox/status; its calibration answer must
+   recite this boundary.
+4. The deployment-standard's pipelined fast path (sim-backed) stays the method for the
+   **post-core** manual/game lanes; the core-6 deliberately takes the sequential
+   finalize-first shape — depth over speed for the system's roots.
+
+**Routing.** This entry (provenance) + Q-0260 (amended by 3) + round-3 dispatch runbook §3
+(reordered checklist) + `gen3-deployment-standard-2026-07-10.md` §0 note + the
+substrate-kit founding package (drafted same session).
