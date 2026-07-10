@@ -14,6 +14,8 @@
   SEND-READY wrap-up email candidate (Part 1 = owner's slot). Supersedes:
 - [`gen1-wrapup-email-draft-v2-2026-07-09.md`](gen1-wrapup-email-draft-v2-2026-07-09.md) —
   draft v2 (superseded as send-candidate; kept for provenance).
+- [`gen1-gen2-doctrine-review-2026-07-10.md`](gen1-gen2-doctrine-review-2026-07-10.md) —
+  independent doctrine comparison, fleet-manager vs superbot (parallel session).
 
 ## Fleet reviews and instruments (2026-07-09)
 

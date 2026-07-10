@@ -175,19 +175,25 @@ card #1 (3 lanes proved it unrecoverable otherwise) · order claim/lease + "orde
 
 **Genuine inter-lane disagreements (⚑ for the blueprint owner):**
 1. *Wake economics* — kit: hourly no-op wakes must ride the ~7 s control fast lane or
-   each burns a PR round. Recommend promoting "control fast lane in seed CI" from §2
-   delta 9 prose to a §1 checkbox.
+   each burns a PR round. Partially absorbed since drafting: fleet-manager #12 added the
+   §2b CI-tier standard to the blueprint; the residual ask is only that the control fast
+   lane itself become an explicit §1 seed checkbox.
 2. *Relaunch cadence* — exploration (backed by the ~2 h pickup datapoint): a relaunched
    lane starts Class A regardless of its gen-1 tail; blueprint's table reads games
    post-mission as Class C. Blueprint rule 2 points the same way; make it explicit.
 3. *Claims-dir vs lanes-manifest* — exploration + mining want a machine-checked
    `docs/lanes.yml` linted by CI for shared repos ("enforce, don't exhort"); blueprint
-   seeds a claims/ dir (convention only).
+   seeds a claims/ dir (convention only). Note exploration's own caveat: a claims dir
+   would NOT have caught the games collision — that was an *order* delegating a
+   shared-ground race, so the manifest pairs with "orders touching shared ground name ONE
+   executor."
 4. *Heartbeat-before-work scope* — websites: claim-first yes, mandatory full status
    commit no; kit: telemetry at card-commit. Reconcile: the born-red card IS the
    heartbeat.
 5. *Born-red for tiny docs PRs* — websites: allow born-complete single-push docs
-   sessions (precedent: superbot #1910, kit drops, next's card README).
+   sessions (precedent: superbot #1910 and kit's single-commit drops; superbot-next's
+   card README, by contrast, mandates born-red-flip-last unconditionally — so this
+   exception needs an explicit ruling, it isn't yet fleet consensus).
 6. *Actions-route releases* — fable5 "never re-route a policy-denied write" vs opus4.8's
    clean release.yml success (retro-synthesis Disagreement #1). Compose: Actions route is
    the sanctioned FIRST path (blueprint delta 3); fable5's rule narrows to "never
