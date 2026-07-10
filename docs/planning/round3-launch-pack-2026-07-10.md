@@ -285,6 +285,29 @@ re-verifies every finding against source before acting.
 10. **venture-lab first-revenue clicks (⚑A–D — whenever you feel like it, not urgent):**
     publish the two zips, optional Stripe test keys. This is the actual first-revenue path.
 
+## §4b — Owner rulings received (2026-07-10, Q-0259) — supersedes the open items above where they overlap
+
+1. **Budget:** core-4 runs indefinitely within normal session limits — routine prompts must
+   bound work per wake ("don't work excessively"); economics ledger detects excess, doesn't gate.
+2. **Gen-3 = verify-and-consolidate:** the manager's gen-3 report is structured around four
+   things — verify gen-2's results · find the CAUSE of the improvements · improve per-repo
+   environments · give every project a clear goal + a confirmed routine-arming recipe.
+3. **Rebuild:** finish as fast as reasonably possible at overnight pace; **standing @codex
+   review on substantive superbot-next PRs** (owner rates Codex PR reviews highly; extends
+   Q-0258). Games parallel, finetuned into the bot later.
+4. **Venture-lab: profitability mandate** — fund the fleet; durable/sustainable growth; any
+   methods. Money protocol: any spend needs a plan showing exactly what the owner must
+   do/enable/buy + conservative earnings & payback estimates (expect bad results, never
+   overstate).
+5. **Games program: 3 dedicated game projects, each their own repo**, continuously improving
+   games / inventing new ones / modding other games, presenting a few options wherever wise.
+   Owner plays after the EAP; capability test by design. Manager maps existing lanes
+   (superbot-games shared · pokemon-mod-lab · gba-homebrew) onto this shape decide-and-flag.
+
+*(Decision-sheet items 2/3/4 above are herewith answered; F-5 (item 1), the settings sweep
+(9), holdout unlock ORDER (2→granted in principle, needs the inbox ORDER naming the
+protocol doc) and the venture clicks (10) remain the owner's open items.)*
+
 ## §5 — The standing autonomous core (owner design, 2026-07-10)
 
 Owner directive: **four Projects always running on ~2-hourly routines, looping together

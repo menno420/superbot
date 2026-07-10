@@ -9,7 +9,8 @@
 
 - [`../planning/round3-launch-pack-2026-07-10.md`](../planning/round3-launch-pack-2026-07-10.md) —
   the round-3 (gen-3 prep) launch pack: manager brief, per-lane continuation prompts, games
-  wave, Codex review prompts, owner decision sheet, fleet-watching guide.
+  wave, Codex review prompts, owner decision sheet (§4b records the Q-0259 owner rulings),
+  standing autonomous core (§5), fleet-watching guide.
 - [`eap-program-review-2026-07-10.md`](eap-program-review-2026-07-10.md) — owner-directed deep
   review of the whole EAP period (07-07 → 07-10): day-by-day story, verdicts, root-cause log,
   the 10 structural findings, the centralization agenda, and the consolidated next-action queue.
