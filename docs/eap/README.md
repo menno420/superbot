@@ -7,6 +7,9 @@
 
 ## Gen-1 wrap-up (2026-07-09 → 10)
 
+- [`eap-program-review-2026-07-10.md`](eap-program-review-2026-07-10.md) — owner-directed deep
+  review of the whole EAP period (07-07 → 07-10): day-by-day story, verdicts, root-cause log,
+  the 10 structural findings, the centralization agenda, and the consolidated next-action queue.
 - [`fleet-overnight-review-2026-07-10.md`](fleet-overnight-review-2026-07-10.md) — owner-directed
   morning-after review of the launch night itself (all 13 repos, one subagent per lane):
   headline verdict, per-repo table, ender-compliance exceptions, ranked findings, the
