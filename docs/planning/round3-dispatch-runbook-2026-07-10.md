@@ -185,6 +185,26 @@ debts 1–5 + 7 (ORDER 005/006 already done); the manager's boot caught the unco
 (@codex relay, Q-0258) and appended it as ORDER 007. All seven debts now have inbox ORDERs
 (001–004 open · 005–006 done · 007 new), verified against `control/inbox.md` @ main.
 
+**Manager archive-readiness sweep — copilot verification (2026-07-10 ~15:1xZ).** The
+manager's 13-repo sweep verdict was checked claim-by-claim against ground truth (raw
+heartbeats/inboxes at HEAD; superbot PRs via MCP; the account trigger list). **Confirmed:**
+trading PARKED GREEN (#34, 13:47Z; note its own inbox ORDER 007 open/not-started) ·
+websites orders 001–008 all done (13:56Z) · substrate-kit closed/handoff-ready (14:17Z,
+routine independently re-verified) · superbot-games both lanes terminal (lane status files;
+the #19/#20 PR numbers themselves unverifiable from this seat — github.com/API walled for
+out-of-scope repos, so ALL "zero open PRs" claims rest on the manager's seat) · codetool ×3
+"ready for archive" verbatim · gba-homebrew session-7 scope-complete (07:14Z) · venture-lab
+heartbeat stale at 04:57Z with the pre-merge "#9 awaiting merge" line, ORDERs 002/003
+unacked · superbot-next 01:05Z mid-mission · superbot's only open PR is #1948 (exact) ·
+manager wake fired 14:36:29Z. **Not confirmed:** the claimed venture-lab archive-ender
+ORDER is NOT in `control/inbox.md` @ main (001–003 only) — in-flight or phantom; require
+merge evidence before archiving that lane. **New finding (§6b class):** the kit-lab hourly
+(`trig_01FnqnAQjLU2T8d16iHwWQ2h` → `session_01Gb1Dq9…`) and trading 4-hourly
+(`trig_01Mvn5xRmqGmZJNRHgjqyLpN` → `session_01HfvExB…`) routines are **bound to the very
+coordinator chats being archived**; websites' is fresh-session-per-fire (archive-safe).
+Before archiving kit-lab/trading chats: delete or re-arm those triggers (gen-3 founding
+packages re-arm fresh ones anyway), or the loops die silently.
+
 **Boot-time fleet facts (verified via the account trigger list, 2026-07-10 ~14:40Z):**
 routine coverage is now manager (2-hourly) + kit-lab (hourly) + trading (4-hourly) +
 **websites (4-hourly — armed 13:49Z as its ORDER 008, discovered during manager-boot
