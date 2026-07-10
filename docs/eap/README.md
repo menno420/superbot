@@ -35,6 +35,11 @@
   `gen1-grand-review-2026-07-09.md` §5 (structural completeness across all 6 repos) with
   deep, per-incident evidence verification on the 7 wind-down lanes + seed + ping-test.
 
+- [`hostile-audit-checking-the-checkers-2026-07-10.md`](hostile-audit-checking-the-checkers-2026-07-10.md) —
+  external (Codex/Sol) hostile re-verification of the grand review + overnight review: 12/15
+  claims confirmed, the superbot-next "~20 PRs" narrative refuted; Claude addendum re-verifies
+  5 claims by a second method (all exact).
+
 ## Fleet reviews and instruments (2026-07-09)
 
 - [`fleet-manifest.md`](fleet-manifest.md) — living Project registry (manager-maintained).
