@@ -43,8 +43,10 @@ kernel (K10) + NL shell; out-of-tree plugin host (next#75).
 adapter that does not exist anywhere** in the new tree), `general` (8 cmds, small),
 `four_twenty` (small), `paragon` (small — the math already exists in-tree, wiring only),
 `ux_lab` (dev tool, port-worthiness is a product call), `hermes` (Discord→Claude bridge —
-product call). Parity rows exist for each in `parity/parity.yml`, i.e. the rebuild plan
-already intends them.
+product call). Parity rows exist for 6 of the 8 in `parity/parity.yml` — **`starboard` and
+`paragon` have no rows** — so the rebuild plan already intends most, but not all, of them.
+*(Correction 2026-07-10: this sentence originally claimed rows exist for each; refuted by
+fleet-manager `docs/findings/ultracode-verification-2026-07-10.md`.)*
 
 **Missing — depth inside ported subsystems (named-successor'd in the decision ledger,
 with one exception):** mining 10,276 lines old vs 732 new; fishing 6,113 vs 566;
