@@ -38,6 +38,10 @@
   Claude's ground-truth verification of the three Codex review PRs (#1940/#1941/#1942):
   scores, the missed `moderation.timeout` compensation gap, and an independent
   assessment of the gen-1/gen-2 program work.
+- [`hostile-audit-checking-the-checkers-2026-07-10.md`](hostile-audit-checking-the-checkers-2026-07-10.md) —
+  external (Codex/Sol) hostile re-verification of the grand review + overnight review: 12/15
+  claims confirmed, the superbot-next "~20 PRs" narrative refuted; Claude addendum re-verifies
+  5 claims by a second method (all exact).
 
 ## Fleet reviews and instruments (2026-07-09)
 
