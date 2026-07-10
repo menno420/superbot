@@ -188,7 +188,9 @@ debts 1–5 + 7 (ORDER 005/006 already done); the manager's boot caught the unco
 **Boot-time fleet facts (verified via the account trigger list, 2026-07-10 ~14:40Z):**
 routine coverage is now manager (2-hourly) + kit-lab (hourly) + trading (4-hourly) +
 **websites (4-hourly — armed 13:49Z as its ORDER 008, discovered during manager-boot
-verification)**. Owner clicks surfaced by the boot, for the queue: 🚨 pokemon-mod-lab is
-PUBLIC with Nintendo source (urgent flip, top of the manager's owner-queue) · Codex has no
+verification)**. Owner clicks surfaced by the boot, for the queue: ~~🚨 pokemon-mod-lab PUBLIC~~ **flip to
+private DONE + verified 2026-07-10 ~15:0xZ** (owner clicked; dispatch copilot confirmed —
+raw fetches 404 unauthenticated vs 200 on public controls; the manager's 13:45Z status flag
+pre-dated the flip and clears on its next pass) · Codex has no
 environment for fleet-manager (chatgpt.com/codex settings — gates ORDER 007's @codex relay
 there) · fleet-manager visibility joins the account-wide review (non-urgent).
