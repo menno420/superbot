@@ -85,6 +85,18 @@ from the Routines screen) — recorded as a new `projects-eap-evaluation-log.md`
 (reviving the journal, silent since 07-09 ~16:36Z) and folded into the review doc (§5.5).
 Enders for this session live above; second-PR telemetry row appended per the gate.
 
+## PRs 4–6 addendum (same session, owner-directed, all docs-only)
+
+- **#1935** — Product Forge seat corrected (owner ruling): new `product-forge` repo, NOT
+  venture-lab (revenue specialist stays manual).
+- **#1939** — two owner ideas captured (idea-probe simulator · website suggestion
+  copilot) + **Q-0258** (@codex review relay: router entry, codex plan Part C template,
+  pack §1 fleet rule).
+- **Final wrap PR** — chat-only value homed: repo-disposition record + lab-tools-adoption
+  idea (`adopt-codetool-lab-tools-2026-07-10.md`), interface-hygiene rules (pack §6b —
+  incl. the *never delete a Project with an active routine* footgun), full Codex prompts
+  synced into pack §3, this card addendum.
+
 ## PR 3 addendum — round-3 launch pack (same session, owner-directed)
 
 Owner directives (live): fold the review findings into the wrap-up email; give the

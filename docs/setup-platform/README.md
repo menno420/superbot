@@ -14,6 +14,7 @@ first; reach for these on demand.
 | [`settings-customization-roadmap.md`](settings-customization-roadmap.md) | The three lanes (settings / binding / provisioning) and which pipeline owns which (`reference`). |
 | [`settings-customization-command-map.md`](settings-customization-command-map.md) | Per-setting customization command surface (`living-ledger`). |
 | [`operator-settings-presets.md`](operator-settings-presets.md) | Operator settings presets inventory (`living-ledger`). |
+| [`quiet-hours-design.md`](quiet-hours-design.md) | Minimal design for per-guild quiet hours using the existing settings mutation/audit seams (`plan`). |
 | [`resource-provisioning-overview.md`](resource-provisioning-overview.md) | The resource-provisioning (RPM) lane and confirmation rules (`reference`). |
 | [`roadmap_setup_platform.md`](roadmap_setup_platform.md) | Setup-platform target roadmap (`plan`, read for context). |
 | [`setup_wizard_finalization_plan.md`](setup_wizard_finalization_plan.md) | Setup-wizard finalization plan (`plan`, read for context). |
