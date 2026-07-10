@@ -256,7 +256,8 @@ Reply here with the substrate-kit section inline + per-class totals when the PR 
    ruleset-protected, REST merge-on-green is the working landing path). Package §2 boot
    steps de-staled to seeded reality. **First ORDER owner-named: the games-web
    experience** (Shakes & Fidget-style visual web frontend for the bot's games; mock-
-   data-first phase 1) — rides the manager relay (dispatch paste handed to owner).
+   data-first phase 1) — rides the manager relay (dispatch paste:
+   [part-4 brief §2.2](round3-dispatch-part4-brief-2026-07-10.md)).
    Remaining owner clicks: create the **Product Forge** Project + `product-forge` env
    (archetype-python-lab), paste §1/§2.
 6. ☐ **Sixth core seat = the SIMULATOR Project (`sim-lab`) — owner ruling Q-0264,

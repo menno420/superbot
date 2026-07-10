@@ -44,7 +44,12 @@ _MARKER_RE = re.compile(r"Last reconciliation pass:\*\*\s*PR #(\d+)")
 # custom title — the dominant style since 2026-06), and "title (#N)" suffixes.
 # The missing "PR #" alternative made the checker under-report the latest PR
 # (stuck at #751 while #762 was merged — caught by the 2026-06-12 night pass).
-_MERGE_SUBJECT_RE = re.compile(r"(?:pull request #|PR #|\(#)(\d+)")
+# Anchored to real PR-landing forms ONLY (2026-07-10, the "#104" false-red): a
+# merge commit head ("Merge pull request #N ..." / "Merge PR #N: ...") or a squash
+# suffix ("title (#N)" at end-of-subject). An UN-anchored "PR #N" also matched
+# cross-repo references inside ordinary branch-commit subjects that reach main via
+# a true merge (e.g. "... (superbot-next ORDER 010, PR #104); ..." -> phantom #104).
+_MERGE_SUBJECT_RE = re.compile(r"^Merge (?:pull request|PR) #(\d+)|\(#(\d+)\)\s*$")
 
 
 def issue_body() -> str:
@@ -96,7 +101,7 @@ def _latest_merged_pr() -> int | None:
     if result.returncode != 0:
         return None
     numbers = [
-        int(m.group(1))
+        int(m.group(1) or m.group(2))
         for line in result.stdout.splitlines()
         if (m := _MERGE_SUBJECT_RE.search(line))
     ]
@@ -110,7 +115,7 @@ def _last_reconcile_pr() -> int | None:
     except OSError:
         return None
     match = _MARKER_RE.search(text)
-    return int(match.group(1)) if match else None
+    return int(match.group(1) or match.group(2)) if match else None
 
 
 def is_due(

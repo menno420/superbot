@@ -48,6 +48,10 @@ def test_merge_subject_extraction(monkeypatch) -> None:
             # The MCP merge style ("Merge PR #N: title") — five real merges
             # went invisible to this check before the 2026-06-12 regex fix.
             "Merge PR #762: UX Lab PR C — mock studio",
+            # A cross-repo PR reference inside an ordinary branch-commit subject
+            # (reaches main via a true merge commit) must NOT read as a landing —
+            # the 2026-07-10 phantom-"#104" false-red.
+            "docs: never-ask ruling (superbot-next ORDER 010, PR #104); pkg updated",
         ]
     )
 

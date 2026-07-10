@@ -80,7 +80,12 @@ _MARKER_RE = re.compile(r"Last reconciliation pass:\*\*\s*PR #(\d+)")
 # since 2026-06), or "title (#734)". The missing "PR #" alternative let five
 # merged PRs (#753-#761) go invisible to this check while it reported green
 # (caught by the 2026-06-12 night reconciliation pass).
-_MERGE_SUBJECT_RE = re.compile(r"(?:pull request #|PR #|\(#)(\d+)")
+# Anchored to real PR-landing forms ONLY (2026-07-10, the "#104" false-red): a
+# merge commit head ("Merge pull request #N ..." / "Merge PR #N: ...") or a squash
+# suffix ("title (#N)" at end-of-subject). An UN-anchored "PR #N" also matched
+# cross-repo references inside ordinary branch-commit subjects that reach main via
+# a true merge (e.g. "... (superbot-next ORDER 010, PR #104); ..." -> phantom #104).
+_MERGE_SUBJECT_RE = re.compile(r"^Merge (?:pull request|PR) #(\d+)|\(#(\d+)\)\s*$")
 # A standalone ledger reference: "#734", "PR #734", "**#734".
 _LEDGER_REF_RE = re.compile(r"#(\d+)")
 # A ledger range: "#715–#723" / "#715-#723" / "#715–723" (en-dash or hyphen).
@@ -146,7 +151,7 @@ def _git_merged_pr_map(limit: int) -> dict[int, str]:
     for subject in result.stdout.splitlines():
         match = _MERGE_SUBJECT_RE.search(subject)
         if match:
-            pr = int(match.group(1))
+            pr = int(match.group(1) or match.group(2))
             if pr not in mapping:
                 mapping[pr] = subject.strip()
     return mapping
@@ -209,7 +214,7 @@ def marker_pr(current_state_text: str | None = None) -> int | None:
     """The ``Last reconciliation pass:** PR #N`` marker — the lag/drift boundary, or None."""
     text = _read(CURRENT_STATE) if current_state_text is None else current_state_text
     m = _MARKER_RE.search(text)
-    return int(m.group(1)) if m else None
+    return int(m.group(1) or m.group(2)) if m else None
 
 
 def band_window(marker: int | None) -> int:
