@@ -3,6 +3,8 @@
 > **Status:** `ideas`
 > **Subsystem:** none
 > **Captured:** 2026-07-10 (session ender, Q-0089, GPT-5.6 Sol eval session)
+> **Outcome:** IMPLEMENTED same day — `docs/owner/cross-agent-trust-ledger.md`
+> seeded with the scored Sol/Codex run (eval doc §8) in the scoring session.
 
 ## The idea
 

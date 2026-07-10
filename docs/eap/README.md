@@ -9,7 +9,8 @@
 
 - [`../planning/round3-launch-pack-2026-07-10.md`](../planning/round3-launch-pack-2026-07-10.md) —
   the round-3 (gen-3 prep) launch pack: manager brief, per-lane continuation prompts, games
-  wave, Codex review prompts, owner decision sheet, fleet-watching guide.
+  wave, Codex review prompts, owner decision sheet (§4b records the Q-0259 owner rulings),
+  standing autonomous core (§5), fleet-watching guide.
 - [`eap-program-review-2026-07-10.md`](eap-program-review-2026-07-10.md) — owner-directed deep
   review of the whole EAP period (07-07 → 07-10): day-by-day story, verdicts, root-cause log,
   the 10 structural findings, the centralization agenda, and the consolidated next-action queue.
@@ -38,6 +39,14 @@
   external (Codex/Sol) runtime review of superbot-next bands 1–5: warn-escalation fix confirmed,
   `end_access` compensation gap confirmed; Claude verification addendum adds the missed
   `moderation.timeout` same-class instance.
+- [`codex-review-round-verification-2026-07-10.md`](codex-review-round-verification-2026-07-10.md) —
+  Claude's ground-truth verification of the three Codex review PRs (#1940/#1941/#1942):
+  scores, the missed `moderation.timeout` compensation gap, and an independent
+  assessment of the gen-1/gen-2 program work.
+- [`hostile-audit-checking-the-checkers-2026-07-10.md`](hostile-audit-checking-the-checkers-2026-07-10.md) —
+  external (Codex/Sol) hostile re-verification of the grand review + overnight review: 12/15
+  claims confirmed, the superbot-next "~20 PRs" narrative refuted; Claude addendum re-verifies
+  5 claims by a second method (all exact).
 
 ## Fleet reviews and instruments (2026-07-09)
 

@@ -55,7 +55,14 @@ dangling "some future session"):
    session/run counts and whatever cost signal is visible; the cadence table was built on
    zero cost data.
 5. Fix your own ping-test report's known-false websites "NO ACK" row (two ⚑ flags old).
-6. Correct the codetool release-wall contradiction: opus4.8 PROVED workflow_dispatch
+6. **Mint the @codex review-relay playbook rule (owner directive Q-0258, 2026-07-10):**
+   any lane session with a review-worthy-but-not-owner-only question posts it as a PR
+   comment mentioning @codex (one specific question, on the final head; template in
+   superbot docs/planning/codex-review-integration-plan-2026-06-17.md Part C) instead of
+   parking it in the owner-queue. Codex is the named standing drainer of the post-merge
+   review convention; Q-0120 governs the return path (verify, never obey). The owner is
+   enabling the Codex GitHub integration across the valuable repos.
+7. Correct the codetool release-wall contradiction: opus4.8 PROVED workflow_dispatch
    releases work (2 live releases); fable5's succession doc says the route is "closed
    permanently". Reconcile before any gen-3 lane inherits the wrong lesson, and fold the
    model-comparison seat-contamination caveat (overnight-review finding 6) into the
@@ -159,24 +166,86 @@ Extra dispatches the owner can paste any time, all biased to shipping playable i
 Three independent reviews; paste each into a fresh Codex task. They exist to break the
 closed Claude-verifying-Claude loop (program-review §5.8).
 
-**Codex A — doctrine audit:** "Clone menno420/fleet-manager and menno420/superbot. Read
-fleet-manager docs/gen2-blueprint.md + docs/playbook.md and superbot
-docs/eap/eap-program-review-2026-07-10.md §5. Adversarially audit the blueprint against
-the evidence in both repos: which rules are enforced by machinery vs prose-only, which
-claims were falsified by events (start with routines and merge policy), and rank the 10
-riskiest unenforced rules. Cite files/PRs for every claim."
+*(Full self-contained versions — delivered to the owner in-session 2026-07-10; paste each
+into a fresh Codex task.)*
 
-**Codex B — runtime code review:** "Clone menno420/superbot-next. Review the band 1–5
-runtime (sb/) for correctness against tests: hunt state-machine and persistence bugs like
-the known warn-escalation regression (see superbot docs/eap/fleet-quality-review-2026-07-09.md
-§10); verify the regression is/isn't fixed at HEAD; propose minimal-diff fixes with tests.
-Report findings ranked by user impact."
+**Codex A — doctrine audit (fleet-manager's rules vs reality):**
 
-**Codex C — record audit:** "Clone menno420/superbot. Sample 15 factual claims from
-docs/eap/gen1-grand-review-2026-07-09.md and docs/eap/fleet-overnight-review-2026-07-10.md
-(mix of PR numbers, test counts, timing claims) and verify each against live GitHub.
-Report: confirmed / refuted / unverifiable, with evidence links. You are checking the
-checkers — be hostile."
+```
+You are an external, adversarial reviewer. Work read-only against the public GitHub repos
+menno420/fleet-manager and menno420/superbot (clone or browse them — everything is public).
+
+Read first:
+- fleet-manager: docs/gen2-blueprint.md and docs/playbook.md (the fleet's binding doctrine)
+- superbot: docs/eap/eap-program-review-2026-07-10.md §5 (known structural findings)
+
+Task: audit the doctrine against the evidence in both repos. Specifically:
+1. For each blueprint/playbook rule, classify it: enforced by machinery (a checker, CI
+   gate, or template) vs prose-only (exhorted but nothing catches a violation).
+2. Identify claims the record has already falsified — start with the wake/routines
+   doctrine (see superbot docs/planning/projects-eap-evaluation-log.md, the 2026-07-10
+   ~11:01Z entry) and the merge-authority/auto-merge rules, and hunt for more.
+3. Rank the 10 riskiest prose-only rules: the ones whose silent violation would cost the
+   most, with a one-line cheapest-enforcement proposal for each.
+
+Rules for you: cite a file path, PR number, or commit for every claim; if you cannot
+verify something, say so explicitly rather than assuming; do not trust any document's
+self-description — check whether the mechanism it names actually exists in the tree.
+Deliver: a single markdown report, findings ranked by severity.
+```
+
+**Codex B — runtime code review (superbot-next, the rebuild):**
+
+```
+You are an external code reviewer. Work read-only against the public GitHub repo
+menno420/superbot-next (the ground-up rebuild of a Discord bot, currently at band 5 of
+its port).
+
+Context: an internal quality review (see menno420/superbot
+docs/eap/fleet-quality-review-2026-07-09.md §10) found one proven semantic regression in
+the warn-escalation logic (escalation count reset + history rows written pre-commit with
+no compensator, with a unit test enshrining the wrong behavior). Start there:
+1. Verify whether that regression is fixed or still present at HEAD (sb/ tree). If
+   present, propose a minimal-diff fix with a test that pins the ORACLE behavior (the old
+   bot's semantics, documented in the parity/ corpus), not the current behavior.
+2. Then review the band 1–5 runtime (sb/domain, sb/services, state machines, persistence)
+   for the same defect class: state mutations before commit points, missing compensators,
+   count resets, event-ordering assumptions, and unit tests that assert buggy behavior.
+3. Check the games code (sb/domain/games) for crash paths like the recently-fixed
+   worldcard Reply-shape bug (a raw dict returned where a Reply object was expected).
+
+Rules: cite file:line for every finding; rank by user impact; propose minimal diffs with
+tests; explicitly separate CONFIRMED bugs (you traced the failure) from SUSPECTED
+(pattern-matched, needs a repro). Deliver one markdown report.
+```
+
+**Codex C — hostile fact-check of the record itself:**
+
+```
+You are a hostile auditor checking the checkers. Work read-only against the public GitHub
+repo menno420/superbot and the live GitHub API/UI for the menno420 account's repos.
+
+Target documents:
+- docs/eap/gen1-grand-review-2026-07-09.md
+- docs/eap/fleet-overnight-review-2026-07-10.md
+
+Task: sample 15 factual claims across the two documents — mix PR numbers, merge states,
+test counts, timing claims, and cross-repo assertions (e.g. "zero open PRs", "116 PRs
+merged 00:00–06:15Z", "21/21 incidents verified", per-repo test totals). For each claim:
+1. Re-verify it independently against live GitHub (PRs, commits, CI runs, file contents
+   at the cited SHA) — do not use the documents' own citations as proof.
+2. Verdict: CONFIRMED / REFUTED / UNVERIFIABLE, with your evidence (links, numbers).
+
+Bias yourself toward refutation: pick the claims that would be most embarrassing if
+wrong, not the easiest to confirm. Two corrections have already been applied to this
+corpus (see docs/eap/README.md and PR #1926) — finding a third is the success condition,
+not an insult. Deliver one markdown report: the 15 claims, verdicts, evidence, and any
+pattern you notice in what kind of claims drift.
+```
+
+Return path for all three: Q-0120 / Q-0258 — drop each report into the matching Project
+(A → Project Manager, B → the Builder, C → any superbot session); the receiving lane
+re-verifies every finding against source before acting.
 
 ## §4 — Owner decision sheet (recommendations included; answer at leisure)
 
@@ -215,6 +284,29 @@ checkers — be hostile."
    lists are in each repo's status ⚑ block).
 10. **venture-lab first-revenue clicks (⚑A–D — whenever you feel like it, not urgent):**
     publish the two zips, optional Stripe test keys. This is the actual first-revenue path.
+
+## §4b — Owner rulings received (2026-07-10, Q-0259) — supersedes the open items above where they overlap
+
+1. **Budget:** core-4 runs indefinitely within normal session limits — routine prompts must
+   bound work per wake ("don't work excessively"); economics ledger detects excess, doesn't gate.
+2. **Gen-3 = verify-and-consolidate:** the manager's gen-3 report is structured around four
+   things — verify gen-2's results · find the CAUSE of the improvements · improve per-repo
+   environments · give every project a clear goal + a confirmed routine-arming recipe.
+3. **Rebuild:** finish as fast as reasonably possible at overnight pace; **standing @codex
+   review on substantive superbot-next PRs** (owner rates Codex PR reviews highly; extends
+   Q-0258). Games parallel, finetuned into the bot later.
+4. **Venture-lab: profitability mandate** — fund the fleet; durable/sustainable growth; any
+   methods. Money protocol: any spend needs a plan showing exactly what the owner must
+   do/enable/buy + conservative earnings & payback estimates (expect bad results, never
+   overstate).
+5. **Games program: 3 dedicated game projects, each their own repo**, continuously improving
+   games / inventing new ones / modding other games, presenting a few options wherever wise.
+   Owner plays after the EAP; capability test by design. Manager maps existing lanes
+   (superbot-games shared · pokemon-mod-lab · gba-homebrew) onto this shape decide-and-flag.
+
+*(Decision-sheet items 2/3/4 above are herewith answered; F-5 (item 1), the settings sweep
+(9), holdout unlock ORDER (2→granted in principle, needs the inbox ORDER naming the
+protocol doc) and the venture clicks (10) remain the owner's open items.)*
 
 ## §5 — The standing autonomous core (owner design, 2026-07-10)
 
@@ -275,3 +367,27 @@ feed, ~12 pages) and `https://botsite-production-cfd7.up.railway.app` (the bot s
 While testing: jot anything confusing/missing as one line each; hand the list to any
 session (or straight into the websites Project) and it becomes ORDER material — the
 websites lane explicitly expects your UX suggestions today (§1 tells the manager so).
+
+### §6b — Interface hygiene rules (owner cleanup, 2026-07-10)
+
+- **⚠️ Never delete a Project with an ACTIVE routine bound to it** — routines run *inside*
+  their Project ("continues in the same session across runs"); deleting the Project kills
+  the loop silently. Check the Routines screen before any Project deletion.
+- With that rule, Project deletion is safe by design: **memory = repos, never chats** — a
+  deleted Project loses only chat history. Spent Projects (wound-down labs, test cases)
+  can go freely. *(Owner executed 2026-07-10: codetool Projects + "sonnet 5 test" removed.)*
+- Environments: one per repo, named exactly like the repo, standard exit-0 setup script;
+  delete the rest.
+- Standing automation: the manager's rollup includes a **"safe to delete" list** (spent
+  Projects, dead environments, stale branches) so interface hygiene is a report, not a
+  chore.
+
+### §7 — Repo disposition (owner review, 2026-07-10)
+
+Full verdicts delivered in-session; the record: **delete no repos** (they are the fleet's
+memory, public and free). Keep all core/lane repos. The three codetool labs each built a
+real product (mdverify — *released*; cfgdiff; envdrift): **harvest first**
+(`docs/ideas/adopt-codetool-lab-tools-2026-07-10.md`), then archive `codetool-lab-sonnet5`
++ `codetool-lab-fable5` (read-only), keep `codetool-lab-opus4.8` unarchived (live released
+tool + the proven release recipe). The felt clutter was Projects/environments, not repos —
+see §6b.
