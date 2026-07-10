@@ -74,6 +74,11 @@ open PR #1917 (codex docstring-only PR) per the shift plan.
   docs badge checker rejects `implemented` as a badge token with no hint of the
   `historical` + prose convention — cost one red loop; noted here rather than patched
   (checker message wording is a one-line improvement any docs session can take).
+  (3) The telemetry-row gate (enforced 2026-07-09, `check_session_gate.py`) held the
+  first complete push red because the shift orientation predated it — the guard worked
+  exactly as designed and its error message contained the complete fix; no further
+  guard needed, but overnight shift-plan templates should mention the telemetry row
+  next to the born-red card step.
 - **⚑ Self-initiated:** hybrid-command support in the checker (gap found by comparing
   against `scan_commands.py` — not in the idea spec) and the
   command-surface-extractor-consolidation idea file. Both contained/reversible.
