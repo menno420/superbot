@@ -23,6 +23,9 @@
   logged including a false "NO ACK" claim inside fleet-manager's own report. Complements
   `gen1-grand-review-2026-07-09.md` §5 (structural completeness across all 6 repos) with
   deep, per-incident evidence verification on the 7 wind-down lanes + seed + ping-test.
+- [`pr1911-post-merge-review-2026-07-10.md`](pr1911-post-merge-review-2026-07-10.md) —
+  post-merge review record for PR #1911 (`527766f`): 0 real defects found; records the
+  checked files, link validation, docs check, and quality-check environment limitation.
 
 ## Fleet reviews and instruments (2026-07-09)
 
