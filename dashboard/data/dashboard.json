@@ -1,10 +1,10 @@
 {
   "meta": {
-    "generated_at": "2026-07-11T20:49:03Z",
+    "generated_at": "2026-07-11T22:10:16Z",
     "build": {
-      "commit": "e7717c8d",
-      "subject": "docs: fleet-triage register supersede pointer → fleet-manager docs/fleet-triage.md (P3) (#2006)",
-      "committed_at": "2026-07-11T20:49:03Z"
+      "commit": "3b57cd5e",
+      "subject": "docs: post-compact continuation — superbot-games #52/#54/#55 merged + 8-seat fleet structure recorded (#2008)",
+      "committed_at": "2026-07-11T22:10:16Z"
     },
     "schema_version": 1,
     "counts": {
@@ -3469,6 +3469,14 @@
       "self_initiated": false
     },
     {
+      "file": "2026-07-11-fleet-merge-continuation.md",
+      "date": "2026-07-11",
+      "title": "2026-07-11 — fleet merge continuation (post-compact): superbot-games #52/#54/#55 landed + handoff reconciled",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
       "file": "2026-07-11-fleet-inbox-and-model-line.md",
       "date": "2026-07-11",
       "title": "2026-07-11 — fleet inbox for the hub + 📊 Model attribution line",
@@ -3808,14 +3816,6 @@
       "file": "2026-07-09-kit-version-pin.md",
       "date": "2026-07-09",
       "title": "2026-07-09 — substrate-kit v1.0.0 pin file (kit-lab D2, consumer half)",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-07-09-gen1-grand-review.md",
-      "date": "2026-07-09",
-      "title": "2026-07-09 — Gen-1 grand review + cleanup (fleet-wide)",
       "status": "complete",
       "run_type": "",
       "self_initiated": false
@@ -4714,6 +4714,20 @@
       "session": "2026-07-11-fleet-triage-pointer",
       "date": "2026-07-11",
       "model": "fable-5",
+      "effort": "medium",
+      "task_class": "docs-only",
+      "tokens_out": null,
+      "outcome": {
+        "ci_green_first_push": null,
+        "checker_findings": null,
+        "merged_pr": null,
+        "reverted_within_window": null
+      }
+    },
+    {
+      "session": "2026-07-11-fleet-merge-continuation",
+      "date": "2026-07-11",
+      "model": "opus-4.8",
       "effort": "medium",
       "task_class": "docs-only",
       "tokens_out": null,
