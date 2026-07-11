@@ -1,4 +1,4 @@
-> **Status:** `draft` — SECOND Anthropic email, rebuilt 2026-07-11 to reflect the full
+> **Status:** `plan` — SECOND Anthropic email (work in progress), rebuilt 2026-07-11 to reflect the full
 > arc (gen-1 → the autonomous fleet → tonight). **Part 1 is a MOCK** — a scaffold in
 > Menno's voice, every beat built from something he actually said (July 8 email, this
 > session's messages, or a documented owner decision); he rewrites it in his own words.
@@ -337,6 +337,11 @@ happy to run any structured probe you'd find useful.
 ---
 
 ## FIGURES — the screenshot shot-list (curated; each proves one finding)
+
+> **Drop folder:** push raw screenshots to
+> [`screenshots-2026-07-11/`](screenshots-2026-07-11/README.md) (any filenames) and I'll
+> view + rank them SEND/MAYBE/SKIP against the table below.
+
 
 > **Advice:** ~6–8 total, each captioned in one line and tied to a finding. Inline them at
 > the `[Fig N]` markers, or attach as a numbered appendix. Skip any frame showing a secret
