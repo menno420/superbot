@@ -1143,6 +1143,28 @@ class _PvPState:
     assert findings[0].qualname == "_PvPState.resolve"
 
 
+def test_settle_rule_scans_cogs_layer(mod, tmp_path, monkeypatch):
+    # The 2026-07-07 cogs/ widening (the live-confirmed deathmatch W/L write): an
+    # unguarded settle site in the COG layer IS flagged. Regression pin for the
+    # 2026-07-11 fix — the widening had been inert because the registry entry passed
+    # only ("views/","services/"), so a new unguarded cog-layer settle would ship
+    # unscanned even though the function default + docstring include cogs/.
+    src = """\
+from services import game_wager_workflow
+
+
+class _DuelView:
+    async def _resolve(self):
+        await game_wager_workflow.payout_tournament(self.match_id)
+"""
+    findings = _settle_findings(
+        mod, tmp_path, monkeypatch, src, rel="cogs/deathmatch_cog.py"
+    )
+    assert len(findings) == 1
+    assert findings[0].qualname == "_DuelView._resolve"
+    assert "payout_tournament" in findings[0].message
+
+
 def test_settle_allowlist_suppresses_by_qualname(mod, tmp_path, monkeypatch):
     _write(mod, tmp_path, monkeypatch, "views/pvp.py", _SETTLE_NO_GUARD)
     cfg = {
@@ -1162,15 +1184,19 @@ def test_rule_6_is_registered_and_scoped(mod):
     by_name = {r.name: r for r in mod.RULES}
     assert "settle_once_adoption" in by_name
     rule = by_name["settle_once_adoption"]
-    assert rule.roots == ("views/", "services/")
-    assert rule.severity == "warning"  # warn-first (Q-0105)
+    # cogs/ MUST be in the registry scope: the 2026-07-07 widening (the
+    # live-confirmed deathmatch W/L write) was inert while this entry passed only
+    # ("views/","services/"), so a new unguarded cog-layer settle would ship
+    # unscanned. Fixed + graduated to error 2026-07-11 (clean across all 3 layers).
+    assert rule.roots == ("views/", "services/", "cogs/")
+    assert rule.severity == "error"
 
 
 def test_settle_once_rule_runs_clean_on_the_live_tree(mod):
-    """The live tree's wager-settle callers all adopt the guard — the warn-first
-    prerequisite (0 findings) for a future graduation to error."""
+    """The live tree's wager-settle callers all adopt the guard across views/ +
+    services/ + cogs/ — the 0-findings graduation prerequisite (now enforced)."""
     findings = mod.rule_settle_once_adoption(
-        mod._all_files(), mod._load_exceptions(), ("views/", "services/")
+        mod._all_files(), mod._load_exceptions(), ("views/", "services/", "cogs/")
     )
     assert findings == [], "settle_once_adoption flagged the live tree: " + "; ".join(
         f.display(mod.REPO_ROOT) for f in findings

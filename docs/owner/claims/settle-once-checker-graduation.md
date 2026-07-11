@@ -1,0 +1,1 @@
+- branch `claude/multi-project-review-dispatch-myegbp` · scope: fix the settle_once_adoption false-green (inert cogs/ scope + warn-only) surfaced by the fleet review · files: scripts/check_consistency.py + its test · 2026-07-11
