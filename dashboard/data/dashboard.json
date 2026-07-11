@@ -1,10 +1,10 @@
 {
   "meta": {
-    "generated_at": "2026-07-11T13:00:56Z",
+    "generated_at": "2026-07-11T18:52:06Z",
     "build": {
-      "commit": "a03e5fe8",
-      "subject": "eap: second Anthropic email draft (mock Part 1 + updated Part 2 + screenshot drop-folder) (#1986)",
-      "committed_at": "2026-07-11T13:00:56Z"
+      "commit": "448584e4",
+      "subject": "Merge pull request #1997 from menno420/claude/email-fleet-handoff-bwm3ie",
+      "committed_at": "2026-07-11T18:52:06Z"
     },
     "schema_version": 1,
     "counts": {
@@ -3397,6 +3397,14 @@
       "self_initiated": false
     },
     {
+      "file": "2026-07-11-fleet-overview-codex-prompts.md",
+      "date": "2026-07-11",
+      "title": "2026-07-11 — Fleet overview: Codex prompts · PR hygiene · owner queue · product catalog · review-skill generalization",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
       "file": "2026-07-11-fleet-night-review.md",
       "date": "2026-07-11",
       "title": "2026-07-11 — fleet night review + routine/model fix plan + owner vocab & skills",
@@ -3410,6 +3418,46 @@
       "title": "2026-07-11 — fleet inbox for the hub + 📊 Model attribution line",
       "status": "complete",
       "run_type": "routine",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-07-11-fix-codex-final-review-yaml.md",
+      "date": "2026-07-11",
+      "title": "2026-07-11 — Fix codex-final-review workflow YAML (broken since #1105)",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-07-11-env-grant-and-relaunch-handoff.md",
+      "date": "2026-07-11",
+      "title": "2026-07-11 — Env-grant docs + live-env-visibility plan + RELAUNCH/TRIAGE handoff",
+      "status": "complete",
+      "run_type": "manual",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-07-11-email2-sidebar-correction.md",
+      "date": "2026-07-11",
+      "title": "2026-07-11 — Email #2: sidebar-nesting correction (owner screenshot)",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-07-11-email2-part2-polish.md",
+      "date": "2026-07-11",
+      "title": "2026-07-11 — Email #2: owner's Part 1 landed + agents' Part 2 fact-refresh",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-07-11-email2-idle-observability.md",
+      "date": "2026-07-11",
+      "title": "2026-07-11 — Email #2: idle-Project empty-session-list finding (owner recording) → fig-19 + b6",
+      "status": "complete",
+      "run_type": "",
       "self_initiated": false
     },
     {
@@ -3771,54 +3819,6 @@
       "status": "complete",
       "run_type": "manual",
       "self_initiated": false
-    },
-    {
-      "file": "2026-07-09-code-projects-winddown-audit.md",
-      "date": "2026-07-09",
-      "title": "Session 2026-07-09 — Independent fleet wind-down audit (external auditor role)",
-      "status": "complete",
-      "run_type": "manual",
-      "self_initiated": true
-    },
-    {
-      "file": "2026-07-08-wave1-lane-b-supersede-checker.md",
-      "date": "2026-07-08",
-      "title": "Session — Wave-1 lane B: supersede-banner integrity checker",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-07-08-w2-f6-reaction-role-write-boundary.md",
-      "date": "2026-07-08",
-      "title": "2026-07-08 — W2-F6: reaction-role write-boundary invariant suite",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-07-08-w2-a1-server-management-docs-refresh.md",
-      "date": "2026-07-08",
-      "title": "2026-07-08 — Wave-2 lane A1: server-management docs truth refresh (audit F1–F5)",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-07-08-repo-settings-ledger-phase1.md",
-      "date": "2026-07-08",
-      "title": "2026-07-08 — Settings ledger Phase 1 (captured from the owner's recording)",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-07-08-reconcile-band1860.md",
-      "date": "2026-07-08",
-      "title": "2026-07-08 — Thirty-ninth Q-0107 reconciliation pass (band-#1860)",
-      "status": "complete",
-      "run_type": "routine",
-      "self_initiated": true
     }
   ],
   "bot_changelog": [
@@ -4488,6 +4488,104 @@
     },
     {
       "session": "2026-07-11-email-fleet-handoff",
+      "date": "2026-07-11",
+      "model": "opus-4.8",
+      "effort": "high",
+      "task_class": "docs-only",
+      "tokens_out": null,
+      "outcome": {
+        "ci_green_first_push": null,
+        "checker_findings": null,
+        "merged_pr": null,
+        "reverted_within_window": null
+      }
+    },
+    {
+      "session": "2026-07-11-fleet-overview-codex-prompts",
+      "date": "2026-07-11",
+      "model": "fable-5",
+      "effort": "high",
+      "task_class": "review/verify",
+      "tokens_out": null,
+      "outcome": {
+        "ci_green_first_push": false,
+        "checker_findings": null,
+        "merged_pr": null,
+        "reverted_within_window": null
+      }
+    },
+    {
+      "session": "2026-07-11-email2-part2-polish",
+      "date": "2026-07-11",
+      "model": "fable-5",
+      "effort": "high",
+      "task_class": "docs-only",
+      "tokens_out": null,
+      "outcome": {
+        "ci_green_first_push": null,
+        "checker_findings": null,
+        "merged_pr": null,
+        "reverted_within_window": null
+      }
+    },
+    {
+      "session": "2026-07-11-fix-codex-final-review-yaml",
+      "date": "2026-07-11",
+      "model": "fable-5",
+      "effort": "high",
+      "task_class": "ci-fix",
+      "tokens_out": null,
+      "outcome": {
+        "ci_green_first_push": null,
+        "checker_findings": null,
+        "merged_pr": null,
+        "reverted_within_window": null
+      }
+    },
+    {
+      "session": "2026-07-11-email2-sidebar-correction",
+      "date": "2026-07-11",
+      "model": "fable-5",
+      "effort": "high",
+      "task_class": "docs-only",
+      "tokens_out": null,
+      "outcome": {
+        "ci_green_first_push": null,
+        "checker_findings": null,
+        "merged_pr": null,
+        "reverted_within_window": null
+      }
+    },
+    {
+      "session": "2026-07-11-email2-idle-observability",
+      "date": "2026-07-11",
+      "model": "fable-5",
+      "effort": "high",
+      "task_class": "docs-only",
+      "tokens_out": null,
+      "outcome": {
+        "ci_green_first_push": null,
+        "checker_findings": null,
+        "merged_pr": null,
+        "reverted_within_window": null
+      }
+    },
+    {
+      "session": "2026-07-11-codex-prompt-refresh",
+      "date": "2026-07-11",
+      "model": "opus-4.8",
+      "effort": "medium",
+      "task_class": "docs-only",
+      "tokens_out": null,
+      "outcome": {
+        "ci_green_first_push": null,
+        "checker_findings": null,
+        "merged_pr": null,
+        "reverted_within_window": null
+      }
+    },
+    {
+      "session": "2026-07-11-env-grant-and-relaunch-handoff",
       "date": "2026-07-11",
       "model": "opus-4.8",
       "effort": "high",
