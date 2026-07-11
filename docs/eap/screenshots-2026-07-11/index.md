@@ -1,5 +1,8 @@
 # Screenshot figures — second Anthropic email (2026-07-11)
 
+> **Status:** `reference` — figure index for the second Anthropic email draft
+> ([`../anthropic-email-2-draft-2026-07-11.md`](../anthropic-email-2-draft-2026-07-11.md)).
+
 > Curated from 64 uploaded screenshots (PRs #1987/#1988/#1989, recordings excluded),
 > triaged by 3 review agents. These 16 are the keepers; the other ~48 were routine session
 > views with no evidentiary value (SKIP). Clean `fig-NN` names map to the email's figure

@@ -15,6 +15,9 @@
   the owner-click backlog; + a curated screenshot shot-list. Supersedes the gen-1-only
   `gen1-wrapup-email-final-candidate.md` as the send-candidate. Reply on Gmail thread
   `19f41cd2e5380bb3`; window through 2026-07-14.
+- [`screenshots-2026-07-11/index.md`](screenshots-2026-07-11/index.md) — the curated figure
+  set for the second email: 16 keepers triaged from 64 uploaded screenshots (fig-NN names +
+  captions mapped to the email's figure slots), plus the model-mismatch phone-shot trio.
 - [`night-review-2026-07-11.md`](night-review-2026-07-11.md) — owner-directed independent
   night review of the whole fleet (2026-07-10 18:00Z → 07-11 11:40Z): per-lane digest across
   13 active lanes (3 survey agents), what's genuinely valuable / playable, the two evidenced
