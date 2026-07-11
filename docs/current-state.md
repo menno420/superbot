@@ -30,7 +30,10 @@
 > decisions) → [`planning/fleet-strategy-synthesis-2026-07-11.md`](planning/fleet-strategy-synthesis-2026-07-11.md);
 > and the **consolidation + next-round blueprint** (4 owner decisions finalized → each
 > project's fate + the superbot-next cutover threshold) →
-> [`planning/fleet-consolidation-and-next-round-2026-07-11.md`](planning/fleet-consolidation-and-next-round-2026-07-11.md).
+> [`planning/fleet-consolidation-and-next-round-2026-07-11.md`](planning/fleet-consolidation-and-next-round-2026-07-11.md);
+> and the **next-round founding-prompt kit** (verified every project prompt/instruction; the
+> improvement delta + the 2 new merged-Project instruction bodies) →
+> [`owner/next-round-founding-prompts-2026-07-11.md`](owner/next-round-founding-prompts-2026-07-11.md).
 >
 > **Honest caveat (cross-sector, carried):** much buildable depth is substantial runtime work — but
 > every PR now auto-merges on green CI (the `needs-hermes-review` review gate was retired, Q-0197), so
