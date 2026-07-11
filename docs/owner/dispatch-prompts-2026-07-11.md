@@ -85,10 +85,28 @@
     Codex has cited phantom commits. Confirm every status/report/Codex claim against the tree
     (Q-0120) before acting.
 
+## Multi-agent / long-run hygiene (gen-3 coordinator lessons, 2026-07-11)
+11. ONE trigger-MCP call per worker. A multi-step / sequenced chain of trigger-MCP calls in a
+    single worker stalls under parallel load (4 consecutive hangs observed; a single call per
+    worker succeeded every time). Make one trigger/send_later call per worker/session — never
+    a multi-step chain — and if a re-arm is needed, hand it to a fresh worker or a cron.
+12. CLEAR env for any spawned CLI. If you spawn a `claude -p` / CLI subprocess, run it with the
+    inherited env cleared (`env -u <VARS> …`) + a pre-run smoke gate — leaked coordinator env
+    once decomposed a run into rogue subagents. Never let a child inherit your session env raw.
+13. HARD-SYNC to origin at session start. On a clean tree, `git fetch origin <branch> &&
+    git reset --hard origin/<branch>` before you work — a reused container clone silently
+    diverged 88 commits once. Never trust a warm clone's HEAD; verify with `git ls-remote`.
+14. BORN-RED holds emit CI-failure webhooks — expected, not real. A designed born-red HOLD
+    (and, on substrate-kit adopters, two legacy-alias jobs) fires "CI failed" events; do NOT
+    diagnose them as a real failure — confirm the failing step is the session gate first.
+
 ## Session hygiene
 - Open a born-red session card first commit; flip to `complete` as the deliberate last step.
 - Put durable self-reviews in docs/retro/ (NOT overwritten status.md).
 - Raise owner-only items to ⚑ needs-owner immediately; never stall silently.
+- PREFLIGHT volatile facts: treat any specific fact in your brief (a PR #, "X is blocked", a
+  HEAD sha) as "expect X, or later" — re-verify at HEAD (one `list_pull_requests` /
+  `git ls-remote`) before acting on it. Briefs go stale between write and run.
 ```
 
 **Owner-side companion (do once, converts "built"→"live" and closes the gate holes):**
@@ -98,6 +116,19 @@ first); enable Settings→Pages (product-forge); provision mineverse's 6 host en
 websites `DATABASE_URL` + a control-plane `GITHUB_TOKEN`; mint **project-scoped**
 `RAILWAY_TOKEN`s for infra lanes (never the account key — it reaches the prod bot); enable
 "Automatically delete head branches" fleet-wide; create the gba Lumen Drift v1.3 Release.
+
+**Coordinator/manager-routine tuning (from the 2026-07-11 gen-3 run):** give the
+coordinator seat **direct trigger/`send_later` access** OR set a **recurring ~15-min cron**
+instead of one-shot re-arm chains — each chain re-arm currently costs a full worker spawn
+(~40/day). Retire the **substrate-kit legacy-alias CI jobs** (the required-check swap, OA-2)
+— it also kills the born-red 3×-webhook noise (item 14). Name a **canonical owner for
+heartbeat `kit:`-line bumps** (waves handled it inconsistently). *(Proven and keep unchanged:
+boot calibration, born-red conventions, one-slice-per-child + claims, the release runbook,
+A/B wave splits, the honest-negative bar.)*
+
+> **Master ledger:** these portable walls also belong in `fleet-manager/docs/capabilities.md`
+> (the fleet master) so they flow to every founding package — a fleet-manager-session item
+> (that lane is live), left as a pointer here to avoid a cross-repo collision.
 
 ---
 

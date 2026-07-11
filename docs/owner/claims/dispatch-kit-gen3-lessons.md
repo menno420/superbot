@@ -1,0 +1,1 @@
+- branch `claude/multi-project-review-dispatch-myegbp` · scope: fold the substrate-kit gen-3 coordinator lessons into the dispatch-kit permissions block · files: docs/owner/dispatch-prompts-2026-07-11.md · 2026-07-11
