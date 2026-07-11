@@ -30,8 +30,15 @@ Owner-directed global fleet management + planning/triage. Deliverables, all land
    F-003 false-green fix · wallet-race fixes landed+concurrency-tested · 1 live-drive · 7-day
    shadow → CUT-3 token swap).
 
+> **⚠ SUPERSEDED (later on 2026-07-11):** decisions 2–3 were refined in live owner conversation
+> into the **8-standing-Project structure** — the Money merge (venture-lab + trading → "Venture
+> Lab") and **two** game seats (SuperBot World = games+idle+mineverse; Game Lab = gba+pokemon),
+> not one. Current structure + each seat's env / instructions / starting prompt:
+> [`../owner/fleet-8seat-structure-2026-07-11.md`](../owner/fleet-8seat-structure-2026-07-11.md).
+
 ## 2. Entry points (all merged; read these to continue)
 
+- **▶ CURRENT fleet structure (8 seats — supersedes "one Games Project"):** [`../owner/fleet-8seat-structure-2026-07-11.md`](../owner/fleet-8seat-structure-2026-07-11.md)
 - Review + triage: [`planning/fleet-review-2026-07-11.md`](../planning/fleet-review-2026-07-11.md)
 - Centralization plan: [`planning/fleet-centralization-plan-2026-07-11.md`](../planning/fleet-centralization-plan-2026-07-11.md)
 - Strategy synthesis: [`planning/fleet-strategy-synthesis-2026-07-11.md`](../planning/fleet-strategy-synthesis-2026-07-11.md)

@@ -8,8 +8,21 @@ were still pending a rebase, then reconciles the handoff record).
 
 ## What this did
 
-Resumed after the auto-compact at the exact point the pre-compact handoff left off: the three
-superbot-games world-games PRs that were **⏳ PENDING a rebase** (#52/#54/#55, blocked on
+Two parts. **(A)** Resumed after the auto-compact and landed the pending merges. **(B)** Later,
+live with the owner, refined the fleet structure and produced the dispatch materials.
+
+**Part B — fleet restructure (owner-directed, same session):** the owner consolidated the fleet
+to **8 standing Projects** with two structural refinements to the earlier blueprint: (1) **Money
+merge** — venture-lab + trading → one "Venture Lab" seat (trading research-only); (2) **two game
+seats** split by SuperBot connection — SuperBot World (games+idle+mineverse) + Game Lab
+(gba+pokemon), not one Games Project. Recorded durably in
+`docs/owner/fleet-8seat-structure-2026-07-11.md` (supersedes the "one Games Project" framing in
+the consolidation blueprint) and delivered as the **Fleet Dispatch Pack** artifact (per-seat
+environment + paste-ready Custom Instructions + starting prompt). The Project Manager
+(fleet-manager) canonicalizes these into its registry.
+
+**Part A — the pending merges:** resumed at the exact point the pre-compact handoff left off: the
+three superbot-games world-games PRs that were **⏳ PENDING a rebase** (#52/#54/#55, blocked on
 floor/index collisions after #50/#53 merged).
 
 **Landed all three (squash-merged, CI green):**
