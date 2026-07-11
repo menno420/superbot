@@ -18,23 +18,26 @@ seats' first PRs land and their loops stay hot?) plus a short owner-click tail. 
 
 | Seat / lane | State | Failsafe (cron) | What to verify |
 |---|---|---|---|
-| fleet-manager | LIVE, continuous | `30 */2` | v2 permissions fold re-landed citing `c23223f8`? projects/superbot-games + projects/superbot-idle ingested (§6.3)? Codex relay (§6.4) adopted? |
+| fleet-manager | **COORDINATOR REBOOTING** (owner-directed ~00:5xZ — chat archive; successor boots from `docs/succession/coordinator-handoff-2026-07-11.md` + `projects/fleet-manager/reboot-prompt.md`, trigger cutover = successor's FIRST act) | `30 */2` | route to the SUCCESSOR: v2 permissions fold re-landed citing `c23223f8`? projects/superbot-games + projects/superbot-idle ingested (§6.3)? Codex relay (§6.4) adopted (ORDER 014/PR #54 already confirmed Codex fleet-wide)? |
 | substrate-kit | LIVE | `0 */2` | kit-quality now the sole required check (owner swapped) — first kit PR shows it Required |
 | Builder (superbot-next) | LIVE | `0 */2` | band-6 (games) progressing; `superbot-plugin-hello` package pushed |
 | Idea Engine | LIVE, pipeline flowing | `0 */2` | outbox feeding sim-lab |
-| Product Forge | LIVE | `0 */2` | **GitHub Pages now enabled (owner ✅)** — confirm `menno420.github.io/product-forge/` serves after the next merge |
+| Product Forge | LIVE | `0 */2` | GitHub Pages enabled (owner ✅); `menno420.github.io/product-forge/` **still 404 at 00:52Z — pending the first post-click deploy** (serves after the next forge merge triggers the Actions deploy) |
 | Simulator (sim-lab) | LIVE | `0 1-23/2` | **Codex toggle done (owner ✅, OA-002 closed)** — confirm first real @codex reply on an INTAKE verdict (proves the toggle); quota refusals are retry-later, not a wall |
 | Trading | LIVE, paper lane operational | `0 */2` | ORDER 008 DONE (holdout SPENT, 13 verdicts on main); Round 2 closed (5 KEEP/9 KILL); old wake `trig_01Mvn5xRmqGmZJNRHgjqyLpN` DELETED ✅ |
-| World Games (superbot-games) | BOOTED (part-4h) | `15 */2` | ORDER-001 walking-skeleton PR landed (gate 73→121 tests)? gen-1 pointer stub overwritten with real unified heartbeat? |
-| Idle Engine (superbot-idle) | BOOTED (part-4h) | `45 */2` | ORDER-000 PR #1 merged? theme-gate ran in CI? egg-farm.yaml nouns loaded (NOT hard-coded)? |
+| World Games (superbot-games) | **LIVE** (verified 00:52Z, HEAD `bb744df`) | `15 */2` | orders 001+002 done, 210 tests green, into theme-slot remediation — producing well past boot; nothing to verify, LIVE |
+| Idle Engine (superbot-idle) | **LIVE** (verified 00:52Z, HEAD `2c7ad3f`) | `45 */2` | founding queue COMPLETE (ORDER 000 → slice e), egg-farm nouns from data + guard test, theme-gate required (OA-002 ✅) gating from PR #6 — LIVE, volume phase begun |
 | venture-lab | RELAUNCHING (owner sent boot prompt) | `0 */2` (self-arm on boot) | ORDER 004 (heartbeat repair) → ORDER 003 (real Stripe-path fix) executing? failsafe self-armed? |
 | websites | LIVE | 4-hourly (v1-era) | rides the paste wave for its Q-0265 cutover + v2 re-paste |
 
 ## Remaining finalization items (the next session's actual work)
 
-1. **Verify the two games boots close the loop** — superbot-games ORDER 001 PR + superbot-idle
-   ORDER 000 PR both merged; both heartbeats fresh at HEAD; both failsafes fired at least once
-   (registry, not "first fire as proof"). Tick their §5 verdicts from BOOTED → LIVE.
+> **Updated by the 00:52Z check-in (part-4i):** item 1 is DONE — both games seats verified
+> LIVE at ground truth. The live remaining items are 2–5.
+
+1. ~~Verify the two games boots close the loop~~ **DONE (00:52Z check-in):** superbot-games
+   (HEAD `bb744df`, orders 001+002 done, 210 tests) + superbot-idle (HEAD `2c7ad3f`, founding
+   queue complete) are both **LIVE and producing** — §5 verdicts ticked BOOTED → LIVE.
 2. **Verify venture-lab relaunched** — state repaired (ORDER 004), Stripe fix (ORDER 003) in
    flight or merged, failsafe armed; the `substrate-gate`-required settings change let it
    self-land (re-verify the old merge wall is gone).
