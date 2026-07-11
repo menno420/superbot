@@ -1,0 +1,1 @@
+- branch `claude/multi-project-review-dispatch-myegbp` · scope: synthesize the 4 external strategy reviews + dispose the Codex PRs · files: docs/planning/fleet-strategy-synthesis-2026-07-11.md, docs/current-state.md · 2026-07-11
