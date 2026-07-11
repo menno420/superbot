@@ -32,7 +32,7 @@ permissions:
 
 concurrency:
   group: codex-final-review-${{ github.event.pull_request.number }}
-  cancel-in-progress: false
+  cancel-in-progress: true
 
 jobs:
   request-codex-review:
@@ -73,7 +73,6 @@ jobs:
             echo "Codex final-head review already requested on PR #$PR — skipping."
             exit 0
           fi
-          gh pr comment "$PR" --repo "$GITHUB_REPOSITORY" --body "@codex review
-
-$marker Session card flipped to a ready status — requesting a Codex review of the final (complete) diff rather than the born-red opening commit. This PR may auto-merge before the review lands; that is expected — routines scan recently-merged PRs for Codex comments and fix real findings first (Q-0174)."
+          printf '%s\n\n%s\n' "@codex review" "$marker Session card flipped to a ready status — requesting a Codex review of the final (complete) diff rather than the born-red opening commit. This PR may auto-merge before the review lands; that is expected — routines scan recently-merged PRs for Codex comments and fix real findings first (Q-0174)." > "$RUNNER_TEMP/body.md"
+          gh pr comment "$PR" --repo "$GITHUB_REPOSITORY" --body-file "$RUNNER_TEMP/body.md"
           echo "Requested Codex final-head review on PR #$PR."
