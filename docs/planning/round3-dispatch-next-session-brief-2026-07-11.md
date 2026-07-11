@@ -9,10 +9,16 @@
 
 ## The one-line state
 
-The dispatch board is **essentially clear**: all six core seats + every manual/game lane
-are LIVE or BOOTED. What remains is **finalization verification** (did the last-booted
-seats' first PRs land and their loops stay hot?) plus a short owner-click tail. This is a
-*confirm-and-close* session, not a build-more session.
+> **✅ DISPATCH PROGRAM COMPLETE (04:54Z capstone check-in, part-4k).** Every seat is LIVE
+> and producing; the manager successor consumed all relays; the fleet is now *growing on its
+> own* (two new seats born — superbot-mineverse + a retro-games coordinator; kit v1.8.0 + 7
+> adopters). Only two non-dispatch residuals remain, both surfaced in the owner-click tail and
+> neither needing babysitting: raise the Codex usage cap, and the product-forge Pages deploy
+> (auto-fires on the next forge merge). **The copilot check-in loop is CLOSED** — no further
+> automated sweeps; the fleet's own failsafes + chains keep it running.
+
+The dispatch board is **clear**: all six core seats + every manual/game lane are LIVE. What
+remained was finalization verification (all done — see below) plus a short owner-click tail.
 
 ## Fleet roster at close (verify at boot)
 
@@ -41,13 +47,16 @@ seats' first PRs land and their loops stay hot?) plus a short owner-click tail. 
 2. ~~Verify venture-lab relaunched~~ **DONE (02:49Z check-in):** LIVE (HEAD `9f1b616`),
    orders 001–004 done, failsafe self-armed, Stripe fix merged; **⚑B/⚑D publish clicks
    UNFROZEN** (see owner tail). The last dark lane is live.
-3. **Confirm the manager SUCCESSOR consumed the relays** — successor is LIVE (fm #61); still
-   verify: v2 permissions fold re-landed (owner-provenance `c23223f8`), §6.3 games-registry
-   ingest. (§6.4 Codex-enablement + registry-truth-to-roster already confirmed.)
-4. **First @codex proof** — sim-lab's first real Codex reply on a verdict (queue now drained
-   5/5, finalized JUDGMENT-ONLY); if quota-blocked, note retry-later (not a wall).
-5. **Product Forge Pages live** — `menno420.github.io/product-forge/` still 404; serves after
-   the next forge merge triggers the Actions deploy.
+3. ~~Confirm the manager successor consumed the relays~~ **DONE (04:54Z):** successor LIVE
+   (`cse_012o8p…`); `projects/superbot-idle/` built + `projects/superbot-games/` at **v2**
+   (permissions block folded); games/idle inbox relays landed (fm #63/#64); registry-truth
+   machine-generated (`gen_roster.py`, fm #62/#65).
+4. ~~First @codex proof~~ **RESOLVED (04:54Z):** the Codex integration IS LIVE — it replies on
+   sim-lab verdict PRs (#15/#16) — but every reply is "usage limits." The toggle is proven;
+   the residual is a **usage cap** → owner click below. (Not a wall; verdicts finalize
+   JUDGMENT-ONLY meanwhile.)
+5. **Product Forge Pages** — still 404 at 04:54Z; **auto-serves on the next forge merge** (the
+   deploy workflow is on main; no owner action, just time). Not a babysit item.
 
 ## Owner-click tail (only genuinely owner-only items left)
 
@@ -60,6 +69,14 @@ seats' first PRs land and their loops stay hot?) plus a short owner-click tail. 
   template-packs (`candidates/template-packs/LISTING.md` + zip) → a marketplace (Gumroad /
   Lemon Squeezy); the $59 bundle goes live after both. ⚑A (Stripe TEST keys) still unblocks
   the live test-mode E2E if wanted first. Not urgent — the products aren't going anywhere.
+- **Raise the Codex usage cap (NEW, 04:54Z)** — the Codex integration is LIVE fleet-wide and
+  replies on verdict PRs, but every reply is "You have reached your Codex usage limits"
+  (confirmed on sim-lab #15/#16 AND superbot #1978). Raise/reset the cap at
+  chatgpt.com/codex → usage/limits so substantive @codex reviews actually land. Small click,
+  not blocking (verdicts finalize JUDGMENT-ONLY meanwhile).
+- **The paste wave** — lower priority now: the v2 permissions fold is landed in the manager
+  registry AND the permissions block reaches live seats via the fetched universal WAKE prompt,
+  so re-pasting v2 Custom Instructions is a when-convenient hygiene pass, not a gate.
 - **EAP wrap-up email** — owner writes Part 1 + sends, **before 2026-07-14** (carries the
   capability-self-awareness item).
 - **Parked, no rush:** orphan-watchdog deletion (owner's explicit go); pokemon-mod-lab playtest.
