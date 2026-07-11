@@ -78,11 +78,14 @@ chain · **failsafe** cron) + `failsafe-prompt.md` (the cron config). When build
   Ideas Lab = idea-engine+sim-lab · Game Lab = gba+pokemon) need their `coordinator-prompt.md` +
   `failsafe-prompt.md` **composed from the source seats' packages**.
 
-### Routine-arming recipe (every coordinator prompt MUST spell this out — seats were failing to arm)
+### Routine-arming recipe — AGENT-ARMED (every coordinator prompt MUST spell this out)
 
-The routines are armed with the **Claude Code Remote scheduler** MCP (`send_later` /
-`create_trigger` / `list_triggers`). Every seat prompt must give the concrete calls, because
-"unable to arm/open the routine" was a real failure — the scheduler tool is **environment-dependent**:
+**Routine arming is the AGENT's job, never the owner's** — the owner CANNOT arm a project's
+routines from the Routines screen. This is corrected doctrine: **agent-armed routines work**
+(owner-verified 2026-07-10 — trading-strategy, kit, manager, websites are live proof;
+`docs/planning/round3-dispatch-runbook-2026-07-10.md` + the `docs/eap` capability correction that
+retired the old "owner-arms-routines / owner-queue" doctrine as *partially invalid*). Arming is
+**seat-inconsistent**, so every seat prompt must give the concrete calls + the worker-retry path:
 
 1. **PACEMAKER (re-arm every turn, before ending):** `send_later({ message: "continue the work
    loop: sync HEAD → inbox → next slice → re-arm", delay_minutes: 15 })` — fires back into THIS
@@ -90,9 +93,12 @@ The routines are armed with the **Claude Code Remote scheduler** MCP (`send_late
 2. **FAILSAFE (arm once at boot; dead-man backstop):** `create_trigger({ name: "<seat> failsafe
    wake", cron_expression: "<seat cron>", prompt: "<failsafe text>" })` — self-binds persistent to
    this session. Then **verify via `list_triggers`** (never wait for a fire as proof — completed
-   runs aren't inspectable owner-side). Manager only: rebind-then-delete the archived-session one.
-3. **IF ARMING FAILS** (scheduler tool absent, or the call errors): FIRST retry from a spawned
-   **worker** (worker toolsets differ). If still walled, do NOT silently skip — post the exact
-   `create_trigger` args (name · cron · prompt) as a ⚑ **OWNER-ACTION** in `control/status.md` so
-   the owner arms it from the Routines screen, and record the verbatim error. **Root cause to fix:
-   attach the claude-code-remote scheduler MCP to every seat's environment** so seats self-arm.
+   runs aren't inspectable owner-side; the status heartbeat is the only readable wake record).
+   Manager only: rebind-then-delete the archived-session one.
+3. **IF THE COORDINATOR CAN'T ARM** (the scheduler tool isn't in its toolset, or the call errors):
+   **retry the same call from a spawned WORKER** — worker toolsets differ from coordinator
+   toolsets, and this is the documented self-arm path (the permissions grant's "retry a walled
+   call from a worker before flagging"). **Record the exact `create_trigger` call + its outcome
+   verbatim** in `control/status.md`. Routine arming is **NEVER an owner-queue item** — the owner
+   cannot arm it; if even a worker can't, record it as a seat-capability limitation to re-test,
+   not an owner action.
