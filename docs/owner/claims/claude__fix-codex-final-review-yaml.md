@@ -1,1 +1,0 @@
-- `claude/fix-codex-final-review-yaml` · **fix codex-final-review.yml invalid YAML** — the workflow has never parsed since #1105 (bfe99084); de-indent bug in the `run: |` block · `.github/workflows/codex-final-review.yml` `docs/current-state.md` `.sessions/` · 2026-07-11 · PR opening born-red
