@@ -46,9 +46,12 @@ real strategic choice with three shapes:
 **My recommendation: A.** The evidence says the coordination *works* and the records-custody
 is the part that's *manual and fragile and drifting*. "Sole purpose" is best read as
 **"custody is the job it must never fail at,"** not "delete the relay." Sharpen custody to
-CI-enforced; keep the relay as the delivery arm that *acts on* what custody detects. **If
-you want true Option B, say so and I re-shape §3 to remove the relay** — everything else in
-this plan holds either way. (This is the only place your intent genuinely changes the build.)
+CI-enforced; keep the relay as the delivery arm that *acts on* what custody detects.
+
+> **✅ OWNER DECISION (2026-07-11): Option A — custodian-primary.** Records-custody becomes
+> the CI-enforced primary mission; the ORDER-relay coordination is retained as the secondary
+> delivery arm. The rest of this plan (§2–§6) is written for A and is unchanged. (Veto-able
+> per Q-0240 if you later want true B.)
 
 ## 2. The six verified gaps (what lets drift in today)
 

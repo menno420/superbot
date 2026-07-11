@@ -217,8 +217,10 @@ product-forge games-web. The conversion queue (built → live), highest leverage
 7-prompt dispatch kit (all on PR #1998).
 
 **Immediately after (fixes — agent-doable, some cross-repo → owner-authorized):**
-- 🔴 `venture-lab` fail-closed fix **before any publish** (offer to do it live this session
-  if you authorize the cross-repo write).
+- ✅ **DONE this session** — `venture-lab` fail-closed fix shipped + merged (venture-lab
+  **PR #49**, owner-authorized): partial Stripe config now returns 400 instead of granting
+  from unsigned JSON; regression test + 2 LISTING truth-fixes; 24 tests green. **The $49 kit
+  is now safe to publish** (still run the live Stripe test-key E2E ⚑A first).
 - 🟠 `superbot-next` F-001/F-002/F-003 → the **Sonnet 5 ultracode** dispatch session.
 - 🟠 `substrate-kit` real gate fix + patch release → its lane wake (re-verify #228 first).
 - 🟡 `superbot-mineverse` CSRF + schema + pytest-required.
