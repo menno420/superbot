@@ -1,0 +1,1 @@
+- branch `claude/multi-project-review-dispatch-myegbp` · scope: verify + improve the project prompts/instructions for the next batch (kit doc) · files: docs/owner/next-round-founding-prompts-2026-07-11.md, docs/current-state.md · 2026-07-11
