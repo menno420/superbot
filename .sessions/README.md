@@ -56,6 +56,12 @@ anchor, so any two concurrently-open PRs collided there (it bit #529→#530 and
   success story. A periodic REVIEW (`.session-journal.md`) mines these deltas and
   promotes recurring gaps into the orientation route / folios. Keep it to what you'd
   want the *next* agent to have known.
+- **Always include a `📊 Model:` line** — the model family the session's own
+  harness/environment reports, **family-level name only** (e.g. `fable-5`, `opus-4.8`,
+  `sonnet-5`), committed in the card. Per-session self-report in the committed card is
+  the fleet's only reliable attribution surface — the Routines screen is not (fleet
+  standard, adopted 2026-07-11 via the fleet-manager ORDER 010 relay; see
+  `control/inbox.md` ORDER 001; family-level policy: fleet Q-0262).
 - **Don't** edit older session files — they're history. Durable rules / runbook facts
   graduate into `.session-journal.md` (the guidebook) or `.claude/CLAUDE.md`.
 - **Find** past work by grepping this directory — don't read it top-to-bottom.

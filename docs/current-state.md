@@ -360,6 +360,16 @@ Source code and merged PRs win over anything written here.
 > auto-opens a `reconcile` issue at the boundary that fires the docs-reconciliation routine). Reset
 > this marker to the latest PR after a pass.
 
+- **#1977 (2026-07-11, EAP/fleet — hub inbox `control/inbox.md` + 📊 Model card line, docs/control-only)** —
+  closes the two gaps the fleet-manager ORDER 010 relay found (fm PR #63 merge `dd8dc10`,
+  completion fm PR #64): superbot was the only fleet repo with **no `control/inbox.md`**, so
+  ORDER relays could not land here. New `control/inbox.md` uses the kit grammar
+  (`## ORDER <nnn> · <ISO8601> · status: <state>` + priority/do/why/done-when), adapted to
+  the hub role (Q-0264 — no standing seat; ORDERs consumed by the next hub-touching session),
+  seeded with **ORDER 001** = the outstanding ORDER 010 model-attribution relay (grammar
+  mirrored from superbot-games ORDER 003; executed by the relaying PR itself). The
+  fleet-standard **`📊 Model:` line** (family-level names only, fleet Q-0262) added to the
+  `.sessions/README.md` card convention.
 - **#1974 (2026-07-11, EAP — fleet-manifest retired to a pointer stub; freshness checker deleted, docs-only)** —
   phase-2 of the generated-roster proposal executed superbot-side: the fleet-manager
   **generated roster** (`fleet-manager docs/roster.md`, regenerated ≤~2h from the
