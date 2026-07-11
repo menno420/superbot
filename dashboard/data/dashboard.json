@@ -1,10 +1,10 @@
 {
   "meta": {
-    "generated_at": "2026-07-11T00:55:27Z",
+    "generated_at": "2026-07-11T05:00:35Z",
     "build": {
-      "commit": "c5f501e4",
-      "subject": "Merge pull request #1969 from menno420/claude/sim-lab-repo-setup-ujglev",
-      "committed_at": "2026-07-11T00:55:27Z"
+      "commit": "527d648b",
+      "subject": "Merge pull request #1975 from menno420/claude/sim-lab-repo-setup-ujglev",
+      "committed_at": "2026-07-11T05:00:35Z"
     },
     "schema_version": 1,
     "counts": {
@@ -3333,6 +3333,46 @@
   "reviews": [],
   "updates": [
     {
+      "file": "2026-07-11-round3-dispatch-4j-checkin-venture.md",
+      "date": "2026-07-11",
+      "title": "Session — round-3 dispatch, part 4j: check-in sweep — venture-lab LIVE, ⚑B/⚑D unfrozen",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-07-11-round3-dispatch-4i-checkin-verify.md",
+      "date": "2026-07-11",
+      "title": "Session — round-3 dispatch, part 4i: check-in sweep — games seats BOOTED→LIVE",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-07-11-round3-dispatch-4h-session-close.md",
+      "date": "2026-07-11",
+      "title": "Session — round-3 dispatch, part 4h: session close + next-session prep",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-07-11-retire-fleet-manifest.md",
+      "date": "2026-07-11",
+      "title": "2026-07-11 — Retire fleet-manifest to a pointer stub (fm roster canonical)",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-07-11-games-retro-and-mineweb-packages.md",
+      "date": "2026-07-11",
+      "title": "Session — round-3 games program: Retro-Games + mining-browsergame founding packages",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
       "file": "2026-07-10-sol-eval-scoring.md",
       "date": "2026-07-10",
       "title": "2026-07-10 — GPT-5.6 Sol eval results: scoring the Codex PRs",
@@ -3768,46 +3808,6 @@
       "file": "2026-07-08-permprobe-standing-grant-row.md",
       "date": "2026-07-08",
       "title": "2026-07-08 — Permission probe: standing-grant row (not-attempted record)",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-07-08-permprobe-clearpath-addendum.md",
-      "date": "2026-07-08",
-      "title": "2026-07-08 — Permission-probe clear-path addendum (test #8, explicit operator intent)",
-      "status": "complete",
-      "run_type": "manual",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-07-08-ledger-correction-api-caps.md",
-      "date": "2026-07-08",
-      "title": "2026-07-08 — Ledger correction: new repos are bare + full API capability map",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-07-08-grooming-wave1-usage-limit.md",
-      "date": "2026-07-08",
-      "title": "2026-07-08 — Grooming wave-1 lane C: usage-limit-aware routines → plan",
-      "status": "complete",
-      "run_type": "manual",
-      "self_initiated": true
-    },
-    {
-      "file": "2026-07-08-groom-pr1846-followons.md",
-      "date": "2026-07-08",
-      "title": "2026-07-08 — Grooming: PR #1846 follow-ons (Wave-2, coordinator-dispatched)",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-07-08-forward-only-and-settings-plan.md",
-      "date": "2026-07-08",
-      "title": "2026-07-08 — Capture: forward-only Project experiment + per-repo settings ledger",
       "status": "complete",
       "run_type": "",
       "self_initiated": false
@@ -4343,6 +4343,76 @@
       "date": "2026-07-10",
       "model": "fable-5",
       "effort": "high",
+      "task_class": "docs-only",
+      "tokens_out": null,
+      "outcome": {
+        "ci_green_first_push": null,
+        "checker_findings": null,
+        "merged_pr": null,
+        "reverted_within_window": null
+      }
+    },
+    {
+      "session": "2026-07-11-round3-dispatch-4h-session-close",
+      "date": "2026-07-11",
+      "model": "fable-5",
+      "effort": "high",
+      "task_class": "docs-only",
+      "tokens_out": null,
+      "outcome": {
+        "ci_green_first_push": null,
+        "checker_findings": null,
+        "merged_pr": null,
+        "reverted_within_window": null
+      }
+    },
+    {
+      "session": "2026-07-11-games-retro-and-mineweb-packages",
+      "date": "2026-07-11",
+      "model": "opus-4.8",
+      "effort": "high",
+      "task_class": "docs-only",
+      "tokens_out": null,
+      "outcome": {
+        "ci_green_first_push": false,
+        "checker_findings": null,
+        "merged_pr": null,
+        "reverted_within_window": null
+      }
+    },
+    {
+      "session": "2026-07-11-round3-dispatch-4i-checkin-verify",
+      "date": "2026-07-11",
+      "model": "fable-5",
+      "effort": "medium",
+      "task_class": "docs-only",
+      "tokens_out": null,
+      "outcome": {
+        "ci_green_first_push": null,
+        "checker_findings": null,
+        "merged_pr": null,
+        "reverted_within_window": null
+      }
+    },
+    {
+      "session": "2026-07-11-retire-fleet-manifest",
+      "date": "2026-07-11",
+      "model": "fable-5",
+      "effort": "medium",
+      "task_class": "docs-only",
+      "tokens_out": null,
+      "outcome": {
+        "ci_green_first_push": null,
+        "checker_findings": null,
+        "merged_pr": null,
+        "reverted_within_window": null
+      }
+    },
+    {
+      "session": "2026-07-11-round3-dispatch-4j-checkin-venture",
+      "date": "2026-07-11",
+      "model": "fable-5",
+      "effort": "medium",
       "task_class": "docs-only",
       "tokens_out": null,
       "outcome": {
