@@ -560,3 +560,17 @@ per-repo fold citing it (rides its work ladder). New seats are born with the blo
 
 **Decision recorded this session:** router **Q-0268** — autonomy vs. the money/account line
 (real-identity setup then API keys; burner-signup refused).
+
+### §7.1 — Dispatch program COMPLETE (part-4k capstone, 2026-07-11 ~04:54Z)
+
+The round-3 dispatch program is **functionally complete**. Ground-truth-verified at the
+04:54Z capstone check-in: all six core seats + every manual/game lane LIVE and producing;
+the manager successor (post-reboot) consumed every relay (v2 permissions fold in the games
+registry package, games/idle inbox relays landed, registry-truth machine-generated via
+`gen_roster.py`); the fleet is **growing autonomously** (two new seats born —
+superbot-mineverse `20 */2` + a retro-games coordinator `50 */2`; kit v1.8.0 + 7 adopters;
+pokemon un-parked per Q-0266). Two non-dispatch residuals remain, both owner-tail, neither a
+babysit item: (1) raise the Codex usage cap (the integration replies but is usage-capped
+fleet-wide); (2) product-forge Pages auto-serves on the next forge merge. **The dispatch
+copilot's check-in loop is CLOSED** — the fleet's own failsafes + continuation chains sustain
+it; the next-session brief is the canonical handoff.
