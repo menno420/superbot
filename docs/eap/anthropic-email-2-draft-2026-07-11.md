@@ -269,9 +269,14 @@ is what earned trust, what broke, and — the new centrepiece — the moment we 
 6. **Observability of Routines is thin.** Completed routine runs are not inspectable from
    the Routines screen (ticks, no reachable session), and the session-side "Runs" panel
    showed "No runs yet" for a routine whose Routines screen listed three completed runs —
-   two surfaces disagreeing about the same history. At fleet scale the *only* reliable
-   record of what a session did is the status file it commits — which is why we treat git,
-   never the UI, as the clock and ledger of record.
+   two surfaces disagreeing about the same history. A third instance from the operator's
+   own screen recording (2026-07-11): one game Project's sidebar session list rendered
+   **empty** while that lane's repo carries **44+ agent-merged PRs and a same-day
+   heartbeat** — the operator had to open GitHub to confirm his Project was alive, and
+   sibling Projects doing equivalent work showed full nested session lists in the same
+   frame. `[Fig 19]` At fleet scale the *only* reliable record of what a session did is
+   the status file it commits — which is why we treat git, never the UI, as the clock and
+   ledger of record.
 7. **Still true from July 8, briefly** (each has verbatim text in the linked reports): hard
    403 walls on tag push / release / branch-delete; the ~4 KB child-brief cap; webhook gaps
    (no CI-success / new-push / merge-conflict events → watchers poll); the fast-CI
@@ -398,6 +403,7 @@ happy to run any structured probe you'd find useful.
 | **15a–c** | **phone — attach directly** | routine configured **Opus 4.8** → session ran **Sonnet 5** (send all three, in order) |
 | 17 | **phone — attach directly** | grant clears the classifier, git still 403s the delete |
 | 12–14, 16 | folder (Tier 2, optional) | 4096-byte cap · "Skip all approvals" toggle · setup-script failure · owner's self-awareness note |
+| 19 | `fig-19-idle-project-empty-session-list` | a Project's session list empty while its repo has 44+ merged PRs (b6) |
 
 **If you only send ~8:** Figs 1, 5, 7, 9, 10 + the 15a/15b/15c trio — scale, the headline
 merge finding, the two-vantage split, oversight, the routine bug, and the model mismatch.
