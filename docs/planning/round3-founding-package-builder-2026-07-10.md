@@ -9,7 +9,7 @@
 > live seat receives the amendment as an owner-pasted block (part-4 brief §2b); this
 > file stays the historical boot-paste record.
 >
-> **Status:** `plan` — the founding package for the **Builder** core seat (Q-0261 seat 3:
+> **Status:** `historical` — the founding package for the **Builder** core seat (Q-0261 seat 3:
 > the superbot-next rebuild Project, "SuperBot 2.0"). Owner-confirmed upgrade from the
 > launch-pack §2 continuation prompt to the standard package shape. Drafted by the
 > dispatch-coordination session on the runbook §2 pattern. Paste order: finalize-first
