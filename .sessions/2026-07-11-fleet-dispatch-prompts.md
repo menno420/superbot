@@ -43,13 +43,16 @@ paste**:
    facts → fact-refresh · the fleet-manager failsafe is bound to an ARCHIVED session → fresh boot
    rebinds-then-deletes.
 
-4. **Routines need a CONCRETE arming recipe + tool availability (real failure — seats reported
-   "unable to open/arm them").** Every coordinator prompt must give the exact calls — pacemaker
-   `send_later({message, delay_minutes:15})`, failsafe `create_trigger({name,cron_expression,prompt})`
-   + `list_triggers` verify — AND the fallback: retry from a worker, else post the config as a ⚑
-   OWNER-ACTION for the owner to arm. **Likely root cause: the claude-code-remote scheduler MCP is
-   not attached to every seat's environment** → owner action to attach it. Recipe is now in the
-   8-seat structure doc's dispatch guidance.
+4. **Routines are AGENT-ARMED — never owner-armed (real failure + a doctrine correction).** Seats
+   reported "unable to open/arm them"; my first fix wrongly routed the fallback to an owner-action.
+   Corrected against the docs: **agent-armed routines work** (owner-verified 2026-07-10;
+   `round3-dispatch-runbook` + the `docs/eap` capability correction retiring the "owner-arms-routines"
+   doctrine as *partially invalid*) — the owner CANNOT arm a project's routines. Every coordinator
+   prompt gives the exact calls — pacemaker `send_later({message, delay_minutes:15})`, failsafe
+   `create_trigger({name,cron_expression,prompt})` + `list_triggers` verify — and, if the
+   coordinator's toolset can't arm (seat-inconsistent), **retry from a WORKER** (worker toolsets
+   differ; the documented self-arm path) and record the recipe + outcome verbatim. NEVER an
+   owner-queue item. Corrected recipe is in the 8-seat structure doc's dispatch guidance.
 
 ## Sequencing note for the Project Manager (its first job)
 When it canonicalizes the 8-seat registry it must: (a) keep each seat's prompt COMPLETE (one
