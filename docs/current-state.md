@@ -19,6 +19,14 @@
 > | **S4 Docs system** | [`current-state/S4-docs.md`](current-state/S4-docs.md) | 43rd Q-0107 pass done (band-#1980); next recon at #2010; **no PLAN-BACKLOG-THIN flag** |
 > | **S5 Operations** | [`current-state/S5-ops.md`](current-state/S5-ops.md) | merge=deploy clarity (Q-0193); loop self-fires; ▶ website rollout (owner/Hermes) |
 >
+> **📋 2026-07-11 fleet review + centralization + dispatch kit (owner-directed hub session):**
+> verified full-fleet triage (keep/replace/archive/delete per repo) →
+> [`planning/fleet-review-2026-07-11.md`](planning/fleet-review-2026-07-11.md); the
+> `fleet-manager`-as-single-source-of-truth design →
+> [`planning/fleet-centralization-plan-2026-07-11.md`](planning/fleet-centralization-plan-2026-07-11.md);
+> the 6 paste-ready help-session prompts + the fleet permissions/workarounds block →
+> [`owner/dispatch-prompts-2026-07-11.md`](owner/dispatch-prompts-2026-07-11.md).
+>
 > **Honest caveat (cross-sector, carried):** much buildable depth is substantial runtime work — but
 > every PR now auto-merges on green CI (the `needs-hermes-review` review gate was retired, Q-0197), so
 > an empty *autonomous* fire just builds the next substantial lane or promotes a fresh idea → plan →
