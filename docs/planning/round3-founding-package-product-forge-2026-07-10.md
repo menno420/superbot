@@ -2,7 +2,7 @@
 
 > **SUPERSEDED as live doctrine 2026-07-10** — canonical, version-stamped copies live in fleet-manager `projects/product-forge/` (registry PR #39); this file is frozen history.
 
-> **Status:** `plan` — the founding package for the **Product Forge** (seat 4 of the
+> **Status:** `historical` — the founding package for the **Product Forge** (seat 4 of the
 > standing four-Project autonomous core, launch pack §5): a NEW `product-forge` repo +
 > Project that builds routed ideas into finished, shippable products (the codetool-labs
 > pattern), **born-right per fleet-manager `docs/gen2-blueprint.md` §1**. Drafted by the

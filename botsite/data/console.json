@@ -1,14 +1,70 @@
 {
   "meta": {
-    "generated_at": "2026-07-10T16:56:21Z",
+    "generated_at": "2026-07-11T11:53:11Z",
     "build": {
-      "commit": "96a1c054",
-      "subject": "Merge pull request #1950 from menno420/bot/dashboard-refresh",
-      "committed_at": "2026-07-10T16:56:21Z"
+      "commit": "e0fd8ef7",
+      "subject": "Merge pull request #1980 from menno420/bot/dashboard-refresh",
+      "committed_at": "2026-07-11T11:53:11Z"
     },
     "schema_version": 1
   },
   "sessions": [
+    {
+      "file": "2026-07-11-round3-dispatch-4k-checkin-complete.md",
+      "date": "2026-07-11",
+      "title": "Session — round-3 dispatch, part 4k: check-in CAPSTONE — dispatch program COMPLETE",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-07-11-round3-dispatch-4j-checkin-venture.md",
+      "date": "2026-07-11",
+      "title": "Session — round-3 dispatch, part 4j: check-in sweep — venture-lab LIVE, ⚑B/⚑D unfrozen",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-07-11-round3-dispatch-4i-checkin-verify.md",
+      "date": "2026-07-11",
+      "title": "Session — round-3 dispatch, part 4i: check-in sweep — games seats BOOTED→LIVE",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-07-11-round3-dispatch-4h-session-close.md",
+      "date": "2026-07-11",
+      "title": "Session — round-3 dispatch, part 4h: session close + next-session prep",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-07-11-retire-fleet-manifest.md",
+      "date": "2026-07-11",
+      "title": "2026-07-11 — Retire fleet-manifest to a pointer stub (fm roster canonical)",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-07-11-games-retro-and-mineweb-packages.md",
+      "date": "2026-07-11",
+      "title": "Session — round-3 games program: Retro-Games + mining-browsergame founding packages",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-07-11-fleet-inbox-and-model-line.md",
+      "date": "2026-07-11",
+      "title": "2026-07-11 — fleet inbox for the hub + 📊 Model attribution line",
+      "status": "complete",
+      "run_type": "routine",
+      "self_initiated": false
+    },
     {
       "file": "2026-07-10-sol-eval-scoring.md",
       "date": "2026-07-10",
@@ -47,6 +103,102 @@
       "title": "2026-07-10 — Overnight shift B: `check_lane_overlap.py --remote` + docs hygiene",
       "status": "complete",
       "run_type": "",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-07-10-round3-dispatch-coordination.md",
+      "date": "2026-07-10",
+      "title": "Session — round-3 dispatch coordination (live copilot)",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-07-10-round3-dispatch-4g-world-destale.md",
+      "date": "2026-07-10",
+      "title": "Session — round-3 dispatch, part 4g: world-package de-stale (check-in sweep findings)",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-07-10-round3-dispatch-4f-games-packages.md",
+      "date": "2026-07-10",
+      "title": "Session — round-3 dispatch, part 4f: the two games founding packages",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-07-10-round3-dispatch-4e-games-mapping.md",
+      "date": "2026-07-10",
+      "title": "Session — round-3 dispatch, part 4e: owner shapes the games mapping (theme engine + website-first)",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-07-10-round3-dispatch-4d-prompt-registry.md",
+      "date": "2026-07-10",
+      "title": "Session — round-3 dispatch, part 4d: games relay pasted + manager prompt registry",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-07-10-round3-dispatch-4c-selfawareness.md",
+      "date": "2026-07-10",
+      "title": "Session — round-3 dispatch, part 4c: capability self-awareness + boot verifications",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-07-10-round3-dispatch-4b-trading-package.md",
+      "date": "2026-07-10",
+      "title": "Session — round-3 dispatch, part 4b: trading founding package",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-07-10-round3-dispatch-4-sim-lab.md",
+      "date": "2026-07-10",
+      "title": "Session — round-3 dispatch, part 4: sim-lab repo setup (seat 6)",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-07-10-round3-dispatch-3b.md",
+      "date": "2026-07-10",
+      "title": "Session — round-3 dispatch part 3b: Q-0265 continuous mode (live copilot)",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-07-10-round3-dispatch-3.md",
+      "date": "2026-07-10",
+      "title": "Session — round-3 dispatch coordination, part 3 (live copilot)",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-07-10-round3-dispatch-2.md",
+      "date": "2026-07-10",
+      "title": "Session — round-3 dispatch coordination, part 2 (live copilot)",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-07-10-reconcile-band1950.md",
+      "date": "2026-07-10",
+      "title": "2026-07-10 — Forty-second Q-0107 docs reconciliation pass (band-#1950)",
+      "status": "complete",
+      "run_type": "routine",
       "self_initiated": false
     },
     {
@@ -336,165 +488,13 @@
       "status": "complete",
       "run_type": "",
       "self_initiated": false
-    },
-    {
-      "file": "2026-07-08-rebuild-audit-checklist.md",
-      "date": "2026-07-08",
-      "title": "2026-07-08 — Rebuild-direction: owner router answers + audit checklist",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-07-08-permprobe-standing-grant-row.md",
-      "date": "2026-07-08",
-      "title": "2026-07-08 — Permission probe: standing-grant row (not-attempted record)",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-07-08-permprobe-clearpath-addendum.md",
-      "date": "2026-07-08",
-      "title": "2026-07-08 — Permission-probe clear-path addendum (test #8, explicit operator intent)",
-      "status": "complete",
-      "run_type": "manual",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-07-08-ledger-correction-api-caps.md",
-      "date": "2026-07-08",
-      "title": "2026-07-08 — Ledger correction: new repos are bare + full API capability map",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-07-08-grooming-wave1-usage-limit.md",
-      "date": "2026-07-08",
-      "title": "2026-07-08 — Grooming wave-1 lane C: usage-limit-aware routines → plan",
-      "status": "complete",
-      "run_type": "manual",
-      "self_initiated": true
-    },
-    {
-      "file": "2026-07-08-groom-pr1846-followons.md",
-      "date": "2026-07-08",
-      "title": "2026-07-08 — Grooming: PR #1846 follow-ons (Wave-2, coordinator-dispatched)",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-07-08-forward-only-and-settings-plan.md",
-      "date": "2026-07-08",
-      "title": "2026-07-08 — Capture: forward-only Project experiment + per-repo settings ledger",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-07-08-email-two-layer-flagship.md",
-      "date": "2026-07-08",
-      "title": "2026-07-08 — Email flagship: fold in the two-layer clear-path finding",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-07-08-email-compaction-verifiability.md",
-      "date": "2026-07-08",
-      "title": "2026-07-08 — Anthropic feedback email: compaction + verifiability audit",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-07-08-eap-permission-probe.md",
-      "date": "2026-07-08",
-      "title": "2026-07-08 — EAP auto-mode permission-boundary probe",
-      "status": "complete",
-      "run_type": "manual",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-07-08-eap-email-two-part-two-reviewer.md",
-      "date": "2026-07-08",
-      "title": "Session — EAP email: two-part / two-author / two-reviewer restructure",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-07-08-eap-email-sign-part2.md",
-      "date": "2026-07-08",
-      "title": "Session — Sign Part 2 of the EAP email as Claude",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-07-08-eap-email-refresh-forward-only-project.md",
-      "date": "2026-07-08",
-      "title": "Session — EAP email refresh + forward-only Project instructions",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-07-08-eap-email-finalize.md",
-      "date": "2026-07-08",
-      "title": "Session — Finalize the Anthropic EAP email",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-07-08-eap-email-assemble-part1.md",
-      "date": "2026-07-08",
-      "title": "Session — Assemble the full EAP email (Part 1 landed + Part 2 made complementary)",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-07-08-eap-email-agent-narrative.md",
-      "date": "2026-07-08",
-      "title": "Session — EAP email: Part 2 as a parallel agent narrative",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-07-08-eap-direction-handoff.md",
-      "date": "2026-07-08",
-      "title": "2026-07-08 — EAP email + direction handoff doc",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-07-08-docs-fast-path-plan-homing-gate.md",
-      "date": "2026-07-08",
-      "title": "2026-07-08 — Docs-only fast path: enforce plan homing (from #1854 finding)",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-07-08-campaign-self-audit.md",
-      "date": "2026-07-08",
-      "title": "2026-07-08 — Campaign self-audit (EAP probe: coordinator memory vs ground truth)",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
     }
   ],
   "ideas": {
-    "total": 230,
+    "total": 237,
     "by_status": {
       "historical": 26,
-      "ideas": 201,
+      "ideas": 208,
       "reference": 3
     }
   },
@@ -923,6 +923,272 @@
       "date": "2026-07-10",
       "model": "fable-5",
       "effort": "high",
+      "task_class": "docs-only",
+      "tokens_out": null,
+      "outcome": {
+        "ci_green_first_push": null,
+        "checker_findings": null,
+        "merged_pr": null,
+        "reverted_within_window": null
+      }
+    },
+    {
+      "session": "2026-07-10-round3-dispatch-coordination",
+      "date": "2026-07-10",
+      "model": "fable-5",
+      "effort": "high",
+      "task_class": "docs-only",
+      "tokens_out": null,
+      "outcome": {
+        "ci_green_first_push": null,
+        "checker_findings": null,
+        "merged_pr": null,
+        "reverted_within_window": null
+      }
+    },
+    {
+      "session": "2026-07-10-reconcile-band1950",
+      "date": "2026-07-10",
+      "model": "opus-4-8",
+      "effort": "high",
+      "task_class": "docs-only",
+      "tokens_out": null,
+      "outcome": {
+        "ci_green_first_push": null,
+        "checker_findings": null,
+        "merged_pr": null,
+        "reverted_within_window": null
+      }
+    },
+    {
+      "session": "2026-07-10-round3-dispatch-3",
+      "date": "2026-07-10",
+      "model": "fable-5",
+      "effort": "high",
+      "task_class": "docs-only",
+      "tokens_out": null,
+      "outcome": {
+        "ci_green_first_push": null,
+        "checker_findings": null,
+        "merged_pr": null,
+        "reverted_within_window": null
+      }
+    },
+    {
+      "session": "2026-07-10-round3-dispatch-2",
+      "date": "2026-07-10",
+      "model": "fable-5",
+      "effort": "high",
+      "task_class": "docs-only",
+      "tokens_out": null,
+      "outcome": {
+        "ci_green_first_push": null,
+        "checker_findings": null,
+        "merged_pr": null,
+        "reverted_within_window": null
+      }
+    },
+    {
+      "session": "2026-07-10-round3-dispatch-4-sim-lab",
+      "date": "2026-07-10",
+      "model": "fable-5",
+      "effort": "high",
+      "task_class": "docs-only",
+      "tokens_out": null,
+      "outcome": {
+        "ci_green_first_push": null,
+        "checker_findings": null,
+        "merged_pr": null,
+        "reverted_within_window": null
+      }
+    },
+    {
+      "session": "2026-07-10-round3-dispatch-3b",
+      "date": "2026-07-10",
+      "model": "fable-5",
+      "effort": "high",
+      "task_class": "docs-only",
+      "tokens_out": null,
+      "outcome": {
+        "ci_green_first_push": null,
+        "checker_findings": null,
+        "merged_pr": null,
+        "reverted_within_window": null
+      }
+    },
+    {
+      "session": "2026-07-10-round3-dispatch-4b-trading-package",
+      "date": "2026-07-10",
+      "model": "fable-5",
+      "effort": "high",
+      "task_class": "docs-only",
+      "tokens_out": null,
+      "outcome": {
+        "ci_green_first_push": null,
+        "checker_findings": null,
+        "merged_pr": null,
+        "reverted_within_window": null
+      }
+    },
+    {
+      "session": "2026-07-10-round3-dispatch-4c-selfawareness",
+      "date": "2026-07-10",
+      "model": "fable-5",
+      "effort": "high",
+      "task_class": "docs-only",
+      "tokens_out": null,
+      "outcome": {
+        "ci_green_first_push": null,
+        "checker_findings": null,
+        "merged_pr": null,
+        "reverted_within_window": null
+      }
+    },
+    {
+      "session": "2026-07-10-round3-dispatch-4d-prompt-registry",
+      "date": "2026-07-10",
+      "model": "fable-5",
+      "effort": "high",
+      "task_class": "docs-only",
+      "tokens_out": null,
+      "outcome": {
+        "ci_green_first_push": null,
+        "checker_findings": null,
+        "merged_pr": null,
+        "reverted_within_window": null
+      }
+    },
+    {
+      "session": "2026-07-10-round3-dispatch-4e-games-mapping",
+      "date": "2026-07-10",
+      "model": "fable-5",
+      "effort": "high",
+      "task_class": "docs-only",
+      "tokens_out": null,
+      "outcome": {
+        "ci_green_first_push": null,
+        "checker_findings": null,
+        "merged_pr": null,
+        "reverted_within_window": null
+      }
+    },
+    {
+      "session": "2026-07-10-round3-dispatch-4f-games-packages",
+      "date": "2026-07-10",
+      "model": "fable-5",
+      "effort": "high",
+      "task_class": "docs-only",
+      "tokens_out": null,
+      "outcome": {
+        "ci_green_first_push": null,
+        "checker_findings": null,
+        "merged_pr": null,
+        "reverted_within_window": null
+      }
+    },
+    {
+      "session": "2026-07-10-round3-dispatch-4g-world-destale",
+      "date": "2026-07-10",
+      "model": "fable-5",
+      "effort": "high",
+      "task_class": "docs-only",
+      "tokens_out": null,
+      "outcome": {
+        "ci_green_first_push": null,
+        "checker_findings": null,
+        "merged_pr": null,
+        "reverted_within_window": null
+      }
+    },
+    {
+      "session": "2026-07-11-round3-dispatch-4h-session-close",
+      "date": "2026-07-11",
+      "model": "fable-5",
+      "effort": "high",
+      "task_class": "docs-only",
+      "tokens_out": null,
+      "outcome": {
+        "ci_green_first_push": null,
+        "checker_findings": null,
+        "merged_pr": null,
+        "reverted_within_window": null
+      }
+    },
+    {
+      "session": "2026-07-11-games-retro-and-mineweb-packages",
+      "date": "2026-07-11",
+      "model": "opus-4.8",
+      "effort": "high",
+      "task_class": "docs-only",
+      "tokens_out": null,
+      "outcome": {
+        "ci_green_first_push": false,
+        "checker_findings": null,
+        "merged_pr": null,
+        "reverted_within_window": null
+      }
+    },
+    {
+      "session": "2026-07-11-round3-dispatch-4i-checkin-verify",
+      "date": "2026-07-11",
+      "model": "fable-5",
+      "effort": "medium",
+      "task_class": "docs-only",
+      "tokens_out": null,
+      "outcome": {
+        "ci_green_first_push": null,
+        "checker_findings": null,
+        "merged_pr": null,
+        "reverted_within_window": null
+      }
+    },
+    {
+      "session": "2026-07-11-retire-fleet-manifest",
+      "date": "2026-07-11",
+      "model": "fable-5",
+      "effort": "medium",
+      "task_class": "docs-only",
+      "tokens_out": null,
+      "outcome": {
+        "ci_green_first_push": null,
+        "checker_findings": null,
+        "merged_pr": null,
+        "reverted_within_window": null
+      }
+    },
+    {
+      "session": "2026-07-11-round3-dispatch-4j-checkin-venture",
+      "date": "2026-07-11",
+      "model": "fable-5",
+      "effort": "medium",
+      "task_class": "docs-only",
+      "tokens_out": null,
+      "outcome": {
+        "ci_green_first_push": null,
+        "checker_findings": null,
+        "merged_pr": null,
+        "reverted_within_window": null
+      }
+    },
+    {
+      "session": "2026-07-11-fleet-inbox-and-model-line",
+      "date": "2026-07-11",
+      "model": "fable-5",
+      "effort": "medium",
+      "task_class": "docs-only",
+      "tokens_out": null,
+      "outcome": {
+        "ci_green_first_push": null,
+        "checker_findings": null,
+        "merged_pr": null,
+        "reverted_within_window": null
+      }
+    },
+    {
+      "session": "2026-07-11-round3-dispatch-4k-checkin-complete",
+      "date": "2026-07-11",
+      "model": "fable-5",
+      "effort": "medium",
       "task_class": "docs-only",
       "tokens_out": null,
       "outcome": {

@@ -2,7 +2,7 @@
 
 > **SUPERSEDED as live doctrine 2026-07-10** — canonical, version-stamped copies live in fleet-manager `projects/substrate-kit/` (registry PR #39); this file is frozen history.
 
-> **Status:** `plan` — the founding package for the **substrate-kit** core seat (Q-0261
+> **Status:** `historical` — the founding package for the **substrate-kit** core seat (Q-0261
 > core seat 2: the mechanism repo + the fleet's **distribution seat**). Drafted by the
 > dispatch-coordination session on the runbook §2 pattern, under owner ruling **Q-0261.3**:
 > kit gets **write access to all fleet repos** for distribution, hard-scoped against doing

@@ -86,6 +86,50 @@
 
 ## Recently shipped — archived (newest first)
 
+- **#1899 · #1906 · #1907 · #1908 · #1912 (2026-07-09/10, docs — dashboard-data refreshes, Q-0167)** —
+  five per-source-merge refreshes keeping the committed `dashboard/data/dashboard.json` export fresh as
+  the gen-1 wind-down / gen-2 doctrine arc landed.
+- **#1894 (2026-07-10, S4/workflow — telemetry-append merge gate, Q-0194 friction→guard)** —
+  the telemetry-append rule (`telemetry/README.md`) was exhortative and already leaking (3 rows vs ≥4
+  carded sessions since #1884), so `scripts/check_session_gate.py` gained a merge-gate guard: a PR that
+  **adds** a `.sessions/` card dated ≥ 2026-07-09 must also append ≥1 row to
+  `telemetry/model-usage.jsonl` in the same PR (engage-only-on-card-add so routine/workflow PRs never
+  deadlock; date floor avoids retroactive redness; fail-open on git failure). +9 tests, Q-0105
+  provenance/kill-switch header. Tooling/tests only.
+- **#1864 · #1866 · #1867 · #1868 (2026-07-08/09, S3 rebuild / EAP — the Anthropic-feedback email assembled + sent, close-out)** —
+  the owner's Friday Anthropic feedback email reached final form and was sent: **#1864** assembled the full
+  two-part email (landed Menno's **Part 1**, made the agent **Part 2** complementary), **#1866** signed Part 2
+  as Claude (two-author sign-off), **#1867** closed out the projects-testing feedback thread, and **#1868**
+  shipped the **rebuild-direction handoff + marked the EAP email sent**. Docs-only.
+- **#1873 · #1874 · #1875 · #1876 · #1877 · #1887 · #1889 · #1890 (2026-07-08/09, S3 rebuild — EAP Project fleet founding → independent fleet review)** —
+  the Claude Code Projects (EAP) fleet grew to **four repos** (`superbot`, `superbot-next`, `substrate-kit`,
+  `websites`) and got an oversight layer: **#1877** added the **EAP Project fleet plan** (7 domain projects +
+  3-model comparison + kit-lab), **#1874** a **second Project** kickoff (rebuild status site + Railway test),
+  **#1876** the **websites Project** kickoff (superseding the draft), **#1873** the **rebuild-Project audit
+  checklist** (+ a planning/README homing fix, Q-0166), **#1875** updated the settings ledger (rulesets now
+  live on `superbot-next` + `substrate-kit`). **#1887/#1889/#1890** ran the **independent cross-repo fleet
+  review** ([`eap/fleet-review-2026-07-09.md`](eap/fleet-review-2026-07-09.md) — honest verdict + first-party
+  clone-and-run verification: `superbot-next` 998 pass / 1 skip under Py3.11) and the **manager-Project brief**.
+  Headline finding: the substrate-kit's **render/engage half strands in every fresh adoption** (`adopt`
+  plants-but-doesn't-render/wire) — an upstream-kit fix, captured for kit-lab. Docs-only.
+  **Follow-on (2026-07-10):** an independent **gen-1 → gen-2 doctrine review** comparing the new
+  `fleet-manager` doctrine against superbot's original
+  ([`eap/gen1-gen2-doctrine-review-2026-07-10.md`](eap/gen1-gen2-doctrine-review-2026-07-10.md) —
+  verified against both repos at HEAD; headline: gen-2 kept the hard-won machinery, but its
+  reconciliation gate is hollow and one env-secrets rule contradicts itself). Docs-only.
+- **#1878 · #1879 · #1881 · #1882 · #1883 · #1884 (2026-07-08/09, S3 — substrate-kit graduated to its own repo; superbot as first consumer + kit-lab companions)** —
+  the substrate-kit **graduated to [menno420/substrate-kit](https://github.com/menno420/substrate-kit)** (v1.0.0)
+  and superbot became its first downstream consumer: **#1878** substrate-kit planning, **#1879** pinned the kit
+  via a root **`substrate.config.json`** (`kit_version: 1.0.0`, kit-lab founding-plan §4.2 consumer half),
+  **#1882** **removed the in-tree `substrate-kit/` + `tests/unit/substrate_kit/` copy** (101 files; the kit now
+  lives upstream), **#1881** added **program-law provenance riders** (PL-001…PL-009) to the eight origin Q-blocks
+  in the router (KL-2 companion), **#1883** shipped the exporter **`telemetry` family** in
+  `export_dashboard_data.py` (KL-6 companion — reads `telemetry/model-usage.jsonl`, field-whitelisted, fail-open),
+  and **#1884** pinned the **`console.json` cross-repo shape contract**. Docs/tooling only (no `disbot/`).
+- **#1886 (2026-07-09, S5/ops — Dependabot PR policy, owner decision Q-0256)** —
+  captured the owner's **review-on-sight dependabot rule** (durable home
+  [`operations/repo-settings-state.md`](operations/repo-settings-state.md) § Dependabot PR policy; the
+  not-shipped auto-arm alternative is Q-0257) and executed the **backlog review/merge of #1761–#1766**.
 - **#1863 (2026-07-08, workflow — thirty-ninth Q-0107 reconciliation pass, band-#1860)** —
   the 39th docs-only reconciliation + planning pass
   ([pass record](planning/reconciliation-pass-2026-07-08-band1860.md)): reconciled band #1831–#1861, trimmed

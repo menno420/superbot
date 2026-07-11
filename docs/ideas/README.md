@@ -31,6 +31,12 @@ only the header block is read, so a `**Subsystem:**` *example* in an idea's body
 
 Current broad captures:
 
+- [`supersede-integrity-cross-repo-tier-2026-07-11.md`](./supersede-integrity-cross-repo-tier-2026-07-11.md) —
+  **session ender (2026-07-11, 43rd Q-0107 reconciliation pass, band-#1980):** teach
+  `check_supersede_integrity.py` a cross-repo successor tier so a SUPERSEDED banner naming a
+  successor in another fleet repo (e.g. the registry) is a satisfied disposition, not permanent
+  unclearable "no successor" soft noise. Subsystem: tooling / docs-system.
+
 - [`purpose-specific-test-bot-fleet-2026-07-10.md`](./purpose-specific-test-bot-fleet-2026-07-10.md) —
   **owner-raised (2026-07-10, round-3 dispatch):** later, purpose-specific test bot identities (a
   games-testing bot etc.) instead of the one shared test bot; deferred by the owner, capture only.

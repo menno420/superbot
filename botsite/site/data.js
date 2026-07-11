@@ -2959,6 +2959,10 @@ const COMMANDS = [
     "planned": [
       {
         "status": "idea",
+        "title": "Games program: theme-engine architecture + website-first provisioning"
+      },
+      {
+        "status": "idea",
         "title": "The Explore hub — a federated open world (one world, each subsystem…"
       },
       {
@@ -7466,6 +7470,10 @@ const COMMANDS = [
     "planned": [
       {
         "status": "idea",
+        "title": "Games program: theme-engine architecture + website-first provisioning"
+      },
+      {
+        "status": "idea",
         "title": "The Explore hub — a federated open world (one world, each subsystem…"
       },
       {
@@ -7490,6 +7498,10 @@ const COMMANDS = [
       "!world"
     ],
     "planned": [
+      {
+        "status": "idea",
+        "title": "Games program: theme-engine architecture + website-first provisioning"
+      },
       {
         "status": "idea",
         "title": "The Explore hub — a federated open world (one world, each subsystem…"
@@ -7726,7 +7738,7 @@ const CHANGELOG = [
   {
     "version": "2026.06.19",
     "date": "Jun 19, 2026",
-    "build": "96a1c054",
+    "build": "e0fd8ef7",
     "title": "New public bot website",
     "changes": [
       {
@@ -7738,7 +7750,7 @@ const CHANGELOG = [
   {
     "version": "2026.06.12",
     "date": "Jun 12, 2026",
-    "build": "96a1c054",
+    "build": "e0fd8ef7",
     "title": "Owner review inbox on the dashboard",
     "changes": [
       {
@@ -7750,7 +7762,7 @@ const CHANGELOG = [
   {
     "version": "2026.06.08",
     "date": "Jun 08, 2026",
-    "build": "96a1c054",
+    "build": "e0fd8ef7",
     "title": "Command-alias suggestions",
     "changes": [
       {
@@ -9131,9 +9143,9 @@ const FEATURES = [
 ];
 
 const BUILD = {
-  "commit": "96a1c054",
-  "subject": "Merge pull request #1950 from menno420/bot/dashboard-refresh",
-  "committed_at": "2026-07-10T16:56:21Z"
+  "commit": "e0fd8ef7",
+  "subject": "Merge pull request #1980 from menno420/bot/dashboard-refresh",
+  "committed_at": "2026-07-11T11:53:11Z"
 };
 
 const COUNTS = {
