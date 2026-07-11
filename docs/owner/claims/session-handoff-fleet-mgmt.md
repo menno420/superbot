@@ -1,0 +1,1 @@
+- branch `claude/multi-project-review-dispatch-myegbp` · scope: durable session handoff/continuation doc (pre-compact) · files: docs/eap/session-handoff-2026-07-11-fleet-management.md, docs/current-state.md · 2026-07-11
