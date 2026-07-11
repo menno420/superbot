@@ -1,1 +1,0 @@
-- branch `claude/order-002-hub-self-review` · scope: consume control/inbox.md ORDER 002 (owner-directed hub self-review) — create control/status.md with the dated self-review + ledger entry · files: control/status.md, control/inbox.md (append-only status block), docs/current-state.md, .sessions/, telemetry/model-usage.jsonl · 2026-07-11
