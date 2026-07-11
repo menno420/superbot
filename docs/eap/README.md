@@ -50,7 +50,9 @@
 
 ## Fleet reviews and instruments (2026-07-09)
 
-- [`fleet-manifest.md`](fleet-manifest.md) — living Project registry (manager-maintained).
+- [`fleet-manifest.md`](fleet-manifest.md) — **superseded 2026-07-11**: now a pointer stub;
+  canonical fleet/seat state is the fleet-manager generated roster
+  (`menno420/fleet-manager` `docs/roster.md`, fm PR #59; superbot PR #1974).
 - [`external-review-pack-2026-07-09.md`](external-review-pack-2026-07-09.md) — single
   audit entry point for outside reviewers (no GitHub auth needed).
 - [`fleet-review-2026-07-09.md`](fleet-review-2026-07-09.md) — independent cross-repo

@@ -61,6 +61,8 @@ YOUR TYPICAL TASKS, AND HOW TO DO THEM:
 - REGISTRY TRUTH: the fleet manifest (superbot docs/eap/fleet-manifest.md) and this
   repo's lane tables must match verified reality — re-stamp with dated attribution
   when they don't. Never invent a Last-seen; derive it from the lane's heartbeat.
+  *(Superseded 2026-07-11: the manifest is now a pointer stub — registry truth is the
+  fleet-manager GENERATED roster `docs/roster.md`, fm PR #59; superbot PR #1974.)*
 - CLAIM VERIFICATION: when a lane, a Codex reply, or any cross-agent report states
   something checkable ("merged", "released", "tests pass", "PR created"), check it
   (PR state, tag existence, CI run, file at SHA) before it enters any manager

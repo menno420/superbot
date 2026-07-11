@@ -228,13 +228,14 @@ STEP 2 — RECONCILE (the Q-0107 pass):
     is warn-only and never blocks. Commit the regenerated JSON with the pass. This is the
     *cadence half* of the freshness loop — the dispatch routine carries the warn-only `--drift`
     reporter, this routine keeps the artifact fresh without burdening every session.
-  - CHECK THE FLEET MANIFEST (advisory, needs network): run
-    `python3.10 scripts/check_manifest_freshness.py` — it compares each
-    `docs/eap/fleet-manifest.md` row's Last-seen cell against the lane repo's live
-    `control/status.md` `updated:` header over git transport (PR #1923; Q-0105 unverified tier).
-    STALE rows mean the manifest lags a lane heartbeat — note them for the manager Project's
-    re-stamp (the manifest is the manager's sole-writer file; do NOT re-stamp it from here).
-    Fail-open: offline/credential failures print SKIP and never block the pass.
+  - FLEET STATE lives in the fleet-manager generated roster, not here: canonical =
+    `fleet-manager docs/roster.md`, regenerated ≤~2h at every manager wake from
+    the live trigger registry + lane heartbeats. `docs/eap/fleet-manifest.md` is a pointer
+    stub and `check_manifest_freshness.py` (scripts/) was retired with it per its Q-0105
+    kill-switch header (superbot PR #1974; phase-2 decision in fm PR #59 +
+    `fleet-manager docs/findings/manifest-parallel-run-2026-07-11.md`). Do not re-stamp the manifest or
+    resurrect the checker; if the roster's generated-at is >24h stale, trust the lane
+    repos' `control/status.md` heartbeats directly (the roster's own kill-switch rule).
   - Reset the "Last reconciliation pass: PR #N" marker in current-state.md to the latest PR
     (the trigger Action keys off it — do not skip). #N is the **latest merged PR** (the reset
     target), NOT the pass's own PR number; keep the leading #N, the `band-#M` label

@@ -91,10 +91,11 @@ Current broad captures:
 - [`reconcile-fleet-runtime-digest-2026-07-10.md`](./reconcile-fleet-runtime-digest-2026-07-10.md) —
   **raised by the band-#1950 (42nd) reconciliation pass (2026-07-10):** superbot has been "entirely
   docs-only" for ~10 bands because runtime work migrated to `superbot-next`/games/`substrate-kit` —
-  emit a one-line **fleet-runtime digest** in the pass record from the sibling repos the pass already
-  reads via `check_manifest_freshness.py` (#1923) so the ledger stops implying the program stalled.
-  Distinct from `band-archetype-classifier` (intra-repo queue ratio); gen-3 verify-and-consolidate
-  aligned (Q-0259 §2). Subsystem: docs system / engine tooling.
+  emit a one-line **fleet-runtime digest** in the pass record so the ledger stops implying the
+  program stalled. (Its named mechanism, the `check_manifest_freshness.py` git-transport reader,
+  was retired in #1974 — an implementation would read the fleet-manager generated roster or the
+  lane heartbeats directly.) Distinct from `band-archetype-classifier` (intra-repo queue ratio);
+  gen-3 verify-and-consolidate aligned (Q-0259 §2). Subsystem: docs system / engine tooling.
 - [`adopt-codetool-lab-tools-2026-07-10.md`](./adopt-codetool-lab-tools-2026-07-10.md) —
   **owner repo-disposition review (2026-07-10):** the three codetool "test" labs each built a
   real CLI (mdverify — released; envdrift; cfgdiff) — adopt them as fleet tools (mdverify
@@ -118,11 +119,12 @@ Current broad captures:
   re-run on every model release — so cross-agent routing (Q-0120) is data-driven
   instead of tribal knowledge.
 - [`fleet-manifest-freshness-checker-2026-07-10.md`](./fleet-manifest-freshness-checker-2026-07-10.md) —
-  **gen-2 night-prep seed (2026-07-10, PR #1915) · `historical` — implemented PR #1923:** a checker
-  comparing each fleet-manifest row's last-seen against the lane repo's `control/status.md` header —
-  the manifest cells went stale within hours all through gen-1 (grand review §5); "enforce, don't
-  exhort" applied to the fleet dashboard. Shipped as `scripts/check_manifest_freshness.py` (git
-  transport, advisory, fail-open).
+  **gen-2 night-prep seed (2026-07-10, PR #1915) · `historical` — implemented PR #1923, RETIRED
+  PR #1974 (2026-07-11):** a checker comparing each fleet-manifest row's last-seen against the lane
+  repo's `control/status.md` header — the manifest cells went stale within hours all through gen-1
+  (grand review §5). Shipped as `scripts/check_manifest_freshness.py` (git transport, advisory,
+  fail-open); deleted per its Q-0105 kill-switch when the manifest was superseded by the
+  fleet-manager generated roster (fm PR #59).
 - [`coordinator-self-review-against-1901-2026-07-10.md`](./coordinator-self-review-against-1901-2026-07-10.md) —
   **gen-2 night-prep seed (2026-07-10, PR #1915) · `historical` — implemented PR #1924:** the
   coordinator lane is the only gen-1 lane that never answered the #1901 retro question set it

@@ -360,6 +360,18 @@ Source code and merged PRs win over anything written here.
 > auto-opens a `reconcile` issue at the boundary that fires the docs-reconciliation routine). Reset
 > this marker to the latest PR after a pass.
 
+- **#1974 (2026-07-11, EAP — fleet-manifest retired to a pointer stub; freshness checker deleted, docs-only)** —
+  phase-2 of the generated-roster proposal executed superbot-side: the fleet-manager
+  **generated roster** (`fleet-manager docs/roster.md`, regenerated ≤~2h from the
+  live trigger registry + lane heartbeats) is now **canonical** for fleet/seat state (fm PR #59,
+  merge `b0639a9`; parallel-run findings — manifest ~33.5h stale, 5 live lanes missing, 9/10
+  live rows wrong — `fleet-manager docs/findings/manifest-parallel-run-2026-07-11.md`).
+  `docs/eap/fleet-manifest.md` → dated pointer stub (history in git; the 11 stale items
+  deliberately NOT hand-fixed — dual maintenance is what this retires);
+  `check_manifest_freshness.py` (scripts/) + its 19-test suite **deleted per its own Q-0105
+  kill-switch header**; reconciliation-runbook step replaced with the roster pointer
+  (`docs/operations/autonomous-routines.md`); eap/ideas indexes + the two idea files updated.
+  Idea `fleet-manifest-freshness-checker-2026-07-10` stays `historical`, now marked RETIRED.
 - **#1926 · #1931 · #1932 · #1934 · #1935 · #1936 · #1944 · #1945 · #1946 · #1947 · #1949 (2026-07-10, S3/EAP — round-3 program launch + gen-1 close-out + owner ruling Q-0259, docs-only)** —
   the band's dominant thread. The **owner-directed cross-fleet overnight review** (#1931 — all 13
   repos, 8 parallel read-only subagents; verdict *the night went well — zero open PRs / abandoned
@@ -397,8 +409,8 @@ Source code and merged PRs win over anything written here.
   self-estimates. Indexed from `docs/eap/README.md`; idea
   `coordinator-self-review-against-1901-2026-07-10` → `historical`. Gen-2 blueprint input
   now covers 10/10 lanes.
-- **#1923 (2026-07-10, overnight shift E — fleet-manifest freshness checker)** —
-  `scripts/check_manifest_freshness.py` (Q-0105 advisory, NOT CI-wired): compares each
+- **#1923 (2026-07-10, overnight shift E — fleet-manifest freshness checker; retired #1974)** —
+  `check_manifest_freshness.py` (scripts/; Q-0105 advisory, NOT CI-wired): compares each
   `docs/eap/fleet-manifest.md` row's Last-seen against the lane repo's live
   `control/status.md` `updated:` header, read over **git transport** (shallow fetch +
   `cat-file` — the GitHub REST API is proxy-blocked in agent containers, so the idea file's

@@ -1,8 +1,11 @@
 # Idea — fleet-runtime digest line in the reconciliation pass record
 
 > **Status:** `ideas` — raised by the band-#1950 (forty-second) Q-0107 reconciliation pass (2026-07-10).
-> Lane: S4 (docs system) / S3 (engine tooling). Size: small, `ready`-adjacent — extends the
-> `check_manifest_freshness.py` git-transport reader shipped in #1923.
+> Lane: S4 (docs system) / S3 (engine tooling). Size: small, `ready`-adjacent — originally framed as
+> extending the `check_manifest_freshness.py` git-transport reader shipped in #1923; that checker was
+> **retired in #1974 (2026-07-11)** with the fleet-manifest supersession, so an implementation would
+> read the fleet-manager generated roster (`menno420/fleet-manager` `docs/roster.md`) or the lane
+> heartbeats directly (the same shallow-fetch technique, reimplemented locally).
 
 ## The problem
 
@@ -22,8 +25,8 @@ that the program is *accelerating* — the runtime progress is invisible because
 ## The idea
 
 Have the reconciliation pass emit a one-line **fleet-runtime digest** in the pass record (and optionally
-the `current-state.md` narrative), computed from the sibling repos the pass **already reads** via the
-`#1923` `check_manifest_freshness.py` git-transport path:
+the `current-state.md` narrative), computed from the sibling repos over the same git-transport
+technique the retired `#1923` `check_manifest_freshness.py` proved out (shallow fetch + `cat-file`):
 
 > *Fleet this band (2026-07-XX): `superbot-next` +N merges (Phase-B Sxx), `superbot-games` +M,
 > `substrate-kit` +K, `venture-lab` +J. superbot itself: docs-only (this pass).*
