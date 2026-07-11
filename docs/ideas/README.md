@@ -31,6 +31,13 @@ only the header block is read, so a `**Subsystem:**` *example* in an idea's body
 
 Current broad captures:
 
+- [`check-docs-cross-repo-path-awareness-2026-07-11.md`](./check-docs-cross-repo-path-awareness-2026-07-11.md) —
+  **session ender (2026-07-11, 44th Q-0107 reconciliation pass, band-#2010):** teach `check_docs.py`'s
+  pinned-path check to skip a backtick `docs/…` path qualified by a cross-repo phrase (e.g.
+  ``fleet-manager `docs/fleet-triage.md` ``) so a natural cross-repo file reference isn't a false
+  `[pinned]` failure — the path-pin sibling of the supersede cross-repo tier. Subsystem: tooling /
+  docs-system.
+
 - [`supersede-integrity-cross-repo-tier-2026-07-11.md`](./supersede-integrity-cross-repo-tier-2026-07-11.md) —
   **session ender (2026-07-11, 43rd Q-0107 reconciliation pass, band-#1980):** teach
   `check_supersede_integrity.py` a cross-repo successor tier so a SUPERSEDED banner naming a

@@ -9,6 +9,27 @@
 > S3; the docs it produces are S4.*
 
 **Recently shipped (this sector):**
+- **Forty-fourth Q-0107 reconciliation pass** (band-#2010, issue #2012 —
+  [pass record](../planning/reconciliation-pass-2026-07-11-band2010.md)): reconciled the ledger
+  (band #1981–#2011 — four grouped entries, **entirely docs/tooling/control**, zero `disbot/` runtime:
+  the **EAP Anthropic-feedback email + fleet-review arc** #1982/#1985/#1986/#1990/#1992/#1993/#1994/#1996/#1997/#2007
+  — the fleet night review, ORDER-002 self-review, the two-part reviewer email, the email-fleet-handoff
+  session; the **8-seat consolidation → next-round founding-prompt arc**
+  #1983/#1998/#2002/#2004/#2005/#2006/#2008/#2011 — external-strategy synthesis + Codex-PR disposal, the
+  consolidation blueprint + founding-prompt kit, the 8-seat fleet structure; the **`check_consistency`
+  Rule-6 guard** #2000 (friction→guard, graduated to error); and 4 dashboard refreshes
+  #1984/#1991/#1999/#2009 — plus the already-carded #1995/#2003), trimmed Recently-shipped to 20
+  (moved the 6 oldest bullets to the archive), **disposed the open-PR set** — **zero open PRs at pass
+  start**, no stale session PR, confirmed **ROUTINE_PAT set / loop self-fires** (issue #2012 authored
+  by `menno420`), carried the forward queue intact (still deep, no THIN flag — the rebuild Phase-B
+  canonical plan + the live SuperBot Project 8-seat program dominate), refreshed the dashboard export
+  (Q-0167), reset the marker #1980 → #2011. The 5 remaining supersede-banner soft warnings are honest
+  cross-repo supersessions (successors live in fleet-manager `projects/superbot-next/`, registry PR #39)
+  the in-repo checker can't model — carried forward unchanged.
+- **Forty-third Q-0107 reconciliation pass** (band-#1980, issue #1981 —
+  [pass record](../planning/reconciliation-pass-2026-07-11-band1980.md)): reconciled the ledger
+  (band #1951–#1980), trimmed Recently-shipped to 20, disposed the open-PR set (zero open at pass
+  start), marker #1950 → #1980.
 - **Forty-second Q-0107 reconciliation pass** (band-#1950, issue #1951 —
   [pass record](../planning/reconciliation-pass-2026-07-10-band1950.md)): reconciled the ledger
   (band #1921–#1950 — five grouped entries, **entirely docs/tooling/dashboard**, zero `disbot/`
@@ -227,7 +248,7 @@
   startable slice. Companion: the still-unexecuted
   [orientation-cost-reduction plan](../planning/orientation-cost-reduction-plan-2026-06-30.md)
   (Q-0210 router archive now 3+ passes overdue — B0–B3 should run soon regardless).
-- **Next reconciliation pass due once merged PRs cross #2010** (every multiple of 30, Q-0134) —
+- **Next reconciliation pass due once merged PRs cross #2040** (every multiple of 30, Q-0134) —
   auto-triggered by `reconciliation-trigger.yml`; run by the docs-reconciliation routine, **not** a
   manual session (Q-0124).
 - Plan-band depth is healthy — **no `PLAN-BACKLOG-THIN` flag** (buildable depth well over cadence).

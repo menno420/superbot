@@ -1,14 +1,30 @@
 {
   "meta": {
-    "generated_at": "2026-07-11T11:53:11Z",
+    "generated_at": "2026-07-12T01:16:15Z",
     "build": {
-      "commit": "e0fd8ef7",
-      "subject": "Merge pull request #1980 from menno420/bot/dashboard-refresh",
-      "committed_at": "2026-07-11T11:53:11Z"
+      "commit": "fae8bd0a",
+      "subject": "Merge pull request #2010 from menno420/bot/dashboard-refresh",
+      "committed_at": "2026-07-12T01:16:15Z"
     },
     "schema_version": 1
   },
   "sessions": [
+    {
+      "file": "2026-07-11-settle-once-checker-graduation.md",
+      "date": "2026-07-11",
+      "title": "2026-07-11 — settle-once checker: activate inert cogs/ scope + graduate to error",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": true
+    },
+    {
+      "file": "2026-07-11-session-handoff-fleet-mgmt.md",
+      "date": "2026-07-11",
+      "title": "2026-07-11 — session handoff / continuation doc (pre-compact documentation sweep)",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
     {
       "file": "2026-07-11-round3-dispatch-4k-checkin-complete.md",
       "date": "2026-07-11",
@@ -50,9 +66,81 @@
       "self_initiated": false
     },
     {
+      "file": "2026-07-11-reconcile-band1980.md",
+      "date": "2026-07-11",
+      "title": "Session — 43rd Q-0107 reconciliation pass (band-#1980)",
+      "status": "complete",
+      "run_type": "routine",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-07-11-order-002-hub-self-review.md",
+      "date": "2026-07-11",
+      "title": "2026-07-11 — ORDER 002: hub self-review → docs/retro + control/status.md",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-07-11-next-round-founding-prompts.md",
+      "date": "2026-07-11",
+      "title": "2026-07-11 — verify + improve project prompts/instructions for the next batch",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-07-11-multi-project-review-dispatch.md",
+      "date": "2026-07-11",
+      "title": "2026-07-11 — Multi-project review + fleet centralization plan + dispatch kit",
+      "status": "complete",
+      "run_type": "manual",
+      "self_initiated": false
+    },
+    {
       "file": "2026-07-11-games-retro-and-mineweb-packages.md",
       "date": "2026-07-11",
       "title": "Session — round-3 games program: Retro-Games + mining-browsergame founding packages",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-07-11-fleet-triage-pointer.md",
+      "date": "2026-07-11",
+      "title": "2026-07-11 — fleet-triage register: supersede pointer to fleet-manager",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-07-11-fleet-strategy-synthesis.md",
+      "date": "2026-07-11",
+      "title": "2026-07-11 — synthesize 4 external strategy reviews + dispose the Codex PRs",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": true
+    },
+    {
+      "file": "2026-07-11-fleet-overview-codex-prompts.md",
+      "date": "2026-07-11",
+      "title": "2026-07-11 — Fleet overview: Codex prompts · PR hygiene · owner queue · product catalog · review-skill generalization",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-07-11-fleet-night-review.md",
+      "date": "2026-07-11",
+      "title": "2026-07-11 — fleet night review + routine/model fix plan + owner vocab & skills",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-07-11-fleet-merge-continuation.md",
+      "date": "2026-07-11",
+      "title": "2026-07-11 — fleet merge continuation (post-compact): superbot-games #52/#54/#55 landed + handoff reconciled",
       "status": "complete",
       "run_type": "",
       "self_initiated": false
@@ -63,6 +151,78 @@
       "title": "2026-07-11 — fleet inbox for the hub + 📊 Model attribution line",
       "status": "complete",
       "run_type": "routine",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-07-11-fleet-dispatch-prompts.md",
+      "date": "2026-07-11",
+      "title": "2026-07-11 — fleet dispatch prompts (continuation): 8-seat structure → complete paste-and-go startup prompts",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-07-11-fleet-consolidation-next-round.md",
+      "date": "2026-07-11",
+      "title": "2026-07-11 — consolidation + next-round blueprint (4 owner decisions finalized)",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-07-11-fix-codex-final-review-yaml.md",
+      "date": "2026-07-11",
+      "title": "2026-07-11 — Fix codex-final-review workflow YAML (broken since #1105)",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-07-11-env-grant-and-relaunch-handoff.md",
+      "date": "2026-07-11",
+      "title": "2026-07-11 — Env-grant docs + live-env-visibility plan + RELAUNCH/TRIAGE handoff",
+      "status": "complete",
+      "run_type": "manual",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-07-11-email2-sidebar-correction.md",
+      "date": "2026-07-11",
+      "title": "2026-07-11 — Email #2: sidebar-nesting correction (owner screenshot)",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-07-11-email2-part2-polish.md",
+      "date": "2026-07-11",
+      "title": "2026-07-11 — Email #2: owner's Part 1 landed + agents' Part 2 fact-refresh",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-07-11-email2-idle-observability.md",
+      "date": "2026-07-11",
+      "title": "2026-07-11 — Email #2: idle-Project empty-session-list finding (owner recording) → fig-19 + b6",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-07-11-email-fleet-handoff.md",
+      "date": "2026-07-11",
+      "title": "2026-07-11 — Anthropic email #2 + fleet-management session (HANDOFF BRIEF)",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-07-11-dispatch-kit-gen3-lessons.md",
+      "date": "2026-07-11",
+      "title": "2026-07-11 — fold gen-3 coordinator lessons into the dispatch-kit permissions block",
+      "status": "complete",
+      "run_type": "",
       "self_initiated": false
     },
     {
@@ -328,173 +488,13 @@
       "status": "complete",
       "run_type": "",
       "self_initiated": false
-    },
-    {
-      "file": "2026-07-09-kit-version-pin.md",
-      "date": "2026-07-09",
-      "title": "2026-07-09 — substrate-kit v1.0.0 pin file (kit-lab D2, consumer half)",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-07-09-gen1-grand-review.md",
-      "date": "2026-07-09",
-      "title": "2026-07-09 — Gen-1 grand review + cleanup (fleet-wide)",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-07-09-fleet-spec-heartbeat-mirror.md",
-      "date": "2026-07-09",
-      "title": "2026-07-09 — fleet-spec-heartbeat-mirror",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-07-09-fleet-manifest-venture-lab.md",
-      "date": "2026-07-09",
-      "title": "2026-07-09 — fleet-manifest-venture-lab",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-07-09-fleet-coordination-plan.md",
-      "date": "2026-07-09",
-      "title": "2026-07-09 — Fleet coordination protocol + manager Project v2 (plan)",
-      "status": "complete",
-      "run_type": "manual",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-07-09-external-review-pack.md",
-      "date": "2026-07-09",
-      "title": "2026-07-09 — external-review-pack",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-07-09-eap-fleet-sequencing-correction.md",
-      "date": "2026-07-09",
-      "title": "2026-07-09 — EAP fleet sequencing correction: kit-lab governs real repos, test fleet trimmed to 2",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-07-09-eap-findings-email-manager-kickoff.md",
-      "date": "2026-07-09",
-      "title": "2026-07-09 — EAP findings write-back + interim email + manager kickoff",
-      "status": "complete",
-      "run_type": "manual",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-07-09-eap-email-draft-v2.md",
-      "date": "2026-07-09",
-      "title": "2026-07-09 — EAP gen-1 wrap-up email draft v2 drop",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-07-09-dependabot-policy-backlog.md",
-      "date": "2026-07-09",
-      "title": "2026-07-09 — Dependabot PR policy (owner decision) + backlog review/merge",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-07-09-console-feed-contract.md",
-      "date": "2026-07-09",
-      "title": "Session 2026-07-09 — console.json shape contract (superbot half)",
-      "status": "complete",
-      "run_type": "manual",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-07-09-code-projects-winddown-audit.md",
-      "date": "2026-07-09",
-      "title": "Session 2026-07-09 — Independent fleet wind-down audit (external auditor role)",
-      "status": "complete",
-      "run_type": "manual",
-      "self_initiated": true
-    },
-    {
-      "file": "2026-07-08-wave1-lane-b-supersede-checker.md",
-      "date": "2026-07-08",
-      "title": "Session — Wave-1 lane B: supersede-banner integrity checker",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-07-08-w2-f6-reaction-role-write-boundary.md",
-      "date": "2026-07-08",
-      "title": "2026-07-08 — W2-F6: reaction-role write-boundary invariant suite",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-07-08-w2-a1-server-management-docs-refresh.md",
-      "date": "2026-07-08",
-      "title": "2026-07-08 — Wave-2 lane A1: server-management docs truth refresh (audit F1–F5)",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-07-08-repo-settings-ledger-phase1.md",
-      "date": "2026-07-08",
-      "title": "2026-07-08 — Settings ledger Phase 1 (captured from the owner's recording)",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-07-08-reconcile-band1860.md",
-      "date": "2026-07-08",
-      "title": "2026-07-08 — Thirty-ninth Q-0107 reconciliation pass (band-#1860)",
-      "status": "complete",
-      "run_type": "routine",
-      "self_initiated": true
-    },
-    {
-      "file": "2026-07-08-reconcile-band1830.md",
-      "date": "2026-07-08",
-      "title": "Session — thirty-eighth Q-0107 reconciliation pass (band-#1830)",
-      "status": "complete",
-      "run_type": "routine",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-07-08-rebuild-project-kickoff.md",
-      "date": "2026-07-08",
-      "title": "Session — Rebuild Project kickoff (Custom Instructions + startup prompt)",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-07-08-rebuild-direction-handoff.md",
-      "date": "2026-07-08",
-      "title": "Session — Close-out: rebuild-direction handoff + email marked sent",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
     }
   ],
   "ideas": {
-    "total": 237,
+    "total": 238,
     "by_status": {
       "historical": 26,
-      "ideas": 208,
+      "ideas": 209,
       "reference": 3
     }
   },
@@ -1188,6 +1188,300 @@
       "session": "2026-07-11-round3-dispatch-4k-checkin-complete",
       "date": "2026-07-11",
       "model": "fable-5",
+      "effort": "medium",
+      "task_class": "docs-only",
+      "tokens_out": null,
+      "outcome": {
+        "ci_green_first_push": null,
+        "checker_findings": null,
+        "merged_pr": null,
+        "reverted_within_window": null
+      }
+    },
+    {
+      "session": "2026-07-11-reconcile-band1980",
+      "date": "2026-07-11",
+      "model": "opus-4.8",
+      "effort": "high",
+      "task_class": "docs-only",
+      "tokens_out": null,
+      "outcome": {
+        "ci_green_first_push": null,
+        "checker_findings": null,
+        "merged_pr": null,
+        "reverted_within_window": null
+      }
+    },
+    {
+      "session": "2026-07-11-fleet-night-review",
+      "date": "2026-07-11",
+      "model": "opus-4.8",
+      "effort": "high",
+      "task_class": "review/verify",
+      "tokens_out": null,
+      "outcome": {
+        "ci_green_first_push": null,
+        "checker_findings": null,
+        "merged_pr": null,
+        "reverted_within_window": null
+      }
+    },
+    {
+      "session": "2026-07-11-email-fleet-handoff",
+      "date": "2026-07-11",
+      "model": "opus-4.8",
+      "effort": "high",
+      "task_class": "docs-only",
+      "tokens_out": null,
+      "outcome": {
+        "ci_green_first_push": null,
+        "checker_findings": null,
+        "merged_pr": null,
+        "reverted_within_window": null
+      }
+    },
+    {
+      "session": "2026-07-11-fleet-overview-codex-prompts",
+      "date": "2026-07-11",
+      "model": "fable-5",
+      "effort": "high",
+      "task_class": "review/verify",
+      "tokens_out": null,
+      "outcome": {
+        "ci_green_first_push": false,
+        "checker_findings": null,
+        "merged_pr": null,
+        "reverted_within_window": null
+      }
+    },
+    {
+      "session": "2026-07-11-email2-part2-polish",
+      "date": "2026-07-11",
+      "model": "fable-5",
+      "effort": "high",
+      "task_class": "docs-only",
+      "tokens_out": null,
+      "outcome": {
+        "ci_green_first_push": null,
+        "checker_findings": null,
+        "merged_pr": null,
+        "reverted_within_window": null
+      }
+    },
+    {
+      "session": "2026-07-11-fix-codex-final-review-yaml",
+      "date": "2026-07-11",
+      "model": "fable-5",
+      "effort": "high",
+      "task_class": "ci-fix",
+      "tokens_out": null,
+      "outcome": {
+        "ci_green_first_push": null,
+        "checker_findings": null,
+        "merged_pr": null,
+        "reverted_within_window": null
+      }
+    },
+    {
+      "session": "2026-07-11-email2-sidebar-correction",
+      "date": "2026-07-11",
+      "model": "fable-5",
+      "effort": "high",
+      "task_class": "docs-only",
+      "tokens_out": null,
+      "outcome": {
+        "ci_green_first_push": null,
+        "checker_findings": null,
+        "merged_pr": null,
+        "reverted_within_window": null
+      }
+    },
+    {
+      "session": "2026-07-11-email2-idle-observability",
+      "date": "2026-07-11",
+      "model": "fable-5",
+      "effort": "high",
+      "task_class": "docs-only",
+      "tokens_out": null,
+      "outcome": {
+        "ci_green_first_push": null,
+        "checker_findings": null,
+        "merged_pr": null,
+        "reverted_within_window": null
+      }
+    },
+    {
+      "session": "2026-07-11-codex-prompt-refresh",
+      "date": "2026-07-11",
+      "model": "opus-4.8",
+      "effort": "medium",
+      "task_class": "docs-only",
+      "tokens_out": null,
+      "outcome": {
+        "ci_green_first_push": null,
+        "checker_findings": null,
+        "merged_pr": null,
+        "reverted_within_window": null
+      }
+    },
+    {
+      "session": "2026-07-11-env-grant-and-relaunch-handoff",
+      "date": "2026-07-11",
+      "model": "opus-4.8",
+      "effort": "high",
+      "task_class": "docs-only",
+      "tokens_out": null,
+      "outcome": {
+        "ci_green_first_push": null,
+        "checker_findings": null,
+        "merged_pr": null,
+        "reverted_within_window": null
+      }
+    },
+    {
+      "session": "2026-07-11-multi-project-review-dispatch",
+      "date": "2026-07-11",
+      "model": "opus-4.8",
+      "effort": "high",
+      "task_class": "review/verify",
+      "tokens_out": null,
+      "outcome": {
+        "ci_green_first_push": null,
+        "checker_findings": null,
+        "merged_pr": null,
+        "reverted_within_window": null
+      }
+    },
+    {
+      "session": "2026-07-11-settle-once-checker-graduation",
+      "date": "2026-07-11",
+      "model": "opus-4.8",
+      "effort": "medium",
+      "task_class": "ci-fix",
+      "tokens_out": null,
+      "outcome": {
+        "ci_green_first_push": null,
+        "checker_findings": null,
+        "merged_pr": null,
+        "reverted_within_window": null
+      }
+    },
+    {
+      "session": "2026-07-11-dispatch-kit-gen3-lessons",
+      "date": "2026-07-11",
+      "model": "opus-4.8",
+      "effort": "low",
+      "task_class": "docs-only",
+      "tokens_out": null,
+      "outcome": {
+        "ci_green_first_push": null,
+        "checker_findings": null,
+        "merged_pr": null,
+        "reverted_within_window": null
+      }
+    },
+    {
+      "session": "2026-07-11-fleet-strategy-synthesis",
+      "date": "2026-07-11",
+      "model": "opus-4.8",
+      "effort": "medium",
+      "task_class": "review/verify",
+      "tokens_out": null,
+      "outcome": {
+        "ci_green_first_push": null,
+        "checker_findings": null,
+        "merged_pr": null,
+        "reverted_within_window": null
+      }
+    },
+    {
+      "session": "2026-07-11-order-002-hub-self-review",
+      "date": "2026-07-11",
+      "model": "fable-5",
+      "effort": "medium",
+      "task_class": "docs-only",
+      "tokens_out": null,
+      "outcome": {
+        "ci_green_first_push": null,
+        "checker_findings": null,
+        "merged_pr": null,
+        "reverted_within_window": null
+      }
+    },
+    {
+      "session": "2026-07-11-fleet-consolidation-next-round",
+      "date": "2026-07-11",
+      "model": "opus-4.8",
+      "effort": "medium",
+      "task_class": "docs-only",
+      "tokens_out": null,
+      "outcome": {
+        "ci_green_first_push": null,
+        "checker_findings": null,
+        "merged_pr": null,
+        "reverted_within_window": null
+      }
+    },
+    {
+      "session": "2026-07-11-next-round-founding-prompts",
+      "date": "2026-07-11",
+      "model": "opus-4.8",
+      "effort": "high",
+      "task_class": "review/verify",
+      "tokens_out": null,
+      "outcome": {
+        "ci_green_first_push": null,
+        "checker_findings": null,
+        "merged_pr": null,
+        "reverted_within_window": null
+      }
+    },
+    {
+      "session": "2026-07-11-session-handoff-fleet-mgmt",
+      "date": "2026-07-11",
+      "model": "opus-4.8",
+      "effort": "medium",
+      "task_class": "docs-only",
+      "tokens_out": null,
+      "outcome": {
+        "ci_green_first_push": null,
+        "checker_findings": null,
+        "merged_pr": null,
+        "reverted_within_window": null
+      }
+    },
+    {
+      "session": "2026-07-11-fleet-triage-pointer",
+      "date": "2026-07-11",
+      "model": "fable-5",
+      "effort": "medium",
+      "task_class": "docs-only",
+      "tokens_out": null,
+      "outcome": {
+        "ci_green_first_push": null,
+        "checker_findings": null,
+        "merged_pr": null,
+        "reverted_within_window": null
+      }
+    },
+    {
+      "session": "2026-07-11-fleet-merge-continuation",
+      "date": "2026-07-11",
+      "model": "opus-4.8",
+      "effort": "medium",
+      "task_class": "docs-only",
+      "tokens_out": null,
+      "outcome": {
+        "ci_green_first_push": null,
+        "checker_findings": null,
+        "merged_pr": null,
+        "reverted_within_window": null
+      }
+    },
+    {
+      "session": "2026-07-11-fleet-dispatch-prompts",
+      "date": "2026-07-11",
+      "model": "opus-4.8",
       "effort": "medium",
       "task_class": "docs-only",
       "tokens_out": null,

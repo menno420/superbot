@@ -1,10 +1,10 @@
 {
   "meta": {
-    "generated_at": "2026-07-11T22:10:16Z",
+    "generated_at": "2026-07-12T01:16:15Z",
     "build": {
-      "commit": "3b57cd5e",
-      "subject": "docs: post-compact continuation — superbot-games #52/#54/#55 merged + 8-seat fleet structure recorded (#2008)",
-      "committed_at": "2026-07-11T22:10:16Z"
+      "commit": "fae8bd0a",
+      "subject": "Merge pull request #2010 from menno420/bot/dashboard-refresh",
+      "committed_at": "2026-07-12T01:16:15Z"
     },
     "schema_version": 1,
     "counts": {
@@ -3485,6 +3485,14 @@
       "self_initiated": false
     },
     {
+      "file": "2026-07-11-fleet-dispatch-prompts.md",
+      "date": "2026-07-11",
+      "title": "2026-07-11 — fleet dispatch prompts (continuation): 8-seat structure → complete paste-and-go startup prompts",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
       "file": "2026-07-11-fleet-consolidation-next-round.md",
       "date": "2026-07-11",
       "title": "2026-07-11 — consolidation + next-round blueprint (4 owner decisions finalized)",
@@ -3808,14 +3816,6 @@
       "file": "2026-07-09-kl2-provenance-riders.md",
       "date": "2026-07-09",
       "title": "2026-07-09 — KL-2 companion: program-law provenance riders on the origin Q-blocks",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-07-09-kit-version-pin.md",
-      "date": "2026-07-09",
-      "title": "2026-07-09 — substrate-kit v1.0.0 pin file (kit-lab D2, consumer half)",
       "status": "complete",
       "run_type": "",
       "self_initiated": false
@@ -4726,6 +4726,20 @@
     },
     {
       "session": "2026-07-11-fleet-merge-continuation",
+      "date": "2026-07-11",
+      "model": "opus-4.8",
+      "effort": "medium",
+      "task_class": "docs-only",
+      "tokens_out": null,
+      "outcome": {
+        "ci_green_first_push": null,
+        "checker_findings": null,
+        "merged_pr": null,
+        "reverted_within_window": null
+      }
+    },
+    {
+      "session": "2026-07-11-fleet-dispatch-prompts",
       "date": "2026-07-11",
       "model": "opus-4.8",
       "effort": "medium",
