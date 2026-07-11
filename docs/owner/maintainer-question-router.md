@@ -9709,3 +9709,41 @@ sim-lab as the idle-economy verdict path.
 
 **Routing.** This entry (provenance) + the idea file above (expanded design) + dispatch
 runbook §3.7 re-point + §6.2 conformed-mapping paste block — part-4e (PR #1966).
+
+### Q-0268 — autonomy vs. the money/account line: real-identity setup then keys, never burner-signup (owner directive, 2026-07-11)
+
+> **Context.** Live dispatch part-4h, just after the venture-lab boot prompt was sent.
+> The owner asked whether providing a burner email + throwaway credit-card details would
+> let the agents create accounts in his name and run the revenue lane fully autonomously.
+> The answer is NO — and the reasoning is now doctrine so no future seat (or agent
+> advising the owner) re-opens it.
+
+1. **The money/account HARD LINE stays exactly where the money protocol (Q-0259.4) and
+   the Q-0268-referenced permissions grant put it:** agents never spend real money,
+   create external/payment accounts, or run payment flows on partial identity. This is
+   NOT fleet timidity — it is external reality: (a) payment processors require KYC /
+   real-identity verification before payout, which an agent cannot complete; (b) a
+   burner-email + throwaway-card signup is the exact fraud signature that gets accounts
+   FROZEN and funds HELD, defeating the revenue goal; (c) the platform auto-mode
+   classifier refuses agent card-entry / account-creation anyway (same wall class as the
+   held permission grant). So the burner mechanism does not buy autonomy — it trips three
+   independent failures.
+2. **Agents do NOT help route around identity verification** — even for the owner's own
+   venture. Providing card details to an autonomous agent for signup flows is refused;
+   the decision is recorded here so it is not re-litigated.
+3. **The path to MAXIMUM durable autonomy (what the owner actually wants):** the
+   account-creation + payout step is a ONE-TIME ~30-minute human step (real identity,
+   because KYC requires it regardless). Everything on both sides of it is agent-run:
+   before it, the seat builds products/listings and validates the full purchase→webhook→
+   grant flow in **Stripe TEST mode** (real API shape, zero real money, no freeze risk);
+   after it, the owner drops the **API keys** the accounts generate into the env and the
+   agent operates the store *through those keys* (create products, update listings, run
+   the automated grant flow) — legitimate, ToS-clean, un-freezable because the account is
+   properly the owner's. So autonomy is ~95% with one short human gate, durably.
+4. **Buildable steer (venture-lab):** the seat emits `docs/owner-setup-checklist.md` —
+   the exact, ordered, minimal real-account steps + which env-var NAMES each key fills —
+   so the owner's one-time setup is turnkey; and it proves the paid path end-to-end in
+   test mode first (the D1 lesson: never claim a payment path works without executing it).
+
+**Routing.** This entry (provenance + the durable line) + the venture-lab relaunch pastes
+carry it implicitly via the money protocol / permissions block — part-4h (PR #1971).
