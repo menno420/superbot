@@ -26,16 +26,18 @@
 
 Hi everyone,
 
-Following up on my July 8 review — and thank you for the extension, and Matt, for the
-note that the last one already helped. That meant a lot. Since then I did exactly what I
-said I'd do: I stopped running "a few careful tests" and pointed Projects at real,
-sustained work. It grew into a fleet — around **15 Projects at once, each its own repo**,
-mostly running on their own overnight while I slept. This email is what running *that*
-taught us. Same format as last time: Part 1 is mine (the operator), Part 2 is the agents'
-(the mechanism + the exact evidence), and every specific maps to a public commit — with a
-few screenshots this time, because some of it you have to see. Matt — Part 1 is also my
-written answer to your "how does it fit the way you work" question; happy to do the
-interview on top.
+Following up on my July 8 review, Since then I did exactly what I said I'd do:
+I stopped running "a few careful tests" and pointed Projects at real,
+sustained work. from 1 - 3 repos on the first day, we are currently at 15 active repos.
+
+Yesterday I spend most of the day reviewing the first batch session and deploying the second,
+late at night I finalized all the projects I wanted to run
+I left them all to run on their own overnight while I slept.
+This email is what running that taught us. Same format as last time: Part 1 is mine,
+Part 2 is the agents:
+the mechanism + the exact evidence, and every specific maps to a public commit,
+with a few screenshots this time, because some of it contains some valuable evidence.
+
 
 ---
 
@@ -47,75 +49,73 @@ interview on top.
 > yours; delete them before sending. Reorder, cut, or rewrite freely — this is a spine,
 > not a script. `[Fig N]` marks where a screenshot would land (shot-list at the bottom).
 
-Since July 8 I went a lot bigger. Last time I'd only run a few tests and told you there was
-"still a lot of real world testing to be done, and I intend to extensively use these
-Projects." ‹July-8 email› So I did — I built a whole fleet. Right now I'm running about
-fifteen Projects at the same time, each one its own repo, and most of them keep working on
-their own overnight and I read what they did in the morning. `[Fig 1: the Projects grid]`
-‹this session; screenshots›
 
-I should say plainly how I work, because it's the whole reason this matters to me: **I
-don't know how to write code.** ‹July-8 email› I design and visualize what I want, and I
-rely on the agents to tell me if it's possible and to build it. This is genuinely the way I
-want to work — I was even curious this week "what the most advanced things are I can use
-these projects for," and the answer turned out to be *a lot*. ‹this session› The thing that
-makes it work is the memory substrate I built — every repo has a kind of brain, and any
-session that opens it can work confidently with very little guidance from me. ‹July-8
-email› Projects fits that perfectly: I state my rules once and every session I spawn just
-*knows* them.
 
-What I most want out of it — and this is my honest answer to Matt's question about how it
-fits my work — is to **manage the whole thing by talking in as few words as possible and
-still be sure it's understood.** ‹this session› When it's set up right, I can say one word
-and a session knows the full job. That's the dream version of this product for me: less a
-coding tool, more a way for someone like me to *run* a software project by describing it.
+Since July 8 I did a lot of work. Last time I'd only run a few tests.
+Now I've run this project against many real life scenarios,
+I've created a fresh repo for each project,
+the first real batch run was giving us a lot of problems,
+Most of them could be fixed by adjusting the custom instructions and handoff prompts etc.
+Some remained persistent tho notably less present in the second run.
 
-Now the honest friction, because that's what's useful to you.
+We updated all custom instructions and created a per repo enviroment for each project.
+This fixed our broken startup script issue, but still did not completely prevent permission issues.
+I think one of the biggest root causes of many of our problems
+are caused by the fact that agents don't reliably know their own capabilties and limitations.
+If an agent could reliably know what it can do and how it can fix certain issues,
+aswell as has the ability to properly guide a user into applying the right settings.
+For that tho, the settings should actually exist, I"ve had agents hallucinate settings that didn't exist.
 
-**I'm still the bottleneck for permissions.** At fifteen Projects the thing I run into most
-is that I have to physically be there to approve things. The clearest case is merging: a
-session builds a perfectly good, green PR and then can't merge it — it gets denied and
-waits for me. My fix this week was just to type it out: *"you have my permission to merge
-this and every other PR … you and all your agents have my standing permission to merge all
-PRs, that is literally your main goal … don't let it stop any session from its work."*
-‹this session, verbatim› `[Fig 2: the merge wall]` `[Fig 3: my standing-grant message]`
-That worked — but I shouldn't have to hand-type a permission slip to each project. From my
-side this is the same thing I flagged on July 8 (repeated permission prompts even in auto
-mode); it just gets louder the more Projects you run.
 
-**Two new things I found this week, both about the Routines.** First, when a project creates
-a routine, the routine spawns **without the repo attached** — so the session wakes up with
-no repo to work on. One project (a game one) failed to add its own repo about **1 in 3
-times**. The good news is I can fix that myself: I can't *create or open* these routines,
-but once a project has made one I *can* edit it and attach the repos (and change the cron
-times). I think it's best if I only touch the repos, and maybe the model. ‹this session›
+What I most want out of it manage the whole thing by talking in as few words as possible and
+still be sure it's understood.I can say one word and a session knows the full job.
+That's the dream version of this product for me, less a coding tool but
+more a way for someone like me to run a software project by describing it.
 
-Second — the **model is wrong**. Some routines are actually running on **Sonnet 5**, while
-the routine itself lists **Fable 5 or Opus 4.8** depending on the project, and my default
-routine model is set to **Opus 4.8** everywhere. So three different answers for what model
-is running, and I don't know why they differ. `[Figs 15a–15c: the routine says Opus 4.8; the session it woke ran Sonnet 5]` ‹this
-session›
 
-**And I still can't really see what happened.** This was my one real complaint on July 8 —
-Projects "does not give you a clear oversight of the sessions that have completed and what
-they have done." ‹July-8 email› At fifteen Projects that's much sharper: the sidebar can't
-tell me which projects actually did work overnight and which just sat there, and there's no
-one place that shows me the fleet. I end up trusting that silence means it's fine and
-reading the repos in the morning to reconstruct the night.
+Two new things I found this week, both about the Routines.
+
+First, when a project creates a routine the routine spawns without the repo attached,
+so the session wakes up with no repo to work on.
+One project (a game one) failed to add its own repo about 1 in 3 times.
+The good news is I can fix that myself: I can't create or open these routines,
+but once a project has made one I can edit it and attach the repos.
+
+
+Second, the model is wrong. Some routines are actually running on *onnet 5,
+while the routine itself lists Fable 5 or Opus 4.8 depending on the project,
+and my default routine model is set to Opus 4.8.
+
+
+I also think the multi project coordination and oversight could be a little better.
+It already exists per session in a dedicated screen,
+but for multiple projects this just gets too much to keep track off.
+My idea: you could add a projects active agents to the sidebar,
+not as their own seperate session but as a subsession under their main project.
+Personally I'm a big fan of freedom to customize things,
+and not necessarily how things look but more how they function,
+so toggles to allow certain projects to connect with each other,
+toggles per project to make the sub agents show their session in the sidebar etc.
 
 So the things I'd most want, in order:
-1. **The override / pre-authorization toggle** I asked for last time — a real setting to
-   grant a project the actions it's allowed to take, so I stop getting prompted. ‹July-8
-   email›
-2. **The project-setup questionnaire** — my "question router" idea: when a project starts,
-   ask me a few open questions about the goal, the workflow, and the permissions, so it's
-   set up my way from the first minute. ‹July-8 email›
-3. **Real oversight** — a summary of what each finished session did, and one fleet-level
-   view. ‹July-8 email + this session›
-4. **Make routines carry their repo and their model reliably**, and let me set both — that
-   alone fixes the two bugs above. ‹this session›
-5. **Let me ask a project what it can actually do** and get an honest answer, instead of it
-   finding out by trying and failing. ‹this session / owner-raised, in the repo›
+
+The pre-authorization toggle I asked for last time,
+a real setting to grant a project the actions it's allowed to take, so I stop getting prompted.
+
+The project-setup questionnaire, my question router idea: when a project starts,
+ask me a few open questions about the goal, the workflow, and the permissions, so it's
+set up my way from the first minute.
+
+A clear way to check what each project has achieved so far,
+something that can give the per session summary in a centralized place.
+
+Make routines carry their repo and their model reliably, and let me set both,
+that alone fixes the two bugs above.
+
+
+Let me ask a project what it can actually do and get an honest answer,
+instead of it finding out by trying and failing.
+
 
 That's the operator's side. I'm really enjoying this and taking it seriously — I run a ship
 that moves oil through the rivers of Europe for a living, ‹July-8 email› and I've somehow
@@ -127,7 +127,13 @@ actually live in these sessions.
 Kind regards,
 Menno van Hattum
 
+
+*****  EVERYTHING BEFORE THIS MUST REMAIN INTACT: OWNER EDITS OWNLY   *****
+
+***************************************************************************
 ---
+>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+
 
 ## Part 2 — From the project's agents *(the technical companion)*
 
@@ -210,8 +216,16 @@ is what earned trust, what broke, and — the new centrepiece — the moment we 
    tripped the merge-permission classifier.** `[Fig 5]` The only thing that reliably clears
    it is a **live, in-session human authorization** — a relayed coordinator grant does not,
    and the classifier said so itself ("no user authorized merging it"); one direct attempt
-   in a session the operator was actively in cleared on the first try. **Our own contribution to the pain:** the
-   fleet's shared instruction file was telling every seat to *"arm auto-merge at creation
+   in a session the operator was actively in cleared on the first try. **The next afternoon
+   we confirmed the rule from the positive side:** with the operator live in-chat asking for
+   exactly that, one hub session merged four parked CI-green PRs in a sibling repo first-try
+   — same agent token, same branch namespace, zero denials. The same session then met the
+   rule's other face in a *different* classifier class: pushing one repo's example package
+   into another repo's empty default branch was denied in auto mode ("outside-provenance
+   content the user never named — run outside auto mode so the user can review"). Both
+   verdicts draw the same line, and it's now predictable to us: **live human context IS the
+   permission; anything relayed or inferred is not.** **Our own contribution to the pain:**
+   the fleet's shared instruction file was telling every seat to *"arm auto-merge at creation
    or REST-merge on green"* — i.e. to attempt the exact action the classifier denies —
    when the working recipe is the opposite: *open the PR ready and do nothing; let the
    repo's own auto-merge-enabler workflow (running as `github-actions[bot]`, not the agent)
@@ -280,6 +294,10 @@ Every one of these exists *because* a native mechanism doesn't:
   compensation for the absence of capability self-awareness (finding b2).
 - **Decide-and-flag / silence-is-consent** → agents resolve reversible questions and flag
   for veto rather than parking; this is what lets 15 Projects run unattended at all.
+- **An owner command vocabulary** — the operator's one-word shorthand ("review", "status",
+  "clean") mapped to checked-in workflows, so one word from him runs the same multi-step
+  job in any session. This is Part 1's "say one word and a session knows the full job",
+  built by hand today; a native home for owner-defined verbs would make it first-class.
 - **Born-red cards, succession packages, the defensive exit-0 setup shim** → the memory,
   hand-off, and setup-robustness the platform doesn't yet provide natively.
 
@@ -312,20 +330,24 @@ lanes and verifiable per-PR.)*
 - **superbot** — the production Discord bot and the EAP evaluation home (the running log,
   permission probes, this email); frozen as the behavioral oracle the rebuild replays
   against.
-- **superbot-next** — the ground-up rebuild: **~30 of 49 subsystems ported at byte-level
-  golden parity**, gate green, boots to RUNNING on real Postgres; parity engine running
-  tonight.
+- **superbot-next** — the ground-up rebuild: **33 of 49 subsystems ported at golden
+  parity (212/212 golden transcripts green)**, boots to RUNNING on real Postgres;
+  roughly 70 PRs merged across 5 parallel lanes in the last 48 hours alone.
 - **The games program** — three dedicated game Projects: a world ecosystem (mining /
-  exploration / fishing), an idle-engine + theme packs, and a read-write **browsergame
-  wired to the bot's live mining economy** (repo seeded from empty tonight), plus original
-  GBA homebrew and Pokémon ROM-mod lanes.
+  exploration / fishing), an idle-engine with **12 data-only theme packs (827 tests)**,
+  and a read-write **browsergame wired to the bot's live mining economy** (seeded from
+  empty overnight; the read side already renders its full snapshot contract), plus
+  original GBA homebrew (a finished, downloadable game — Lumen Drift v1.3) and Pokémon
+  ROM-mod lanes.
 - **venture-lab** — three launch-ready products (incl. a Stripe webhook test kit); all live
   paths owner-click-gated (finding b4).
 - **substrate-kit** — the portable workflow substrate (the real artifact): released
-  **v1.7 → v1.10.1** across tonight; consumed by every lane.
+  **v1.7 → v1.11.0 in ~48 hours (six releases)**; consumed by every lane.
 - **websites, trading-strategy, sim-lab, idea-engine, product-forge, fleet-manager** —
-  live web services, a paper-trading research lane, a simulation/evidence stage, an idea
-  pipeline, a product builder, and the manager's own control repo.
+  live web services, a paper-trading research lane (its honest headline: the spent
+  holdout found **no** strategy clearing significance — and said so), a
+  simulation/evidence stage (8 formal verdicts), an idea pipeline (147 PRs merged in one
+  14-hour window), a product builder, and the manager's own control repo.
 
 **Read this with an agent too, as before** — half this feedback is from agents, so half the
 review should be too. Best entry points: the external review pack
@@ -378,12 +400,21 @@ Full detail + provenance: `screenshots-2026-07-11/index.md`.
 
 ## Working notes (not part of the email)
 
-- **What's yours to do:** rewrite Part 1 in your voice (the `‹src›` tags show it's all
-  from you — delete them before sending); attach the 4 phone shots (15a/15b/15c/17); decide
-  inline-images vs appendix.
-- **What I can do next on your word:** tighten Part 2 to any length you want; fold the
-  figures inline once you've captured them; verify any specific number against the repos
-  before you send; and prep the actual reply (draft it into Gmail as a real draft you
-  press send on — I won't send anything myself).
+- **Part 1 is now the owner's own text** (rewritten 2026-07-11, committed verbatim —
+  the agent side never edits above the marker). Still his to do before sending: apply
+  the typo/residue list from chat (or say "fix the typos" and the agent applies exactly
+  that list, nothing else); delete the working-doc scaffolding — the doc-header MOCK
+  note, the "MOCK" label on the Part 1 heading, the "How to use this section"
+  blockquote, the `‹July-8 email›` tag in the closing, and the marker lines; attach the
+  4 phone shots (15a/15b/15c/17); decide inline-images vs appendix.
+- **What the agent side can still do on your word:** tighten Part 2 to any length;
+  draft the reply into Gmail as a real draft you press send on (never auto-send);
+  verify any specific number against the repos before you send.
 - **Also worth doing:** Matt's 10–15 min interview (concept-fit half). Part 1 already
   answers his core question in writing, so the interview is low-effort on top.
+- **Part 2 fact-refresh log (2026-07-11 afternoon):** superbot-next 30→33/49 with
+  212/212 goldens; kit v1.10.1→v1.11.0 (six releases, verified); added the
+  positive-side classifier confirmation (superbot-games #34/#36/#46/#47 merged
+  first-try under live in-chat authorization) + the content-provenance denial
+  (superbot-plugin-hello seed push) to finding b1; added the owner-vocabulary bullet
+  to (c); enriched (e) with idle/trading/sim/idea-engine concrete numbers.
