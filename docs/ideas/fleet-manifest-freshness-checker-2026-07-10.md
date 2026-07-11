@@ -1,6 +1,11 @@
 # Fleet-manifest freshness checker (2026-07-10)
 
-> **Status:** `historical` — implemented (PR #1923, 2026-07-10) · raised 2026-07-10 (night-prep, #1915).
+> **Status:** `historical` — implemented (PR #1923, 2026-07-10) · raised 2026-07-10 (night-prep, #1915)
+> · **RETIRED 2026-07-11 (PR #1974)**: the checker + test were deleted per the script's own Q-0105
+> kill-switch header when `docs/eap/fleet-manifest.md` was superseded by the fleet-manager
+> **generated roster** (`menno420/fleet-manager` `docs/roster.md`; phase-2 decision, fm PR #59 +
+> fm `docs/findings/manifest-parallel-run-2026-07-11.md`) — the staleness class it policed died
+> structurally, exactly the outcome the manifest header predicted. Code history in git.
 > **Subsystem:** tooling / EAP program record.
 >
 > **Shipped:** `scripts/check_manifest_freshness.py` + `tests/unit/scripts/test_check_manifest_freshness.py`

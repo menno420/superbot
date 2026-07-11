@@ -7,6 +7,10 @@
 > [manager brief](eap-manager-project-brief-2026-07-09.md) (v1 → v2: observe **and** dispatch).
 > Grounded in the [fleet review](../eap/fleet-review-2026-07-09.md) + the lived findings in the
 > [evaluation log](projects-eap-evaluation-log.md).
+> **Registry update (2026-07-11):** the hand-maintained `docs/eap/fleet-manifest.md` this
+> protocol names is now a pointer stub — canonical fleet/seat state is the fleet-manager
+> **generated roster** (`menno420/fleet-manager` `docs/roster.md`; fm PR #59, superbot PR #1974).
+> Read the protocol's "maintain the manifest" steps as "the manager regenerates the roster".
 
 ## 0. Goal, the validated insight, and the locked decisions
 
