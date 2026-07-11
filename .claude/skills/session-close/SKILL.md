@@ -16,6 +16,9 @@ Runs the full end-of-session checklist defined in `.claude/CLAUDE.md` § "Sessio
 2. **Backlog grooming** — move one idea one step down its lifecycle.
 3. **New idea** — add one genuine new idea (Q-0089 directive).
 4. **Quality gate** — run `check_docs --strict` + `check_quality.py --check-only`.
+   **Also append your telemetry row** to `telemetry/model-usage.jsonl` (schema:
+   `telemetry/README.md`) — since 2026-07-09 the session gate holds any PR that adds a
+   session card red until the same PR appends a row (Q-0194 guard; bit PR #1990 live).
 5. **Commit & push** — clean commit on the session branch.
 6. **PR lifecycle** — open draft PR (if not already open), mark ready, merge after CI green.
 
