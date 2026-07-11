@@ -1,6 +1,6 @@
 # 2026-07-11 — Env-grant docs + live-env-visibility plan + RELAUNCH/TRIAGE handoff
 
-> **Status:** `in-progress`
+> **Status:** `complete`
 
 📊 Model: Opus 4.8 · owner-directed hub session (fleet management) · afternoon/evening
 
