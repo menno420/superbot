@@ -1088,6 +1088,27 @@ def test_settle_flags_unguarded_wager_settle(mod, tmp_path, monkeypatch):
     assert findings[0].severity == "warning"
 
 
+def test_strict_mode_fails_unguarded_cog_settle_site(mod, tmp_path, monkeypatch, capsys):
+    """Regression for the false-green gate: Rule 6 must scan cogs/ through the
+    registered roots and fail strict mode, not merely warn, for an unguarded
+    cog-layer settle site.
+    """
+    _write(
+        mod,
+        tmp_path,
+        monkeypatch,
+        "cogs/tourn.py",
+        _SETTLE_COG_TOURNAMENT_NO_GUARD,
+    )
+    monkeypatch.setattr(sys, "argv", ["check_consistency.py", "--mode", "strict"])
+
+    assert mod.main() == 1
+    out = capsys.readouterr().out
+    assert "check_consistency — 1 error(s)  0 warning(s)" in out
+    assert "settle_once_adoption" in out
+    assert "cogs/tourn.py" in out
+
+
 def test_settle_class_mixin_is_clean(mod, tmp_path, monkeypatch):
     assert _settle_findings(mod, tmp_path, monkeypatch, _SETTLE_CLASS_MIXIN) == []
 
@@ -1162,15 +1183,15 @@ def test_rule_6_is_registered_and_scoped(mod):
     by_name = {r.name: r for r in mod.RULES}
     assert "settle_once_adoption" in by_name
     rule = by_name["settle_once_adoption"]
-    assert rule.roots == ("views/", "services/")
-    assert rule.severity == "warning"  # warn-first (Q-0105)
+    assert rule.roots == ("views/", "services/", "cogs/")
+    assert rule.severity == "error"
 
 
 def test_settle_once_rule_runs_clean_on_the_live_tree(mod):
     """The live tree's wager-settle callers all adopt the guard — the warn-first
     prerequisite (0 findings) for a future graduation to error."""
     findings = mod.rule_settle_once_adoption(
-        mod._all_files(), mod._load_exceptions(), ("views/", "services/")
+        mod._all_files(), mod._load_exceptions(), ("views/", "services/", "cogs/")
     )
     assert findings == [], "settle_once_adoption flagged the live tree: " + "; ".join(
         f.display(mod.REPO_ROOT) for f in findings

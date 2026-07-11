@@ -27,14 +27,14 @@ rules that no import graph can catch (owner directive Q-0170, 2026-06-17):
      atomic claim — the BUG-0013 class the mixin (PRs #1444/#1445) closed by hand.
 
 Scope is **per-rule** (each :class:`Rule` carries a ``roots`` tuple).  Rules 1-2
-scan only ``views/``; rules 3-4 also scan ``cogs/`` — cogs define inline
+scan only ``views/``; rules 3-4 and 6 also scan ``cogs/`` — cogs define inline
 ``discord.ui.View`` subclasses and select-building UI, so the cog layer is a real
 blind spot for those two patterns (BUG-0017, the Cog-Manager ``options[:25]``
 silent drop, lived in ``cogs/admin/cog_manager.py`` and slipped past the linter
 precisely because rules 3-4 were once ``views/``-only).
 
-It is **warn-first and disposable** (Q-0105): every finding is a warning, nothing
-fails CI yet.  A rule graduates to an error + a ``code-quality`` wire-in only once
+It is **warn-first and disposable** (Q-0105): new rules start as warnings and do
+not fail CI yet.  A rule graduates to an error + a ``code-quality`` wire-in only once
 it runs clean on a fresh tree across a few sessions (the Q-0120 / ``dead-unresolved``
 discipline — a noisy checker trains people to ignore it).  The only valid bypass is
 an allowlist entry in ``architecture_rules/consistency_exceptions.yml`` — never
@@ -1000,9 +1000,9 @@ def rule_settle_once_adoption(
     settle taking the claim is harmless (it always wins the first claim), so the
     rule never asks for a wrong change.
 
-    Warn-only (Q-0105 — the mixin is young; graduate to ``error`` once it stays
-    clean across a few sessions).  Runs clean today (all callers adopt).  Scopes
-    ``views/`` + ``services/`` + ``cogs/`` — the 2026-07-07 widening: the
+    Graduated to ``error`` (Q-0105) after the mixin/rule stayed clean; an
+    unguarded caller now fails ``--mode strict``.  Scopes ``views/`` +
+    ``services/`` + ``cogs/`` — the 2026-07-07 widening: the
     deathmatch human-duel view lives in ``cogs/`` and its unguarded W/L write
     was live-confirmed by Gate-V Arm D, so the cog layer is in scope, and the
     tournament payout / deathmatch leaderboard sinks joined the sink set.
@@ -1135,20 +1135,21 @@ RULES: list[Rule] = [
         severity="warning",
         roots=("utils/",),
     ),
-    # Rule 6 scans ``views/`` + ``services/`` (the wager-settle callers + state
-    # objects live in both). Warn-first (Q-0105): added 2026-06-25, promoting the
+    # Rule 6 scans ``views/`` + ``services/`` + ``cogs/`` (the wager-settle
+    # callers + state objects live in all three). Added 2026-06-25, promoting the
     # ``settle-once-architecture-guard-2026-06-24.md`` idea — it mechanizes the
     # by-hand double-settlement review (BUG-0013 + the three sites the #1444/#1445
-    # run found) for a money-safety class. The target primitive
-    # (``SettleOnceMixin``) is young, so this stays warn-only; it runs clean on the
-    # current tree (both wager-settle callers adopt the guard). Graduate to ``error``
-    # once it has stayed quiet across a few sessions (the edit_in_place pattern).
+    # run found) for a money-safety class. Graduated 2026-07-11: it runs clean on
+    # the current tree, and a warn-only money-safety finding is a false-green
+    # gate. The 2026-07-07 cogs widening must be in the registered roots, not just
+    # the rule function default, or full-tree scans never pass cogs/ files to the
+    # rule.
     Rule(
         "settle_once_adoption",
         rule_settle_once_adoption,
         "wager-settle sites (settle_pvp/refund_pvp) not adopting the settle-once guard",
-        severity="warning",
-        roots=("views/", "services/"),
+        severity="error",
+        roots=("views/", "services/", "cogs/"),
     ),
 ]
 
