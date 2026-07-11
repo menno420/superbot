@@ -58,15 +58,19 @@ Also confirmed the pre-compact handoff PR **#2007 merged** and reconciled the ha
 Merges in `menno420/superbot-games` (owner-authorized) + a docs-only reconciliation commit in
 `superbot`. No runtime/`disbot/` code touched.
 
-## Remaining (owner / fleet-manager — unchanged from handoff §6)
+## Remaining (owner / fleet-manager)
 
-- Apply the next-round founding-prompt kit to the `fleet-manager/projects/` registry
-  (fleet-manager's job — single-writer registry; not editable from the hub).
-- Let fleet-manager finish centralization P3 (#86 — self-landing via armed auto-merge), then
-  send it the wrap-up.
-- Dispatch the leaner next round (7 standing Projects, revenue-first).
+- **Canonicalize the NEW 8-seat structure** into the `fleet-manager/projects/` registry — per
+  `docs/owner/fleet-8seat-structure-2026-07-11.md` + the Fleet Dispatch Pack, **NOT** the
+  superseded `docs/owner/next-round-founding-prompts-2026-07-11.md` (that kit still builds ONE
+  Games project + parks trading — the old 7-seat layout). fleet-manager's job (single-writer
+  registry; not editable from the hub).
+- Dispatch the **8 standing Projects** (revenue-first) from the Fleet Dispatch Pack — Venture Lab
+  (venture-lab + trading merged) · SuperBot World (games+idle+mineverse) · Game Lab (gba+pokemon),
+  not one Games seat.
+- fleet-manager centralization P3 (#86) is **merged**; send it the wrap-up when convenient.
 - 🚩 Owner: venture-lab #51 (10 accidental personal photos → close or relocate; do NOT merge).
-- superbot-games repo-wide wrap-up now that its lane is clear (Games Project relay).
+- superbot-games repo-wide wrap-up now that its lane is clear.
 
 ## ⟲ Previous-session review (the pre-compact handoff session, Q-0102)
 

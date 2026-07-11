@@ -121,13 +121,16 @@ GitHub's "update branch" button and needs no force). Per-PR:
    lane fully merged; superbot-games has zero open PRs. superbot-games still wants a **repo-wide
    wrap-up / archive-ready** pass now that its lane is clear (owned by the Games Project /
    fleet-manager relay, not the hub).
-2. **Apply the next-round founding-prompt kit** to the `fleet-manager/projects/` registry
-   (edit-registry-first — the manager folds the §2 gen-3 rider + §3 per-project updates +
-   creates the 2 merged-Project dirs [Ideation→Evidence, Games] + marks codetool-labs archived
-   + re-syncs the stale v1 coordinator/failsafe companions to v2). Owner re-pastes changed
-   Custom Instructions.
-3. **Let fleet-manager finish centralization P3 (#86)**, then send it the wrap-up.
-4. **Dispatch the leaner next round** (7 standing Projects, revenue-first) using the kit.
+2. **Canonicalize the NEW 8-seat structure** into the `fleet-manager/projects/` registry — per
+   [`../owner/fleet-8seat-structure-2026-07-11.md`](../owner/fleet-8seat-structure-2026-07-11.md)
+   + the Fleet Dispatch Pack. **⚠ Do NOT use the superseded
+   [`../owner/next-round-founding-prompts-2026-07-11.md`](../owner/next-round-founding-prompts-2026-07-11.md)**
+   — it still builds ONE Games project + parks trading (the old 7-seat layout). The manager folds
+   the gen-3 rider, creates the merged dirs (**Venture Lab** = venture-lab+trading; **SuperBot
+   World** = games+idle+mineverse; **Game Lab** = gba+pokemon; **Ideas Lab** = idea-engine+sim-lab),
+   marks codetool-labs archived, re-syncs the stale v1 companions to v2.
+3. fleet-manager centralization P3 (**#86 merged**); send it the wrap-up when convenient.
+4. **Dispatch the 8 standing Projects** (revenue-first) from the Fleet Dispatch Pack.
 
 ## 7. Durable findings to carry (verified this session)
 
