@@ -1,10 +1,10 @@
 {
   "meta": {
-    "generated_at": "2026-07-11T18:52:06Z",
+    "generated_at": "2026-07-11T20:49:03Z",
     "build": {
-      "commit": "448584e4",
-      "subject": "Merge pull request #1997 from menno420/claude/email-fleet-handoff-bwm3ie",
-      "committed_at": "2026-07-11T18:52:06Z"
+      "commit": "e7717c8d",
+      "subject": "docs: fleet-triage register supersede pointer → fleet-manager docs/fleet-triage.md (P3) (#2006)",
+      "committed_at": "2026-07-11T20:49:03Z"
     },
     "schema_version": 1,
     "counts": {
@@ -3341,6 +3341,22 @@
   "reviews": [],
   "updates": [
     {
+      "file": "2026-07-11-settle-once-checker-graduation.md",
+      "date": "2026-07-11",
+      "title": "2026-07-11 — settle-once checker: activate inert cogs/ scope + graduate to error",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": true
+    },
+    {
+      "file": "2026-07-11-session-handoff-fleet-mgmt.md",
+      "date": "2026-07-11",
+      "title": "2026-07-11 — session handoff / continuation doc (pre-compact documentation sweep)",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
       "file": "2026-07-11-round3-dispatch-4k-checkin-complete.md",
       "date": "2026-07-11",
       "title": "Session — round-3 dispatch, part 4k: check-in CAPSTONE — dispatch program COMPLETE",
@@ -3389,12 +3405,52 @@
       "self_initiated": false
     },
     {
+      "file": "2026-07-11-order-002-hub-self-review.md",
+      "date": "2026-07-11",
+      "title": "2026-07-11 — ORDER 002: hub self-review → docs/retro + control/status.md",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-07-11-next-round-founding-prompts.md",
+      "date": "2026-07-11",
+      "title": "2026-07-11 — verify + improve project prompts/instructions for the next batch",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-07-11-multi-project-review-dispatch.md",
+      "date": "2026-07-11",
+      "title": "2026-07-11 — Multi-project review + fleet centralization plan + dispatch kit",
+      "status": "complete",
+      "run_type": "manual",
+      "self_initiated": false
+    },
+    {
       "file": "2026-07-11-games-retro-and-mineweb-packages.md",
       "date": "2026-07-11",
       "title": "Session — round-3 games program: Retro-Games + mining-browsergame founding packages",
       "status": "complete",
       "run_type": "",
       "self_initiated": false
+    },
+    {
+      "file": "2026-07-11-fleet-triage-pointer.md",
+      "date": "2026-07-11",
+      "title": "2026-07-11 — fleet-triage register: supersede pointer to fleet-manager",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-07-11-fleet-strategy-synthesis.md",
+      "date": "2026-07-11",
+      "title": "2026-07-11 — synthesize 4 external strategy reviews + dispose the Codex PRs",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": true
     },
     {
       "file": "2026-07-11-fleet-overview-codex-prompts.md",
@@ -3418,6 +3474,14 @@
       "title": "2026-07-11 — fleet inbox for the hub + 📊 Model attribution line",
       "status": "complete",
       "run_type": "routine",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-07-11-fleet-consolidation-next-round.md",
+      "date": "2026-07-11",
+      "title": "2026-07-11 — consolidation + next-round blueprint (4 owner decisions finalized)",
+      "status": "complete",
+      "run_type": "",
       "self_initiated": false
     },
     {
@@ -3464,6 +3528,14 @@
       "file": "2026-07-11-email-fleet-handoff.md",
       "date": "2026-07-11",
       "title": "2026-07-11 — Anthropic email #2 + fleet-management session (HANDOFF BRIEF)",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-07-11-dispatch-kit-gen3-lessons.md",
+      "date": "2026-07-11",
+      "title": "2026-07-11 — fold gen-3 coordinator lessons into the dispatch-kit permissions block",
       "status": "complete",
       "run_type": "",
       "self_initiated": false
@@ -3746,78 +3818,6 @@
       "title": "2026-07-09 — Gen-1 grand review + cleanup (fleet-wide)",
       "status": "complete",
       "run_type": "",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-07-09-fleet-spec-heartbeat-mirror.md",
-      "date": "2026-07-09",
-      "title": "2026-07-09 — fleet-spec-heartbeat-mirror",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-07-09-fleet-manifest-venture-lab.md",
-      "date": "2026-07-09",
-      "title": "2026-07-09 — fleet-manifest-venture-lab",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-07-09-fleet-coordination-plan.md",
-      "date": "2026-07-09",
-      "title": "2026-07-09 — Fleet coordination protocol + manager Project v2 (plan)",
-      "status": "complete",
-      "run_type": "manual",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-07-09-external-review-pack.md",
-      "date": "2026-07-09",
-      "title": "2026-07-09 — external-review-pack",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-07-09-eap-fleet-sequencing-correction.md",
-      "date": "2026-07-09",
-      "title": "2026-07-09 — EAP fleet sequencing correction: kit-lab governs real repos, test fleet trimmed to 2",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-07-09-eap-findings-email-manager-kickoff.md",
-      "date": "2026-07-09",
-      "title": "2026-07-09 — EAP findings write-back + interim email + manager kickoff",
-      "status": "complete",
-      "run_type": "manual",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-07-09-eap-email-draft-v2.md",
-      "date": "2026-07-09",
-      "title": "2026-07-09 — EAP gen-1 wrap-up email draft v2 drop",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-07-09-dependabot-policy-backlog.md",
-      "date": "2026-07-09",
-      "title": "2026-07-09 — Dependabot PR policy (owner decision) + backlog review/merge",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-07-09-console-feed-contract.md",
-      "date": "2026-07-09",
-      "title": "Session 2026-07-09 — console.json shape contract (superbot half)",
-      "status": "complete",
-      "run_type": "manual",
       "self_initiated": false
     }
   ],
@@ -4589,6 +4589,132 @@
       "date": "2026-07-11",
       "model": "opus-4.8",
       "effort": "high",
+      "task_class": "docs-only",
+      "tokens_out": null,
+      "outcome": {
+        "ci_green_first_push": null,
+        "checker_findings": null,
+        "merged_pr": null,
+        "reverted_within_window": null
+      }
+    },
+    {
+      "session": "2026-07-11-multi-project-review-dispatch",
+      "date": "2026-07-11",
+      "model": "opus-4.8",
+      "effort": "high",
+      "task_class": "review/verify",
+      "tokens_out": null,
+      "outcome": {
+        "ci_green_first_push": null,
+        "checker_findings": null,
+        "merged_pr": null,
+        "reverted_within_window": null
+      }
+    },
+    {
+      "session": "2026-07-11-settle-once-checker-graduation",
+      "date": "2026-07-11",
+      "model": "opus-4.8",
+      "effort": "medium",
+      "task_class": "ci-fix",
+      "tokens_out": null,
+      "outcome": {
+        "ci_green_first_push": null,
+        "checker_findings": null,
+        "merged_pr": null,
+        "reverted_within_window": null
+      }
+    },
+    {
+      "session": "2026-07-11-dispatch-kit-gen3-lessons",
+      "date": "2026-07-11",
+      "model": "opus-4.8",
+      "effort": "low",
+      "task_class": "docs-only",
+      "tokens_out": null,
+      "outcome": {
+        "ci_green_first_push": null,
+        "checker_findings": null,
+        "merged_pr": null,
+        "reverted_within_window": null
+      }
+    },
+    {
+      "session": "2026-07-11-fleet-strategy-synthesis",
+      "date": "2026-07-11",
+      "model": "opus-4.8",
+      "effort": "medium",
+      "task_class": "review/verify",
+      "tokens_out": null,
+      "outcome": {
+        "ci_green_first_push": null,
+        "checker_findings": null,
+        "merged_pr": null,
+        "reverted_within_window": null
+      }
+    },
+    {
+      "session": "2026-07-11-order-002-hub-self-review",
+      "date": "2026-07-11",
+      "model": "fable-5",
+      "effort": "medium",
+      "task_class": "docs-only",
+      "tokens_out": null,
+      "outcome": {
+        "ci_green_first_push": null,
+        "checker_findings": null,
+        "merged_pr": null,
+        "reverted_within_window": null
+      }
+    },
+    {
+      "session": "2026-07-11-fleet-consolidation-next-round",
+      "date": "2026-07-11",
+      "model": "opus-4.8",
+      "effort": "medium",
+      "task_class": "docs-only",
+      "tokens_out": null,
+      "outcome": {
+        "ci_green_first_push": null,
+        "checker_findings": null,
+        "merged_pr": null,
+        "reverted_within_window": null
+      }
+    },
+    {
+      "session": "2026-07-11-next-round-founding-prompts",
+      "date": "2026-07-11",
+      "model": "opus-4.8",
+      "effort": "high",
+      "task_class": "review/verify",
+      "tokens_out": null,
+      "outcome": {
+        "ci_green_first_push": null,
+        "checker_findings": null,
+        "merged_pr": null,
+        "reverted_within_window": null
+      }
+    },
+    {
+      "session": "2026-07-11-session-handoff-fleet-mgmt",
+      "date": "2026-07-11",
+      "model": "opus-4.8",
+      "effort": "medium",
+      "task_class": "docs-only",
+      "tokens_out": null,
+      "outcome": {
+        "ci_green_first_push": null,
+        "checker_findings": null,
+        "merged_pr": null,
+        "reverted_within_window": null
+      }
+    },
+    {
+      "session": "2026-07-11-fleet-triage-pointer",
+      "date": "2026-07-11",
+      "model": "fable-5",
+      "effort": "medium",
       "task_class": "docs-only",
       "tokens_out": null,
       "outcome": {
