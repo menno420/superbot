@@ -1,0 +1,1 @@
+- `claude/email-fleet-handoff-bwm3ie` · email #2: correct Part 2 sidebar-nesting overclaim (owner screenshot evidence) · expected files: `docs/eap/anthropic-email-2-draft-2026-07-11.md`, `.sessions/`, `telemetry/` · 2026-07-11
