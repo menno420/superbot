@@ -325,8 +325,9 @@ Every one of these exists *because* a native mechanism doesn't:
 
 ### (e) What the fleet shipped during the EAP — compact evidence
 
-*(Support, not story. All public under github.com/menno420; counts self-reported by the
-lanes and verifiable per-PR.)*
+*(Support, not story. All public under github.com/menno420 — except the Pokémon lane,
+private by design (Nintendo-derived material, never distributed); counts self-reported
+by the lanes and verifiable per-PR.)*
 - **superbot** — the production Discord bot and the EAP evaluation home (the running log,
   permission probes, this email); frozen as the behavioral oracle the rebuild replays
   against.
