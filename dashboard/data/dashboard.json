@@ -1,10 +1,10 @@
 {
   "meta": {
-    "generated_at": "2026-07-11T12:18:27Z",
+    "generated_at": "2026-07-11T13:00:56Z",
     "build": {
-      "commit": "c77ee0d6",
-      "subject": "Merge pull request #1983 from menno420/claude/jolly-johnson-u0t8yj",
-      "committed_at": "2026-07-11T12:18:27Z"
+      "commit": "a03e5fe8",
+      "subject": "eap: second Anthropic email draft (mock Part 1 + updated Part 2 + screenshot drop-folder) (#1986)",
+      "committed_at": "2026-07-11T13:00:56Z"
     },
     "schema_version": 1,
     "counts": {
@@ -3397,11 +3397,27 @@
       "self_initiated": false
     },
     {
+      "file": "2026-07-11-fleet-night-review.md",
+      "date": "2026-07-11",
+      "title": "2026-07-11 — fleet night review + routine/model fix plan + owner vocab & skills",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
       "file": "2026-07-11-fleet-inbox-and-model-line.md",
       "date": "2026-07-11",
       "title": "2026-07-11 — fleet inbox for the hub + 📊 Model attribution line",
       "status": "complete",
       "run_type": "routine",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-07-11-email-fleet-handoff.md",
+      "date": "2026-07-11",
+      "title": "2026-07-11 — Anthropic email #2 + fleet-management session (HANDOFF BRIEF)",
+      "status": "complete",
+      "run_type": "",
       "self_initiated": false
     },
     {
@@ -3803,22 +3819,6 @@
       "status": "complete",
       "run_type": "routine",
       "self_initiated": true
-    },
-    {
-      "file": "2026-07-08-reconcile-band1830.md",
-      "date": "2026-07-08",
-      "title": "Session — thirty-eighth Q-0107 reconciliation pass (band-#1830)",
-      "status": "complete",
-      "run_type": "routine",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-07-08-rebuild-project-kickoff.md",
-      "date": "2026-07-08",
-      "title": "Session — Rebuild Project kickoff (Custom Instructions + startup prompt)",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
     }
   ],
   "bot_changelog": [
@@ -4460,6 +4460,34 @@
     },
     {
       "session": "2026-07-11-reconcile-band1980",
+      "date": "2026-07-11",
+      "model": "opus-4.8",
+      "effort": "high",
+      "task_class": "docs-only",
+      "tokens_out": null,
+      "outcome": {
+        "ci_green_first_push": null,
+        "checker_findings": null,
+        "merged_pr": null,
+        "reverted_within_window": null
+      }
+    },
+    {
+      "session": "2026-07-11-fleet-night-review",
+      "date": "2026-07-11",
+      "model": "opus-4.8",
+      "effort": "high",
+      "task_class": "review/verify",
+      "tokens_out": null,
+      "outcome": {
+        "ci_green_first_push": null,
+        "checker_findings": null,
+        "merged_pr": null,
+        "reverted_within_window": null
+      }
+    },
+    {
+      "session": "2026-07-11-email-fleet-handoff",
       "date": "2026-07-11",
       "model": "opus-4.8",
       "effort": "high",
