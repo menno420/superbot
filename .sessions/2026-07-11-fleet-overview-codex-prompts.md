@@ -1,6 +1,6 @@
 # 2026-07-11 — Fleet overview: Codex prompts · PR hygiene · owner queue · product catalog · review-skill generalization
 
-> **Status:** `in-progress`
+> **Status:** `complete`
 
 📊 Model: Fable 5 · owner-directed hub session (fleet management) · day · PR #1990
 
