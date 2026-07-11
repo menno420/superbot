@@ -43,11 +43,19 @@
    stale in the manifest partly because "nothing machine-readable declares the hub's
    state"). Closed by the PR carrying this review (self-initiated, flagged).
 5. **Account-wide GraphQL rate-limit exhaustion ~2026-07-11 15:00–15:20Z:** reported by
-   the fleet manager; **no repo-side record found** (grepped `.sessions/2026-07-11-*`
-   and docs/). Precedent on record: the same exhaustion class is documented for
-   2026-07-09 ("API rate limit already exceeded", 10498/5000 used, blocking
-   `enable_pr_auto_merge` while REST kept working —
-   `docs/eap/gen1-wrapup-email-draft-v2-2026-07-09.md:76`).
+   the fleet manager; **no repo-side record found for that window** (grepped
+   `.sessions/2026-07-11-*` and docs/). Precedent on record: the same exhaustion class
+   is documented for 2026-07-09 ("API rate limit already exceeded", 10498/5000 used,
+   blocking `enable_pr_auto_merge` while REST kept working —
+   `docs/eap/gen1-wrapup-email-draft-v2-2026-07-09.md:76`). **Live repo-side evidence
+   landed while this review was being written:** the codex-final-review job on this
+   very PR (#2003, run `29165150243`, job `86576877583`, 2026-07-11T19:22:57Z) failed
+   with verbatim `GraphQL: API rate limit already exceeded for user ID 225413533.` —
+   the exhaustion class is real and recurring today; the 15:00Z window itself remains
+   unrecorded repo-side. Rider on item 1: the workflow #1995 fixed now *parses and
+   runs*, but its first observed post-fix execution failed on this rate limit (its
+   `gh pr comment` is GraphQL-backed) — non-required check, merges unaffected; the
+   comment lands on retry once quota resets.
 6. **Codex usage-cap flapping:** repo-side record exists — the round-3 CAPSTONE card
    (`.sessions/2026-07-11-round3-dispatch-4k-checkin-complete.md:14`) verified Codex
    integration LIVE (replies on sim-lab #15/#16 and superbot #1978) **but usage-capped
