@@ -30,8 +30,15 @@ Owner-directed global fleet management + planning/triage. Deliverables, all land
    F-003 false-green fix · wallet-race fixes landed+concurrency-tested · 1 live-drive · 7-day
    shadow → CUT-3 token swap).
 
+> **⚠ SUPERSEDED (later on 2026-07-11):** decisions 2–3 were refined in live owner conversation
+> into the **8-standing-Project structure** — the Money merge (venture-lab + trading → "Venture
+> Lab") and **two** game seats (SuperBot World = games+idle+mineverse; Game Lab = gba+pokemon),
+> not one. Current structure + each seat's env / instructions / starting prompt:
+> [`../owner/fleet-8seat-structure-2026-07-11.md`](../owner/fleet-8seat-structure-2026-07-11.md).
+
 ## 2. Entry points (all merged; read these to continue)
 
+- **▶ CURRENT fleet structure (8 seats — supersedes "one Games Project"):** [`../owner/fleet-8seat-structure-2026-07-11.md`](../owner/fleet-8seat-structure-2026-07-11.md)
 - Review + triage: [`planning/fleet-review-2026-07-11.md`](../planning/fleet-review-2026-07-11.md)
 - Centralization plan: [`planning/fleet-centralization-plan-2026-07-11.md`](../planning/fleet-centralization-plan-2026-07-11.md)
 - Strategy synthesis: [`planning/fleet-strategy-synthesis-2026-07-11.md`](../planning/fleet-strategy-synthesis-2026-07-11.md)
@@ -56,23 +63,28 @@ Owner sent every project the wrap-up/archive-prep prompt. Verified per-repo:
 ## 4. Merge session (this turn — owner authorized "review + merge all open PRs that are done")
 
 **MERGED** (green, mergeable, card-complete): **gba-homebrew #57 · websites #141 ·
-superbot-games #57, #53, #50.**
+superbot-games #57, #53, #50** — and, in the post-compact continuation (2026-07-11 ~20:45Z),
+**superbot-games #52, #54, #55**. ✅ **The superbot-games world-games lane is now fully
+cleared — zero open PRs.**
 
-**⏳ PENDING — superbot-games #52/#54/#55 need a rebase** (they collide on floor/index files
-after #50/#53 merged). Exact continuation:
-- superbot-games `main` HEAD = `3250181`. `tests/dnd/EXPECTED_MIN_TESTS.txt` on main = **27**
-  (set by #50). Clone: `git clone https://github.com/menno420/superbot-games`.
-- **#52** (branch `dnd-clamp-fuzz`, seeded DM-clamp property-fuzzer): rebase onto main →
-  set `tests/dnd/EXPECTED_MIN_TESTS.txt` = **31** (27 + its 4 fuzz functions) → verify
-  `python3 bootstrap.py check --strict` + `python3 tests/check_suite_floors.py` (exit 0) →
-  push --force-with-lease → merge.
-- **#54** (branch `economy-cross-domain-sim`): rebase → resolve `docs/design/shared-index.md`
-  (add its economy-sim entry *after* #53's persistence entry) + it registers a new suite
-  `tests/shared/sim` in `tests/EXPECTED_SUITES.txt` (add the line) with floor 7 → verify → merge.
-- **#55** (branch `auto-balance-page`): rebase → resolve `shared-index.md` (add its balance
-  entry) → verify `python3 tools/gen_balance.py --check` (freshness) → merge. **Do #54 before
-  #55** (the balance page folds in the economy-sim numbers).
-- Order: **#52 → #54 → #55.**
+**✅ DONE — superbot-games #52/#54/#55 rebased + merged** (post-compact). How each landed
+(recorded so the pattern is reusable): they were brought current by **merging `main` into the
+branch** (not force-rebasing another session's branch — the auto-mode classifier blocks
+rewriting a branch this session didn't author; a merge + normal push is the equivalent of
+GitHub's "update branch" button and needs no force). Per-PR:
+- **#52** (`dnd-clamp-fuzz`): was already on current main with `tests/dnd/EXPECTED_MIN_TESTS.txt`
+  = **31**; merged directly (both checks green).
+- **#54** (`economy-cross-domain-sim`): merged main in, resolved `docs/design/shared-index.md`
+  (persistence entry then economy-sim entry), `tests/EXPECTED_SUITES.txt` auto-merged with the
+  new `tests/shared/sim` suite (floor 7); verified `bootstrap check --strict` + floors + 310
+  pytest green → merged.
+- **#55** (`auto-balance-page`): merged main in, resolved `shared-index.md` (added balance
+  entry after the other two), then **regenerated `docs/balance.md`** (`python3
+  tools/gen_balance.py`) so the freshness `--check` passed against the *current* suite floors
+  (dnd 31 + shared/sim 7, which #52/#54 had changed) → verified → merged.
+- Lesson carried: when a floor/index-generating page (`gen_balance.py`) is in the PR, a rebase
+  that changes those floors makes the committed page **stale** — regenerate before merging, or
+  the freshness guard reddens.
 
 **🚩 FLAGGED — owner decision / not cleanly done (NOT merged):**
 - **venture-lab #51** ("Add files via upload") — adds **10 dated `.jpg` photos to the repo
@@ -105,14 +117,20 @@ after #50/#53 merged). Exact continuation:
 
 ## 6. Next steps (post-compact / fresh session)
 
-1. **Finish superbot-games #52/#54/#55** (rebase details in §4).
-2. **Apply the next-round founding-prompt kit** to the `fleet-manager/projects/` registry
-   (edit-registry-first — the manager folds the §2 gen-3 rider + §3 per-project updates +
-   creates the 2 merged-Project dirs [Ideation→Evidence, Games] + marks codetool-labs archived
-   + re-syncs the stale v1 coordinator/failsafe companions to v2). Owner re-pastes changed
-   Custom Instructions.
-3. **Let fleet-manager finish centralization P3 (#86)**, then send it the wrap-up.
-4. **Dispatch the leaner next round** (7 standing Projects, revenue-first) using the kit.
+1. ~~**Finish superbot-games #52/#54/#55**~~ ✅ **DONE** (post-compact — see §4). World-games
+   lane fully merged; superbot-games has zero open PRs. superbot-games still wants a **repo-wide
+   wrap-up / archive-ready** pass now that its lane is clear (owned by the Games Project /
+   fleet-manager relay, not the hub).
+2. **Canonicalize the NEW 8-seat structure** into the `fleet-manager/projects/` registry — per
+   [`../owner/fleet-8seat-structure-2026-07-11.md`](../owner/fleet-8seat-structure-2026-07-11.md)
+   + the Fleet Dispatch Pack. **⚠ Do NOT use the superseded
+   [`../owner/next-round-founding-prompts-2026-07-11.md`](../owner/next-round-founding-prompts-2026-07-11.md)**
+   — it still builds ONE Games project + parks trading (the old 7-seat layout). The manager folds
+   the gen-3 rider, creates the merged dirs (**Venture Lab** = venture-lab+trading; **SuperBot
+   World** = games+idle+mineverse; **Game Lab** = gba+pokemon; **Ideas Lab** = idea-engine+sim-lab),
+   marks codetool-labs archived, re-syncs the stale v1 companions to v2.
+3. fleet-manager centralization P3 (**#86 merged**); send it the wrap-up when convenient.
+4. **Dispatch the 8 standing Projects** (revenue-first) from the Fleet Dispatch Pack.
 
 ## 7. Durable findings to carry (verified this session)
 
