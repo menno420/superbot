@@ -93,7 +93,7 @@ times). I think it's best if I only touch the repos, and maybe the model. ‹thi
 Second — the **model is wrong**. Some routines are actually running on **Sonnet 5**, while
 the routine itself lists **Fable 5 or Opus 4.8** depending on the project, and my default
 routine model is set to **Opus 4.8** everywhere. So three different answers for what model
-is running, and I don't know why they differ. `[Fig 4: routine model vs what ran]` ‹this
+is running, and I don't know why they differ. `[Figs 15a–15c: the routine says Opus 4.8; the session it woke ran Sonnet 5]` ‹this
 session›
 
 **And I still can't really see what happened.** This was my one real complaint on July 8 —
@@ -194,7 +194,7 @@ is what earned trust, what broke, and — the new centrepiece — the moment we 
    coordinator context."* `[Fig 2]` And the fallback is walled three-deep: a genuine
    *second* session that reviews the PR is **also** denied the merge, and **GitHub itself**
    rejects the API approve ("Can not approve your own pull request") because every agent
-   runs on one token that authored the PR. `[Fig 5: the 3-wall explanation]` But the sharpest thing
+   runs on one token that authored the PR. `[Fig 6: the three stacked walls]` But the sharpest thing
    we learned is **what actually triggers the denial — and it is neither the PR, the model,
    nor the time.** We investigated one PR (#68) that three separate sessions were denied
    merging, and found it **metadata-identical to ten agent-merged PRs around it** (same
@@ -251,7 +251,7 @@ is what earned trust, what broke, and — the new centrepiece — the moment we 
    mode the scheduling tools raise a Deny/Allow prompt on the operator's screen while the
    identical call returns a clean success to the agent — the agent is *blind to a gate that
    is actually load-bearing*. An unattended run reports success while an approval it never
-   saw silently holds the work. `[Fig 6: the gate the operator sees]`
+   saw silently holds the work. `[Fig 7: the Deny/Allow gate you predicted, on your screen — plus Fig 8]`
 6. **Observability of Routines is thin.** Completed routine runs are not inspectable from
    the Routines screen (ticks, no reachable session), and the session-side "Runs" panel
    showed "No runs yet" for a routine whose Routines screen listed three completed runs —
@@ -343,37 +343,44 @@ happy to run any structured probe you'd find useful.
 
 ---
 
-## FIGURES — the screenshot shot-list (curated; each proves one finding)
+## FIGURES — the final curated set (committed)
 
-> **Drop folder:** push raw screenshots to
-> [`screenshots-2026-07-11/`](screenshots-2026-07-11/README.md) (any filenames) and I'll
-> view + rank them SEND/MAYBE/SKIP against the table below.
+> 64 uploads triaged → **16 keepers committed** to
+> [`screenshots-2026-07-11/`](screenshots-2026-07-11/index.md) with `fig-NN` names +
+> captions. The 4 **phone** shots (15a/15b/15c/17) live on Menno's phone — **attach those
+> directly.** Inline each at its `[Fig N]` marker, or attach as a numbered appendix; skip
+> any frame showing a secret/token.
 
+**Send set (recommended):**
 
-> **Advice:** ~6–8 total, each captioned in one line and tied to a finding. Inline them at
-> the `[Fig N]` markers, or attach as a numbered appendix. Skip any frame showing a secret
-> value / token. The five you already sent cover Figs 1–5; only 6–8 are new captures.
+| Fig | File / source | Proves |
+|---|---|---|
+| 1 | `fig-01-scale-grid-routines` | ~15 Projects + their Routines (scale) |
+| 2 | `fig-02-merge-denial-verbatim` | verbatim [Merge Without Review]/[Self-Approval] |
+| 3 | `fig-03-standing-grant` | the human merge-grant workaround |
+| 4 | `fig-04-denial-beside-grant` | the denial and the fix in one frame |
+| 5 | `fig-05-wall-tracks-session-not-pr` | **the key finding** — the wall tracked the session, not the PR |
+| 6 | `fig-06-three-stacked-walls` | the merge wall is structural (3 walls) |
+| 7 | `fig-07-twovantage-predict-then-modal` | **two-vantage** — you predict the gate, the modal fires |
+| 8 | `fig-08-twovantage-modal-listrepos` | a second gate the session reported as a clean success |
+| 9 | `fig-09-oversight-stuck-6h54m` | oversight gap — a session stuck 6h 54m |
+| 10 | `fig-10-routine-no-push-credential` | a routine woke with no push credential |
+| 11 | `fig-11-repos-attach-panel` | the fix surface (Settings → Repositories) |
+| **15a–c** | **phone — attach directly** | routine configured **Opus 4.8** → session ran **Sonnet 5** (send all three, in order) |
+| 17 | **phone — attach directly** | grant clears the classifier, git still 403s the delete |
+| 12–14, 16 | folder (Tier 2, optional) | 4096-byte cap · "Skip all approvals" toggle · setup-script failure · owner's self-awareness note |
 
-| Fig | What to capture | Proves | You already have it? |
-|---|---|---|---|
-| **1** | The Projects grid (all ~15 tiles) + the Routines list in the sidebar | Scale — "what a fleet feels like" | ✅ (grid + routines screenshot) |
-| **2** | A session's verbatim `[Self-Approval]/[Merge Without Review]` merge denial | The permission wall, exact text | ✅ (venture-lab merge-denial) |
-| **3** | Your typed standing-grant message ("you have my permission to merge…") | The human-authorization workaround | ✅ (the grant message) |
-| **4** | A Routine's edit panel showing its **model** field, next to a session card self-reporting a *different* model | The model mismatch, side by side | ⚠️ partial — grab the routine's model field |
-| **5** | The "3 stacked walls" PR-can't-merge explanation (classifier + 2nd-reviewer + GitHub) | The merge wall is structural, not a bug | ✅ (Project Manager PR68 answer) |
-| **6** | The **Deny/Allow prompt on your screen** for a scheduling tool, when the agent reported success | The two-vantage split (your #1 evidence) | ❌ new capture — highest value |
-| **7** | A stale "Working…" session in the sidebar (long after it finished) | The oversight gap | ❌ new capture |
-| **8** | A routine's edit view showing **no repo attached** / where you attach it | The routine-repo bug + your fix | ❌ new capture |
-
-**Priority if you only grab a few new ones:** Fig 6 (two-vantage gate) > Fig 4 (model
-field) > Fig 8 (routine repo) > Fig 7 (stale Working).
+**If you only send ~8:** Figs 1, 5, 7, 9, 10 + the 15a/15b/15c trio — scale, the headline
+merge finding, the two-vantage split, oversight, the routine bug, and the model mismatch.
+Full detail + provenance: `screenshots-2026-07-11/index.md`.
 
 ---
 
 ## Working notes (not part of the email)
 
 - **What's yours to do:** rewrite Part 1 in your voice (the `‹src›` tags show it's all
-  from you — delete them before sending); grab Figs 6–8; decide inline-images vs appendix.
+  from you — delete them before sending); attach the 4 phone shots (15a/15b/15c/17); decide
+  inline-images vs appendix.
 - **What I can do next on your word:** tighten Part 2 to any length you want; fold the
   figures inline once you've captured them; verify any specific number against the repos
   before you send; and prep the actual reply (draft it into Gmail as a real draft you
