@@ -59,6 +59,15 @@ session/hour). Everything else earns its keep.
 
 ## 1. Triage register — keep / replace / archive / delete (verified)
 
+> **→ SUPERSEDED as the living register (2026-07-11, centralization plan §4 /
+> P3, fleet-manager PR #86):** the table below is the **frozen seed
+> snapshot** of this review. The standing, re-reviewable fleet-triage
+> register now lives in **fleet-manager
+> [`docs/fleet-triage.md`](https://github.com/menno420/fleet-manager/blob/main/docs/fleet-triage.md)**
+> — cross-repo/fleet state is fleet-manager-canonical (same supersession
+> pattern as `docs/eap/fleet-manifest.md` → the generated roster).
+> **Re-verdict there, not here.**
+
 Verdict legend: **KEEP** (active, earns its place) · **KEEP-SEQUENCE** (keep, mid-build,
 defined next step) · **KEEP-PARKED** (keep the asset, park the loop) · **ARCHIVE**
 (finished, make read-only, lose nothing) · **SEED** (empty, one action to activate) ·
