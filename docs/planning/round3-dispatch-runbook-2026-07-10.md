@@ -360,6 +360,8 @@ Reply here with the substrate-kit section inline + per-class totals when the PR 
 | Simulator (sim-lab) | repo CREATED (owner) + **SEEDED born-right by the part-4 dispatch copilot ~19:17Z** (`32dc75d` direct-push to empty `main`: kit v1.7.0 adopted+engaged — 9 slots real values, `check --strict` green — gate **LIVE, run #1 green**, check `substrate-gate`; lab contract + verdict grammar + control bus incl. outbox; sims/+harness/ skeletons; OA-001/OA-002 pre-filed); package §0/§2 de-staled (incl. Q-0265 continuous-native §2); **§1/§2 pastes + Project + env + Codex toggle = owner next** | ✓ booted ~20:4xZ (owner pasted §1/§2); calibration paste-back not chat-verified — judged via artifacts (part-4c) | ✓ **verified in the registry** (~21:1xZ): `trig_01SHfnLv6EqZesr4tC3T9kUU` "sim-lab failsafe wake", cron `0 1-23/2 * * *`, enabled, **first fire 21:03Z** — armed via the WORKER-SEAT recipe after the coordinator toolset lacked both `create_trigger` AND `send_later` (OA-003 self-resolved; the incident is the EAP email §(g) capability-self-awareness datapoint); pacemaker test one-shot 21:11Z in flight | ✓ **heartbeat @ HEAD 21:00Z** (BOOT COMPLETE) — walking skeleton PROVED (its PR #2, auto-merge held by `substrate-gate` then merged); `sims/REFERENCE.md` (PR #3); **INTAKE 001–003 pulled (PR #4) — pipeline proof EXCEEDED (3 proposals)**; next slice INTAKE 003 (numeric sim) | **LIVE — pipeline flowing.** Open: OA-002 Codex toggle (owner click — verdicts stall at `pending` without it); Q-0264.4 first @codex reply = the toggle's live proof |
 | Trading (trading-strategy) | env `trading-strategy` owner-created + Project booted ~21:0xZ (package: [`round3-founding-package-trading-2026-07-10.md`](round3-founding-package-trading-2026-07-10.md), continuous + Q-0266 volume-first, ORDER-008-first) | pending part-4c chat review (owner-side) | ✓ **verified in the registry** (~21:1xZ): `trig_01YBaVeKAW2fSD83S9F37s2d` "trading-strategy failsafe wake", cron `0 */2 * * *`, enabled, created 21:03Z, bound to its coordinator + env; **continuation chain live** (next link 21:20Z). Old 4-hourly `trig_01Mvn5xRmqGmZJNRHgjqyLpN` deletion = verify on next sweep (create-verify-then-delete ordering) | boot in progress at verification time — ORDER 008 execution + first heartbeat = next sweep's check | **BOOTED, loop hot** — verify ORDER 008 report (13 verdicts + denominators in final-report.md §Holdout) + old-wake deletion next sweep |
 | Builder (superbot-next) | ✓ 2026-07-10 ~16:30Z (owner pasted; booted) | not paste-backed; judged via artifacts | ✓ **verified in the registry**: `trig_01VYZQ7GHxYq3ecSw8UNZek8` "builder-wake", cron `0 */2 * * *`, ORDER-008 prompt verbatim, next fire 18:00Z | ✓ **heartbeat @ HEAD 18:25Z** (18:0xZ sweep, git transport — the 01:05Z ENDER-MISSING is CLEARED): band-5 testing-ladder step 7 COMPLETE incl. the live-drive leg (its #109; 3 live-only bugs found + queued as the next lane); `superbot-plugin-hello` created by the owner 16:03Z (ORDER 002 gate cleared) | **LIVE — fully verified.** Note: dispatch-session ORDER-number collision (both manager and copilot appended "ORDER 010") caught pre-merge and renumbered to 011 on PR #104 — the kit §6.8 order-claim convention exists for exactly this |
+| World Games (superbot-games) | ✓ 2026-07-11 ~00:0xZ (owner pasted §1/§2, part-4h corrected blocks: gen-2 single-seat, unified inbox already exists, kit already v1.7.1, ORDER-001-first) | pending owner-side (skim for the §4 red flags: re-porting gen-1, kit re-upgrade, control-file re-create) | ✓ **verified in the registry** by the copilot (00:2xZ fleet sweep): `superbot-games failsafe wake`, cron `15 */2 * * *`, enabled, next fire 00:15Z (:15 stagger off the even-hour spike) | boot in progress at verification time — ORDER 001 (CI collection-scope fix, gate 73→121 tests) is the walking-skeleton PR; heartbeat overwrite of the gen-1 pointer stub = next sweep's check | **BOOTED — games program Seat A live** (repo HEAD `b134961`; manager verified the #16 CI gap that ORDER 001 fixes) |
+| Idle Engine (superbot-idle) | repo CREATED (owner, empty) + **SEEDED born-right by the dispatch copilot ~23:3xZ** (kit v1.7.1 adopt → 9 slots real values → render --live → mode guided → `substrate-gate` wired → lane contract [CORE/SKIN split, theme-gate, pre-registered economy] + control bus + `themes/`; `check --strict` green; pushed to empty main); ✓ **§1/§2 pasted by the owner ~00:0xZ** (part-4h, permissions block appended); env `superbot-idle` + settings OA-001 owner-done | pending owner-side (red flag: hard-coded egg-farm nouns "to keep it simple" — the seam IS the skeleton) | ✓ **verified in the registry** by the copilot (00:2xZ fleet sweep): `superbot-idle failsafe wake`, cron `45 */2 * * *`, enabled, next fire 00:45Z | boot in progress — ORDER 000 (engine tick + one generator, nouns from `themes/egg-farm.yaml`, theme-gate in CI) is the walking skeleton; PR #1 open at sweep time | **BOOTED — games program Seat B live** (seed `26cbe8a`) |
 
 **Six-vs-seven RESOLVED (2026-07-10):** the drafting-time note below stands as history —
 launch pack §1 lists seven debts; fleet-manager PR #20 had pre-seeded six ORDERs covering
@@ -509,3 +511,50 @@ stagger off the even-hour spike (flagged part-4f); update the superbot-games met
 cadence line accordingly. The superbot planning copies become frozen history with
 superseded-by pointers once your ingest lands, per the one-source-of-truth rule.
 ```
+
+### 6.4 Codex fleet-wide enablement → manager (for the manager chat — pending paste)
+
+Context (status: PENDING PASTE — flip to "pasted <time>" on owner confirmation): part-4h
+(2026-07-11 ~00:2xZ) — the owner connected Codex environments for ALL 12 active fleet
+repos (stale envs for dead repos deleted). This retires the "Codex has no environment for
+fleet-manager" wall (unblocks the manager's ORDER 007 @codex relay) and closes sim-lab
+OA-002. Agents can't see chatgpt.com settings, so live seats still believe the OLD
+capability facts and will keep skipping @codex asks until told.
+
+```
+OWNER UPDATE (2026-07-11 ~00:2xZ): Codex environments now exist for ALL 12
+active fleet repos — fleet-manager, idea-engine, product-forge, sim-lab,
+substrate-kit, superbot, superbot-games, superbot-idle, superbot-next,
+trading-strategy, venture-lab, websites (stale envs for dead repos deleted).
+Consequences to propagate: (1) retire the "Codex has no environment for
+fleet-manager" wall — your ORDER 007 @codex relay is now unblocked, run it;
+(2) sim-lab OA-002 is DONE — its verdict loop may use @codex review from now
+on; (3) update the projects/ metas' Codex-status lines + capabilities facts so
+lanes stop skipping @codex asks on stale info; (4) the known caveat stands:
+Codex usage QUOTA can refuse temporarily (tonight's superbot#1920 refusal) —
+treat quota refusals as retry-later, not as a wall.
+```
+
+## 7. SESSION CLOSE — part-4h (2026-07-11 ~00:2xZ) + the NEXT-SESSION handoff
+
+**This runbook is the durable state home for the round-3 dispatch program.** The
+next session's brief (verified state + remaining finalization items + owner clicks) is
+its own homed doc: [`round3-dispatch-next-session-brief-2026-07-11.md`](round3-dispatch-next-session-brief-2026-07-11.md).
+Headline: **every core seat + all manual/game lanes are LIVE or BOOTED** — the dispatch
+board is essentially clear; what remains is *finalization verification* (do the just-booted
+seats' first PRs land?) + a short owner-click tail.
+
+**Owner clicks COMPLETED this session (recorded so no seat re-flags them):**
+product-forge GitHub Pages (Source: GitHub Actions) ✅ · sim-lab Codex toggle (OA-002) ✅ ·
+superbot-idle repo settings (auto-merge + `substrate-gate` required) ✅ · superbot-next
+"require branches up to date" already unchecked ✅ · substrate-kit required-check swapped to
+`kit-quality` (legacy alias checks removed) ✅ · **all 12 active repos Codex-enabled** ✅.
+
+**Owner-authored landings this session:** the fleet-canonical **Permissions & authority**
+block, owner-landed as fleet-manager `projects/UNIVERSAL.md` v3 (commit `c23223f8`, PR #51)
+— the provenance the manager's held v2 fold was waiting for; the manager re-lands the
+per-repo fold citing it (rides its work ladder). New seats are born with the block
+(games/idle pastes carried it).
+
+**Decision recorded this session:** router **Q-0268** — autonomy vs. the money/account line
+(real-identity setup then API keys; burner-signup refused).
