@@ -1,1 +1,0 @@
-- branch `claude/fleet-triage-pointer` · scope: docs-only supersede pointer — fleet-review §1 triage table → fleet-manager docs/fleet-triage.md (P3, centralization plan §4) · files: docs/planning/fleet-review-2026-07-11.md, .sessions/ · 2026-07-11
