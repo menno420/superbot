@@ -1,10 +1,10 @@
 {
   "meta": {
-    "generated_at": "2026-07-11T07:05:26Z",
+    "generated_at": "2026-07-11T08:31:57Z",
     "build": {
-      "commit": "b0e9ab20",
-      "subject": "Merge pull request #1978 from menno420/claude/sim-lab-repo-setup-ujglev",
-      "committed_at": "2026-07-11T07:05:26Z"
+      "commit": "58040c6c",
+      "subject": "Merge pull request #1979 from menno420/bot/dashboard-refresh",
+      "committed_at": "2026-07-11T08:31:57Z"
     },
     "schema_version": 1,
     "counts": {
