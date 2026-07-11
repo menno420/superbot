@@ -34,9 +34,13 @@
 > and the **next-round founding-prompt kit** (verified every project prompt/instruction; the
 > improvement delta + the 2 new merged-Project instruction bodies) →
 > [`owner/next-round-founding-prompts-2026-07-11.md`](owner/next-round-founding-prompts-2026-07-11.md).
-> **▶ Post-compact / fresh-session START HERE:** the durable session record + continuation brief
-> (fleet wrap-up status, merge-session results, pending superbot-games rebases, owner-action
-> queue) → [`eap/session-handoff-2026-07-11-fleet-management.md`](eap/session-handoff-2026-07-11-fleet-management.md).
+> **▶ CURRENT fleet structure (8 standing Projects — supersedes the "one Games Project" framing):**
+> [`owner/fleet-8seat-structure-2026-07-11.md`](owner/fleet-8seat-structure-2026-07-11.md) (per-seat
+> repos / environment / mission + dispatch guidance for canonicalizing the registry). The **latest
+> session's next-session brief** (5/8 seats' startup prompts delivered; Ideas Lab / Game Lab /
+> Websites remaining; owner env-mapping open) is in `.sessions/2026-07-11-fleet-dispatch-prompts.md`.
+> **Earlier post-compact record** (fleet wrap-up, merge-session results, owner-action queue) →
+> [`eap/session-handoff-2026-07-11-fleet-management.md`](eap/session-handoff-2026-07-11-fleet-management.md).
 >
 > **Honest caveat (cross-sector, carried):** much buildable depth is substantial runtime work — but
 > every PR now auto-merges on green CI (the `needs-hermes-review` review gate was retired, Q-0197), so

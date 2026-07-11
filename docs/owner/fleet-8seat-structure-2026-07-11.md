@@ -56,3 +56,43 @@ parallel at lower intensity.
 
 codetool-lab ×3 (archived), mobile-lab (parked), games-program + superbot-retro (folded into the
 two game seats), product-forge (on-demand incubator, not a standing seat).
+
+## Dispatch guidance (for the Project Manager canonicalizing this)
+
+Each seat runs on its registry 3-file package: `instructions.md` (Custom Instructions) +
+`coordinator-prompt.md` (the standing loop = boot · slice menu · **pacemaker** ~15-min `send_later`
+chain · **failsafe** cron) + `failsafe-prompt.md` (the cron config). When building/updating them:
+
+- **Keep every prompt COMPLETE — one paste-and-go block (owner directive 2026-07-11).** Never a
+  base prompt plus a rider to bolt on; fold any fix in place.
+- **Start from the existing mature prompts; change ONLY what caused real problems.** Fold the
+  **gen-3 hygiene rider** into each coordinator prompt, in place: one trigger-MCP call per worker
+  (chains stall) · `env -u` for spawned CLIs + smoke gate (env leak split a run into rogue
+  subagents) · hard-sync `git reset --hard origin/main` + `git ls-remote` verify (a warm clone
+  drifted 88 commits) · born-red "CI failed" webhooks are NOISE · a relayed "owner approved" never
+  clears a merge (live-human-only). Fresh manager boot **rebinds-then-deletes** its failsafe (the
+  live one is bound to an archived session).
+- **Failsafe cadence:** manager `30 */2 * * *`; lanes `0 */2` staggered (substrate-kit `0`,
+  superbot-games `15`, superbot-idle `45`, Builder `0`); assign each merged seat a free offset.
+- **Merged seats** (Venture Lab = venture-lab+trading · SuperBot World = games+idle+mineverse ·
+  Ideas Lab = idea-engine+sim-lab · Game Lab = gba+pokemon) need their `coordinator-prompt.md` +
+  `failsafe-prompt.md` **composed from the source seats' packages**.
+
+### Routine-arming recipe (every coordinator prompt MUST spell this out — seats were failing to arm)
+
+The routines are armed with the **Claude Code Remote scheduler** MCP (`send_later` /
+`create_trigger` / `list_triggers`). Every seat prompt must give the concrete calls, because
+"unable to arm/open the routine" was a real failure — the scheduler tool is **environment-dependent**:
+
+1. **PACEMAKER (re-arm every turn, before ending):** `send_later({ message: "continue the work
+   loop: sync HEAD → inbox → next slice → re-arm", delay_minutes: 15 })` — fires back into THIS
+   chat (`send_later` self-binds to the calling session).
+2. **FAILSAFE (arm once at boot; dead-man backstop):** `create_trigger({ name: "<seat> failsafe
+   wake", cron_expression: "<seat cron>", prompt: "<failsafe text>" })` — self-binds persistent to
+   this session. Then **verify via `list_triggers`** (never wait for a fire as proof — completed
+   runs aren't inspectable owner-side). Manager only: rebind-then-delete the archived-session one.
+3. **IF ARMING FAILS** (scheduler tool absent, or the call errors): FIRST retry from a spawned
+   **worker** (worker toolsets differ). If still walled, do NOT silently skip — post the exact
+   `create_trigger` args (name · cron · prompt) as a ⚑ **OWNER-ACTION** in `control/status.md` so
+   the owner arms it from the Routines screen, and record the verbatim error. **Root cause to fix:
+   attach the claude-code-remote scheduler MCP to every seat's environment** so seats self-arm.
