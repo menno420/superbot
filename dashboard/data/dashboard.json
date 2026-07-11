@@ -1,15 +1,15 @@
 {
   "meta": {
-    "generated_at": "2026-07-11T11:53:11Z",
+    "generated_at": "2026-07-11T12:18:27Z",
     "build": {
-      "commit": "e0fd8ef7",
-      "subject": "Merge pull request #1980 from menno420/bot/dashboard-refresh",
-      "committed_at": "2026-07-11T11:53:11Z"
+      "commit": "c77ee0d6",
+      "subject": "Merge pull request #1983 from menno420/claude/jolly-johnson-u0t8yj",
+      "committed_at": "2026-07-11T12:18:27Z"
     },
     "schema_version": 1,
     "counts": {
       "functions": 43,
-      "ideas": 237,
+      "ideas": 238,
       "bugs": 31,
       "reviews": 0,
       "reviews_open": 0,
@@ -1165,6 +1165,14 @@
     }
   ],
   "ideas": [
+    {
+      "file": "supersede-integrity-cross-repo-tier-2026-07-11.md",
+      "title": "Cross-repo successor tier for `check_supersede_integrity.py` (2026-07-11)",
+      "status": "ideas",
+      "date": "2026-07-11",
+      "summary": "`scripts/check_supersede_integrity.py` models supersession as an **in-repo handshake**:",
+      "subsystems": null
+    },
     {
       "file": "adopt-codetool-lab-tools-2026-07-10.md",
       "title": "Adopt the codetool-lab tools as fleet tools (2026-07-10)",
@@ -3373,6 +3381,14 @@
       "self_initiated": false
     },
     {
+      "file": "2026-07-11-reconcile-band1980.md",
+      "date": "2026-07-11",
+      "title": "Session — 43rd Q-0107 reconciliation pass (band-#1980)",
+      "status": "complete",
+      "run_type": "routine",
+      "self_initiated": false
+    },
+    {
       "file": "2026-07-11-games-retro-and-mineweb-packages.md",
       "date": "2026-07-11",
       "title": "Session — round-3 games program: Retro-Games + mining-browsergame founding packages",
@@ -3800,14 +3816,6 @@
       "file": "2026-07-08-rebuild-project-kickoff.md",
       "date": "2026-07-08",
       "title": "Session — Rebuild Project kickoff (Custom Instructions + startup prompt)",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-07-08-rebuild-direction-handoff.md",
-      "date": "2026-07-08",
-      "title": "Session — Close-out: rebuild-direction handoff + email marked sent",
       "status": "complete",
       "run_type": "",
       "self_initiated": false
@@ -4441,6 +4449,20 @@
       "date": "2026-07-11",
       "model": "fable-5",
       "effort": "medium",
+      "task_class": "docs-only",
+      "tokens_out": null,
+      "outcome": {
+        "ci_green_first_push": null,
+        "checker_findings": null,
+        "merged_pr": null,
+        "reverted_within_window": null
+      }
+    },
+    {
+      "session": "2026-07-11-reconcile-band1980",
+      "date": "2026-07-11",
+      "model": "opus-4.8",
+      "effort": "high",
       "task_class": "docs-only",
       "tokens_out": null,
       "outcome": {
