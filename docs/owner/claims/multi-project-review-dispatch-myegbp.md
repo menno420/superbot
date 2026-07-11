@@ -1,0 +1,1 @@
+- branch `claude/multi-project-review-dispatch-myegbp` · scope: fleet-wide review + centralization plan + dispatch-prompt kit (docs-only) · expected files: `docs/planning/`, `docs/owner/`, `docs/eap/`, `.sessions/` · 2026-07-11
