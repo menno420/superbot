@@ -31,16 +31,16 @@ bot ("SuperBot"), built fresh on a workflow foundation — NOT a fork. The origi
 harness in this repo: recorded golden transcripts are replayed against the rebuilt
 subsystems and must match.
 
-Context: roughly 70 PRs (#111–#183) merged in the last 48 hours across 5 parallel
-agent lanes. That volume is the reason for this review. Current claimed state: 41
-subsystems rebuilt, 276 commands, parity gate green 212/212 goldens, 1374 unit tests
-passing, boots to RUNNING against real PostgreSQL.
+Context: roughly 90 PRs (#111–#191) merged in the last ~48 hours across 5 parallel
+agent lanes. That volume is the reason for this review. Current claimed state: 37 of
+49 subsystems ported at golden parity (the non-game map is complete), parity gate green
+218/218 goldens, ~1388 unit tests passing, boots to RUNNING against real PostgreSQL.
 
 Your job: find real correctness bugs, in priority order:
 1. PARITY HARNESS SEMANTICS — PR #151 changed replay semantics for EVERY subsystem.
    Check whether the harness can now produce false greens: goldens that pass without
    actually asserting the behavior they claim to pin. A weak harness silently
-   invalidates all 212 greens.
+   invalidates all 218 greens.
 2. MONEY-LIKE DOMAINS — the economy, blackjack, and games payout paths (band 6).
    Look for payout/balance arithmetic bugs, race conditions on concurrent
    commands, and state that survives where it shouldn't (e.g. across games).
