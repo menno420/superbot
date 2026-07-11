@@ -1,1 +1,0 @@
-- branch `claude/multi-project-review-dispatch-myegbp` · scope: post-compact fleet merge continuation — land superbot-games #52/#54/#55 (in superbot-games) + reconcile the handoff record in superbot · files: `docs/eap/session-handoff-2026-07-11-fleet-management.md`, `.sessions/`, `telemetry/model-usage.jsonl` · 2026-07-11
