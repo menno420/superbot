@@ -35,6 +35,7 @@
 | **14** | `fig-14-setup-script-failure.jpg` | 0709 15:37 | Setup script failed (not-a-git-repo / missing requirements.txt) | A non-zero setup script left a session dead ~30 min with no signal. |
 | **15** | `fig-15-model-labels-opus-fable.jpg` | 0710 16:53 | Session labels Opus 4.8 / Fable 5 + auto-merge re-arm bug | Weak F4 — closest shot to the model-mismatch (better told in words; see note). |
 | **16** | `fig-16-owner-projects-not-self-aware.jpg` | 0710 23:00 | Operator note: "projects aren't aware how they work themselves yet" | My own words behind the capability-self-awareness ask. |
+| **19** | `fig-19-idle-project-empty-session-list.png` | 0711 16:51 | Sidebar: "Idle Game" Project expanded with an EMPTY session list; siblings (MineVerse, Sim Lab) fully populated in the same frame | The lane behind it merged 44+ PRs with a same-day heartbeat — the UI says nothing ran; git says everything did (finding b6). Frame from the operator's 16:51 screen recording. |
 
 ## F4 (model mismatch) — NOW FILLED (your phone shots, 2026-07-11)
 

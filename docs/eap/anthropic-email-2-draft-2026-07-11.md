@@ -269,9 +269,14 @@ is what earned trust, what broke, and — the new centrepiece — the moment we 
 6. **Observability of Routines is thin.** Completed routine runs are not inspectable from
    the Routines screen (ticks, no reachable session), and the session-side "Runs" panel
    showed "No runs yet" for a routine whose Routines screen listed three completed runs —
-   two surfaces disagreeing about the same history. At fleet scale the *only* reliable
-   record of what a session did is the status file it commits — which is why we treat git,
-   never the UI, as the clock and ledger of record.
+   two surfaces disagreeing about the same history. A third instance from the operator's
+   own screen recording (2026-07-11): one game Project's sidebar session list rendered
+   **empty** while that lane's repo carries **44+ agent-merged PRs and a same-day
+   heartbeat** — the operator had to open GitHub to confirm his Project was alive, and
+   sibling Projects doing equivalent work showed full nested session lists in the same
+   frame. `[Fig 19]` At fleet scale the *only* reliable record of what a session did is
+   the status file it commits — which is why we treat git, never the UI, as the clock and
+   ledger of record.
 7. **Still true from July 8, briefly** (each has verbatim text in the linked reports): hard
    403 walls on tag push / release / branch-delete; the ~4 KB child-brief cap; webhook gaps
    (no CI-success / new-push / merge-conflict events → watchers poll); the fast-CI
@@ -288,8 +293,12 @@ Every one of these exists *because* a native mechanism doesn't:
   coordinator-owned scheduler**. At 15 Projects, coordination *was* the workload.
 - **Self-poll routines** standing in for a scheduler → same target.
 - **A generated fleet roster** (regenerated each manager wake from every repo's heartbeat)
-  → the fleet roll-up the operator keeps asking for, which we build because the sidebar
-  doesn't.
+  → the **cross-Project** roll-up. To be precise about what already exists — because we
+  nearly overclaimed here: the sidebar **does** nest a Project's sessions, including its
+  routine-spawned worker slices, under the Project (operator-verified live, 2026-07-11),
+  and that per-Project nesting is genuinely good. What no surface answers is the layer
+  above it: which of 15 lanes are working vs idle, what each shipped this window, which
+  are blocked. The roster exists for that layer, not to replace the nesting.
 - **A per-repo CAPABILITIES ledger + "never probe a documented wall twice"** → pure
   compensation for the absence of capability self-awareness (finding b2).
 - **Decide-and-flag / silence-is-consent** → agents resolve reversible questions and flag
@@ -318,8 +327,10 @@ Every one of these exists *because* a native mechanism doesn't:
    the smallest high-value fix on this list.
 5. **PR events for CI-success / new-push / merge-conflict, and a merge queue** — so
    watchers neither poll nor get woken for nothing.
-6. **Fleet visibility** — per-Project working/idle counts, one fleet view, and a liveness
-   heartbeat that splits "session open" from "making progress."
+6. **Fleet visibility, one level above what exists** — the sidebar's per-Project session
+   nesting is already there and good; what's missing is the cross-Project view: per-lane
+   working/idle counts, one fleet screen, and a liveness heartbeat that splits "session
+   open" from "making progress."
 7. **Non-fatal setup by default**, a larger child-brief budget, auto-merge that tolerates
    fast CI, and — still open from July 8 — **post-hoc "what did session N do" summaries.**
 
@@ -392,6 +403,7 @@ happy to run any structured probe you'd find useful.
 | **15a–c** | **phone — attach directly** | routine configured **Opus 4.8** → session ran **Sonnet 5** (send all three, in order) |
 | 17 | **phone — attach directly** | grant clears the classifier, git still 403s the delete |
 | 12–14, 16 | folder (Tier 2, optional) | 4096-byte cap · "Skip all approvals" toggle · setup-script failure · owner's self-awareness note |
+| 19 | `fig-19-idle-project-empty-session-list` | a Project's session list empty while its repo has 44+ merged PRs (b6) |
 
 **If you only send ~8:** Figs 1, 5, 7, 9, 10 + the 15a/15b/15c trio — scale, the headline
 merge finding, the two-vantage split, oversight, the routine bug, and the model mismatch.
@@ -419,3 +431,9 @@ Full detail + provenance: `screenshots-2026-07-11/index.md`.
   first-try under live in-chat authorization) + the content-provenance denial
   (superbot-plugin-hello seed push) to finding b1; added the owner-vocabulary bullet
   to (c); enriched (e) with idle/trading/sim/idea-engine concrete numbers.
+- **Sidebar correction (owner screenshot, 2026-07-11 16:45 local):** the sidebar DOES
+  nest a Project's sessions + routine-spawned worker slices under the Project — the
+  (c) roster bullet and (d)6 were corrected to name the real gap (the cross-Project
+  rollup + liveness signal), not the nesting. Part 1's matching sentence ("you could
+  add a projects active agents to the sidebar…") is the owner's to fix — suggested
+  rewrite delivered in chat.
