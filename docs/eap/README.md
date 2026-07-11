@@ -5,6 +5,15 @@
 > [`docs/planning/`](../planning/projects-eap-evaluation-log.md) (files prefixed
 > `projects-eap-*`). Newest first within each group.
 
+## Gen-2 night reviews (2026-07-11 →)
+
+- [`night-review-2026-07-11.md`](night-review-2026-07-11.md) — owner-directed independent
+  night review of the whole fleet (2026-07-10 18:00Z → 07-11 11:40Z): per-lane digest across
+  13 active lanes (3 survey agents), what's genuinely valuable / playable, the two evidenced
+  platform bugs (`add_repo` "Unauthorized Persistence" denials + configured-vs-actual model
+  mismatch), the fix-first list, the owner-action queue (routine repo-attach + model set +
+  unblock-value clicks), lessons, and what-went-well.
+
 ## Gen-1 wrap-up (2026-07-09 → 10)
 
 - [`../planning/round3-launch-pack-2026-07-10.md`](../planning/round3-launch-pack-2026-07-10.md) —

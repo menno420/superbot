@@ -175,6 +175,13 @@ Two more bind common operations:
 
 When a doc and a source file disagree, the source file wins.
 
+**Owner shorthand (fleet management):** the maintainer's short command words
+(**review**, **status**, **routines**, **plan**, **ship**, **groom**) map to full
+workflows in **`docs/owner/fleet-vocab.md`** — when the owner uses one, run the
+workflow there (executable ones are `.claude/skills/`, e.g. `/fleet-review`). Grow the
+dictionary as new shorthand earns its place. *(Owner-directed in-session 2026-07-11;
+kept to a pointer so this file stays lean — the descriptions live in the vocab file.)*
+
 **`docs/current-state.md`** (step 2 above) is the living "what is true right now?"
 ledger (stability baseline, in-flight work, recently shipped, gates,
 off-limits, where to read next). It is a **dated snapshot**: source code and
