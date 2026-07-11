@@ -1,6 +1,6 @@
 # 2026-07-11 — fleet merge continuation (post-compact): superbot-games #52/#54/#55 landed + handoff reconciled
 
-> **Status:** `in-progress`
+> **Status:** `complete`
 
 📊 Model: Opus 4.8 · owner-directed (post-compact continuation of the fleet-management arc —
 owner had authorized "review + merge all open PRs that are done"; this finishes the three that
