@@ -1,10 +1,10 @@
 {
   "meta": {
-    "generated_at": "2026-07-11T05:00:35Z",
+    "generated_at": "2026-07-11T07:05:26Z",
     "build": {
-      "commit": "527d648b",
-      "subject": "Merge pull request #1975 from menno420/claude/sim-lab-repo-setup-ujglev",
-      "committed_at": "2026-07-11T05:00:35Z"
+      "commit": "b0e9ab20",
+      "subject": "Merge pull request #1978 from menno420/claude/sim-lab-repo-setup-ujglev",
+      "committed_at": "2026-07-11T07:05:26Z"
     },
     "schema_version": 1,
     "counts": {
@@ -3333,6 +3333,14 @@
   "reviews": [],
   "updates": [
     {
+      "file": "2026-07-11-round3-dispatch-4k-checkin-complete.md",
+      "date": "2026-07-11",
+      "title": "Session — round-3 dispatch, part 4k: check-in CAPSTONE — dispatch program COMPLETE",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
       "file": "2026-07-11-round3-dispatch-4j-checkin-venture.md",
       "date": "2026-07-11",
       "title": "Session — round-3 dispatch, part 4j: check-in sweep — venture-lab LIVE, ⚑B/⚑D unfrozen",
@@ -3370,6 +3378,14 @@
       "title": "Session — round-3 games program: Retro-Games + mining-browsergame founding packages",
       "status": "complete",
       "run_type": "",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-07-11-fleet-inbox-and-model-line.md",
+      "date": "2026-07-11",
+      "title": "2026-07-11 — fleet inbox for the hub + 📊 Model attribution line",
+      "status": "complete",
+      "run_type": "routine",
       "self_initiated": false
     },
     {
@@ -3792,22 +3808,6 @@
       "file": "2026-07-08-rebuild-direction-handoff.md",
       "date": "2026-07-08",
       "title": "Session — Close-out: rebuild-direction handoff + email marked sent",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-07-08-rebuild-audit-checklist.md",
-      "date": "2026-07-08",
-      "title": "2026-07-08 — Rebuild-direction: owner router answers + audit checklist",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-07-08-permprobe-standing-grant-row.md",
-      "date": "2026-07-08",
-      "title": "2026-07-08 — Permission probe: standing-grant row (not-attempted record)",
       "status": "complete",
       "run_type": "",
       "self_initiated": false
@@ -4410,6 +4410,34 @@
     },
     {
       "session": "2026-07-11-round3-dispatch-4j-checkin-venture",
+      "date": "2026-07-11",
+      "model": "fable-5",
+      "effort": "medium",
+      "task_class": "docs-only",
+      "tokens_out": null,
+      "outcome": {
+        "ci_green_first_push": null,
+        "checker_findings": null,
+        "merged_pr": null,
+        "reverted_within_window": null
+      }
+    },
+    {
+      "session": "2026-07-11-fleet-inbox-and-model-line",
+      "date": "2026-07-11",
+      "model": "fable-5",
+      "effort": "medium",
+      "task_class": "docs-only",
+      "tokens_out": null,
+      "outcome": {
+        "ci_green_first_push": null,
+        "checker_findings": null,
+        "merged_pr": null,
+        "reverted_within_window": null
+      }
+    },
+    {
+      "session": "2026-07-11-round3-dispatch-4k-checkin-complete",
       "date": "2026-07-11",
       "model": "fable-5",
       "effort": "medium",
