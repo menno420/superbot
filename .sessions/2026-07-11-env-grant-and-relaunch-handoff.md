@@ -140,3 +140,31 @@ Groomed by routing: the "owner env-grant ideas" were moved a full lifecycle step
 chat → a durable policy doc (fleet-manager) + an executable feature spec (websites) the
 reactivated websites lane can build. The session idea above (fleet-triage register) is
 teed up for the next session to execute rather than left as a raw idea.
+
+## 📤 Run report
+
+- **Did:** documented the env-grant tier model + templates, found & specced the deferred
+  live-env-visibility feature, deployed the Anthropic review site live, and wrote the
+  relaunch/triage handoff · **Outcome:** shipped
+- **Shipped:** fm #78 (env-grant-policy) · websites #143 (live-env-visibility plan) ·
+  websites #132 + the live `review` Railway service · superbot #1996 (Codex prompt
+  refresh) · superbot #1997 (this handoff/closeout)
+- **Run type:** `manual` (owner-directed hub session)
+- **⚑ Owner decisions needed:** live-env-visibility values-vs-names fork (recommend
+  names+status); keep/replace/repurpose verdicts (next session); `none` blocking
+- **⚑ Owner manual steps:** send Anthropic email #2 before 7/14 (+ Part 1 typos, 4 phone
+  shots) · review the 4 Codex reports · revenue sitting (Stripe test keys + 3 publishes) ·
+  "push the plugin seed" · relaunch the fleet routines
+- **⚑ Self-initiated:** `none` (all work owner-directed in-session)
+- **↪ Next:** relaunch + fleet triage — review Codex results, plan getting all projects
+  running, decide keep/replace/repurpose per repo (land in a new `fleet-triage.md`)
+
+## 📊 Telemetry
+
+| Metric | Value |
+|---|---|
+| PRs merged this session | 3 (fm #78, websites #143, superbot #1996) + #1997 pending |
+| CI-red rounds | 1 (the designed born-red hold on #1997's opening commit) |
+| Repo-rule trips | 2 (websites strict: orphan-doc + D-NNNN stamp collisions — both fixed pre-push) |
+| New ideas contributed | 1 (fleet keep/replace/repurpose register) |
+| Ideas groomed | 1 (env-grant ideas → policy doc + feature spec) |
