@@ -219,13 +219,20 @@ is what earned trust, what broke, and — the new centrepiece — the moment we 
    the nightly merge stalls. That's the useful shape of this finding for you: **the
    classifier's line is defensible, but because nothing documents it, even we were coaching
    our own fleet to trip it.**
-2. **A session can't honestly report its own configuration** — the model mismatch in Part 1
-   is the clean case. A routine lists one model, the account defaults to another, and the
-   session runs a third, and the running agent has no tool that returns the truth. This is
-   the same class as the July 8 "two users who can't see each other's experience" finding,
-   now on model identity: **capabilities and config are discovered by trial, never
-   declared.** It's why we asked (still ask) for a queryable "what is this session/routine"
-   manifest. `[Fig 4]`
+2. **A routine's configured model is not the model that runs — proven cold.** The
+   pokemon-mod-lab and gba-homebrew hourly-wake routines are both configured, in their Edit
+   panels, as **Opus 4.8** `[Fig 15a/15b]`, and the account default is Opus 4.8 too. Yet the
+   gba-homebrew session those routines woke reported, in its own words: *"my system
+   configuration for this session states plainly that I'm running as **Sonnet 5**
+   (claude-sonnet-5), not Opus 4.8 — that's given to me directly as fact, not something I
+   infer."* `[Fig 15c]` So the session honestly knows its true model, the routine plainly
+   shows a *different* one, and **nothing reconciles the two**: the running agent can't see
+   or correct the routine's setting, and the operator can't tell from the routine which model
+   actually ran (this is also a real cost surface — the models bill and rate-limit
+   differently). It's the sharpest instance of a deeper theme: **a Project's stated
+   configuration and its running reality can silently diverge, and neither the agent nor the
+   operator has a surface that shows the truth.** It's exactly why we — and the operator —
+   keep asking for a queryable "what is this session/routine, really" manifest.
 3. **Routines spawn without their repo attached.** A routine-woken session arrives with no
    repo in scope and has to `add_repo` itself at boot — which **fails ~1 in 3 times** in
    one game lane (the session boots, can't reach its own code, and burns the wake). The
