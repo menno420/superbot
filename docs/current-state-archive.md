@@ -86,6 +86,62 @@
 
 ## Recently shipped — archived (newest first)
 
+- **#1919 (2026-07-10, overnight shift B — claim visibility across un-merged branches)** —
+  `check_lane_overlap.py --remote` scans recent un-merged `origin/claude/*` / `origin/bot/*`
+  branch tips for `docs/owner/claims/` files not on `main` (tip-state `ls-tree` compare —
+  shallow-clone-safe, degrades gracefully offline), so a sibling session's claim is visible
+  **before its PR exists** — closing the pre-PR race window of a parallel wave
+  (idea `claim-remote-visibility-scan-2026-07-08`, now shipped; +5 unit tests, protocol line
+  in `docs/owner/claims/README.md`). Ride-alongs: Recently-shipped trimmed to the 20 ratchet,
+  fresh-container dev-tools bootstrap row in the journal ⚡ Quick reference (Q-0194). Tooling/docs-only.
+- **#1918 (2026-07-10, tooling — static command-collision checker)** — new
+  `scripts/check_command_collisions.py` + 18-test suite: pure-stdlib AST walk over `disbot/cogs/**`
+  that fails when two declarations claim the same top-level command name/alias within a namespace
+  (prefix registry incl. aliases · slash tree incl. `app_commands.Group` assignments) — the static,
+  pre-merge half of the #1541/#1544 `give`-collision prod-outage guard (the #1544 boot guard stays
+  the runtime backstop). Live tree at ship: 403 token claims, 0 collisions; a standing
+  `test_live_tree_has_zero_collisions` regression runs in every pytest pass. Q-0105 unverified-tier
+  header; `code-quality.yml` step wiring deliberately deferred (noted in the idea file).
+- **#1917 (2026-07-10, codex — docstring)** — codex-authored one-liner adding a return description
+  to `format_duration` in `disbot/utils/duration.py`; verified accurate against source (Q-0120) and
+  merged on green CI by the overnight session (codex branches don't auto-arm, so it was merged
+  directly after confirming green on head).
+- **#1913 (2026-07-09/10, EAP — independent fleet wind-down audit)** — a fresh `superbot`
+  session ran an adversarial, evidence-based audit of the 2026-07-09 gen-1 fleet wind-down:
+  cloned all 9 EAP repos fresh, then had one agent per lane read its succession package and
+  a **separate** agent per cited incident try to refute it against live GitHub PR/commit/CI
+  data. Result: all 7 wind-down lanes (substrate-kit, websites, trading-strategy, the three
+  codetool-lab arms, superbot-games/exploration) shipped complete, substantive succession
+  packages — 21/21 spot-checked incidents resolved to real evidence, zero fabricated content
+  found — plus the new `venture-lab` seed (11/11 files, genuinely lesson-derived, not
+  boilerplate). Five real (non-fabrication) inaccuracies surfaced and are logged with exact
+  evidence; the most consequential is inside **fleet-manager's own ping-test report**, which
+  falsely claims `websites` never acknowledged a coordination test — a real, delayed ack
+  (PR #44, +1h39m) contradicts it. Full report:
+  [`eap/fleet-winddown-audit-2026-07-09.md`](eap/fleet-winddown-audit-2026-07-09.md). Also
+  groomed the `cross-repo-eap-verification-orientation-pointer` idea into a new
+  `AGENT_ORIENTATION.md` task route, having just lived the exact flow. Docs-only.
+- **#1916 (2026-07-10, cross-agent — GPT-5.6 Sol research brief + Codex eval-prompt suite)** —
+  GPT-5.6 Sol went GA 2026-07-09; before it earns any role in the cross-agent pipeline (Q-0120:
+  cross-agent output is *input to verify*, never an order), [`owner/gpt-5-6-sol-codex-eval-2026-07-10.md`](owner/gpt-5-6-sol-codex-eval-2026-07-10.md)
+  captures a launch-week research snapshot + a copy-paste Codex prompt suite with a scoring rubric so
+  the maintainer can test it head-to-head, plus the `cross-agent-trust-ledger` idea. Docs-only.
+- **#1892 · #1893 · #1895 · #1896 · #1897 · #1900 · #1901 · #1902 · #1903 · #1904 · #1905 · #1909 · #1910 · #1911 · #1914 · #1915 (2026-07-09/10, S3/EAP — the gen-1 fleet wind-down → gen-2 doctrine arc)** —
+  the band's dominant **entirely docs-only** thread: the EAP Project fleet reached 10 Projects, ran its
+  gen-1 evaluation to close, and handed off to gen-2. **Fleet manifest** kept live as repos armed —
+  control-plane + a Sonnet-5 arm #1892, the shared `superbot-games` game-mining/exploration rows #1895,
+  the `venture-lab` row + gen-1 wind-down notes + EAP window extended to 2026-07-14 #1909, the
+  `fleet-manager` home-repo seeded #1905. **Evaluation-log findings** for the owner's Anthropic feedback:
+  fleet-view permission gaps #1896, fleet-scale GraphQL **quota exhaustion** #1904, **setup-script
+  failures kill sessions** (addendum finding 10) #1902, and the interim **day-2 email addendum at
+  10-Project scale** #1900 + the **gen-1 wrap-up email draft v2** #1910. **Self-review machinery:** the
+  gen-1 **grand review** #1911 (refuter-corrected, telemetry row appended), the **fleet retro question
+  set** (gen-1 self-review protocol) #1901, the **fleet quality review** #1897, the multi-angle
+  **external review pack** #1903, and the independent **gen-1 → gen-2 doctrine review** (`fleet-manager`
+  vs superbot, verified at HEAD) #1914. **Gen-2 handoff:** night-prep manifest un-drift + per-lane
+  tonight pointers #1915, and the #1893 docs-housekeeping session (ledger/archive tidy + the
+  `cross-repo-eap-verification-orientation-pointer` groom, sibling to the #1913 wind-down audit). No
+  `disbot/` runtime.
 - **#1899 · #1906 · #1907 · #1908 · #1912 (2026-07-09/10, docs — dashboard-data refreshes, Q-0167)** —
   five per-source-merge refreshes keeping the committed `dashboard/data/dashboard.json` export fresh as
   the gen-1 wind-down / gen-2 doctrine arc landed.
