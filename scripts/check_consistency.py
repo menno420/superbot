@@ -1135,20 +1135,30 @@ RULES: list[Rule] = [
         severity="warning",
         roots=("utils/",),
     ),
-    # Rule 6 scans ``views/`` + ``services/`` (the wager-settle callers + state
-    # objects live in both). Warn-first (Q-0105): added 2026-06-25, promoting the
-    # ``settle-once-architecture-guard-2026-06-24.md`` idea — it mechanizes the
-    # by-hand double-settlement review (BUG-0013 + the three sites the #1444/#1445
-    # run found) for a money-safety class. The target primitive
-    # (``SettleOnceMixin``) is young, so this stays warn-only; it runs clean on the
-    # current tree (both wager-settle callers adopt the guard). Graduate to ``error``
-    # once it has stayed quiet across a few sessions (the edit_in_place pattern).
+    # Rule 6 scans ``views/`` + ``services/`` + ``cogs/`` (wager-settle callers +
+    # state objects live in all three). Added 2026-06-25 (promoting
+    # ``settle-once-architecture-guard-2026-06-24.md``) to mechanize the by-hand
+    # double-settlement review (BUG-0013 + the three #1444/#1445 sites) for a
+    # money-safety class. GRADUATED 2026-07-11 — two coupled fixes for a money-safety
+    # false-green (surfaced by the idea-engine probe + the 2026-07-11 fleet review):
+    #   (1) SCOPE: the 2026-07-07 ``cogs/`` widening — documented in the rule body for
+    #       the live-confirmed deathmatch W/L write (Gate-V Arm D) — had been INERT
+    #       because this registry entry still passed ``roots=("views/","services/")``,
+    #       so the function's ``cogs/`` default never flowed and a new unguarded
+    #       cog-layer settle site would ship unscanned. Scope is now
+    #       ``("views/","services/","cogs/")`` to match the function default + docstring.
+    #   (2) SEVERITY: the rule runs clean across all three layers — the tournament
+    #       payout in ``rps_tournament_cog`` and both ``_DuelView`` deathmatch
+    #       leaderboard writes are AST-verified guarded — so ``severity`` graduates
+    #       ``"warning"``→``"error"``: a warn-only rule that never reddened CI becomes an
+    #       enforced gate (a future unguarded settle site now fails ``--mode strict``).
+    # Revert = flip ``severity`` back to ``"warning"`` (disposable per the Q-0105 header).
     Rule(
         "settle_once_adoption",
         rule_settle_once_adoption,
-        "wager-settle sites (settle_pvp/refund_pvp) not adopting the settle-once guard",
-        severity="warning",
-        roots=("views/", "services/"),
+        "wager-settle sites (settle_pvp/refund_pvp/payout_tournament/update_leaderboard) not adopting the settle-once guard",
+        severity="error",
+        roots=("views/", "services/", "cogs/"),
     ),
 ]
 
