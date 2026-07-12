@@ -14,10 +14,12 @@
 **The batch was armed correctly; the platform trigger scheduler degraded.** Between ~02:30Z
 and ~08:00Z the Claude Code Remote scheduler silently dropped one-shot (`send_later`) firings
 and froze several cron Routines (`next_run_at` stuck in the past, still `enabled`). Every seat
-protected by a 2-hourly failsafe cron self-revived at ~08:0xZ when the scheduler partially
-recovered — **the Q-0265 dead-man doctrine worked**. The two seats without that layer went
-dark: **Venture Lab** (failsafe itself wedged) and **Self Improvement** (daily-only loop,
-firing dropped — manually re-fired 08:46Z by this review). Meaningful work still shipped all
+whose 2-hourly failsafe cron **stayed healthy** self-revived at ~08:0xZ when the scheduler
+partially recovered — **the Q-0265 dead-man doctrine worked**. The two dark seats are the ones
+whose protection was missing or itself broken: **Venture Lab** (it *had* a failsafe — the
+failsafe itself wedged) and **Self Improvement** (daily-only loop, no failsafe layer; its one
+firing dropped — manually re-fired 08:46Z by this review). Doctrine takeaway: a failsafe only
+protects while it is *alive* — which is what the trigger-health check below exists to verify. Meaningful work still shipped all
 night, led by the manager's owner-directed prompt-rebuild program.
 
 ## 1. The incident (primary evidence)
@@ -71,8 +73,9 @@ offsets). Nothing agent-side changed between the clean 07-10 batch and this one.
 ## 3. What the incident validated (strong)
 
 1. **Failsafe crons are the load-bearing anti-stall layer (Q-0265) — now production-proven.**
-   Every seat with a `*/2` failsafe came back on its own the moment the scheduler breathed
-   again. The seats that stayed dark are exactly the unprotected ones.
+   Every seat whose `*/2` failsafe stayed healthy came back on its own the moment the scheduler
+   breathed again. The dark seats are exactly the ones with missing (kit-lab: daily-only) or
+   itself-wedged (venture-lab) failsafe coverage — coverage must exist *and* be alive.
 2. **Cross-substrate redundancy works.** The roster-regen moved to a GitHub Actions cron
    (fm #81) — fleet truth (roster gen #12, #13) kept flowing **through** the CCR scheduler
    outage. Anything oversight-critical should live on a second substrate.
@@ -93,10 +96,15 @@ offsets). Nothing agent-side changed between the clean 07-10 batch and this one.
    catch-up · the manager's session-messaging tools (`send_message` — it has them in its MCP
    grant) · an owner poke · manual fire of **fresh-session** triggers (those work — proven on
    kit-lab). The manager is therefore the *only* agent-side watchdog for persistent seats.
-3. **Auto mode ≠ MCP allowlist.** The hub session hit permission prompts on every CCR trigger
-   tool; coordinator seats never do because their Routine's `session_context` carries per-tool
-   `always_allow` grants. **In an unattended session, that prompt is a silent stall.** Any
-   recovery duty assigned to a session must come with the tool grants to execute it.
+3. **Auto mode ≠ MCP allowlist — and the repo-settings allowlist provably doesn't stick for
+   CCR tools.** The hub session hit permission prompts on `fire/update/create_trigger` even
+   though exact `mcp__Claude_Code_Remote__*` allow entries already exist
+   (`.claude/settings.json:68-79`) — fresh evidence for the **Q-0242** record (send_later
+   prompted with an exact entry in 2026-07-07 too). Coordinator seats never prompt because
+   their grants ride a different surface that works: the Routine's spawn-time
+   `session_context` per-tool `always_allow`. **In an unattended session, a prompt is a silent
+   stall** — so any recovery duty must run in a Routine-spawned session carrying its grants,
+   not rely on settings.json.
 4. **A daily-cadence-only seat has zero redundancy.** One dropped firing = a lost day
    (kit-lab). Fresh-session loops need a failsafe layer too — or at least the manager's
    wedge-sweep watching them.
@@ -137,15 +145,18 @@ noise · heartbeats can contradict reality — sweep and re-stamp.
 2. **Poke / confirm SuperBot 2.0's coordinator** — its heartbeat was FRESH 07:55Z; if the
    session shows idle with no armed tick, same poke + have it arm a failsafe cron.
 3. **Paste into Project Manager chat (or fm `control/inbox.md`):** *"ORDER: add a
-   trigger-health check to every wake — list_triggers; any enabled trigger with next_run_at
-   > 15 min in the past is WEDGED (flag in roster + status); any dropped one-shot for a seat
-   session with no future tick means that seat's chain is dead — send_message it to resume.
+   trigger-health check to every wake — list_triggers; any trigger with `enabled=true` and
+   `next_run_at < now − 15min` is WEDGED (flag in roster + status); any dropped one-shot for a
+   seat session with no future tick means that seat's chain is dead — send_message it to resume.
    Done-when: the check runs in gen_roster or the wake ritual and tonight's signature
    (venture 06:06 / kit-lab 06:08 / 9 dropped ticks) would have been caught within one wake."*
 4. **One-click merges:** fm **#105** (staleness sweep) + **#92** (permission-rules port).
-5. **Decide:** allowlist the safe CCR MCP subset (`list_triggers`, `send_later`,
-   `fire_trigger`) in hub `.claude/settings.json` so hub/night sessions don't stall on
-   permission prompts (settings are owner-gated, Q-0106 — say the word and it ships).
+5. **Known platform bug — no settings edit will fix the prompts (Q-0242, reproduced today):**
+   the exact CCR allow entries already exist (`.claude/settings.json:68-79`) and this session
+   still prompted on `fire/update/create_trigger`. Don't re-edit settings (a no-op path). If
+   hub-side recovery should be autonomous, run it from a Routine-spawned session whose
+   `session_context` carries the per-tool grants (the surface that provably works), and add
+   today's evidence to the Q-0242 platform report.
 6. Carry-over HOT: **venture-lab #51** (close + delete branch — 10 personal photos public).
 
 ## 7. Honest limits of this review
