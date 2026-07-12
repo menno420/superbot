@@ -1,15 +1,15 @@
 {
   "meta": {
-    "generated_at": "2026-07-12T06:00:37Z",
+    "generated_at": "2026-07-12T11:57:25Z",
     "build": {
-      "commit": "b0713fcd",
-      "subject": "Merge pull request #2015 from menno420/bot/dashboard-refresh",
-      "committed_at": "2026-07-12T06:00:37Z"
+      "commit": "0f42bea8",
+      "subject": "Merge pull request #2021 from menno420/claude/projects-overnight-review-o3yq8q",
+      "committed_at": "2026-07-12T11:57:25Z"
     },
     "schema_version": 1,
     "counts": {
       "functions": 43,
-      "ideas": 239,
+      "ideas": 240,
       "bugs": 31,
       "reviews": 0,
       "reviews_open": 0,
@@ -1165,6 +1165,14 @@
     }
   ],
   "ideas": [
+    {
+      "file": "scheduler-independent-trigger-watchdog-2026-07-12.md",
+      "title": "Scheduler-independent trigger watchdog (GH Actions substrate) — 2026-07-12",
+      "status": "ideas",
+      "date": "2026-07-12",
+      "summary": "Put the fleet's trigger-health watchdog on a substrate the watched scheduler can't take down:",
+      "subsystems": null
+    },
     {
       "file": "check-docs-cross-repo-path-awareness-2026-07-11.md",
       "title": "Cross-repo path awareness for `check_docs.py`'s pinned-path check (2026-07-11)",
@@ -3349,6 +3357,14 @@
   "reviews": [],
   "updates": [
     {
+      "file": "2026-07-12-projects-overnight-review.md",
+      "date": "2026-07-12",
+      "title": "2026-07-12 — overnight fleet review (owner \"review\" word) + trigger-scheduler incident",
+      "status": "complete",
+      "run_type": "manual",
+      "self_initiated": true
+    },
+    {
       "file": "2026-07-11-settle-once-checker-graduation.md",
       "date": "2026-07-11",
       "title": "2026-07-11 — settle-once checker: activate inert cogs/ scope + graduate to error",
@@ -3816,14 +3832,6 @@
       "file": "2026-07-09-projects-eap-fleet-review.md",
       "date": "2026-07-09",
       "title": "2026-07-09 — Independent cross-repo review of the Projects-EAP fleet",
-      "status": "complete",
-      "run_type": "manual",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-07-09-kl6-console-telemetry.md",
-      "date": "2026-07-09",
-      "title": "Session 2026-07-09 — KL-6 companion: exporter telemetry family + kit-lab console lane",
       "status": "complete",
       "run_type": "manual",
       "self_initiated": false
@@ -4764,6 +4772,20 @@
       "session": "2026-07-11-reconcile-band2010",
       "date": "2026-07-11",
       "model": "opus-4.8",
+      "effort": "medium",
+      "task_class": "docs-only",
+      "tokens_out": null,
+      "outcome": {
+        "ci_green_first_push": null,
+        "checker_findings": null,
+        "merged_pr": null,
+        "reverted_within_window": null
+      }
+    },
+    {
+      "session": "2026-07-12-projects-overnight-review",
+      "date": "2026-07-12",
+      "model": "fable-5",
       "effort": "medium",
       "task_class": "docs-only",
       "tokens_out": null,
