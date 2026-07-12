@@ -15,7 +15,8 @@
       "Bash(python3.10 -m pytest tests/unit/scripts/test_atlas.py -q)",
       "Bash(git worktree *)",
       "Bash(python3.10 tools/web_ux/screenshot_pages.py --out /tmp/claude-0/-home-user-superbot/edd8a486-be72-592c-8d0b-0b75eaa16df0/scratchpad/shots)",
-      "Bash(python3.10 -c ' *)"
+      "Bash(python3.10 -c ' *)",
+      "Bash(npm install *)"
     ]
   },
   "skipWorkflowUsageWarning": true
