@@ -31,6 +31,13 @@ only the header block is read, so a `**Subsystem:**` *example* in an idea's body
 
 Current broad captures:
 
+- [`scheduler-independent-trigger-watchdog-2026-07-12.md`](./scheduler-independent-trigger-watchdog-2026-07-12.md) —
+  **session ender (2026-07-12, overnight fleet review):** extend fleet-manager's roster-regen
+  GitHub-Actions cron to *evaluate* the trigger snapshot it already fetches — flag WEDGED crons,
+  dropped one-shots, and dead pacemaker chains from a substrate the CCR scheduler can't take down.
+  Production-evidenced by the 2026-07-12 scheduler incident (`docs/eap/night-review-2026-07-12.md`);
+  complement to the in-band [`trigger-registry-liveness-sweep-2026-07-10.md`](./trigger-registry-liveness-sweep-2026-07-10.md)
+  (groomed same day with the two new failure classes).
 - [`check-docs-cross-repo-path-awareness-2026-07-11.md`](./check-docs-cross-repo-path-awareness-2026-07-11.md) —
   **session ender (2026-07-11, 44th Q-0107 reconciliation pass, band-#2010):** teach `check_docs.py`'s
   pinned-path check to skip a backtick `docs/…` path qualified by a cross-repo phrase (e.g.
