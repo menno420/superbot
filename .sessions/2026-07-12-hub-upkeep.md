@@ -1,6 +1,6 @@
 # 2026-07-12 — Hub upkeep: stale rebuild pointers in current-state docs
 
-> **Status:** in-progress
+> **Status:** complete
 > **Branch:** `claude/hub-upkeep-2026-07-12` · **PR:** pending
 > **Venue:** remote container (worker session, orchestrated). **📊 Model:** Fable 5 (Claude 5 family).
 > **Scope:** docs-only upkeep — three stale rebuild pointers in the current-state band, verified
@@ -23,7 +23,10 @@ Q-0241/#1776, 2026-07-07) and the live superbot-next repo (50/51 parity rows por
 
 ## Shipped
 
-- (pending flip) the three doc corrections above, quality-mirror green.
+- The three doc corrections above (Fix A/B/C). Quality mirror green:
+  `python3.10 scripts/check_quality.py --full` → **All checks passed ✓**
+  (13883 passed, 50 skipped, 2 xfailed; pinned dev tools installed into
+  python3.10 first — the warm container ships it bare).
 
 ## Findings
 
@@ -52,8 +55,9 @@ Q-0241/#1776, 2026-07-07) and the live superbot-next repo (50/51 parity rows por
 ## 📤 Run report
 
 - **Did:** implemented the three audited corrections to stale rebuild pointers in
-  `docs/current-state.md` + `docs/current-state/S4-docs.md`. **Outcome:** pending (flips with
-  Status → complete once the quality mirror passes).
+  `docs/current-state.md` + `docs/current-state/S4-docs.md`. **Outcome:** quality mirror
+  green (`python3.10 scripts/check_quality.py --full` — all checks passed); PR opened READY
+  for the auto-merge-enabler path.
 - **Shipped:** Fix A/B/C above; this card.
 - **Run type:** orchestrated docs-only upkeep (worker seat), decide-and-flag.
 - **⚑ Owner decisions needed:** none.
