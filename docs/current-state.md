@@ -21,14 +21,19 @@
 >   (**owner removed that rule mid-session → backlog cleared**).
 > - **▶ Next-agent (websites):** 3 PRs need rebasing (real conflicts) — **#160, #161, #166**;
 >   #163 is a draft card. Route to the websites lane.
-> - **⚑ OWNER-ACTION QUEUE (centralized, pending):** (1) fleet-manager → Settings → Actions:
->   enable "Allow GitHub Actions to create and approve pull requests" (roster self-lands);
->   (2) mineverse: provision 6 OAuth env vars (flagship goes live); (3) venture-lab: publish the
->   $29 Stripe kit + post one distribution channel (first revenue); (4) websites: add
->   `ANTHROPIC_API_KEY` to the review service (on-site AI assistant); (5) paste the two orders
->   ([`owner/websites-review-site-order-2026-07-12.md`](owner/websites-review-site-order-2026-07-12.md),
->   [`owner/trigger-health-order-2026-07-12.md`](owner/trigger-health-order-2026-07-12.md)) into
->   their Projects; (6) optional: Matt's EAP interview.
+> - **⚑ OWNER-ACTION QUEUE — mostly EXECUTED 2026-07-12 by the owner-live credentialed session
+>   (superbot #2043; full record: [`.sessions/2026-07-12-owner-queue-execution.md`](../.sessions/2026-07-12-owner-queue-execution.md);
+>   canonical live queue: [the fleet-manager owner queue](https://github.com/menno420/fleet-manager/blob/main/docs/owner-queue.md)):**
+>   ✅ (4) websites `ANTHROPIC_API_KEY` — set on BOTH review services (live `reliable-grace`/review
+>   redeployed); ✅ (5) both orders delivered as fleet-manager inbox **ORDER 019/020** (no pasting
+>   needed); ✅ (2-part) mineverse web host CREATED + LIVE (Railway `superbot-mineverse`/`web`,
+>   `web-production-97636.up.railway.app` → HTTP 200, read-only degraded by design; 3/6 vars set;
+>   deployability fix = mineverse PR #44, merged); 🔁 (1) fleet-manager Actions toggle BRIDGED (roster-bridge routine
+>   `trig_011LrFY1k5cUHRYH6zwTvPvn` lands parked roster PRs, self-retires when the click lands).
+>   **Remaining owner (all in fleet-manager owner-queue with slugs):** the Actions toggle (now
+>   non-blocking) · mineverse Discord-portal 2-step (client secret + redirect-URI registration) ·
+>   Railway GitHub-App grant for superbot-mineverse (auto-deploy) · (3) venture-lab publish clicks
+>   (staged, zip sha-verified — genuinely owner-only) · (6) optional Matt interview.
 > **Next action then reverts to the standing program** — per-sector live queues below.
 >
 > **Ledger note:** living status ledger (project state). **Not binding.**
