@@ -308,7 +308,11 @@ is what earned trust, what broke, and — the new centrepiece — the moment we 
    sessions carrying per-tool grants in their spawn config never prompt. The wake layer is
    the fleet's heartbeat; today it is three half-mechanisms, each with its own silent
    failure mode, and the only detection we have is our own git-side watchdog reading the
-   trigger registry.
+   trigger registry. **And it is ongoing, not a closed window:** re-checked at 10:52Z the
+   same morning, one-shots due 09:02, 09:10, 10:32 and 10:42 had also been silently
+   dropped — including the hub session's own scheduled check-in *about* the dropped ticks.
+   The fleet stays alive only because every wake re-arms the next tick and the failsafe
+   crons catch the gaps.
 8. **Still true from July 8, briefly** (each has verbatim text in the linked reports): hard
    403 walls on tag push / release / branch-delete; the ~4 KB child-brief cap; webhook gaps
    (no CI-success / new-push / merge-conflict events → watchers poll); the fast-CI
