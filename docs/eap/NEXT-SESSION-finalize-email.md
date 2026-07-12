@@ -1,6 +1,6 @@
 # ▶ NEXT SESSION — finalize the second Anthropic email (owner's top priority)
 
-> ## ✅ STAGED 2026-07-12 — clean draft is in Gmail, ready for the owner to send
+> **Status:** `reference` — ✅ **STAGED 2026-07-12** — clean draft is in Gmail, ready for the owner to send.
 > The finalization session ran with the owner live. Outcome: the send-ready email is now a
 > **clean Gmail draft** (id `r9217428483600498478`) — a **reply on the July 8 thread**
 > `19f41cd2e5380bb3` (so the original email is quoted below as reference), **To**
@@ -15,10 +15,9 @@
 > unchanged". Optional non-blocker: refresh the review-site data (still a 07-11 snapshot) to
 > today. **The section below is the original handoff, kept for provenance.**
 >
-> **Status:** `reference` — next-session handoff, written 2026-07-12 at session close (owner-directed: *"prepare the
+> **Origin:** next-session handoff, written 2026-07-12 at session close (owner-directed: *"prepare the
 > repo for the next session to continue finalizing the email with me as the next most
-> important step"*). This is the **one thing that matters next**. Everything technical is
-> already done; what remains needs the owner in the loop.
+> important step"*). This was the **one thing that matters next**; it is now STAGED (see banner above).
 
 ## The state in one paragraph
 
