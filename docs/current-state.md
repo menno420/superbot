@@ -42,6 +42,12 @@
 > **Earlier post-compact record** (fleet wrap-up, merge-session results, owner-action queue) →
 > [`eap/session-handoff-2026-07-11-fleet-management.md`](eap/session-handoff-2026-07-11-fleet-management.md).
 >
+> **2026-07-12 overnight batch reviewed** — the **trigger-scheduler incident** (~02:30–08:00Z:
+> 9 dropped `send_later` one-shots + 2 wedged crons; the Q-0265 failsafe doctrine validated in
+> production; Venture Lab dark, kit-lab manually re-fired; cross-session trigger revival is
+> org-disabled) + per-seat digest, lessons, fix-first list and owner-action queue →
+> [`eap/night-review-2026-07-12.md`](eap/night-review-2026-07-12.md).
+>
 > **Honest caveat (cross-sector, carried):** much buildable depth is substantial runtime work — but
 > every PR now auto-merges on green CI (the `needs-hermes-review` review gate was retired, Q-0197), so
 > an empty *autonomous* fire just builds the next substantial lane or promotes a fresh idea → plan →

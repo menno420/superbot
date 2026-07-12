@@ -23,6 +23,19 @@ flagged. The launch-readiness report (fleet-manager #30) hit the same gap live (
 DECISION F-1). The registry is the only *platform-truth* view of the fleet's clocks —
 querying it once per manager wake turns three manual discoveries into a standing check.
 
+## 2026-07-12 groom — two new failure classes, production-evidenced
+
+The 2026-07-12 scheduler incident (`docs/eap/night-review-2026-07-12.md`) added two classes
+the sweep must also flag, both invisible to status files and both live for hours that night:
+(d) **WEDGED crons** — `enabled=true` with `next_run_at` frozen >15 min in the past (venture-lab
+failsafe stuck at 06:06Z, kit-lab daily at 06:08Z, "last never"); (e) **dead pacemaker chains** —
+a seat session with dropped one-shots and **no future tick armed** (9 ticks silently dropped
+06:12–08:23Z). Constraint discovered the same morning: **cross-session trigger ops are
+org-disabled** — a sibling can't `fire_trigger` a wedged seat awake; only the **manager** can act
+(its MCP grant has `send_message`), so the sweep's remediation step is manager-`send_message`,
+not a trigger kick. This moves the idea from "nice standing check" to the fleet's only
+agent-side detection for a proven outage class — build-ready, priority up.
+
 ## Sketch
 
 One wake-step in the manager's routine prompt + a `docs/` table (trigger id · name · cron
