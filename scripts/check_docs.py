@@ -158,7 +158,11 @@ _REACHABILITY_ALLOWLIST: frozenset[str] = frozenset()
 # by the website two-site-split plan (§1/§5, owner-directed Q-0178/Q-0179). Not a
 # plan/audit/historical snapshot (those still belong in subdirs) — a durable, frequently
 # updated ledger alongside current-state.md / roadmap.md.
-_TOP_LEVEL_DOCS_BUDGET = 20
+# 2026-07-12: 20 -> 21 — sanctioned raise: fleet-reading-path.md is a true top-level nav
+# doc (the cross-repo sibling of repo-navigation-map.md / repo-sector-map.md, boot-visible
+# per owner directive Q-0272). The relocation alternative (current-state-archive.md) is
+# load-bearing in trim_recently_shipped.py / check_current_state_ledger.py — not movable.
+_TOP_LEVEL_DOCS_BUDGET = 21
 
 # Soft cap on `current-state.md` § Recently shipped (newest-first merged-PR bullets).
 # Keeps the 2nd-most-read doc lean — overflow is archived to current-state-archive.md.
