@@ -25,7 +25,14 @@
   `19f41cd2e5380bb3`; window through 2026-07-14.
 - [`screenshots-2026-07-11/index.md`](screenshots-2026-07-11/index.md) — the curated figure
   set for the second email: 16 keepers triaged from 64 uploaded screenshots (fig-NN names +
-  captions mapped to the email's figure slots), plus the model-mismatch phone-shot trio.
+  captions mapped to the email's figure slots); as of 2026-07-12 also holds the recovered
+  model-mismatch trio (15a/b/c) + fig-17, formerly phone-only.
+- [`screenshots-2026-07-12/index.md`](screenshots-2026-07-12/index.md) — the
+  scheduler-incident figure set (figs 20–32): curated from the owner's two raw uploads
+  (PRs #2023/#2024, 27 files reviewed one by one; 22 kept, 5 dispositioned with reasons) —
+  the 8-seat grid, the dropped daily Routine's config, the operator's before/after routine
+  fix, a lane's first-person dropped-tick account, the Auto-mode allowlist-not-honored
+  prompt family, plus tier-2 story material for the review site.
 - [`night-review-2026-07-11.md`](night-review-2026-07-11.md) — owner-directed independent
   night review of the whole fleet (2026-07-10 18:00Z → 07-11 11:40Z): per-lane digest across
   13 active lanes (3 survey agents), what's genuinely valuable / playable, the two evidenced

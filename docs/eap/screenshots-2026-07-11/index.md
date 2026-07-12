@@ -37,19 +37,18 @@
 | **16** | `fig-16-owner-projects-not-self-aware.jpg` | 0710 23:00 | Operator note: "projects aren't aware how they work themselves yet" | My own words behind the capability-self-awareness ask. |
 | **19** | `fig-19-idle-project-empty-session-list.png` | 0711 16:51 | Sidebar: "Idle Game" Project expanded with an EMPTY session list; siblings (MineVerse, Sim Lab) fully populated in the same frame | The lane behind it merged 44+ PRs with a same-day heartbeat — the UI says nothing ran; git says everything did (finding b6). Frame from the operator's 16:51 screen recording. |
 
-## F4 (model mismatch) — NOW FILLED (your phone shots, 2026-07-11)
+## F4 (model mismatch) — NOW FILLED **and committed** (recovered from the owner's 2026-07-12 tablet upload, PR #2024 → curated in-repo)
 
-These 4 are on your phone, not in this repo folder — **attach them to the email directly**
-(or drop them into a GitHub upload and I'll add them here). The first three are a **complete
-model-mismatch proof and the single best evidence in the whole set — send all three as a
-sequence:**
+**No longer phone-only** — all four are committed in this folder as of 2026-07-12. The first
+three are a **complete model-mismatch proof and the single best evidence in the whole set —
+send all three as a sequence:**
 
-| Fig | Shows | Caption |
-|---|---|---|
-| **15a** | pokemon-mod-lab routine Edit panel: model **Opus 4.8**, repo attached, env `gba-lab` | A routine configured as Opus 4.8. |
-| **15b** | gba-homebrew routine Edit panel: model **Opus 4.8**, *two* repos attached | Same — configured Opus 4.8, driving two repos. |
-| **15c** | The gba-homebrew session it woke: agent states "I'm running as **Sonnet 5**, not Opus 4.8 … given to me as fact" | …but the session actually ran Sonnet 5. Config and reality silently diverge. |
-| **17** | Fable 5 session: explicit in-session grant clears the classifier, but `git push --delete` still 403s | Even with permission granted, the git credential layer 403s server-side — two walls, one action. |
+| Fig | File | Shows | Caption |
+|---|---|---|---|
+| **15a** | `fig-15a-routine-pokemon-configured-opus48.jpg` | pokemon-mod-lab routine Edit panel: model **Opus 4.8**, repo attached, env `gba-lab` | A routine configured as Opus 4.8. |
+| **15b** | `fig-15b-routine-gba-configured-opus48.jpg` | gba-homebrew routine Edit panel: model **Opus 4.8**, *two* repos attached | Same — configured Opus 4.8, driving two repos. |
+| **15c** | `fig-15c-session-self-reports-sonnet5.jpg` | The gba-homebrew session it woke: agent states "I'm running as **Sonnet 5**, not Opus 4.8 … given to me as fact" | …but the session actually ran Sonnet 5. Config and reality silently diverge. |
+| **17** | `fig-17-grant-clears-classifier-git-403s.jpg` | Fable 5 session (2026-07-08 probe): explicit in-session grant clears the classifier, but `git push --delete` still 403s verbatim | Even with permission granted, the git credential layer 403s server-side — two walls, one action. |
 
 15a → 15b → 15c is a three-shot narrative (config says Opus 4.8 → session ran Sonnet 5);
 it **supersedes** the weak Fig 15 `model-labels` shot above. Fig 17 corroborates the 403
