@@ -1,10 +1,10 @@
 {
   "meta": {
-    "generated_at": "2026-07-12T11:57:25Z",
+    "generated_at": "2026-07-12T12:56:31Z",
     "build": {
-      "commit": "0f42bea8",
-      "subject": "Merge pull request #2021 from menno420/claude/projects-overnight-review-o3yq8q",
-      "committed_at": "2026-07-12T11:57:25Z"
+      "commit": "35ddf6ef",
+      "subject": "Merge pull request #2026 from menno420/claude/projects-overnight-review-o3yq8q",
+      "committed_at": "2026-07-12T12:56:31Z"
     },
     "schema_version": 1,
     "counts": {
