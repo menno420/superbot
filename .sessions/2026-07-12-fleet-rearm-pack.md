@@ -70,6 +70,24 @@ Also this part: the full cross-repo read of the fleet at HEAD (14 files) that re
 reviewed, dossier-cross-checked); owner ruled "tweak first" and the tweak surface was laid
 out in chat (name · visibility · project cut · arm-hardware path · buy-list).
 
+## Part 4 (same session, ~23:00Z) — v2 night orders + venue correction + the seed skills (Q-0273)
+
+The owner delivered three connected directives (recorded verbatim in router Q-0273): the
+**venue correction** (this hub chat is a standing, permanent venue outside the Projects — it
+merges/closes stray PRs and executes sensitive/destructive actions seats can't; the Project
+Manager is the in-fleet tracker/dispatcher; merge/destructive owner-queue items now carry
+`VENUE:hub`), the **revised per-seat night goals** (2.0 max-finalization: core/admin/setup
+production-ready + command/button curation; World: finalize mining/fishing/idle as games +
+the minigame/casino section spec; Ideas Lab: endless any-domain cycle; Venture: both lanes —
+many books incl. multiple versions, wider backtests, WEBSITE-IDEA markers; websites: the
+clarity bar, execute-to-done; Game Lab: mass production incl. browser + mobile foundations),
+and the **self-initiative program** for the kit. Shipped: `fleet-night-orders-2026-07-12.md`
+rewritten to **v2** (blocks superseded in place; v1 in git history; manager-boot-first
+checklist — its successor never woke off the 22:31Z bridge), router **Q-0273**, and two
+**seed skills** as reference implementations for the kit to generalize:
+`.claude/skills/chase-references/` + `.claude/skills/prep-owner-steps/` (the founding
+incident is this session's own opening-message reference miss).
+
 ## Key design decisions (decide-and-flag, Q-0240)
 
 - **Bridge, not fork:** tonight's re-arm rides startup prompts over the currently-pasted

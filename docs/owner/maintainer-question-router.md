@@ -9845,3 +9845,46 @@ heartbeat sweep), pointed from `.claude/CLAUDE.md` § Read first, `docs/AGENT_OR
 (new cross-repo read-only route), and the journal Quick reference. (3) **Kit-graduation
 candidate:** the per-repo reading-path pattern should travel via substrate-kit templates so
 every repo names its own siblings — routed to the Self Improvement lane.
+
+### Q-0273 — DIRECTED: the hub-venue model, the v2 night goals, and the self-initiative/skills program (2026-07-12, ~23:00Z)
+
+> **Context.** Owner, live in the hub session (same conversation as Q-0271/Q-0272), three
+> connected directives. **(1) Venue correction**, verbatim: *"I did not paste it's final
+> message here, that was a seperate chat outside the projects like you, and that's currently
+> necessary because the projects don't always have the right permissions, or think they don't
+> have it, because of mis interpreted harness prompts or too strict harness prompts etc,
+> that's why this seperate chat must always exist, to merge or close the stray PRs, execute
+> sensetive or destructive actions, sometimes it works from the projects but sometimes it
+> does't, and in here it always works, just sometimes prompts me."* The Project Manager's
+> mission: *"keep track of everything the fleet does and continue to dispatch orders in their
+> repos while I'm away, it also helps me with general project related things or ideas I might
+> have."* **(2) Revised night goals per seat** (2.0 max-finalization incl. core/admin/setup
+> production-ready + command/button curation; World finalize mining/fishing/idle as games +
+> the one minigame/casino section spec; Ideas Lab endless any-domain cycle; Venture both
+> lanes — many books incl. multiple versions each, more strategies/stocks/indicators,
+> WEBSITE-IDEA markers; websites clarity bar "every page shows immediately what it is, what
+> it does, the most important features" + "should not stop until it's all done. And actually,
+> well made"; Game Lab mass production beyond GBA/NDS — browser + mobile foundations).
+> **(3) The self-initiative program** for substrate-kit, verbatim core: *"an agent should be
+> eager to initiate helpfull actions … they could easily lead with the link and the
+> copy/paste ready file in chat as a seperate block … should be baked into a method, like a
+> skill, that prevents it from taking up too much storage in the claude.md itself, but is
+> still always loadable on demand … 'how do I instruct the owner on it's task and prepare
+> things for him along the way' … 'I got a reference that haven't found yet, I should find
+> out the most logical place where it might be and start looking'. so every agent actually
+> self improves in the usefull ways."* Founding incident he cites: this session's own
+> opening-message reference miss (the linked brief + named repos not read → the ~3-turn
+> Q-0272 discovery).
+
+**Decision (owner-directed in-session).** (1) The **hub venue** (owner-live chat outside the
+Projects) is a standing, permanent part of the fleet model — not a seat: it merges/closes
+stray PRs and executes sensitive/destructive actions that seat venues can't (or believe they
+can't); owner-queue items that are merge/destructive-shaped carry a **`VENUE:hub`** tag.
+(2) The revised goals shipped as **NIGHT ORDERS v2**
+([`fleet-night-orders-2026-07-12.md`](./fleet-night-orders-2026-07-12.md) §2, superseding v1
+in place; v1 in git history). (3) Two **seed skills** shipped in superbot as reference
+implementations for the kit to generalize — `.claude/skills/chase-references/` (resolve every
+reference in an ask before acting) + `.claude/skills/prep-owner-steps/` (lead with the deep
+link + paste-ready blobs; map the owner's steps; batch to one sitting) — and the kit's v2
+order carries the full self-initiative program (skill-pack mechanism + the rationalization
+layer: sessions ask themselves "does this lesson deserve a permanent home I can ship now?").
