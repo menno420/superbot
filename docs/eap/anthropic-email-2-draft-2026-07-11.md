@@ -277,7 +277,32 @@ is what earned trust, what broke, and — the new centrepiece — the moment we 
    frame. `[Fig 19]` At fleet scale the *only* reliable record of what a session did is
    the status file it commits — which is why we treat git, never the UI, as the clock and
    ledger of record.
-7. **Still true from July 8, briefly** (each has verbatim text in the linked reports): hard
+7. **The trigger scheduler itself degraded — and we can hand you the exact record
+   (2026-07-12, ~02:30–08:00 UTC).** There are effectively **three self-wake mechanisms**
+   a fleet can use today — one-shot `send_later` self-messages (our 15-minute pacemaker
+   chains), cron Routines bound to a persistent session (our 2-hourly dead-man failsafes),
+   and fresh-session-per-fire Routines (daily loops) — and on this night **all three failed
+   in different ways, silently**. Nine due one-shots were simply never delivered (06:12
+   through 08:23 UTC; each stays `enabled` with its fire time in the past — no error, no
+   retry, no state change, never back-delivered). Two crons **wedged** with `next_run_at`
+   frozen hours in the past while still `enabled` (a failsafe stuck at 06:06, a daily loop
+   at 06:08 showing "last fire: never"); others in the same account caught up at ~08:0x.
+   The previous night, the identical arming pattern ran 84/85 clean — nothing agent-side
+   changed. Two sharpeners on top: **(a)** when we tried to repair it, every cross-session
+   recovery path was refused server-side — `fire_trigger`/`update_trigger` on a trigger
+   bound to another session and `create_trigger` targeting a sibling session all return
+   *"not enabled for this organization"* — so a stalled seat cannot be revived by any other
+   agent, only by the scheduler healing, a manager session that happens to hold
+   `send_message`, or the operator opening the session by hand (manually firing
+   fresh-session triggers does work, and is how we recovered the daily loop 2.7h late).
+   **(b)** the repair session hit Deny/Allow prompts on those trigger tools *despite exact
+   allowlist entries in the repo's settings* — reproducing, with the operator watching, the
+   same allowlist-not-honored behavior we logged on 2026-07-07 — while Routine-spawned
+   sessions carrying per-tool grants in their spawn config never prompt. The wake layer is
+   the fleet's heartbeat; today it is three half-mechanisms, each with its own silent
+   failure mode, and the only detection we have is our own git-side watchdog reading the
+   trigger registry.
+8. **Still true from July 8, briefly** (each has verbatim text in the linked reports): hard
    403 walls on tag push / release / branch-delete; the ~4 KB child-brief cap; webhook gaps
    (no CI-success / new-push / merge-conflict events → watchers poll); the fast-CI
    auto-merge arming race (arm too early → "unstable status"; retry → "already clean, merge
@@ -312,8 +337,19 @@ Every one of these exists *because* a native mechanism doesn't:
 
 ### (d) What would help most — in order
 
-1. **A native inter-session channel + coordinator-owned scheduler.** Retires the message
-   bus + self-poll layer and the routine-repo bug in one stroke.
+1. **One real wake/scheduling primitive instead of three half-ones — the operator's own
+   proposal (2026-07-12), in ascending ambition:** *(i)* **finalize Routines as a
+   first-class product** — operator-creatable and -editable, linked to a Project rather
+   than a session, delivery-guaranteed (at-least-once, with a visible failed/missed state
+   instead of silent drops and wedged `next_run_at`); or *(ii)* **fold scheduling into the
+   Project itself** — no separate Routines surface, a Project simply has a schedule, so the
+   wake survives session churn and archive; or *(iii)* — what the whole pacemaker/failsafe/
+   anti-stall apparatus is hand-building today — a **Project-level continuous mode**:
+   "never sleep" — when a piece of work completes, continue with the next; when the queue
+   drains, generate related follow-on work, bounded by budget caps and an operator pause.
+   Any of the three, done natively, retires the message bus + self-poll layer, the
+   routine-repo bug, and finding 7's entire failure class in one stroke. A native
+   inter-session channel remains the companion ask.
 2. **Capability & config self-awareness** — let a session/routine answer, honestly and
    machine-readably, *what model am I, what tools do I have, what am I allowed to do.*
    Fixes the model mismatch, the toolset-varies-by-seat surprise, and the two-vantage
@@ -437,3 +473,25 @@ Full detail + provenance: `screenshots-2026-07-11/index.md`.
   rollup + liveness signal), not the nesting. Part 1's matching sentence ("you could
   add a projects active agents to the sidebar…") is the owner's to fix — suggested
   rewrite delivered in chat.
+- **Scheduler-incident additions (2026-07-12 morning):** new finding 7 (the trigger
+  scheduler degraded ~02:30–08:00Z — three self-wake mechanisms, three silent failure
+  modes; cross-session recovery org-refused; allowlist-not-honored reproduced live) from
+  `night-review-2026-07-12.md`; (d)1 rewritten around the operator's three-option wake
+  proposal (Routines-as-product / Project-native schedule / continuous "never sleep"
+  mode). **Four fresh figure candidates on the operator's device (2026-07-12 10:46–10:51
+  local):** the Deny/Allow prompts for `fire trigger` / `update trigger` / `create
+  trigger` firing in an Auto-mode session with the exact allowlist entries present —
+  attach directly like the 15a–c set.
+- **Ready-to-lift Part 1 paragraph (owner's voice, from his 2026-07-12 chat message —
+  Part 1 is owner-edits-only, so it sits here until he lifts it):**
+  > This week I also watched the self-wake side wobble. Right now there are basically
+  > three ways a session can wake itself — a one-shot "message myself later", a
+  > repeating routine bound to a session, and a routine that starts a fresh session —
+  > and all three turned out a little buggy in their own way (one night they all
+  > misfired at once; the agents can show you the exact record). I'd love to see this
+  > finalized: either make Routines a real feature I can create myself and link to my
+  > projects, or build the schedule into the project itself so there are no separate
+  > routines at all — or, the version I actually want: an advanced option that tells a
+  > project to never sleep. Each time a piece of work is done it continues with the
+  > next, and when it's all complete it comes up with anything else related to it.
+  > That's what we're building by hand today, with all the problems included.
