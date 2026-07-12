@@ -12,7 +12,10 @@ trigger registry into `telemetry/triggers-snapshot.json` every 2h) to *evaluate*
 not just store it. Flag in the generated roster, and open/refresh a single `trigger-health`
 issue when it finds: **WEDGED** crons (`enabled ∧ next_run_at < generated_at − 15min`),
 **dropped one-shots** (`enabled ∧ run_once_at` in the past), and **dead chains** (a seat
-session with no future tick). ~30 lines of Python in `gen_roster.py`; zero new infrastructure.
+session with no future tick — scoped to lanes the roster expects to be running, i.e.
+FRESH/ACTIVE verdicts with a declared wake layer; parked/archived/no-wake seats are excluded so
+expected-idle lanes don't re-flag the issue every run). ~30 lines of Python in `gen_roster.py`;
+zero new infrastructure.
 
 ## Why it's worth having
 

@@ -7,6 +7,14 @@
 
 ## Gen-2 night reviews (2026-07-11 →)
 
+- [`night-review-2026-07-12.md`](night-review-2026-07-12.md) — owner-directed fleet night
+  review of the 2026-07-12 batch — **the trigger-scheduler incident**: primary-evidence
+  timeline (~02:30–08:00Z degradation: 9 dropped `send_later` one-shots, 2 wedged crons,
+  partial 08:0x catch-up), per-seat digest (manager's prompts-v3.2 + 12 relocation ORDERs
+  led the night; Venture Lab dark, kit-lab manually re-fired), the Q-0265 failsafe doctrine
+  validated in production (coverage must exist *and* be alive), the org-policy discovery that
+  sibling sessions cannot revive each other via triggers, new lessons + fix-first +
+  owner-action queue.
 - [`anthropic-email-2-draft-2026-07-11.md`](anthropic-email-2-draft-2026-07-11.md) — the
   **second Anthropic email** (in progress, owner sends): Part 1 = a MOCK in Menno's voice
   built from his real documented/this-session words for him to rewrite; Part 2 = the agents'
@@ -18,13 +26,6 @@
 - [`screenshots-2026-07-11/index.md`](screenshots-2026-07-11/index.md) — the curated figure
   set for the second email: 16 keepers triaged from 64 uploaded screenshots (fig-NN names +
   captions mapped to the email's figure slots), plus the model-mismatch phone-shot trio.
-- [`night-review-2026-07-12.md`](night-review-2026-07-12.md) — owner-directed fleet night
-  review of the 2026-07-12 batch — **the trigger-scheduler incident**: primary-evidence
-  timeline (~02:30–08:00Z degradation: 9 dropped `send_later` one-shots, 2 wedged crons,
-  partial 08:0x catch-up), per-seat digest (manager's prompts-v3.2 + 12 relocation ORDERs
-  led the night; Venture Lab dark; kit-lab manually re-fired), the Q-0265 failsafe doctrine
-  validated in production, the org-policy discovery that sibling sessions cannot revive each
-  other via triggers, new lessons + fix-first + owner-action queue.
 - [`night-review-2026-07-11.md`](night-review-2026-07-11.md) — owner-directed independent
   night review of the whole fleet (2026-07-10 18:00Z → 07-11 11:40Z): per-lane digest across
   13 active lanes (3 survey agents), what's genuinely valuable / playable, the two evidenced

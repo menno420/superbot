@@ -94,8 +94,9 @@ not applied — Q-0106). Claim deleted at close.
   per-seat digest + lessons; kit-lab manually revived · **Outcome:** shipped
 - **Shipped:** #2017 — `docs/eap/night-review-2026-07-12.md` + idea file/groom + pointers + card
 - **Run type:** `manual` (owner-directed, live)
-- **⚑ Owner decisions needed:** allowlist safe CCR MCP subset in hub settings (night-review §6.5,
-  Q-0106-gated) — say the word and it ships
+- **⚑ Owner decisions needed:** `none` — the earlier "allowlist CCR tools" ask was retracted
+  post-merge (Codex finding, verified): the exact entries already exist and still prompted —
+  Q-0242 reproduced, settings edit is a no-op; see night-review §6.5 (corrected)
 - **⚑ Owner manual steps:** poke Venture Lab money-seat session · confirm/poke SuperBot 2.0
   coordinator + arm its failsafe · paste the trigger-health ORDER into Project Manager
   (night-review §6.3) · one-click merges fm #105/#92 · venture-lab #51 photo cleanup (HOT)
