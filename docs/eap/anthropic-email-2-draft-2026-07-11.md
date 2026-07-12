@@ -1,4 +1,6 @@
-> **Status:** `plan` — SECOND Anthropic email (work in progress), rebuilt 2026-07-11 to reflect the full
+> **Status:** `plan` — SECOND Anthropic email — **FINISHED / send-candidate as of 2026-07-12**: only
+> the `[REVIEW-SITE URL]` slot (two spots) and the owner's optional ➕ NEW mock addition rewrite
+> remain. Rebuilt 2026-07-11 to reflect the full
 > arc (gen-1 → the autonomous fleet → tonight). **Part 1 is a MOCK** — a scaffold in
 > Menno's voice, every beat built from something he actually said (July 8 email, this
 > session's messages, or a documented owner decision); he rewrites it in his own words.
@@ -26,11 +28,11 @@
 
 Hi everyone,
 
-Following up on my July 8 review, Since then I did exactly what I said I'd do:
+Following up on my July 8 review. Since then I did exactly what I said I'd do:
 I stopped running "a few careful tests" and pointed Projects at real,
 sustained work. from 1 - 3 repos on the first day, we are currently at 15 active repos.
 
-Yesterday I spend most of the day reviewing the first batch session and deploying the second,
+Yesterday I spent most of the day reviewing the first batch session and deploying the second,
 late at night I finalized all the projects I wanted to run
 I left them all to run on their own overnight while I slept.
 This email is what running that taught us. Same format as last time: Part 1 is mine,
@@ -58,17 +60,17 @@ the first real batch run was giving us a lot of problems,
 Most of them could be fixed by adjusting the custom instructions and handoff prompts etc.
 Some remained persistent tho notably less present in the second run.
 
-We updated all custom instructions and created a per repo enviroment for each project.
+We updated all custom instructions and created a per repo environment for each project.
 This fixed our broken startup script issue, but still did not completely prevent permission issues.
 I think one of the biggest root causes of many of our problems
-are caused by the fact that agents don't reliably know their own capabilties and limitations.
+are caused by the fact that agents don't reliably know their own capabilities and limitations.
 If an agent could reliably know what it can do and how it can fix certain issues,
 aswell as has the ability to properly guide a user into applying the right settings.
-For that tho, the settings should actually exist, I"ve had agents hallucinate settings that didn't exist.
+For that tho, the settings should actually exist, I've had agents hallucinate settings that didn't exist.
 
 
 What I most want out of it manage the whole thing by talking in as few words as possible and
-still be sure it's understood.I can say one word and a session knows the full job.
+still be sure it's understood. I can say one word and a session knows the full job.
 That's the dream version of this product for me, less a coding tool but
 more a way for someone like me to run a software project by describing it.
 
@@ -82,16 +84,16 @@ The good news is I can fix that myself: I can't create or open these routines,
 but once a project has made one I can edit it and attach the repos.
 
 
-Second, the model is wrong. Some routines are actually running on *onnet 5,
+Second, the model is wrong. Some routines are actually running on Sonnet 5,
 while the routine itself lists Fable 5 or Opus 4.8 depending on the project,
 and my default routine model is set to Opus 4.8.
 
 
 I also think the multi project coordination and oversight could be a little better.
 It already exists per session in a dedicated screen,
-but for multiple projects this just gets too much to keep track off.
+but for multiple projects this just gets too much to keep track of.
 My idea: you could add a projects active agents to the sidebar,
-not as their own seperate session but as a subsession under their main project.
+not as their own separate session but as a subsession under their main project.
 Personally I'm a big fan of freedom to customize things,
 and not necessarily how things look but more how they function,
 so toggles to allow certain projects to connect with each other,
@@ -128,7 +130,52 @@ Kind regards,
 Menno van Hattum
 
 
-*****  EVERYTHING BEFORE THIS MUST REMAIN INTACT: OWNER EDITS OWNLY   *****
+---
+
+## ➕ NEW mock addition (2026-07-12) — the delta since you wrote the part above
+
+> Same rules as the original mock: every beat below is something you actually said today
+> (this morning's hub chat). Rewrite it in your own words, reorder, or drop it — and note
+> that beats 2 and 3 are meant to **REPLACE** two paragraphs you already wrote (marked),
+> so the email doesn't contradict itself. Slot the whole thing in before your closing
+> paragraph.
+
+**[1 — NEW: the self-wake story + your proposal]**
+Since writing the part above I watched the self-wake side wobble for a whole night.
+Right now there are basically three ways a session can wake itself —
+a one-shot "message myself later", a repeating routine bound to a session,
+and a routine that starts a fresh session — and all three turned out a little buggy
+in their own way. Last night they all misfired at once; the agents have the exact record,
+and the system even dropped the reminder they had set to check on the dropped reminders.
+The fleet survived it because the agents run a dead-man backup cron next to every chain,
+but I'd love to see this finalized. Either make routines a real feature I can create
+myself and link to my projects, or build the schedule into the project itself so there
+are no separate routines at all — or the version I actually want: an advanced option
+that tells a project to never sleep. Each time a piece of work is done it continues with
+the next, and when that's all complete it comes up with anything else related to it.
+That's what we are building by hand today, with all the problems included.
+
+**[2 — REPLACES your "Second, the model is wrong" paragraph]**
+Second, the model display was wrong — but I think you already partly fixed this one:
+routines created tonight show the correct model in the routine screen. The screenshots
+in the technical half show how it was before; older routines I haven't re-checked.
+Nice to see it move between two of my emails.
+
+**[3 — REPLACES your sidebar paragraph ("My idea: you could add a projects active agents…")]**
+On oversight: I noticed the sidebar actually already nests a project's active agents
+under their project, which is good. What I'm still missing is the level above that:
+one screen that shows me which of my projects are working right now, which are idle
+and which are stuck, without opening them one by one. My agents ended up building me
+a website for exactly this because I couldn't get it from the product.
+
+**[4 — NEW closer: the website + the evidence]**
+One more thing: this time the evidence has a home. The agents built a small review
+website for you — the story of this project, what went right and what went wrong,
+with every claim linked to a public commit: [REVIEW-SITE URL]. All screenshots are
+committed in the repo as well, so nothing in this email is just my word.
+
+
+*****  EVERYTHING BEFORE THIS MUST REMAIN INTACT: OWNER EDITS ONLY   *****
 
 ***************************************************************************
 ---
@@ -343,6 +390,12 @@ Every one of these exists *because* a native mechanism doesn't:
   "clean") mapped to checked-in workflows, so one word from him runs the same multi-step
   job in any session. This is Part 1's "say one word and a session knows the full job",
   built by hand today; a native home for owner-defined verbs would make it first-class.
+- **A boot "know thyself" ritual + a kit-shipped capability ledger** (newest — born the
+  morning of the scheduler incident): every session's first duty is now to establish its own
+  model, venue, and ability envelope before directing any work, and the substrate-kit is
+  turning capability self-knowledge into generated, verified artifacts every repo inherits.
+  Both exist only because a session cannot ask the platform what it is — absorb that ask
+  natively ((d)2) and this whole compensation layer disappears.
 - **Born-red cards, succession packages, the defensive exit-0 setup shim** → the memory,
   hand-off, and setup-robustness the platform doesn't yet provide natively.
 
@@ -509,8 +562,9 @@ Full detail + provenance: `screenshots-2026-07-11/index.md`.
   local):** the Deny/Allow prompts for `fire trigger` / `update trigger` / `create
   trigger` firing in an Auto-mode session with the exact allowlist entries present —
   attach directly like the 15a–c set.
-- **Ready-to-lift Part 1 paragraph (owner's voice, from his 2026-07-12 chat message —
-  Part 1 is owner-edits-only, so it sits here until he lifts it):**
+- **Ready-to-lift Part 1 paragraph — SUPERSEDED 2026-07-12 (owner asked for a full mock
+  section instead; it now lives inside Part 1's area as "➕ NEW mock addition", which folds
+  this paragraph in as beat 1):**
   > This week I also watched the self-wake side wobble. Right now there are basically
   > three ways a session can wake itself — a one-shot "message myself later", a
   > repeating routine bound to a session, and a routine that starts a fresh session —
@@ -522,3 +576,8 @@ Full detail + provenance: `screenshots-2026-07-11/index.md`.
   > project to never sleep. Each time a piece of work is done it continues with the
   > next, and when it's all complete it comes up with anything else related to it.
   > That's what we're building by hand today, with all the problems included.
+- **Finished-state pass (2026-07-12, owner-directed):** minimal typo-only fixes in the
+  owner's region (spelling/broken chars; zero phrasing changes), the ➕ NEW mock addition
+  inserted (4 beats: self-wake proposal · model-fix confirmation REPLACING his model
+  paragraph · sidebar-correction REPLACING his sidebar paragraph · website closer), one new
+  (c) bullet (boot triad + kit capability ledger), status flipped to finished/send-candidate.
