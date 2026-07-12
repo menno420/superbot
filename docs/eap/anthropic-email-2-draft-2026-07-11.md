@@ -330,7 +330,14 @@ is what earned trust, what broke, and — the new centrepiece — the moment we 
    sibling Projects doing equivalent work showed full nested session lists in the same
    frame. `[Fig 19]` At fleet scale the *only* reliable record of what a session did is
    the status file it commits — which is why we treat git, never the UI, as the clock and
-   ledger of record.
+   ledger of record. **Update, 2026-07-12 (operator's screen recording — and again we want
+   to be fair): a real Routines run surface has arrived** — the routine detail page now
+   shows a run history with Scheduled/Manual/API/Webhook attribution, timestamps, and a
+   link to the session (`[Fig 33]`); it even let us watch a duplicate-fire stand itself
+   down cleanly (`[Fig 34]`). What's still missing is the *negative space*: only runs that
+   happened appear, so a silently missed slot leaves no trace at all, one-shot self-wakes
+   have no surface anywhere, and there's no cross-routine roll-up — you can see each
+   clock, but not which clocks failed to tick.
 7. **The trigger scheduler itself degraded — and we can hand you the exact record
    (2026-07-12, ~02:30–08:00 UTC).** There are effectively **three self-wake mechanisms**
    a fleet can use today — one-shot `send_later` self-messages (our 15-minute pacemaker
@@ -355,11 +362,22 @@ is what earned trust, what broke, and — the new centrepiece — the moment we 
    sessions carrying per-tool grants in their spawn config never prompt. The wake layer is
    the fleet's heartbeat; today it is three half-mechanisms, each with its own silent
    failure mode, and the only detection we have is our own git-side watchdog reading the
-   trigger registry. **And it is ongoing, not a closed window:** re-checked at 10:52Z the
-   same morning, one-shots due 09:02, 09:10, 10:32 and 10:42 had also been silently
-   dropped — including the hub session's own scheduled check-in *about* the dropped ticks.
-   The fleet stays alive only because every wake re-arms the next tick and the failsafe
-   crons catch the gaps.
+   trigger registry. **And the story sharpened the same day — part design, part real
+   failure, and no surface distinguishes them.** A Game Lab session proved from the
+   registry that its "dropped" ticks actually **serialize behind a busy session and
+   deliver the moment the turn goes idle** ("the 09:10Z tick fired at 11:16Z, exactly when
+   my turn went idle — the chain is sound by construction," `[Fig 35]`); the hub session's
+   own 10:42Z check-in matched the pattern, arriving ~80 minutes late as its turn ended.
+   That half is defensible design — but **unlabeled**: a queued tick and a lost tick look
+   identical (`enabled`, fire time in the past) on every surface. The other half is *not*
+   serialization: the daily fresh-session loop had no busy session to queue behind and
+   still showed "last fire: never" for 2.6 hours, and the wedged crons sat with
+   `next_run_at` frozen 2–4 hours in the past. The fleet stayed alive through all of it
+   because every wake re-arms the next tick and the failsafe crons catch the gaps — and
+   when a manual kick and the late scheduler catch-up double-fired the same daily loop,
+   the second run verified the first's commits and stood down with zero writes
+   (`[Fig 34]`): the duplicate-fire safety you'd need for at-least-once delivery already
+   works on our side.
 8. **Still true from July 8, briefly** (each has verbatim text in the linked reports): hard
    403 walls on tag push / release / branch-delete; the ~4 KB child-brief cap; webhook gaps
    (no CI-success / new-push / merge-conflict events → watchers poll); the fast-CI
@@ -518,6 +536,9 @@ happy to run any structured probe you'd find useful.
 | **23a/b** | `screenshots-2026-07-12/fig-23a/23b` | operator hand-fixing a routine one minute apart: no-repo/Sonnet 5 → repo/Opus 4.8 |
 | **24** | `screenshots-2026-07-12/fig-24` | a lane's first-person account: pacemaker tick silently dropped, failsafe caught it 50 min later (finding 7) |
 | **25a** | `screenshots-2026-07-12/fig-25a` | Auto-mode Deny/Allow on a trigger tool **with the exact allowlist entry present** (finding 7b; 25b–d committed as corroboration) |
+| **33** | `screenshots-2026-07-12/fig-33` | the NEW Routines run surface (Scheduled/Manual tabs) — finding 6's fairness update |
+| **34** | `screenshots-2026-07-12/fig-34` | duplicate-fire stands itself down, zero writes — at-least-once safety already works |
+| **35** | `screenshots-2026-07-12/fig-35` | registry-proven tick serialization behind a busy session — finding 7's refinement |
 | 12–14, 16 | folder (Tier 2, optional) | 4096-byte cap · "Skip all approvals" toggle · setup-script failure · owner's self-awareness note |
 | 19 | `fig-19-idle-project-empty-session-list` | a Project's session list empty while its repo has 44+ merged PRs (b6) |
 
@@ -581,3 +602,7 @@ Full detail + provenance: `screenshots-2026-07-11/index.md`.
   inserted (4 beats: self-wake proposal · model-fix confirmation REPLACING his model
   paragraph · sidebar-correction REPLACING his sidebar paragraph · website closer), one new
   (c) bullet (boot triad + kit capability ledger), status flipped to finished/send-candidate.
+- **Recording review (2026-07-12 13:41 local):** figs 33–35 added from the operator's
+  Routines-surface screen recording; finding 6 gained the run-surface fairness update;
+  finding 7 refined into serialization-vs-real-failure, with the duplicate-fire
+  stand-down evidence.

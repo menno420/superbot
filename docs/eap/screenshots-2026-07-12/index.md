@@ -2,7 +2,8 @@
 
 > **Status:** `reference` — curated from the owner's two raw uploads of 2026-07-12
 > (superbot PRs #2023 phone + #2024 tablet, 27 files reviewed one by one; both PRs closed in
-> favor of this curated set). Continues the fig-NN numbering from
+> favor of this curated set) **plus three frames from his 13:41 screen recording of the
+> Routines surface** (figs 33–35; the recording itself stays on his device). Continues the fig-NN numbering from
 > [`../screenshots-2026-07-11/index.md`](../screenshots-2026-07-11/index.md) — that folder
 > also gained the four recovered figures (15a/15b/15c/17) from the tablet upload.
 > Evidence context: [`../night-review-2026-07-12.md`](../night-review-2026-07-12.md)
@@ -18,6 +19,9 @@
 | **23a/23b** | `fig-23a-failsafe-editor-before-sonnet5-norepo.jpg` → `fig-23b-failsafe-editor-after-opus48-repo.jpg` | Same failsafe routine one minute apart (01:49 → 01:50): Sonnet 5 + **no repo** → Opus 4.8 + repo attached | The operator hand-fixing what routines don't carry (repo + model) — the July-8-email ask, illustrated live |
 | **24** | `fig-24-lane-firstperson-dropped-tick-failsafe-saved.jpg` | SuperBot World lane, in its own words: 07:16Z pacemaker one-shot silently dropped "while the scheduler was provably alive"; failsafe cron caught it 50 min later; "never run a send_later chain without the dead-man cron" | Finding 7 from inside a lane — silent one-shot drop + the dead-man doctrine paying for itself |
 | **25a–d** | `fig-25a…fire-trigger.jpg` · `fig-25b…update-trigger.jpg` · `fig-25c…create-trigger-venture.jpg` · `fig-25d…create-trigger-coordinator.jpg` | Four Deny/Allow prompts in one Auto-mode hub session (10:46–10:51 local) for the CCR trigger tools — with exact `mcp__Claude_Code_Remote__*` allowlist entries present in `.claude/settings.json` | Allowlist-not-honored reproduced live (Q-0242), while Routine-spawned seats with spawn-time grants never prompt. For the email, 25a alone carries it; b–d are corroboration |
+| **33** | `fig-33-routine-runs-panel-scheduled-vs-manual.jpg` | Routines detail page (kit-lab, from the owner's 13:41 screen recording): run history with All/Scheduled/Manual/API/Webhook tabs — "today at 12:28 SCHEDULED · today at 10:46 MANUAL" | Routine-run observability ARRIVED since finding 6 was written (fairness update) — though only completed runs show; a missed slot leaves no trace |
+| **34** | `fig-34-kitlab-duplicate-fire-clean-standdown.jpg` | The 12:28 SCHEDULED catch-up run's own summary: verified the 10:46 MANUAL kick had already run today's slice → clean stand-down, zero writes, trigger left untouched | Duplicate-fire safety works — claim ritual + verify-don't-trust, in the platform's own Runs panel |
+| **35** | `fig-35-gamelab-serialization-diagnosis.jpg` | Game Lab session diagnosing from the registry: "the 09:10Z tick fired at 11:16Z, exactly when my turn went idle … ticks can't interrupt active work" | The finding-7 refinement: part of the "drops" are by-design delivery serialization behind busy sessions — sound, but invisible on every surface |
 
 ## Tier 2 — review-site / story material (not in the email send set)
 
