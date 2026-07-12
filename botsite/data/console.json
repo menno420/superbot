@@ -1,14 +1,22 @@
 {
   "meta": {
-    "generated_at": "2026-07-12T17:21:26Z",
+    "generated_at": "2026-07-12T15:30:22Z",
     "build": {
-      "commit": "d5e815c2",
-      "subject": "Merge pull request #2040 from menno420/bot/dashboard-refresh",
-      "committed_at": "2026-07-12T17:21:26Z"
+      "commit": "71e90041",
+      "subject": "docs: append session telemetry row (Q-0194 merge gate)",
+      "committed_at": "2026-07-12T15:30:22Z"
     },
     "schema_version": 1
   },
   "sessions": [
+    {
+      "file": "2026-07-12-reconcile-band2040.md",
+      "date": "2026-07-12",
+      "title": "Session — forty-fifth Q-0107 docs reconciliation pass (band-#2040)",
+      "status": "complete",
+      "run_type": "routine",
+      "self_initiated": false
+    },
     {
       "file": "2026-07-12-projects-overnight-review.md",
       "date": "2026-07-12",
@@ -480,21 +488,13 @@
       "status": "complete",
       "run_type": "",
       "self_initiated": false
-    },
-    {
-      "file": "2026-07-09-remove-intree-kit.md",
-      "date": "2026-07-09",
-      "title": "2026-07-09 — Remove the in-tree substrate-kit copy (named follow-up chore)",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
     }
   ],
   "ideas": {
-    "total": 241,
+    "total": 242,
     "by_status": {
       "historical": 26,
-      "ideas": 212,
+      "ideas": 213,
       "reference": 3
     }
   },
@@ -1536,6 +1536,20 @@
     },
     {
       "session": "2026-07-12-fleet-drive-and-websites",
+      "date": "2026-07-12",
+      "model": "opus-4.8",
+      "effort": "medium",
+      "task_class": "docs-only",
+      "tokens_out": null,
+      "outcome": {
+        "ci_green_first_push": null,
+        "checker_findings": null,
+        "merged_pr": null,
+        "reverted_within_window": null
+      }
+    },
+    {
+      "session": "2026-07-12-reconcile-band2040",
       "date": "2026-07-12",
       "model": "opus-4.8",
       "effort": "medium",
