@@ -1,6 +1,6 @@
-> **Status:** `plan` — SECOND Anthropic email — **FINISHED / send-candidate as of 2026-07-12**: only
-> the `[REVIEW-SITE URL]` slot (two spots) and the owner's optional ➕ NEW mock addition rewrite
-> remain. Rebuilt 2026-07-11 to reflect the full
+> **Status:** `plan` — SECOND Anthropic email — **FINISHED / send-candidate as of 2026-07-12**:
+> the review-site URL is LIVE and filled in (both spots); only the owner's optional
+> ➕ NEW mock addition rewrite remains. Rebuilt 2026-07-11 to reflect the full
 > arc (gen-1 → the autonomous fleet → tonight). **Part 1 is a MOCK** — a scaffold in
 > Menno's voice, every beat built from something he actually said (July 8 email, this
 > session's messages, or a documented owner decision); he rewrites it in his own words.
@@ -171,7 +171,7 @@ a website for exactly this because I couldn't get it from the product.
 **[4 — NEW closer: the website + the evidence]**
 One more thing: this time the evidence has a home. The agents built a small review
 website for you — the story of this project, what went right and what went wrong,
-with every claim linked to a public commit: [REVIEW-SITE URL]. All screenshots are
+with every claim linked to a public commit: https://review-production-f027.up.railway.app. All screenshots are
 committed in the repo as well, so nothing in this email is just my word.
 
 
@@ -465,9 +465,9 @@ by the lanes and verifiable per-PR.)*
   14-hour window), a product builder, and the manager's own control repo.
 
 **Read this with an agent too, as before** — half this feedback is from agents, so half the
-review should be too. `[REVIEW-SITE URL — insert once the review service is live: the
-program-review site built for you — story, growth, successes, problems, per-repo detail,
-evidence-backed questionnaire]` Best entry points: the external review pack
+review should be too. `**https://review-production-f027.up.railway.app** — the program-review site built for you:
+story, growth, successes, problems, per-repo fleet detail, and an evidence-backed
+questionnaire, every claim linked to a public commit (service went live 2026-07-12 11:34Z).` Best entry points: the external review pack
 (`superbot/docs/eap/external-review-pack-2026-07-09.md`, written for a no-auth outside
 reviewer), the fleet night-reviews (`superbot/docs/eap/night-review-2026-07-11.md` and
 `night-review-2026-07-12.md` — the second is finding 7's full incident record), the
