@@ -430,9 +430,14 @@ happy to run any structured probe you'd find useful.
 
 > 64 uploads triaged → **16 keepers committed** to
 > [`screenshots-2026-07-11/`](screenshots-2026-07-11/index.md) with `fig-NN` names +
-> captions. The 4 **phone** shots (15a/15b/15c/17) live on Menno's phone — **attach those
-> directly.** Inline each at its `[Fig N]` marker, or attach as a numbered appendix; skip
-> any frame showing a secret/token.
+> captions. **Update 2026-07-12: the 4 formerly-phone-only shots (15a/15b/15c/17) are now
+> committed in that folder too** (recovered from the owner's tablet upload), and the
+> scheduler-incident batch added a second curated folder —
+> [`screenshots-2026-07-12/`](screenshots-2026-07-12/index.md) (figs 20–25: the 8-seat
+> grid, the dropped-daily-routine config, the operator's before/after routine fix, a lane's
+> first-person dropped-tick account, and the Auto-mode allowlist-not-honored prompts).
+> Inline each at its `[Fig N]` marker, or attach as a numbered appendix; skip any frame
+> showing a secret/token.
 
 **Send set (recommended):**
 
@@ -449,8 +454,13 @@ happy to run any structured probe you'd find useful.
 | 9 | `fig-09-oversight-stuck-6h54m` | oversight gap — a session stuck 6h 54m |
 | 10 | `fig-10-routine-no-push-credential` | a routine woke with no push credential |
 | 11 | `fig-11-repos-attach-panel` | the fix surface (Settings → Repositories) |
-| **15a–c** | **phone — attach directly** | routine configured **Opus 4.8** → session ran **Sonnet 5** (send all three, in order) |
-| 17 | **phone — attach directly** | grant clears the classifier, git still 403s the delete |
+| **15a–c** | `fig-15a/15b/15c` (committed 2026-07-12) | routine configured **Opus 4.8** → session ran **Sonnet 5** (send all three, in order) |
+| 17 | `fig-17-grant-clears-classifier-git-403s` (committed) | grant clears the classifier, git still 403s the delete |
+| **21** | `screenshots-2026-07-12/fig-21` | the 8 standing seats after consolidation (pairs with Fig 1 as before/after) |
+| **22** | `screenshots-2026-07-12/fig-22` | the daily Routine the scheduler dropped — config correct, "runs in Auto mode" note visible (finding 7) |
+| **23a/b** | `screenshots-2026-07-12/fig-23a/23b` | operator hand-fixing a routine one minute apart: no-repo/Sonnet 5 → repo/Opus 4.8 |
+| **24** | `screenshots-2026-07-12/fig-24` | a lane's first-person account: pacemaker tick silently dropped, failsafe caught it 50 min later (finding 7) |
+| **25a** | `screenshots-2026-07-12/fig-25a` | Auto-mode Deny/Allow on a trigger tool **with the exact allowlist entry present** (finding 7b; 25b–d committed as corroboration) |
 | 12–14, 16 | folder (Tier 2, optional) | 4096-byte cap · "Skip all approvals" toggle · setup-script failure · owner's self-awareness note |
 | 19 | `fig-19-idle-project-empty-session-list` | a Project's session list empty while its repo has 44+ merged PRs (b6) |
 
