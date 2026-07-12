@@ -1,5 +1,7 @@
 # SuperBot — Current State
 
+> **Status:** `living-ledger` — living status ledger; **not binding — source code + merged PRs win.**
+>
 > ### ✅ DONE 2026-07-12: the second Anthropic email SHIPPED — top priority cleared
 > The second Anthropic EAP email was **sent by the owner 2026-07-12 13:24Z** — a reply on the
 > July 8 thread `19f41cd2e5380bb3` (msg `19f568051da9e3d6`), To `claude-code-early-access@`,
@@ -7,9 +9,29 @@
 > from the email ([`eap/email-attachment-set-2026-07-12.md`](eap/email-attachment-set-2026-07-12.md)).
 > Full record: [`eap/NEXT-SESSION-finalize-email.md`](eap/NEXT-SESSION-finalize-email.md).
 > **Watch for:** replies (EAP window through **Tue 2026-07-14**) + Matt's optional 10–15 min interview.
-> **Next action now reverts to the standing program** — per-sector live queues below.
 >
-> **Status:** `living-ledger` — living status ledger (project state). **Not binding.**
+> ### 🚚 2026-07-12 owner-live FLEET-DRIVE session (same session, after the email)
+> Cleared a cross-repo merge backlog and fixed two systemic root-causes. Full record +
+> the live EAP data points: [`.sessions/2026-07-12-fleet-drive-and-websites.md`](../.sessions/2026-07-12-fleet-drive-and-websites.md).
+> - **Merged (owner live-authorized):** mineverse **#42** (CSRF → Games flagship gate cleared);
+>   fleet-manager **#113** + **#117** (fresh roster landed); **websites 11/14 PRs** (review-site
+>   refresh #175/#174/#172, tester-recruit #176/#179, +#167/#165/#173/#159/#170/#168).
+> - **Root-causes found:** fleet-manager roster-regen fails every run (Actions can't create PRs);
+>   websites "stuck merges" = "require branches up-to-date" + no merge queue → serial cascade
+>   (**owner removed that rule mid-session → backlog cleared**).
+> - **▶ Next-agent (websites):** 3 PRs need rebasing (real conflicts) — **#160, #161, #166**;
+>   #163 is a draft card. Route to the websites lane.
+> - **⚑ OWNER-ACTION QUEUE (centralized, pending):** (1) fleet-manager → Settings → Actions:
+>   enable "Allow GitHub Actions to create and approve pull requests" (roster self-lands);
+>   (2) mineverse: provision 6 OAuth env vars (flagship goes live); (3) venture-lab: publish the
+>   $29 Stripe kit + post one distribution channel (first revenue); (4) websites: add
+>   `ANTHROPIC_API_KEY` to the review service (on-site AI assistant); (5) paste the two orders
+>   ([`owner/websites-review-site-order-2026-07-12.md`](owner/websites-review-site-order-2026-07-12.md),
+>   [`owner/trigger-health-order-2026-07-12.md`](owner/trigger-health-order-2026-07-12.md)) into
+>   their Projects; (6) optional: Matt's EAP interview.
+> **Next action then reverts to the standing program** — per-sector live queues below.
+>
+> **Ledger note:** living status ledger (project state). **Not binding.**
 > **Source code and merged PRs always win over this file.**
 > The In-flight section below is a dated snapshot — **verify open PRs against
 > live GitHub** before trusting it (two same-session reports already
