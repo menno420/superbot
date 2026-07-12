@@ -43,7 +43,10 @@
 > re-dispatched with the **Q-0271 AUTONOMY RIDER** (seats never gate work on owner presence;
 > owner-only list is the sole park class; queue-and-continue; SIM-REQUEST valve) — expanded
 > vision + 8 paste-and-go prompts + the 3-click owner list:
-> [`owner/fleet-rearm-2026-07-12.md`](owner/fleet-rearm-2026-07-12.md).
+> [`owner/fleet-rearm-2026-07-12.md`](owner/fleet-rearm-2026-07-12.md). **Post-reboot follow-up
+> wave (same PR):** boot-watch snapshot + per-seat NIGHT ORDERS (compact Q-0271 delta + quotas)
+> + the Fun Lab founding package (friend-directed gift studio) + the seat-#2 path →
+> [`owner/fleet-night-orders-2026-07-12.md`](owner/fleet-night-orders-2026-07-12.md).
 > **Next action then reverts to the standing program** — per-sector live queues below.
 >
 > **Ledger note:** living status ledger (project state). **Not binding.**
