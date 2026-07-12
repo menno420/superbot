@@ -31,6 +31,16 @@ only the header block is read, so a `**Subsystem:**` *example* in an idea's body
 
 Current broad captures:
 
+- [`reconciliation-four-homes-consistency-guard-2026-07-12.md`](./reconciliation-four-homes-consistency-guard-2026-07-12.md) —
+  **session ender (2026-07-12, 45th Q-0107 reconciliation pass, band-#2040):** a stdlib
+  `check_reconciliation_consistency.py` **detector** that parses the four invariant facts (pass
+  ordinal, band range, marker value, next-recon boundary) out of the four homes each pass hand-copies
+  them into — current-state header narrative, Recently-shipped marker, S4 pass bullet, and the pass
+  record — and fails if they disagree. Deliberately a detector, not a generator (the editorial prose
+  stays hand-authored); the numeric-invariant sibling of the existing
+  [`reconcile-trigger-band-consistency-guard-2026-06-26.md`](./reconcile-trigger-band-consistency-guard-2026-06-26.md)
+  and [`reconcile-headline-sector-currency-check-2026-07-03.md`](./reconcile-headline-sector-currency-check-2026-07-03.md).
+  Subsystem: tooling / docs-system.
 - [`screen-recording-evidence-review-2026-07-12.md`](./screen-recording-evidence-review-2026-07-12.md) —
   **session ender (2026-07-12, email-finalization session):** a one-command helper to extract
   scene-change frames from an owner-uploaded screen recording for review (the video sibling of the

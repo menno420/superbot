@@ -86,6 +86,46 @@
 
 ## Recently shipped — archived (newest first)
 
+- **#1925 · #1927 · #1933 · #1950 (2026-07-10, docs — dashboard-data refreshes, Q-0167)** —
+  four `dashboard/data/dashboard.json` regenerations as parallel sessions added structural surfaces.
+- **#1924 (2026-07-10, overnight shift E PR 2 — coordinator gen-1 self-review, docs-only)** —
+  the coordinator lane's answers to the #1901 fleet retro question set, the only gen-1 lane
+  that never answered the set it planted (grand review §5 gap): new
+  `docs/retro/self-review-2026-07-09.md` at the protocol-canonical path (one glob now finds
+  all ten lanes' answers), universal core A–F answered by ID, assembled from the committed
+  corpus (grand review, campaign self-audit, EAP eval log, session cards, the CLAUDE.md
+  Q-chain) with in-line citations — "not measured" said where the record holds only
+  self-estimates. Indexed from `docs/eap/README.md`; idea
+  `coordinator-self-review-against-1901-2026-07-10` → `historical`. Gen-2 blueprint input
+  now covers 10/10 lanes.
+- **#1923 (2026-07-10, overnight shift E — fleet-manifest freshness checker; retired #1974)** —
+  `check_manifest_freshness.py` (scripts/; Q-0105 advisory, NOT CI-wired): compares each
+  `docs/eap/fleet-manifest.md` row's Last-seen against the lane repo's live
+  `control/status.md` `updated:` header, read over **git transport** (shallow fetch +
+  `cat-file` — the GitHub REST API is proxy-blocked in agent containers, so the idea file's
+  API design would have failed exactly where the reconciliation routine runs; deviation
+  recorded in the idea's Shipped block). Verdicts at day precision: FRESH / STALE /
+  DRIFT (HEAD-only activity fallback, never strict-fails) / SKIP (fail-open on network
+  failure); `--strict` reds on confirmed STALE only. +19 tests (git half exercised against
+  local fixture repos — zero network in tests); checklist line in the reconciliation
+  routine's runbook. First live run: 11 rows, 2 genuinely stale (trading-lab, venture-lab —
+  ground-truthed; left for the manager's sole-writer re-stamp). Idea
+  `fleet-manifest-freshness-checker-2026-07-10` → `historical`. Tooling/docs-only.
+- **#1920 (2026-07-10, overnight shift D — dashboard.json pinned-feed contract, first slice)** —
+  the #1884 console-contract pattern applied to the feed websites renders ~12 pages from:
+  new versioned `dashboard/data/dashboard_data_contract.json` (**slice semantics** — only
+  `contracted_families` are pinned; growth is family-by-family with a version bump; first slice
+  `meta` + `bugs`), producer `DASHBOARD_*` parity constants + `meta.schema_version` stamp in
+  `export_dashboard_data.py` (feed regenerated), fail-closed `check_dashboard_contract` +
+  `--dashboard-contract` flag in `check_dashboard_data.py`, +14 tests incl. a
+  committed-file-passes-contract guard. Ride-along (Q2): `check_architecture` `baseview_inheritance`
+  now *recognizes* the in-tree justifying-comment convention (`# Extends discord.ui.View directly
+  (not BaseView): …` right above the class) so documented direct-View extensions converge instead of
+  warning forever; the 5 remaining undocumented sites got genuine lifecycle comments (comment-only,
+  zero runtime delta) — baseview warnings 13 → 0, +4 checker tests. The conformance ratchet
+  (`test_view_base_class_conformance.py`) still pins the raw 13-entry inventory via
+  `respect_justifying_comments=False`, so a new direct view can't slip in behind a self-written
+  comment. Tooling/data/docs/comments-only.
 - **#1919 (2026-07-10, overnight shift B — claim visibility across un-merged branches)** —
   `check_lane_overlap.py --remote` scans recent un-merged `origin/claude/*` / `origin/bot/*`
   branch tips for `docs/owner/claims/` files not on `main` (tip-state `ls-tree` compare —

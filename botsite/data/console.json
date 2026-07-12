@@ -1,14 +1,46 @@
 {
   "meta": {
-    "generated_at": "2026-07-12T01:16:15Z",
+    "generated_at": "2026-07-12T15:30:22Z",
     "build": {
-      "commit": "fae8bd0a",
-      "subject": "Merge pull request #2010 from menno420/bot/dashboard-refresh",
-      "committed_at": "2026-07-12T01:16:15Z"
+      "commit": "71e90041",
+      "subject": "docs: append session telemetry row (Q-0194 merge gate)",
+      "committed_at": "2026-07-12T15:30:22Z"
     },
     "schema_version": 1
   },
   "sessions": [
+    {
+      "file": "2026-07-12-reconcile-band2040.md",
+      "date": "2026-07-12",
+      "title": "Session — forty-fifth Q-0107 docs reconciliation pass (band-#2040)",
+      "status": "complete",
+      "run_type": "routine",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-07-12-projects-overnight-review.md",
+      "date": "2026-07-12",
+      "title": "2026-07-12 — overnight fleet review → Anthropic email finalization (full-day owner-live session)",
+      "status": "complete",
+      "run_type": "manual",
+      "self_initiated": true
+    },
+    {
+      "file": "2026-07-12-fleet-drive-and-websites.md",
+      "date": "2026-07-12",
+      "title": "Session — 2026-07-12 — email finalization → fleet-drive → websites backlog",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-07-12-email-finalization-staged.md",
+      "date": "2026-07-12",
+      "title": "Session — 2026-07-12 — Anthropic email finalization (staged to Gmail)",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
     {
       "file": "2026-07-11-settle-once-checker-graduation.md",
       "date": "2026-07-11",
@@ -63,6 +95,14 @@
       "title": "2026-07-11 — Retire fleet-manifest to a pointer stub (fm roster canonical)",
       "status": "complete",
       "run_type": "",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-07-11-reconcile-band2010.md",
+      "date": "2026-07-11",
+      "title": "Session — forty-fourth Q-0107 docs reconciliation pass (band-#2010)",
+      "status": "complete",
+      "run_type": "routine",
       "self_initiated": false
     },
     {
@@ -448,53 +488,13 @@
       "status": "complete",
       "run_type": "",
       "self_initiated": false
-    },
-    {
-      "file": "2026-07-09-remove-intree-kit.md",
-      "date": "2026-07-09",
-      "title": "2026-07-09 — Remove the in-tree substrate-kit copy (named follow-up chore)",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-07-09-reconcile-band1890.md",
-      "date": "2026-07-09",
-      "title": "2026-07-09 — Fortieth Q-0107 reconciliation pass (band-#1890)",
-      "status": "complete",
-      "run_type": "routine",
-      "self_initiated": true
-    },
-    {
-      "file": "2026-07-09-projects-eap-fleet-review.md",
-      "date": "2026-07-09",
-      "title": "2026-07-09 — Independent cross-repo review of the Projects-EAP fleet",
-      "status": "complete",
-      "run_type": "manual",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-07-09-kl6-console-telemetry.md",
-      "date": "2026-07-09",
-      "title": "Session 2026-07-09 — KL-6 companion: exporter telemetry family + kit-lab console lane",
-      "status": "complete",
-      "run_type": "manual",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-07-09-kl2-provenance-riders.md",
-      "date": "2026-07-09",
-      "title": "2026-07-09 — KL-2 companion: program-law provenance riders on the origin Q-blocks",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
     }
   ],
   "ideas": {
-    "total": 238,
+    "total": 242,
     "by_status": {
       "historical": 26,
-      "ideas": 209,
+      "ideas": 213,
       "reference": 3
     }
   },
@@ -1481,6 +1481,76 @@
     {
       "session": "2026-07-11-fleet-dispatch-prompts",
       "date": "2026-07-11",
+      "model": "opus-4.8",
+      "effort": "medium",
+      "task_class": "docs-only",
+      "tokens_out": null,
+      "outcome": {
+        "ci_green_first_push": null,
+        "checker_findings": null,
+        "merged_pr": null,
+        "reverted_within_window": null
+      }
+    },
+    {
+      "session": "2026-07-11-reconcile-band2010",
+      "date": "2026-07-11",
+      "model": "opus-4.8",
+      "effort": "medium",
+      "task_class": "docs-only",
+      "tokens_out": null,
+      "outcome": {
+        "ci_green_first_push": null,
+        "checker_findings": null,
+        "merged_pr": null,
+        "reverted_within_window": null
+      }
+    },
+    {
+      "session": "2026-07-12-projects-overnight-review",
+      "date": "2026-07-12",
+      "model": "fable-5",
+      "effort": "medium",
+      "task_class": "docs-only",
+      "tokens_out": null,
+      "outcome": {
+        "ci_green_first_push": null,
+        "checker_findings": null,
+        "merged_pr": null,
+        "reverted_within_window": null
+      }
+    },
+    {
+      "session": "2026-07-12-email-finalization-staged",
+      "date": "2026-07-12",
+      "model": "opus-4.8",
+      "effort": "medium",
+      "task_class": "docs-only",
+      "tokens_out": null,
+      "outcome": {
+        "ci_green_first_push": null,
+        "checker_findings": null,
+        "merged_pr": null,
+        "reverted_within_window": null
+      }
+    },
+    {
+      "session": "2026-07-12-fleet-drive-and-websites",
+      "date": "2026-07-12",
+      "model": "opus-4.8",
+      "effort": "medium",
+      "task_class": "docs-only",
+      "tokens_out": null,
+      "outcome": {
+        "ci_green_first_push": null,
+        "checker_findings": null,
+        "merged_pr": null,
+        "reverted_within_window": null
+      }
+    },
+    {
+      "session": "2026-07-12-reconcile-band2040",
+      "date": "2026-07-12",
       "model": "opus-4.8",
       "effort": "medium",
       "task_class": "docs-only",
