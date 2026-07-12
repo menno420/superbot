@@ -1,15 +1,15 @@
 {
   "meta": {
-    "generated_at": "2026-07-12T21:18:55Z",
+    "generated_at": "2026-07-12T22:59:00Z",
     "build": {
-      "commit": "de60a8c1",
-      "subject": "Merge pull request #2045 from menno420/claude/settings-permission-sweep",
-      "committed_at": "2026-07-12T21:18:55Z"
+      "commit": "85a2ec08",
+      "subject": "Merge pull request #2048 from menno420/claude/project-autonomy-workflow-bo1cjn",
+      "committed_at": "2026-07-12T22:59:00Z"
     },
     "schema_version": 1,
     "counts": {
       "functions": 43,
-      "ideas": 242,
+      "ideas": 243,
       "bugs": 31,
       "reviews": 0,
       "reviews_open": 0,
@@ -1165,6 +1165,14 @@
     }
   ],
   "ideas": [
+    {
+      "file": "prompt-wait-language-lint-2026-07-12.md",
+      "title": "Prompt wait-language lint — an enforcing guard against presence-gating regressions",
+      "status": "ideas",
+      "date": "2026-07-12",
+      "summary": "A small checker (fleet-manager-owned, since the registry is the prompt source of truth) that",
+      "subsystems": null
+    },
     {
       "file": "reconciliation-four-homes-consistency-guard-2026-07-12.md",
       "title": "Idea — a `check_reconciliation_consistency.py` guard for the four-homes summary",
@@ -3397,6 +3405,22 @@
       "self_initiated": false
     },
     {
+      "file": "2026-07-12-owner-live-part2-mineverse-signin.md",
+      "date": "2026-07-12",
+      "title": "Session — 2026-07-12 (part 2) — sign-in live, toggles verified, court-spam incident, fleet sweep",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-07-12-fleet-rearm-pack.md",
+      "date": "2026-07-12",
+      "title": "Session — 2026-07-12 — fleet re-arm pack (autonomy doctrine + per-seat dispatch for tonight)",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
       "file": "2026-07-12-fleet-drive-and-websites.md",
       "date": "2026-07-12",
       "title": "Session — 2026-07-12 — email finalization → fleet-drive → websites backlog",
@@ -3835,22 +3859,6 @@
       "status": "complete",
       "run_type": "",
       "self_initiated": false
-    },
-    {
-      "file": "2026-07-10-command-collision-checker.md",
-      "date": "2026-07-10",
-      "title": "2026-07-10 — command-collision checker (overnight shift, session A)",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": true
-    },
-    {
-      "file": "2026-07-10-codex-review-verification.md",
-      "date": "2026-07-10",
-      "title": "2026-07-10 — Verifying the 3 Codex review PRs (#1940/#1941/#1942)",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": true
     }
   ],
   "bot_changelog": [
@@ -4856,6 +4864,34 @@
     },
     {
       "session": "2026-07-12-owner-queue-execution",
+      "date": "2026-07-12",
+      "model": "fable-5",
+      "effort": "high",
+      "task_class": "docs-only",
+      "tokens_out": null,
+      "outcome": {
+        "ci_green_first_push": null,
+        "checker_findings": null,
+        "merged_pr": null,
+        "reverted_within_window": null
+      }
+    },
+    {
+      "session": "2026-07-12-owner-live-part2-mineverse-signin",
+      "date": "2026-07-12",
+      "model": "fable-5",
+      "effort": "high",
+      "task_class": "docs-only",
+      "tokens_out": null,
+      "outcome": {
+        "ci_green_first_push": null,
+        "checker_findings": null,
+        "merged_pr": null,
+        "reverted_within_window": null
+      }
+    },
+    {
+      "session": "2026-07-12-fleet-rearm-pack",
       "date": "2026-07-12",
       "model": "fable-5",
       "effort": "high",
