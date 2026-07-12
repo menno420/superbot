@@ -1,15 +1,15 @@
 {
   "meta": {
-    "generated_at": "2026-07-12T01:16:15Z",
+    "generated_at": "2026-07-12T01:32:12Z",
     "build": {
-      "commit": "fae8bd0a",
-      "subject": "Merge pull request #2010 from menno420/bot/dashboard-refresh",
-      "committed_at": "2026-07-12T01:16:15Z"
+      "commit": "1ecc2113",
+      "subject": "Merge pull request #2014 from menno420/claude/reconcile-2026-07-11",
+      "committed_at": "2026-07-12T01:32:12Z"
     },
     "schema_version": 1,
     "counts": {
       "functions": 43,
-      "ideas": 238,
+      "ideas": 239,
       "bugs": 31,
       "reviews": 0,
       "reviews_open": 0,
@@ -1165,6 +1165,14 @@
     }
   ],
   "ideas": [
+    {
+      "file": "check-docs-cross-repo-path-awareness-2026-07-11.md",
+      "title": "Cross-repo path awareness for `check_docs.py`'s pinned-path check (2026-07-11)",
+      "status": "ideas",
+      "date": "2026-07-11",
+      "summary": "`check_docs.py`'s pinned-path check treats any backtick `` `docs/…md` `` token in a doc as a",
+      "subsystems": null
+    },
     {
       "file": "supersede-integrity-cross-repo-tier-2026-07-11.md",
       "title": "Cross-repo successor tier for `check_supersede_integrity.py` (2026-07-11)",
@@ -3397,6 +3405,14 @@
       "self_initiated": false
     },
     {
+      "file": "2026-07-11-reconcile-band2010.md",
+      "date": "2026-07-11",
+      "title": "Session — forty-fourth Q-0107 docs reconciliation pass (band-#2010)",
+      "status": "complete",
+      "run_type": "routine",
+      "self_initiated": false
+    },
+    {
       "file": "2026-07-11-reconcile-band1980.md",
       "date": "2026-07-11",
       "title": "Session — 43rd Q-0107 reconciliation pass (band-#1980)",
@@ -3810,14 +3826,6 @@
       "title": "Session 2026-07-09 — KL-6 companion: exporter telemetry family + kit-lab console lane",
       "status": "complete",
       "run_type": "manual",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-07-09-kl2-provenance-riders.md",
-      "date": "2026-07-09",
-      "title": "2026-07-09 — KL-2 companion: program-law provenance riders on the origin Q-blocks",
-      "status": "complete",
-      "run_type": "",
       "self_initiated": false
     }
   ],
@@ -4740,6 +4748,20 @@
     },
     {
       "session": "2026-07-11-fleet-dispatch-prompts",
+      "date": "2026-07-11",
+      "model": "opus-4.8",
+      "effort": "medium",
+      "task_class": "docs-only",
+      "tokens_out": null,
+      "outcome": {
+        "ci_green_first_push": null,
+        "checker_findings": null,
+        "merged_pr": null,
+        "reverted_within_window": null
+      }
+    },
+    {
+      "session": "2026-07-11-reconcile-band2010",
       "date": "2026-07-11",
       "model": "opus-4.8",
       "effort": "medium",
