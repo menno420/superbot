@@ -3,6 +3,13 @@
 > **Status:** `ideas` — session ender (Q-0089), overnight fleet review session.
 > **Subsystem:** none (agent network / fleet workflow; lands in fleet-manager).
 > **Gate:** ready — extends an existing, proven workflow (fm roster-regen); no owner blocker.
+> **Routing note (2026-07-12 evening, groom pass, PR #2048):** the *in-band* complement shipped —
+> the manager's per-wake trigger-health check was delivered as fleet-manager inbox **ORDER 020**
+> (see [`../owner/trigger-health-order-2026-07-12.md`](../owner/trigger-health-order-2026-07-12.md))
+> and is re-affirmed as watchdog target 1 in the night-run re-arm
+> ([`../owner/fleet-rearm-2026-07-12.md`](../owner/fleet-rearm-2026-07-12.md) §4.1). **This file's
+> remaining novel half is only the out-of-band Actions-substrate evaluation** — still unbuilt,
+> still `ready`; route to the fleet-manager lane.
 
 ## The idea
 
