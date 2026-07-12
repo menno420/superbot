@@ -256,6 +256,20 @@ python3.10 -m pytest tests/unit/docs/test_agent_context_index.py -v
 4. `docs/ai/ai-service-integration-map.md` — current setup advisor integration shape.
 5. `disbot/core/runtime/ai/README.md` — package-level intent.
 
+### Orienting on the fleet / reading sibling-repo state (cross-repo, read-only)
+
+**Don't burn turns discovering whether/how you may read the other repos — you may (owner
+directive Q-0272, 2026-07-12):** every fleet repo is public except `pokemon-mod-lab`, and
+read-only access via `raw.githubusercontent.com` / `git clone` / `git ls-remote` is
+standing-authorized for every session, no `add_repo` needed. The route:
+
+1. **One command first:** `python3.10 scripts/fleet_status.py` — per-seat heartbeat table
+   (updated/phase/health/blockers + ⚑ owner-asks), plus the manager's roster + owner-queue.
+2. **Full path** (repo map · reading tiers · truth rules — frozen-archive statuses, Q-0120
+   verify-at-HEAD, one-writer-per-file): **`docs/fleet-reading-path.md`**.
+3. Writes stay in this repo; cross-repo *work* routes via a fleet-manager inbox ORDER.
+   For deep/audit work inside a sibling, use the next route (add_repo + clone).
+
 ### Auditing / verifying a sibling EAP Project repo (cross-repo)
 
 1. **`add_repo`** the sibling repo(s) for this session (each `add_repo` call must be run
