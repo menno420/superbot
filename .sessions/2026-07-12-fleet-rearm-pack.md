@@ -33,6 +33,26 @@
 5. **Groom pass (Q-0015):** routing note on `scheduler-independent-trigger-watchdog-2026-07-12.md`
    (its in-band half shipped as ORDER 020; only the Actions-substrate half remains novel).
 
+## Part 2 (same session, ~21:00Z) — post-reboot boot-watch + night orders + new seats
+
+The owner then manually updated every Project's Custom Instructions (today's earlier-rebuild
+prompt bodies, not this PR's §4 blocks), archived the old chats, and dispatched fresh boots.
+Part-2 deliverable: **[`docs/owner/fleet-night-orders-2026-07-12.md`](../docs/owner/fleet-night-orders-2026-07-12.md)** —
+(1) the **boot-watch snapshot** from a full enabled-trigger registry read at 20:52–20:56Z
+(3/8 seats verifiably re-armed: Venture Lab 20:38, SuperBot 2.0 20:42 *fixing its
+missing-failsafe gap*, SuperBot World 20:51; 5 pending with archived-generation failsafe
+orphans inventoried per seat); (2) **8 per-seat NIGHT ORDERS** carrying the compact Q-0271
+delta (only what's new vs the running instruction bodies) + night quotas + chain-to-next +
+orphan retirement, deliverable via one manager relay paste (ORDER NIGHT-01) or 8 direct
+pastes; (3) the **Fun Lab founding package** (the owner's friend-directed seat: gift-grade
+fun projects, privacy floor banning personal friend data in-repo, delight:effort candidate
+loop, full instructions + boot prompt + 5-min owner pre-clicks); (4) the **seat-#2 path**
+(owner names the Ideas-Lab candidate → ORDER NIGHT-02 → manager drafts the founding package
+from the next-round kit; fallback = tomorrow's top finalized verdict). Boot-watch continuation
+armed as a ~21:25Z self check-in; guardrail honored: no `delete_trigger` from this session
+(fleet-vocab owner rail) — orphan retirement routed to the seats/manager per the
+rebind-then-delete recipe.
+
 ## Key design decisions (decide-and-flag, Q-0240)
 
 - **Bridge, not fork:** tonight's re-arm rides startup prompts over the currently-pasted
