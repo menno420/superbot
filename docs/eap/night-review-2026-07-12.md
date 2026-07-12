@@ -169,3 +169,17 @@ noise · heartbeats can contradict reality — sweep and re-stamp.
   settles it.
 - Venture Lab / kit-lab recovery outcomes post-08:46Z are unverified at write time; the
   10:40Z roster regen (gen #14) is the checkpoint.
+
+## 8. Addendum (~12:00Z) — serialization vs. real failure
+
+A Game Lab session, working from the trigger registry, split the "dropped one-shot" class
+in two: **ticks bound to a busy session serialize and deliver the moment the turn goes
+idle** (its 09:10Z tick fired at 11:16Z at exactly that boundary — sound by construction;
+the hub session's own 10:42Z check-in matched the pattern, arriving as its turn ended).
+The genuinely-failed remainder: the fresh-session daily loop ("last fire: never" with no
+busy session to queue behind) and the crons with `next_run_at` frozen hours in the past.
+No platform surface distinguishes queued from lost. Bonus from the same recording: the
+Routines detail page now shows per-run history (Scheduled/Manual/API/Webhook) with session
+links — and the kit-lab double-fire (manual 08:46Z kick + 10:28Z scheduler catch-up)
+resolved itself with a verified zero-write stand-down by the second run. Figures:
+`screenshots-2026-07-12/` figs 33–35.
