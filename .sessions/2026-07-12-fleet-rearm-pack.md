@@ -1,7 +1,7 @@
 # Session — 2026-07-12 — fleet re-arm pack (autonomy doctrine + per-seat dispatch for tonight)
 
 > **Status:** `complete`
-> **Branch:** `claude/project-autonomy-workflow-bo1cjn` · **PR:** #2048
+> **Branch:** `claude/project-autonomy-workflow-bo1cjn` · **PR:** #2048 (+ part-2 #2049, part-3 pending at write)
 > **Venue:** owner-live chat (remote container). **📊 Model:** Fable 5 (Claude 5 family).
 > **Scope:** owner-directed. The owner sent every Project seat its session-ender prompt and asked
 > for the fleet to be re-armed for the next run (tonight) with the **owner-presence-gating stall
@@ -52,6 +52,23 @@ from the next-round kit; fallback = tomorrow's top finalized verdict). Boot-watc
 armed as a ~21:25Z self check-in; guardrail honored: no `delete_trigger` from this session
 (fleet-vocab owner rail) — orphan retirement routed to the seats/manager per the
 rebind-then-delete recipe.
+
+## Part 3 (same session, ~22:00Z) — the multi-repo reading path (Q-0272)
+
+The owner corrected this session's superbot-only reading posture (all fleet repos are public
+except pokemon-mod-lab; raw reads are the designed pattern) and directed a **boot-visible
+multi-repo reading path** so future sessions skip the ~3-turn discovery this session burned.
+Shipped: **`docs/fleet-reading-path.md`** (standing read authorization + repo map + reading
+tiers + truth rules) · **`scripts/fleet_status.py`** (one-command per-seat heartbeat sweep;
+live-verified — it surfaced superbot-next's successor boot at 20:53Z in its first run) +
+parser unit tests · pointers in `docs/AGENT_ORIENTATION.md` (new read-only cross-repo route),
+`.claude/CLAUDE.md` § Read first (owner-directed in-session per the Q-0106 exception,
+provenance **Q-0272**), and the journal Quick reference · router **Q-0272** (verbatim owner
+words + boundaries: MCP stays scoped, writes stay in-repo, work routes via manager ORDERs).
+Also this part: the full cross-repo read of the fleet at HEAD (14 files) that resolved the
+"new server" question — it is the **makerbench gift repo** (idea-engine blueprint, Codex-
+reviewed, dossier-cross-checked); owner ruled "tweak first" and the tweak surface was laid
+out in chat (name · visibility · project cut · arm-hardware path · buy-list).
 
 ## Key design decisions (decide-and-flag, Q-0240)
 

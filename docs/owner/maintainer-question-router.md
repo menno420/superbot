@@ -9821,3 +9821,27 @@ seat's 2026-07-12 re-arm prompt and destined verbatim for the v3.4 instruction b
 bot's Q-0213 destructive brake; CI-green as the merge floor (never-wait ≠ bypass CI); the
 honest-negative bar. **Scope note:** this is fleet doctrine — superbot's own hub sessions
 already carry the stronger Q-0269 merge-immediately rule.
+
+### Q-0272 — DIRECTED: standing cross-repo read authorization + the multi-repo reading path in boot orientation (2026-07-12)
+
+> **Context.** Owner, live in-session (the fleet re-arm session, superbot PRs #2048/#2049 →
+> this follow-up), correcting the agent's superbot-only reading posture, verbatim: *"doesn't
+> the ruperbot repo also tell you that we have more repos, and links to many files in other
+> repos"* → *"all repos except the pokemon mod lab are public, so you can view any file just
+> as easily as you could view superbot"* → *"first I want you to make sure there is a properly
+> suggested multi repo reading path for new sessions, so that we can save 3 turns of
+> discovery."*
+
+**Decision (owner-directed in-session; CLAUDE.md pointer applied under the in-session
+exception with this Q as provenance).** (1) **Standing authorization:** read-only cross-repo
+access to every fleet repo (all public except `pokemon-mod-lab` — DARK, skip) via
+`raw.githubusercontent.com` / `git clone` / `git ls-remote` is standing-authorized for every
+session in this repo — sessions must not spend turns re-deriving whether they may look.
+Boundaries unchanged: GitHub MCP stays scoped to attached repos; writes stay in-repo;
+cross-repo work routes via fleet-manager ORDERs; deep/audit work uses `add_repo`+clone.
+(2) **The reading path is boot-visible:** canonical route = **`docs/fleet-reading-path.md`**
+(repo map · tiers · truth rules) + **`scripts/fleet_status.py`** (one-command per-seat
+heartbeat sweep), pointed from `.claude/CLAUDE.md` § Read first, `docs/AGENT_ORIENTATION.md`
+(new cross-repo read-only route), and the journal Quick reference. (3) **Kit-graduation
+candidate:** the per-repo reading-path pattern should travel via substrate-kit templates so
+every repo names its own siblings — routed to the Self Improvement lane.

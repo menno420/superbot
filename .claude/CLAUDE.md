@@ -195,6 +195,15 @@ workflow there (executable ones are `.claude/skills/`, e.g. `/fleet-review`). Gr
 dictionary as new shorthand earns its place. *(Owner-directed in-session 2026-07-11;
 kept to a pointer so this file stays lean — the descriptions live in the vocab file.)*
 
+**Fleet context — the multi-repo reading path (owner directive Q-0272, 2026-07-12):**
+superbot is the hub of a ~19-repo fleet, and **read-only access to every sibling repo is
+standing-authorized** (all public except `pokemon-mod-lab`) via `raw.githubusercontent.com` /
+`git clone` — no `add_repo` needed to *read*. Orient in one command —
+`python3.10 scripts/fleet_status.py` (per-seat heartbeat table + manager roster/owner-queue) —
+and follow **`docs/fleet-reading-path.md`** (repo map · reading tiers · truth rules). Writes
+stay scoped to this repo; cross-repo work routes via the fleet-manager inbox. *(Owner-directed
+in-session; kept to a pointer — the substance lives in the path doc.)*
+
 **`docs/current-state.md`** (step 2 above) is the living "what is true right now?"
 ledger (stability baseline, in-flight work, recently shipped, gates,
 off-limits, where to read next). It is a **dated snapshot**: source code and
