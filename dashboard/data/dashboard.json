@@ -1,10 +1,10 @@
 {
   "meta": {
-    "generated_at": "2026-07-12T18:59:30Z",
+    "generated_at": "2026-07-12T21:18:55Z",
     "build": {
-      "commit": "096bf2f6",
-      "subject": "Merge pull request #2043 from menno420/claude/multi-repo-workflow-setup-qwhu5j",
-      "committed_at": "2026-07-12T18:59:30Z"
+      "commit": "de60a8c1",
+      "subject": "Merge pull request #2045 from menno420/claude/settings-permission-sweep",
+      "committed_at": "2026-07-12T21:18:55Z"
     },
     "schema_version": 1,
     "counts": {
