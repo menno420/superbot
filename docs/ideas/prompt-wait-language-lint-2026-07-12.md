@@ -1,6 +1,6 @@
 # Prompt wait-language lint — an enforcing guard against presence-gating regressions
 
-> **Status:** `captured` · **Subsystem:** none (agent-workflow / fleet-manager registry)
+> **Status:** `ideas` · **Subsystem:** none (agent-workflow / fleet-manager registry)
 > **Origin:** session ender (2026-07-12, fleet re-arm session, PR #2048 / Q-0271)
 
 ## The idea
