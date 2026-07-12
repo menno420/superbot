@@ -45,7 +45,11 @@
   to you.
 - **Guardrails carried in from the 2026-07-11 sessions:** no `delete_trigger` /
   destructive approval-gated ops unless you say so; in Project sessions never
-  self-merge (classifier wall) — hub sessions can merge normally.
+  self-merge (classifier wall). **Hub/live sessions don't just *can* merge — they
+  MUST (Q-0269, 2026-07-12): any mergeable PR in finished state (green, complete,
+  READY) is merged immediately by the agent; directing the owner to a green PR is
+  a workflow failure.** Park-READY+green is a Project-seat fallback only, and only
+  after a real classifier denial.
 
 ## Growing this file
 

@@ -9747,3 +9747,47 @@ runbook §3.7 re-point + §6.2 conformed-mapping paste block — part-4e (PR #19
 
 **Routing.** This entry (provenance + the durable line) + the venture-lab relaunch pastes
 carry it implicitly via the money protocol / permissions block — part-4h (PR #1971).
+
+### Q-0269 — DIRECTED: live sessions merge finished PRs themselves — never park green PRs on the owner's queue (2026-07-12)
+
+> **Context.** After the overnight fleet review, the hub session (owner live in-chat) left
+> two verified-green, complete PRs (websites #158, fleet-manager #92) "parked READY+green
+> awaiting the owner's merge click," importing the Project-seat merge wall into a session
+> that doesn't have it. Owner, verbatim: *"you just merge everything, only the projects have
+> trouble with those things, I expect from a normal session that any mergable PR in finished
+> state just gets merged immediatly, we're wasting a lot of time with the fact that agents
+> direct me to PRs, it's not my task to do that."*
+
+**Decision (owner-directed in-session).** In any session where the owner is live (hub
+sessions, help sessions — anything not running as an autonomous Project seat): **a mergeable
+PR in finished state (CI green, card complete, READY) gets merged immediately by the agent.**
+Directing the owner to a green PR is a workflow failure, not a courtesy. "Park READY+green
+for the owner's click" remains **only** the fallback for Project/auto-mode seats that the
+merge classifier actually denies — and even those should first try, then park on a real
+denial, not preemptively. Executed under this directive the same minute: websites #158
+(squash `b925072`) + fleet-manager #92 (squash `9a8518f`); fleet-vocab guardrail line
+updated. What stays genuinely owner-only: infra account actions (Railway service creation,
+tokens), personal-content decisions (venture-lab #51), and PRs whose checks the platform
+never ran (mineverse #42) until the checks are re-triggered.
+
+### Q-0270 — DIRECTED: the boot triad — every new session establishes model · venue · ability envelope before directing its work (2026-07-12)
+
+> **Context.** Owner, live in-session (same conversation as Q-0269), verbatim: *"another
+> addition to the rules, not for just the prjects but in general, when a new session
+> initiates, one of it's goals should be to fnd out what model it's running on, and where
+> the session is running and what that means for the abilities, that decides how the
+> session eventually directs it's work, so project chats avoid anything that stalls,
+> normal sessions with me in the chat should always assume no special limitations apply."*
+
+**Decision (owner-directed in-session; applied to CLAUDE.md § "Read first" with this Q as
+provenance).** Session start includes a self-orientation triad: **(1) model** (state it,
+family-level — feeds the `📊 Model:` card line and the B2 telemetry; also the agent-side
+compensation for the platform's config-vs-reality gap documented in the EAP email);
+**(2) venue** (owner-live chat / autonomous Project seat / routine-fired wake / subagent;
+remote vs local); **(3) ability envelope** (documented walls: merge authority, permission
+prompts, cross-session limits). The triad sets the working posture: autonomous sessions
+pre-route around known stall classes and park only on a real denial; owner-live sessions
+assume no special limitations (Q-0269). **General scope:** this is fleet doctrine, not
+superbot-local — relay to the fleet-manager registry (UNIVERSAL / startup templates) via
+the owner's paste or the manager's next doctrine pass, and to substrate-kit as template
+material so it travels to every future repo.
