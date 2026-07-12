@@ -228,6 +228,13 @@ STEP 2 — RECONCILE (the Q-0107 pass):
     is warn-only and never blocks. Commit the regenerated JSON with the pass. This is the
     *cadence half* of the freshness loop — the dispatch routine carries the warn-only `--drift`
     reporter, this routine keeps the artifact fresh without burdening every session.
+    **ORDER CAVEAT (recurring Codex P2, PR #2042): re-run the exporter ONE MORE TIME as the final
+    pre-ship step (STEP 5), *after* STEP 4 has written this pass's own `.sessions/` card, its
+    `telemetry/model-usage.jsonl` row, and the new idea file.** The export reads those source docs, so
+    a STEP-2-only regenerate always ships feeds that stop at the *previous* session and miss this
+    pass's card + idea (idea count off by one) — a guaranteed staleness the reviewer flags every pass.
+    Regenerating here is fine for the structural surfaces; the final re-run in STEP 5 is what makes
+    the sessions/ideas feeds current.
   - FLEET STATE lives in the fleet-manager generated roster, not here: canonical =
     `fleet-manager docs/roster.md`, regenerated ≤~2h at every manager wake from
     the live trigger registry + lane heartbeats. `docs/eap/fleet-manifest.md` is a pointer
@@ -257,8 +264,10 @@ STEP 4 — CLOSE THE LOOP (memory write-back, always):
     **Run type:** line set to `routine · reconciliation` (Q-0165 — the dashboard updates feed
     badges routine vs. manual work off this line).
 
-STEP 5 — SHIP: open a docs-only claude/ PR; ensure check_docs, check_current_state_ledger, and
-  check_session_log all pass; SELF-MERGE on green CI: re-sync origin/main first, UNION-resolve
+STEP 5 — SHIP: FIRST re-run `python3.10 scripts/export_dashboard_data.py` (the STEP-2 order caveat) so
+  the committed feeds include this pass's own `.sessions/` card + telemetry row + new idea, and commit
+  the refreshed JSON. Then open a docs-only claude/ PR; ensure check_docs, check_current_state_ledger,
+  and check_session_log all pass; SELF-MERGE on green CI: re-sync origin/main first, UNION-resolve
   conflicts (you are the reconciler), require CI green on the final head, merge-commit. Then
   CLOSE the triggering `reconcile` issue (reference the merged PR).
 
