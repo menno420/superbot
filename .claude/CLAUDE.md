@@ -152,6 +152,19 @@ The short version that governs how you work:
 
 ## Read first — agent orientation
 
+**Boot triad — know thyself before directing work (owner directive Q-0270, 2026-07-12,
+general: every session, every repo).** As part of session start, establish three facts and
+let them set your working posture: **(1) what model you are** (from your own system
+configuration; state it family-level — it also feeds the session card's `📊 Model:` line);
+**(2) where you are running** (owner-live chat · autonomous Project seat · routine-fired
+headless wake · subagent; remote container vs local); **(3) what that venue can and cannot
+do** (the ability envelope: merge authority, permission prompts, cross-session limits,
+push/infra walls — consult the repo's documented walls before probing). Then direct the
+work accordingly: **autonomous/Project sessions pre-route around every known stall class**
+(park only on a *real* denial, never preemptively); **owner-live sessions assume NO special
+limitations apply** — act and merge directly (Q-0269); when an ability is genuinely
+uncertain, try it once and read the refusal rather than assuming a wall.
+
 At the **start** of every session, read in this order: **this file**
 (`.claude/CLAUDE.md`, including the Working agreement above) →
 **`docs/collaboration-model.md`** (how we work — binding) →

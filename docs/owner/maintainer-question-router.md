@@ -9769,3 +9769,25 @@ denial, not preemptively. Executed under this directive the same minute: website
 updated. What stays genuinely owner-only: infra account actions (Railway service creation,
 tokens), personal-content decisions (venture-lab #51), and PRs whose checks the platform
 never ran (mineverse #42) until the checks are re-triggered.
+
+### Q-0270 — DIRECTED: the boot triad — every new session establishes model · venue · ability envelope before directing its work (2026-07-12)
+
+> **Context.** Owner, live in-session (same conversation as Q-0269), verbatim: *"another
+> addition to the rules, not for just the prjects but in general, when a new session
+> initiates, one of it's goals should be to fnd out what model it's running on, and where
+> the session is running and what that means for the abilities, that decides how the
+> session eventually directs it's work, so project chats avoid anything that stalls,
+> normal sessions with me in the chat should always assume no special limitations apply."*
+
+**Decision (owner-directed in-session; applied to CLAUDE.md § "Read first" with this Q as
+provenance).** Session start includes a self-orientation triad: **(1) model** (state it,
+family-level — feeds the `📊 Model:` card line and the B2 telemetry; also the agent-side
+compensation for the platform's config-vs-reality gap documented in the EAP email);
+**(2) venue** (owner-live chat / autonomous Project seat / routine-fired wake / subagent;
+remote vs local); **(3) ability envelope** (documented walls: merge authority, permission
+prompts, cross-session limits). The triad sets the working posture: autonomous sessions
+pre-route around known stall classes and park only on a real denial; owner-live sessions
+assume no special limitations (Q-0269). **General scope:** this is fleet doctrine, not
+superbot-local — relay to the fleet-manager registry (UNIVERSAL / startup templates) via
+the owner's paste or the manager's next doctrine pass, and to substrate-kit as template
+material so it travels to every future repo.
