@@ -1,10 +1,10 @@
 {
   "meta": {
-    "generated_at": "2026-07-12T01:32:12Z",
+    "generated_at": "2026-07-12T06:00:37Z",
     "build": {
-      "commit": "1ecc2113",
-      "subject": "Merge pull request #2014 from menno420/claude/reconcile-2026-07-11",
-      "committed_at": "2026-07-12T01:32:12Z"
+      "commit": "b0713fcd",
+      "subject": "Merge pull request #2015 from menno420/bot/dashboard-refresh",
+      "committed_at": "2026-07-12T06:00:37Z"
     },
     "schema_version": 1,
     "counts": {
