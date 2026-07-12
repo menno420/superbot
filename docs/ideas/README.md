@@ -31,6 +31,13 @@ only the header block is read, so a `**Subsystem:**` *example* in an idea's body
 
 Current broad captures:
 
+- [`prompt-wait-language-lint-2026-07-12.md`](./prompt-wait-language-lint-2026-07-12.md) —
+  **session ender (2026-07-12, fleet re-arm session, PR #2048):** a fleet-manager registry lint
+  that fails CI on **wait-language** in prompt bodies ("wait for the owner", "until confirmed",
+  "do not proceed until") outside an explicit OWNER-ONLY block — the enforcing, at-source
+  complement to the Q-0271 AUTONOMY RIDER (which fixes the same presence-gating class at
+  runtime). Would have caught the venture-lab frozen-clicks staleness + trading's "awaiting
+  owner merge" drift. Subsystem: none.
 - [`reconciliation-four-homes-consistency-guard-2026-07-12.md`](./reconciliation-four-homes-consistency-guard-2026-07-12.md) —
   **session ender (2026-07-12, 45th Q-0107 reconciliation pass, band-#2040):** a stdlib
   `check_reconciliation_consistency.py` **detector** that parses the four invariant facts (pass

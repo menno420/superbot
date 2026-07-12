@@ -29,7 +29,10 @@ Then the sitting, in order:
 3. **Bake the new discipline into the v3.4 bodies before pasting** (amendments this session earned):
    pacemaker **consume-before-re-arm, one outstanding tick, silent no-op wakes** (the court-spam
    class, ORDER 020 amendment); the **disconfirming-probe rule** before declaring any wall; the
-   rescue-venue capabilities pointer.
+   rescue-venue capabilities pointer. **This discipline is now written out as the paste-ready
+   AUTONOMY RIDER (Q-0271, plus the fleet-wide never-wait generalization) — lift it verbatim
+   from [`fleet-rearm-2026-07-12.md`](fleet-rearm-2026-07-12.md) §3** (the 2026-07-12 night-run
+   re-arm already dispatched it to every seat as a startup-prompt rider).
 
 ## 2. New projects
 
