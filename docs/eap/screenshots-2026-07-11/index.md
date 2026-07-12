@@ -2,6 +2,10 @@
 
 > **Status:** `reference` — figure index for the second Anthropic email draft
 > ([`../anthropic-email-2-draft-2026-07-11.md`](../anthropic-email-2-draft-2026-07-11.md)).
+>
+> **📎 Ready-to-attach gallery:** [`../email-attachment-set-2026-07-12.md`](../email-attachment-set-2026-07-12.md)
+> renders exactly the 25 images the email references, in attach order — the single place to look
+> when attaching to the Gmail draft.
 
 > Curated from 64 uploaded screenshots (PRs #1987/#1988/#1989, recordings excluded),
 > triaged by 3 review agents. These 16 are the keepers; the other ~48 were routine session
