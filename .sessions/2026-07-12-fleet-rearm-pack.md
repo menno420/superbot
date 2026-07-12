@@ -74,7 +74,10 @@
 - **🛠 Friction → guard (Q-0194):** the friction class this session addresses (prompt bodies
   teaching seats to wait) got its enforcing-guard **proposal** as the session idea (fleet-manager
   lane owns it — cross-repo, so proposed + routed rather than built here). In-repo friction hit:
-  none beyond the known Edit-requires-Read-tool gotcha (harness behavior, not repo).
+  two existing guards fired exactly as designed — `check_docs --strict` caught an invalid idea
+  badge (`captured` → `ideas`) and the Q-0194 **telemetry-append session gate** (#1894) held the
+  merge until the `model-usage.jsonl` row landed. Both fixed same-session; no new guard needed —
+  this is the enforce-don't-exhort loop catching its own author, working as intended.
 - **Context delta:** orientation route worked as designed (CLAUDE.md → collaboration-model →
   current-state → journal → owner docs); the 07-13 brief + night review + 8-seat structure +
   founding-prompt kit + dispatch kit carried ~90% of the needed context. Discovered by hand: the
