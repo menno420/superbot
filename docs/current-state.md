@@ -28,12 +28,17 @@
 >   redeployed); ✅ (5) both orders delivered as fleet-manager inbox **ORDER 019/020** (no pasting
 >   needed); ✅ (2-part) mineverse web host CREATED + LIVE (Railway `superbot-mineverse`/`web`,
 >   `web-production-97636.up.railway.app` → HTTP 200, read-only degraded by design; 3/6 vars set;
->   deployability fix = mineverse PR #44, merged); 🔁 (1) fleet-manager Actions toggle BRIDGED (roster-bridge routine
->   `trig_011LrFY1k5cUHRYH6zwTvPvn` lands parked roster PRs, self-retires when the click lands).
->   **Remaining owner (all in fleet-manager owner-queue with slugs):** the Actions toggle (now
->   non-blocking) · mineverse Discord-portal 2-step (client secret + redirect-URI registration) ·
->   Railway GitHub-App grant for superbot-mineverse (auto-deploy) · (3) venture-lab publish clicks
->   (staged, zip sha-verified — genuinely owner-only) · (6) optional Matt interview.
+>   deployability fix = mineverse PR #44, merged).
+>   **EVENING UPDATE (same session, part-2 card):** the owner clicked BOTH Actions toggles
+>   (live-verified; roster self-lands, bake self-lands; the bridge routines were deleted) and
+>   completed the Discord portal steps — after the mineverse UA-403 token-exchange fix
+>   (mineverse #45, Cloudflare rejects urllib's default User-Agent) **player sign-in is LIVE,
+>   owner-verified end-to-end**. The court-spam tick-pile-up incident was pruned + guarded
+>   (ORDER 020 amendment). **Remaining owner:** venture-lab publish EVIDENCE (listing URL) ·
+>   optional Matt interview · the 07-14 bundled-sitting decisions.
+> **▶▶ NEXT SESSION: the FLEET REBOOT** (website-served centralized prompts, 8-seat re-paste,
+> new projects incl. the Ideas-Lab candidate, superbot-next merge-wall drain, games FLAG 1+2) —
+> full plan: [`owner/next-session-brief-2026-07-13.md`](owner/next-session-brief-2026-07-13.md).
 > **Next action then reverts to the standing program** — per-sector live queues below.
 >
 > **Ledger note:** living status ledger (project state). **Not binding.**
