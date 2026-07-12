@@ -9747,3 +9747,25 @@ runbook §3.7 re-point + §6.2 conformed-mapping paste block — part-4e (PR #19
 
 **Routing.** This entry (provenance + the durable line) + the venture-lab relaunch pastes
 carry it implicitly via the money protocol / permissions block — part-4h (PR #1971).
+
+### Q-0269 — DIRECTED: live sessions merge finished PRs themselves — never park green PRs on the owner's queue (2026-07-12)
+
+> **Context.** After the overnight fleet review, the hub session (owner live in-chat) left
+> two verified-green, complete PRs (websites #158, fleet-manager #92) "parked READY+green
+> awaiting the owner's merge click," importing the Project-seat merge wall into a session
+> that doesn't have it. Owner, verbatim: *"you just merge everything, only the projects have
+> trouble with those things, I expect from a normal session that any mergable PR in finished
+> state just gets merged immediatly, we're wasting a lot of time with the fact that agents
+> direct me to PRs, it's not my task to do that."*
+
+**Decision (owner-directed in-session).** In any session where the owner is live (hub
+sessions, help sessions — anything not running as an autonomous Project seat): **a mergeable
+PR in finished state (CI green, card complete, READY) gets merged immediately by the agent.**
+Directing the owner to a green PR is a workflow failure, not a courtesy. "Park READY+green
+for the owner's click" remains **only** the fallback for Project/auto-mode seats that the
+merge classifier actually denies — and even those should first try, then park on a real
+denial, not preemptively. Executed under this directive the same minute: websites #158
+(squash `b925072`) + fleet-manager #92 (squash `9a8518f`); fleet-vocab guardrail line
+updated. What stays genuinely owner-only: infra account actions (Railway service creation,
+tokens), personal-content decisions (venture-lab #51), and PRs whose checks the platform
+never ran (mineverse #42) until the checks are re-triggered.
