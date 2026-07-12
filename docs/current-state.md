@@ -39,6 +39,11 @@
 > **▶▶ NEXT SESSION: the FLEET REBOOT** (website-served centralized prompts, 8-seat re-paste,
 > new projects incl. the Ideas-Lab candidate, superbot-next merge-wall drain, games FLAG 1+2) —
 > full plan: [`owner/next-session-brief-2026-07-13.md`](owner/next-session-brief-2026-07-13.md).
+> **▶ TONIGHT first — the 2026-07-12 fleet re-arm (owner-directed, PR #2048):** all 8 seats
+> re-dispatched with the **Q-0271 AUTONOMY RIDER** (seats never gate work on owner presence;
+> owner-only list is the sole park class; queue-and-continue; SIM-REQUEST valve) — expanded
+> vision + 8 paste-and-go prompts + the 3-click owner list:
+> [`owner/fleet-rearm-2026-07-12.md`](owner/fleet-rearm-2026-07-12.md).
 > **Next action then reverts to the standing program** — per-sector live queues below.
 >
 > **Ledger note:** living status ledger (project state). **Not binding.**

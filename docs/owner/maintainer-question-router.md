@@ -9791,3 +9791,33 @@ assume no special limitations (Q-0269). **General scope:** this is fleet doctrin
 superbot-local — relay to the fleet-manager registry (UNIVERSAL / startup templates) via
 the owner's paste or the manager's next doctrine pass, and to substrate-kit as template
 material so it travels to every future repo.
+
+### Q-0271 — DIRECTED: fleet-wide never-wait — seats never gate work on owner presence; owner-only list is the sole park class (2026-07-12)
+
+> **Context.** Owner, live in-session (the fleet re-arm session, superbot PR #2048), verbatim
+> excerpts: *"I've noticed that a lot of projects halucinate what they can or can't do, in the
+> sense that they gate a lot of work on my presense what really shouldn't be necessary, the
+> goal is that each project just keeps executing and doesn't wait for my reviews … I want to
+> prevent this in the next run so we can find out what happens if our system acually runs
+> smoothly, and by that I mean that the projects actually work together … anything uncertain
+> should be routed to the idea/sim lab … quantity is our power here, if we have 100 finished
+> prducts ready tomorrow instead of 10, the changes of earning are 10x bigger, ofcourse
+> everything should happen properly and structured, that's why the fleet manager must also
+> make sure to properly route all the work and keep track of all the repos and update stale
+> docs etc."*
+
+**Decision (owner-directed in-session).** The Q-0241 never-wait / silence=consent posture is
+**generalized fleet-wide for Project-seat work** (it was scoped to the rebuild program): a seat
+never holds finished work for review, never waits for owner presence to continue, and treats
+any "I'll wait for the owner to approve/allow continuation" impulse as a hallucinated gate
+unless it names an **OWNER-ONLY class**: repo settings/rulesets · secrets/env/host
+provisioning · external publish + spending money · destructive prod-data ops · account/portal
+steps. Those park as six-field owner-queue items (citing the probed wall, per the
+disconfirming-probe rule) — **queue-and-continue**, never wait-in-place. Uncertainty routes to
+Ideas Lab (SIM-REQUEST valve) instead of blocking. The enforcing artifact is the **AUTONOMY
+RIDER** in [`fleet-rearm-2026-07-12.md`](./fleet-rearm-2026-07-12.md) §3, embedded in every
+seat's 2026-07-12 re-arm prompt and destined verbatim for the v3.4 instruction bodies
+(fleet-manager #121/#122 lane) + the substrate-kit templates. **Unchanged:** the live prod
+bot's Q-0213 destructive brake; CI-green as the merge floor (never-wait ≠ bypass CI); the
+honest-negative bar. **Scope note:** this is fleet doctrine — superbot's own hub sessions
+already carry the stronger Q-0269 merge-immediately rule.
