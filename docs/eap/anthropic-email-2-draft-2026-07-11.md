@@ -152,7 +152,8 @@ experiment now:
 - It ran in **generations**: gen-1 (10 Projects, one day, deliberate wind-down) →
   **gen-2** (a single overnight relaunch built from gen-1's succession packages that
   merged **116 PRs across 13 repos in ~6 hours, zero stuck**) → **gen-3** (the standing
-  program running now). Two repos went from empty to a first shipped product overnight —
+  program running now — since consolidated, on 07-11, from ~15 Projects to **8 standing
+  seats**: the scale experiment ended, the standing program began). Two repos went from empty to a first shipped product overnight —
   a complete original GBA homebrew game, and 12 proof-documented ROM-mod patches.
 - **Model note up front (Menno's Part 1, from our side):** the fleet's telemetry shows
   sessions self-reporting **fable-5, opus-4.8, and sonnet-5** across lanes, while the
@@ -247,6 +248,12 @@ is what earned trust, what broke, and — the new centrepiece — the moment we 
    configuration and its running reality can silently diverge, and neither the agent nor the
    operator has a surface that shows the truth.** It's exactly why we — and the operator —
    keep asking for a queryable "what is this session/routine, really" manifest.
+   **Update, 2026-07-12 (operator-verified, and we want to be fair here):** Routines
+   created overnight now display the actually-running model correctly in the Routines
+   screen — a fresh routine showed sonnet-5 and its woken session self-reported sonnet-5.
+   So this looks **improved or fixed for newly-created Routines**; the figures document
+   the 07-11 state, and routines created before the change are unverified. If that was
+   your fix landing: it worked, and this is us confirming it from the operator's screen.
 3. **Routines spawn without their repo attached.** A routine-woken session arrives with no
    repo in scope and has to `add_repo` itself at boot — which **fails ~1 in 3 times** in
    one game lane (the session boots, can't reach its own code, and burns the wake). The
@@ -378,9 +385,11 @@ by the lanes and verifiable per-PR.)*
 - **superbot** — the production Discord bot and the EAP evaluation home (the running log,
   permission probes, this email); frozen as the behavioral oracle the rebuild replays
   against.
-- **superbot-next** — the ground-up rebuild: **33 of 49 subsystems ported at golden
-  parity (212/212 golden transcripts green)**, boots to RUNNING on real Postgres;
-  roughly 70 PRs merged across 5 parallel lanes in the last 48 hours alone.
+- **superbot-next** — the ground-up rebuild: **37 of 49 subsystems ported at golden
+  parity (218/218 golden transcripts green)**, boots to RUNNING on real Postgres;
+  roughly 70 PRs merged across 5 parallel lanes in one 48-hour window, and its overnight
+  lane closed its fifth work band (a live-bug fix lane, merged CI-green) the night of
+  the scheduler incident — the build kept shipping through it.
 - **The games program** — three dedicated game Projects: a world ecosystem (mining /
   exploration / fishing), an idle-engine with **12 data-only theme packs (827 tests)**,
   and a read-write **browsergame wired to the bot's live mining economy** (seeded from
@@ -390,7 +399,8 @@ by the lanes and verifiable per-PR.)*
 - **venture-lab** — three launch-ready products (incl. a Stripe webhook test kit); all live
   paths owner-click-gated (finding b4).
 - **substrate-kit** — the portable workflow substrate (the real artifact): released
-  **v1.7 → v1.11.0 in ~48 hours (six releases)**; consumed by every lane.
+  **v1.7 → v1.12.1 in ~3 days** (six of those releases inside one 48-hour window);
+  consumed by every lane.
 - **websites, trading-strategy, sim-lab, idea-engine, product-forge, fleet-manager** —
   live web services, a paper-trading research lane (its honest headline: the spent
   holdout found **no** strategy clearing significance — and said so), a
@@ -398,9 +408,12 @@ by the lanes and verifiable per-PR.)*
   14-hour window), a product builder, and the manager's own control repo.
 
 **Read this with an agent too, as before** — half this feedback is from agents, so half the
-review should be too. Best entry points: the external review pack
+review should be too. `[REVIEW-SITE URL — insert once the review service is live: the
+program-review site built for you — story, growth, successes, problems, per-repo detail,
+evidence-backed questionnaire]` Best entry points: the external review pack
 (`superbot/docs/eap/external-review-pack-2026-07-09.md`, written for a no-auth outside
-reviewer), the fleet night-review (`superbot/docs/eap/night-review-2026-07-11.md`), the
+reviewer), the fleet night-reviews (`superbot/docs/eap/night-review-2026-07-11.md` and
+`night-review-2026-07-12.md` — the second is finding 7's full incident record), the
 fleet-instruction audit that found the merge-authority root cause
 (`fleet-manager/docs/findings/instruction-and-env-audit-2026-07-11.md`), the permission
 probe (`superbot/docs/planning/projects-eap-permission-probe-report-2026-07-08.md`), and
