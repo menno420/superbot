@@ -1,19 +1,15 @@
 # ▶ NEXT SESSION — finalize the second Anthropic email (owner's top priority)
 
-> **Status:** `reference` — ✅ **STAGED 2026-07-12** — clean draft is in Gmail, ready for the owner to send.
-> The finalization session ran with the owner live. Outcome: the send-ready email is now a
-> **clean Gmail draft** (id `r9217428483600498478`) — a **reply on the July 8 thread**
-> `19f41cd2e5380bb3` (so the original email is quoted below as reference), **To**
-> `claude-code-early-access@anthropic.com`, **cc** `dliu@` / `omid@` / `mattg@`. The owner's
-> Part 1 is kept **verbatim** from his own Gmail edit; all scaffolding (status header, `*****`
-> markers, "Working notes") stripped; Part 2 de-markdowned; figures reduced to a plain key.
-> **Left to the owner only:** (1) attach screenshots by hand (Gmail draft API can't attach —
-> recommend Figs 1/5/7/9/10 + 15a–c); (2) delete the OLD standalone draft
-> `r-7695257510039698568` (thread `19f513094d66637d`) so the uncleaned version isn't sent;
-> (3) optional final glance at two Part-1 spots he was offered ("What I most want out of it
-> manage…" missing verb; empty "My idea:" line) — left untouched per his "keep my sections
-> unchanged". Optional non-blocker: refresh the review-site data (still a 07-11 snapshot) to
-> today. **The section below is the original handoff, kept for provenance.**
+> **Status:** `reference` — ✅ **SENT 2026-07-12 13:24Z** — task complete; kept as the record.
+> The second Anthropic EAP email was **sent by the owner** as a **reply on the July 8 thread**
+> `19f41cd2e5380bb3` (sent msg `19f568051da9e3d6`), **To** `claude-code-early-access@anthropic.com`,
+> **cc** `dliu@` / `omid@` / `mattg@`, with a few final owner tweaks. Assembly: the owner's Part 1
+> kept **verbatim** from his own Gmail edit; all scaffolding (status header, `*****` markers,
+> "Working notes") stripped; Part 2 de-markdowned; figures delivered as the linked gallery
+> [`email-attachment-set-2026-07-12.md`](email-attachment-set-2026-07-12.md) (25 figs, rendered on
+> GitHub) rather than attachments. **Follow-ups (not blocking):** watch the thread for replies
+> through **Tue 2026-07-14**; Matt's optional 10–15 min interview; optional review-site data
+> refresh past the 07-11 snapshot. **The section below is the original handoff, kept for provenance.**
 >
 > **Origin:** next-session handoff, written 2026-07-12 at session close (owner-directed: *"prepare the
 > repo for the next session to continue finalizing the email with me as the next most
