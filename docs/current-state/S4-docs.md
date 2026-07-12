@@ -9,6 +9,22 @@
 > S3; the docs it produces are S4.*
 
 **Recently shipped (this sector):**
+- **Forty-fifth Q-0107 reconciliation pass** (band-#2040, issue #2041 —
+  [pass record](../planning/reconciliation-pass-2026-07-12-band2040.md)): reconciled the ledger
+  (band #2012–#2040 — four grouped entries, **entirely docs/control/tooling**, zero `disbot/` runtime:
+  the **2026-07-12 owner-live fleet-drive** #2032/#2033/#2034/#2035/#2037/#2038/#2039 — the 2nd
+  Anthropic email SENT + gallery-image-link fix + the websites-review + trigger-health owner work-orders
+  + the cross-repo fleet PR drive (mineverse #42, fleet-manager #113/#117, websites 11/14); the
+  **Projects overnight batch review + EAP figure gallery** #2017…#2031 — the trigger-scheduler incident
+  review (`eap/night-review-2026-07-12.md`) + fig-20…fig-32 + the email-attachment set; the
+  **routine-arming doctrine correction + band-#2010 reconcile follow-up** #2013/#2014; and 6 dashboard
+  refreshes #2015/#2016/#2022/#2028/#2036/#2040), trimmed Recently-shipped to 20, **disposed the open-PR
+  set** — **zero open PRs at pass start**, no stale session PR, confirmed **ROUTINE_PAT set / loop
+  self-fires** (issue #2041 authored by `menno420`), carried the forward queue intact (still deep, no
+  THIN flag — the rebuild Phase-B canonical plan + the live SuperBot Project 8-seat program dominate),
+  refreshed the dashboard export (Q-0167), reset the marker #2011 → #2040. The 5 remaining
+  supersede-banner soft warnings are honest cross-repo supersessions the in-repo checker can't model —
+  carried forward unchanged.
 - **Forty-fourth Q-0107 reconciliation pass** (band-#2010, issue #2012 —
   [pass record](../planning/reconciliation-pass-2026-07-11-band2010.md)): reconciled the ledger
   (band #1981–#2011 — four grouped entries, **entirely docs/tooling/control**, zero `disbot/` runtime:
@@ -248,7 +264,7 @@
   startable slice. Companion: the still-unexecuted
   [orientation-cost-reduction plan](../planning/orientation-cost-reduction-plan-2026-06-30.md)
   (Q-0210 router archive now 3+ passes overdue — B0–B3 should run soon regardless).
-- **Next reconciliation pass due once merged PRs cross #2040** (every multiple of 30, Q-0134) —
+- **Next reconciliation pass due once merged PRs cross #2070** (every multiple of 30, Q-0134) —
   auto-triggered by `reconciliation-trigger.yml`; run by the docs-reconciliation routine, **not** a
   manual session (Q-0124).
 - Plan-band depth is healthy — **no `PLAN-BACKLOG-THIN` flag** (buildable depth well over cadence).
