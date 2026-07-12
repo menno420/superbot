@@ -1,5 +1,11 @@
 # SuperBot — Current State
 
+> ### ▶▶ TOP PRIORITY NEXT SESSION (owner-directed 2026-07-12): finalize the Anthropic email
+> The single most important next step is **finalizing the second Anthropic email with the
+> owner** — see the step-by-step handoff: [`eap/NEXT-SESSION-finalize-email.md`](eap/NEXT-SESSION-finalize-email.md).
+> The draft is send-ready; only the owner's Part-1 rewrite + staging the Gmail draft remain.
+> Window closes **Tue 2026-07-14**. Everything else is secondary until this ships.
+>
 > **Status:** `living-ledger` — living status ledger (project state). **Not binding.**
 > **Source code and merged PRs always win over this file.**
 > The In-flight section below is a dated snapshot — **verify open PRs against

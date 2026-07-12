@@ -31,6 +31,11 @@ only the header block is read, so a `**Subsystem:**` *example* in an idea's body
 
 Current broad captures:
 
+- [`screen-recording-evidence-review-2026-07-12.md`](./screen-recording-evidence-review-2026-07-12.md) —
+  **session ender (2026-07-12, email-finalization session):** a one-command helper to extract
+  scene-change frames from an owner-uploaded screen recording for review (the video sibling of the
+  `screenshots-*/` convention) — the Q-0194 friction hit live when a 32s Routines recording had to be
+  frame-extracted with an ad-hoc ffmpeg install; those frames became email figs 33–35.
 - [`scheduler-independent-trigger-watchdog-2026-07-12.md`](./scheduler-independent-trigger-watchdog-2026-07-12.md) —
   **session ender (2026-07-12, overnight fleet review):** extend fleet-manager's roster-regen
   GitHub-Actions cron to *evaluate* the trigger snapshot it already fetches — flag WEDGED crons,
