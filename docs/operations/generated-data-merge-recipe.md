@@ -54,8 +54,14 @@ By hand (identical semantics):
 git checkout --theirs -- dashboard/data/dashboard.json botsite/data/site.json \
     botsite/data/console.json botsite/site/data.js
 python3.10 scripts/export_dashboard_data.py
-git add dashboard/data/dashboard.json botsite/data/ botsite/site/data.js
+git add dashboard/data/dashboard.json botsite/data/site.json \
+    botsite/data/console.json botsite/site/data.js
 ```
+
+(Only conflicted paths need the `checkout --theirs`, but stage all four after the regen —
+one producer run refreshes them together, and committing them together keeps the artifacts
+mutually consistent on one build sha. Never `git add` the `*_data_contract.json` files as
+part of this recipe.)
 
 ## Why not git attributes? (tested 2026-07-13, real data)
 

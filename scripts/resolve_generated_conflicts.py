@@ -168,13 +168,16 @@ def main(argv: list[str] | None = None) -> int:
         )
         return 1
 
-    add = _git("add", "--", *targets)
+    # Stage ALL producer outputs, not just the conflicted ones — the regen
+    # refreshes every artifact, and committing them together keeps the four
+    # files mutually consistent (one producer run, one build sha).
+    add = _git("add", "--", *GENERATED_PATHS)
     if add.returncode != 0:
         print(f"git add failed:\n{add.stderr}", file=sys.stderr)
         return 1
 
-    print("Resolved + regenerated + staged:")
-    for path in targets:
+    print("Resolved + regenerated + staged (all producer outputs):")
+    for path in GENERATED_PATHS:
         print(f"  {path}")
     if others:
         print("Remaining conflicts (resolve normally):")
