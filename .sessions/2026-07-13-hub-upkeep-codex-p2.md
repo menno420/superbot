@@ -1,6 +1,6 @@
 # 2026-07-13 — Hub upkeep follow-up: Codex P2 fixes from #2054
 
-> **Status:** in-progress
+> **Status:** complete
 > **Branch:** `claude/hub-upkeep-codex-p2` · **PR:** pending
 > **Venue:** remote container (worker session, orchestrated). **📊 Model:** Fable 5 (Claude 5 family).
 > **Scope:** docs-only follow-up (Q-0174) — two verified-genuine Codex P2 line comments left on
@@ -28,7 +28,11 @@ review comments, both verified genuine:
 
 ## Shipped
 
-- (filled at flip)
+- Fix 1 + Fix 2 above (2-file docs diff) + the Q-0194 telemetry row. Quality mirror green:
+  `python3.10 scripts/check_quality.py --full` → **All checks passed ✓**
+  (13883 passed, 50 skipped, 2 xfailed). Fix 1's cross-repo pointer is a full GitHub URL
+  (not a backticked path) because `check_docs` pinned-check resolves backticked `docs/...`
+  paths against THIS repo.
 
 ## Session enders
 
@@ -46,8 +50,11 @@ review comments, both verified genuine:
 
 ## 📤 Run report
 
-- **Did:** (filled at flip). **Outcome:** (filled at flip).
-- **Shipped:** (filled at flip).
+- **Did:** fixed both verified-genuine Codex P2 comments from #2054 — qualified the D-0043
+  handoff with its owning artifact (superbot-next decisions ledger, verified at `e9f1cd5`) and
+  re-badged the retired review-then-plan Rebuild bullet as historical/superseded.
+  **Outcome:** quality mirror green; PR opened READY for the auto-merge-enabler path.
+- **Shipped:** the two fixes; the Q-0194 telemetry row; this card.
 - **Run type:** orchestrated docs-only follow-up (worker seat), decide-and-flag.
 - **⚑ Owner decisions needed:** none.
 - **⚑ Owner manual steps:** none.
