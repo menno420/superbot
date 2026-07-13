@@ -20,7 +20,7 @@ repos:
   # ruff-format owns formatting (Black-compatible); ruff (with the `I` rule) owns
   # import sorting + lint and fails the commit if it had to fix anything.
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.15.20
+    rev: v0.15.21
     hooks:
       - id: ruff-format
       - id: ruff
@@ -28,7 +28,7 @@ repos:
 
   # Mypy - strict types
   - repo: https://github.com/pre-commit/mirrors-mypy
-    rev: v2.1.0
+    rev: v2.3.0
     hooks:
       - id: mypy
         additional_dependencies: ["types-requests", "types-PyYAML"]
