@@ -36,6 +36,10 @@ why: closes the standing I1b AMBIGUOUS-ENABLED WARN rows in fm `scripts/check_tr
 done-when: both trigger records are disposed (deleted, or annotated-and-left-paused with the decision recorded in `docs/operations/autonomous-routines.md`) and ALL stale live-Schedule references in `docs/operations/autonomous-routines.md` (incl. L30, L288–289, L395, L406) are annotated; the executing session's card cites this ORDER.
 
 ## ORDER 004 · 2026-07-13T22:14Z · status: new
+priority: P1
+do: work this seat's EAP final-night worklist, below
+why: owner directive 2026-07-13 — last EAP night; fm ORDER 045 relay
+
 **EAP final-night worklist — owner directive relay (fm ORDER 045, Phase 3 fan-out).**
 
 Owner directive, quoted VERBATIM as recorded in fm ORDER 045: "I want you to find out the current state of all repos and
@@ -52,7 +56,7 @@ Citations: fm ORDER 045, control/inbox.md @ ca1ce28 · docs/eap-final-night-work
 
 No unconsumed hub ORDERs (001/002 done); no PLAN BACKLOG THIN flag anywhere.
 
-1. Drive PR #2087 (I1b frozen-trigger disposition relay) to a terminal state — open, ready, conflict-guard green (superbot PR #2087) `[lane]`
+1. Consume ORDER 003 (trigger disposal + doc annotation) — #2087 merged 21:50Z, so the relay itself is done; the ORDER 003 work is NOT (still `status: new` above). The overnight session must not skip ORDER 003. `[lane]`
 2. Dependabot sweep: disposition/merge the 8 open bumps (superbot PRs #2077–#2084) `[standing]`
 3. EAP email-3 prep — Part-1 voice + roster screenshot; SENDS 2026-07-14 (`docs/eap/anthropic-email-3-draft-2026-07-13.md@f969b95`) `[deadline]` (the send itself is owner-gated)
 4. Build `check_reconciliation_consistency.py` four-homes guard — quick win, disposable (`docs/ideas/reconciliation-four-homes-consistency-guard-2026-07-12.md@f969b95`) `[improve]`

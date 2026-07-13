@@ -38,5 +38,8 @@ belongs in the inbox header itself rather than a past session card.
 
 - **Did:** appended ORDER 004 (EAP final-night worklist, fm ORDER 045 relay) to `control/inbox.md` · **Outcome:** shipped
 - **Shipped:** #2090 — control intake append + session bookkeeping (docs-only)
+- **Run type:** `routine · dispatch` (fleet-manager coordinator dispatch)
+- **⚑ Owner decisions needed:** none
+- **⚑ Owner manual steps:** none
 - **⚑ Self-initiated:** none — dispatched relay
-- **↪ Next:** next hub-touching session consumes ORDER 004 (work the list top-down across tonight's wakes)
+- **↪ Next:** next hub-touching session consumes ORDER 004 (work the list top-down across tonight's wakes; item 1 = consume ORDER 003, not skip it)
