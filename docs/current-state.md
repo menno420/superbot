@@ -36,9 +36,12 @@
 >   owner-verified end-to-end**. The court-spam tick-pile-up incident was pruned + guarded
 >   (ORDER 020 amendment). **Remaining owner:** venture-lab publish EVIDENCE (listing URL) ·
 >   optional Matt interview · the 07-14 bundled-sitting decisions.
-> **▶▶ NEXT SESSION: the FLEET REBOOT** (website-served centralized prompts, 8-seat re-paste,
-> new projects incl. the Ideas-Lab candidate, superbot-next merge-wall drain, games FLAG 1+2) —
-> full plan: [`owner/next-session-brief-2026-07-13.md`](owner/next-session-brief-2026-07-13.md).
+> **▶▶ NEXT SESSION (2026-07-14 morning): read the night → run the 7 probes → SEND EMAIL 3
+> (EAP window closes today)** — full program + the hub's honest projects review:
+> [`owner/next-session-brief-2026-07-14.md`](owner/next-session-brief-2026-07-14.md); email
+> draft: [`eap/anthropic-email-3-draft-2026-07-13.md`](eap/anthropic-email-3-draft-2026-07-13.md).
+> *(The 07-13 reboot brief is EXECUTED — v3.4 pasted, all seats rebooted, v3.5 in the
+> manager's registry lane: [`owner/next-session-brief-2026-07-13.md`](owner/next-session-brief-2026-07-13.md).)*
 > **▶ TONIGHT first — the 2026-07-12 fleet re-arm (owner-directed, PR #2048):** all 8 seats
 > re-dispatched with the **Q-0271 AUTONOMY RIDER** (seats never gate work on owner presence;
 > owner-only list is the sole park class; queue-and-continue; SIM-REQUEST valve) — expanded
