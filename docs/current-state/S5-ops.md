@@ -26,6 +26,11 @@
 *(offline-fit tags — `[offline]` self-mergeable now · `[needs-live-bot]` needs a running bot / runtime
 creds · `[owner]` needs an owner decision/action; see [`../repo-sector-map.md`](../repo-sector-map.md)
 § "the offline-fit startability tag". S5 is the executor outlier — most items are owner/Hermes-run.)*
+- **▶ Websites fleet data plane (owner ask 2026-07-13, PR #2066)** `[owner]`-routed — the
+  centralized-ingestion + misplaced-file-failsafe design for the four website services
+  (derived manifest · one fetch core · commit-time recency · drift-flagging resolver), built
+  to route to the **websites lane** as manager ORDERs (4 phases):
+  [`../planning/websites-fleet-data-plane-2026-07-13.md`](../planning/websites-fleet-data-plane-2026-07-13.md).
 - **✅ CI-setup redesign DELIVERED (PR #1737, 2026-07-05)** — the target-state design + phased,
   reversible migration:
   [`../planning/ci-setup-redesign-2026-07-05.md`](../planning/ci-setup-redesign-2026-07-05.md) +
