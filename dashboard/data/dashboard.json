@@ -1,10 +1,10 @@
 {
   "meta": {
-    "generated_at": "2026-07-13T00:45:52Z",
+    "generated_at": "2026-07-13T12:56:13Z",
     "build": {
-      "commit": "da848308",
-      "subject": "Merge pull request #2051 from menno420/claude/project-autonomy-workflow-bo1cjn",
-      "committed_at": "2026-07-13T00:45:52Z"
+      "commit": "6d814880",
+      "subject": "Merge pull request #2066 from menno420/claude/multi-repo-orientation-review-p5ztfi",
+      "committed_at": "2026-07-13T12:56:13Z"
     },
     "schema_version": 1,
     "counts": {
@@ -3381,6 +3381,38 @@
   "reviews": [],
   "updates": [
     {
+      "file": "2026-07-13-websites-data-plane-design.md",
+      "date": "2026-07-13",
+      "title": "2026-07-13 — Websites fleet-data-plane design (owner ask)",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-07-13-session-ender-v3-4.md",
+      "date": "2026-07-13",
+      "title": "2026-07-13 — Universal session ender v3.4 (owner-directed rewrite)",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-07-13-multi-repo-orientation-review.md",
+      "date": "2026-07-13",
+      "title": "2026-07-13 — Multi-repo orientation fleet review (owner-live)",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-07-13-hub-upkeep-codex-p2.md",
+      "date": "2026-07-13",
+      "title": "2026-07-13 — Hub upkeep follow-up: Codex P2 fixes from #2054",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
       "file": "2026-07-12-reconcile-band2040.md",
       "date": "2026-07-12",
       "title": "Session — forty-fifth Q-0107 docs reconciliation pass (band-#2040)",
@@ -3408,6 +3440,14 @@
       "file": "2026-07-12-owner-live-part2-mineverse-signin.md",
       "date": "2026-07-12",
       "title": "Session — 2026-07-12 (part 2) — sign-in live, toggles verified, court-spam incident, fleet sweep",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-07-12-hub-upkeep.md",
+      "date": "2026-07-12",
+      "title": "2026-07-12 — Hub upkeep: stale rebuild pointers in current-state docs",
       "status": "complete",
       "run_type": "",
       "self_initiated": false
@@ -3816,46 +3856,6 @@
       "file": "2026-07-10-gen2-night-prep.md",
       "date": "2026-07-10",
       "title": "2026-07-10 — Gen-2 night prep (fleet boot-readiness)",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-07-10-gen1-gen2-doctrine-review.md",
-      "date": "2026-07-10",
-      "title": "2026-07-10 — gen1-gen2-doctrine-review",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-07-10-fleet-overnight-review.md",
-      "date": "2026-07-10",
-      "title": "2026-07-10 — Owner-directed cross-fleet overnight review (all 13 repos)",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": true
-    },
-    {
-      "file": "2026-07-10-eap-verification-corrections.md",
-      "date": "2026-07-10",
-      "title": "2026-07-10 — EAP docs: two verified factual corrections (from fleet-manager ultracode verification)",
-      "status": "complete",
-      "run_type": "manual",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-07-10-eap-journal-routine-observability.md",
-      "date": "2026-07-10",
-      "title": "2026-07-10 — EAP journal: routine-observability bug entry (round-3 brief §1(d))",
-      "status": "complete",
-      "run_type": "manual",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-07-10-coordinator-close-out.md",
-      "date": "2026-07-10",
-      "title": "2026-07-10 — Gen-1 games-lane coordinator close-out (grand-review prompt + Part 1 questions)",
       "status": "complete",
       "run_type": "",
       "self_initiated": false
@@ -4893,6 +4893,76 @@
     {
       "session": "2026-07-12-fleet-rearm-pack",
       "date": "2026-07-12",
+      "model": "fable-5",
+      "effort": "high",
+      "task_class": "docs-only",
+      "tokens_out": null,
+      "outcome": {
+        "ci_green_first_push": null,
+        "checker_findings": null,
+        "merged_pr": null,
+        "reverted_within_window": null
+      }
+    },
+    {
+      "session": "2026-07-12-hub-upkeep",
+      "date": "2026-07-12",
+      "model": "fable-5",
+      "effort": "high",
+      "task_class": "docs-only",
+      "tokens_out": null,
+      "outcome": {
+        "ci_green_first_push": null,
+        "checker_findings": null,
+        "merged_pr": null,
+        "reverted_within_window": null
+      }
+    },
+    {
+      "session": "2026-07-13-hub-upkeep-codex-p2",
+      "date": "2026-07-13",
+      "model": "fable-5",
+      "effort": "high",
+      "task_class": "docs-only",
+      "tokens_out": null,
+      "outcome": {
+        "ci_green_first_push": null,
+        "checker_findings": null,
+        "merged_pr": null,
+        "reverted_within_window": null
+      }
+    },
+    {
+      "session": "2026-07-13-multi-repo-orientation-review",
+      "date": "2026-07-13",
+      "model": "fable-5",
+      "effort": "high",
+      "task_class": "docs-only",
+      "tokens_out": null,
+      "outcome": {
+        "ci_green_first_push": null,
+        "checker_findings": null,
+        "merged_pr": null,
+        "reverted_within_window": null
+      }
+    },
+    {
+      "session": "2026-07-13-session-ender-v3-4",
+      "date": "2026-07-13",
+      "model": "fable-5",
+      "effort": "high",
+      "task_class": "docs-only",
+      "tokens_out": null,
+      "outcome": {
+        "ci_green_first_push": null,
+        "checker_findings": null,
+        "merged_pr": null,
+        "reverted_within_window": null
+      }
+    },
+    {
+      "session": "2026-07-13-websites-data-plane-design",
+      "date": "2026-07-13",
       "model": "fable-5",
       "effort": "high",
       "task_class": "docs-only",

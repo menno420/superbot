@@ -18,6 +18,10 @@ not burn turns re-deriving whether you may look:
   `https://raw.githubusercontent.com/menno420/<repo>/main/<path>` · `git clone` (public) ·
   `git ls-remote` (HEAD pins). Set a real User-Agent on scripted fetches (Cloudflare 403s
   urllib's default on some hosts — the mineverse #45 lesson).
+- **`api.github.com` is proxy-403 for sibling repos in hub sessions** (measured 2026-07-13,
+  five survey agents independently) — don't burn turns on REST list endpoints. Derive PR
+  state from `git ls-remote 'refs/pull/*/merge'` probes + the repo's own control/heartbeat
+  records instead; label anything you can't derive that way "unverified", never guess.
 - **Boundaries that stand:** GitHub **MCP** calls stay scoped to the session's attached
   repo(s); **writes** stay in your own repo — cross-repo *work* routes via the fleet-manager
   inbox (ORDERs), never direct pushes; `add_repo` + clone remains the path for **deep/audit**
@@ -53,6 +57,7 @@ That table **is** Tier 1+2 below — run it before asking "what's the fleet doin
 | `substrate-kit` | Self Improvement | The portable kit every seat runs on; templates + CHANGELOG (release ~daily — pin tags, never HEAD). |
 | `websites` | Websites | Control plane + review site + arcade; `docs/owner/OWNER-ACTIONS.md` is its ask ledger; merge=deploy to four Railway services. |
 | `gba-homebrew` | Game Lab | GBA homebrew; `docs/PLATFORM-LIMITS.md` is its walls file. |
+| `curious-research` | Curious Research (9th seat) | Maker/3D-print research + the friend gift studio; public, raw-readable (verified 2026-07-13); heartbeat `control/status.md`, reports in `control/outbox.md`. |
 | `pokemon-mod-lab` | Game Lab (dark) | **PRIVATE** — skip, never guess. |
 | `product-forge` · `superbot-plugin-hello` · `codetool-lab-*` · `mobile-lab` | long tail | On-demand incubator · plugin example (near-empty) · archived CLIs · parked. `--all` sweeps them. |
 

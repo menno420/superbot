@@ -24,6 +24,13 @@ Three companion docs capture the pipeline in increasing depth:
 - [`cross-agent-trust-ledger.md`](./cross-agent-trust-ledger.md) — per-model
   capability/trust scores from eval runs; trust decides the lane (`living-ledger`).
 
+**Paste-ready prompts (hand to a person, they paste into a chat):**
+
+- [`friend-onboarding-prompt-webshop-2026-07-13.md`](./friend-onboarding-prompt-webshop-2026-07-13.md)
+  — for a beginner friend on **free claude.ai** who wants to sell things online: it sends
+  his chat to real public fleet files (the Stripe kit as the worked example) and teaches
+  the AI-plus-GitHub tracking discipline + a starter shop plan (`reference`).
+
 `docs/owner/` does **not** replace active plans, `docs/current-state.md`, binding
 contracts or decisions, subsystem folios, the session journal, or brainstorms.
 Unanswered questions are not approval. Owner questions become ideas only when they
