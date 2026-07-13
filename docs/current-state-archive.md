@@ -86,6 +86,53 @@
 
 ## Recently shipped — archived (newest first)
 
+- **#1977 (2026-07-11, EAP/fleet — hub inbox `control/inbox.md` + 📊 Model card line, docs/control-only)** —
+  closes the two gaps the fleet-manager ORDER 010 relay found (fm PR #63 merge `dd8dc10`,
+  completion fm PR #64): superbot was the only fleet repo with **no `control/inbox.md`**, so
+  ORDER relays could not land here. New `control/inbox.md` uses the kit grammar
+  (`## ORDER <nnn> · <ISO8601> · status: <state>` + priority/do/why/done-when), adapted to
+  the hub role (Q-0264 — no standing seat; ORDERs consumed by the next hub-touching session),
+  seeded with **ORDER 001** = the outstanding ORDER 010 model-attribution relay (grammar
+  mirrored from superbot-games ORDER 003; executed by the relaying PR itself). The
+  fleet-standard **`📊 Model:` line** (family-level names only, fleet Q-0262) added to the
+  `.sessions/README.md` card convention.
+- **#1974 (2026-07-11, EAP — fleet-manifest retired to a pointer stub; freshness checker deleted, docs-only)** —
+  phase-2 of the generated-roster proposal executed superbot-side: the fleet-manager
+  **generated roster** (`fleet-manager docs/roster.md`, regenerated ≤~2h from the
+  live trigger registry + lane heartbeats) is now **canonical** for fleet/seat state (fm PR #59,
+  merge `b0639a9`; parallel-run findings — manifest ~33.5h stale, 5 live lanes missing, 9/10
+  live rows wrong — `fleet-manager docs/findings/manifest-parallel-run-2026-07-11.md`).
+  `docs/eap/fleet-manifest.md` → dated pointer stub (history in git; the 11 stale items
+  deliberately NOT hand-fixed — dual maintenance is what this retires);
+  `check_manifest_freshness.py` (scripts/) + its 19-test suite **deleted per its own Q-0105
+  kill-switch header**; reconciliation-runbook step replaced with the roster pointer
+  (`docs/operations/autonomous-routines.md`); eap/ideas indexes + the two idea files updated.
+  Idea `fleet-manifest-freshness-checker-2026-07-10` stays `historical`, now marked RETIRED.
+- **#1926 · #1931 · #1932 · #1934 · #1935 · #1936 · #1944 · #1945 · #1946 · #1947 · #1949 (2026-07-10, S3/EAP — round-3 program launch + gen-1 close-out + owner ruling Q-0259, docs-only)** —
+  the band's dominant thread. The **owner-directed cross-fleet overnight review** (#1931 — all 13
+  repos, 8 parallel read-only subagents; verdict *the night went well — zero open PRs / abandoned
+  work fleet-wide*, [record](eap/fleet-overnight-review-2026-07-10.md)) and the **EAP program deep
+  review + routine self-arming discovery** (#1932). The **round-3 launch** package: launch pack +
+  wrap-up email addendum #1934, Product Forge seat correction #1935, dispatch runbook + manager
+  founding package v3 #1947. The **gen-1 close-out**: coordinator close-out (grand-review prompt +
+  Anthropic email Part 1) #1949, EAP verification corrections #1926, journal routine-observability
+  bugs #1936. **Owner ruling Q-0259** #1944 — five round-3 rulings (budget posture · gen-3
+  scope = *verify-and-consolidate* · rebuild pace ASAP w/ more Codex review · venture profit-mandate ·
+  a **3-repo games program**) — plus the Codex-plan Part-C sandbox reply-reading caveat #1945 and the
+  eval-rubric amendment #1946. Docs-only throughout (no `disbot/`).
+- **#1938 · #1939 · #1940 · #1941 · #1942 · #1943 (2026-07-10, cross-agent — GPT-5.6 Sol / Codex evaluation + owner ruling Q-0258, docs-only)** —
+  the cross-agent evaluation thread. **GPT-5.6 Sol eval results + trust-ledger seed** #1938; the
+  **probe-simulator + suggestion-copilot ideas + Q-0258** (@codex is now the standing reviewer for
+  review-worthy-but-not-owner-only questions) #1939; and the Codex-authored audits **verified against
+  shipped source** (Q-0120): adversarial fleet-doctrine-enforcement audit #1940, superbot-next runtime
+  review report #1941, hostile factual audit *checking the checkers* #1942, and the verify-and-score
+  pass over the 3 Codex review PRs #1943.
+- **#1930 · #1937 (2026-07-10, codex — design/reference docs, docs-only)** — the **EventBus wiring
+  inventory** referenced from docs #1930 and the **guild quiet-hours design doc** linked from the
+  setup-platform README #1937. Both are design/reference docs; neither adds `disbot/` runtime.
+- **#1922 (2026-07-10, workflow — forty-first Q-0107 reconciliation pass, band-#1920)** —
+  reconciled band #1891–#1920, trimmed Recently-shipped to 20, disposed 0 open PRs, marker
+  #1890 → #1920 ([pass record](planning/reconciliation-pass-2026-07-10-band1920.md)).
 - **#1925 · #1927 · #1933 · #1950 (2026-07-10, docs — dashboard-data refreshes, Q-0167)** —
   four `dashboard/data/dashboard.json` regenerations as parallel sessions added structural surfaces.
 - **#1924 (2026-07-10, overnight shift E PR 2 — coordinator gen-1 self-review, docs-only)** —
