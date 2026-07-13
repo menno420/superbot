@@ -27,3 +27,20 @@ docs/ideas/README.md merge=union
 # object per line, appended by every session — the same append-only shape as
 # the ledgers above, so the same union merge applies.
 telemetry/*.jsonl merge=union
+
+# The committed web-data artifacts produced by scripts/export_dashboard_data.py.
+# Marked generated so GitHub collapses their churn in PR diffs (same treatment as
+# disbot/data/btd6/** above) — the 2-hourly dashboard-data-refresh workflow plus
+# per-session regens make them the noisiest diffs in the repo.
+#
+# ⚠ Do NOT add `merge=union` here: tested 2026-07-13 on real dashboard.json
+# versions (df5ee69/a1c95fb~1/cce250f) — union keeps both sides' lines, yielding
+# duplicate meta keys + unbalanced braces (json.load fails). A custom merge
+# driver doesn't work either (needs per-clone git config; GitHub's server-side
+# merges never run drivers). Conflicts on these files are resolved by
+# take-theirs + regenerate: python3.10 scripts/resolve_generated_conflicts.py —
+# full recipe + evidence in docs/operations/generated-data-merge-recipe.md.
+dashboard/data/dashboard.json linguist-generated=true
+botsite/data/site.json linguist-generated=true
+botsite/data/console.json linguist-generated=true
+botsite/site/data.js linguist-generated=true
