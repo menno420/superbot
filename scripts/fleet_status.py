@@ -50,6 +50,7 @@ ACTIVE: dict[str, str] = {
     "substrate-kit": "Self Improvement — the portable agent-memory kit",
     "websites": "Websites — control plane, review site, arcade (merge=deploy)",
     "gba-homebrew": "Game Lab — GBA homebrew (GLOAMLINE / Lumen Drift)",
+    "curious-research": "Curious Research (9th seat) — maker/3D-print research, gift studio",
 }
 # Long tail — only swept with --all.
 EXTENDED: dict[str, str] = {
