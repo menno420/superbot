@@ -77,6 +77,13 @@ dashboard-data-contract discipline applied in the other direction.
   archaeology. "Design your server's game on the website, then invite it" is a real
   differentiator, and the theme gallery is its shop window.
 
+> **Groom note (2026-07-13, mineverse FLAG 2 session):** the web→bot *write* seam this
+> section presupposes now has a bot-side reference implementation — PR #2061 ships the
+> HMAC-signed, idempotent, audited `POST /relay/mining/action` executor (mineverse WRITE
+> contract v1, test-guild-only). A provisioning manifest write path can reuse its
+> transport-auth + idempotency + audit pattern wholesale; the read half (part-4d relay)
+> shipped bot-side in PR #2058. Both are held draft pending the owner's deploy.
+
 ## 4. Plugin-seam convergence (nothing new to invent)
 
 Games already ship as **plugin packages** consumed by `superbot-next` via its
