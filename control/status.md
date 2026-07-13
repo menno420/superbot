@@ -6,13 +6,13 @@
 > Created 2026-07-11 (PR #2003) closing the gen-1 retro F2 gap
 > (`../docs/retro/self-review-2026-07-09.md` — "superbot has no control/status.md").
 
-updated: 2026-07-11T19:45:00Z
-phase: STEADY — hub coordination surface (docs/ledger/recon + fleet relay); product runtime work is lane-side (superbot-next rebuild at 37/49 ports per #1996)
-health: green — round-3 dispatch program COMPLETE (#1978); 43rd Q-0107 recon pass done (band-#1980, next at #2010); dashboard-refresh loop self-firing (latest #1999); codex-final-review CI lane repaired after ~22 days born-broken (#1995)
-last-shipped: PR #2003 — ORDER 002 consumed: self-review 2026-07-11 at docs/retro/self-review-2026-07-11.md + this heartbeat created
+updated: 2026-07-13T09:45:00Z
+phase: STEADY — hub coordination surface (docs/ledger/recon + fleet relay); product runtime work is lane-side (superbot-next rebuild: 51/51 parity rows ported, CUT-1 done — cutover gate = owner ORDER 001 live-drive)
+health: green — 45th Q-0107 recon pass done (band-#2040, next at #2070); 11 merges overnight #2051–#2063 (doctrine-night lane: Q-0272 reading path #2051 · direct-order paste-set #2057 · Curious Research prompts #2059 · night close-out + email-3 draft + 07-14 brief #2060); owner-live fleet review 2026-07-13 ran the Q-0272 path end-to-end → docs/eap/night-review-2026-07-13.md (PR #2064)
+last-shipped: PR #2064 — fleet night review 2026-07-13 (verified per-lane digest + owner-action queue) + orientation fixes (curious-research added to fleet_status.py/reading path; api.github.com proxy-wall documented)
 blockers: none.
 orders: acked=001-002 done=001-002 (001 done at #1977; 002 done at #2003 — record: docs/retro/self-review-2026-07-11.md, consumption block appended to control/inbox.md)
-⚑ needs-owner: none new hub-specific (verified against fm docs/owner-queue.md @ 7ff1f75 — the hub's owner tail is already queued there). Manager-sweep note, NOT an owner click: fm owner-queue C#20's manager note (superbot codex-final-review invalid YAML) is RESOLVED by superbot PR #1995 (8214200) — retire that line at the next sweep.
+⚑ needs-owner: hub-side residue only — flip the two deliberately-held mineverse FLAG drafts #2058/#2061 ready when deploy timing suits (CodeQL resolved by code change; merge=deploy Q-0193); the fleet-wide owner queue is consolidated in docs/eap/night-review-2026-07-13.md §7 (canonical: fm docs/owner-queue.md). Manager-sweep note, NOT an owner click: fm owner-queue C#20's manager note (superbot codex-final-review invalid YAML) is RESOLVED by superbot PR #1995 (8214200) — retire that line at the next sweep.
 
 ## Self-review 2026-07-11 (ORDER 002)
 

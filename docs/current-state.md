@@ -60,6 +60,11 @@
 > **▶ THE MANAGER'S FINAL ORDER (prompt centralization → v3.5 · browsable prompt versions via
 > Websites · the standing idle-lane backup ladder):**
 > [`owner/fleet-manager-final-order-2026-07-13.md`](owner/fleet-manager-final-order-2026-07-13.md).
+> **▶ THE UNIVERSAL SESSION ENDER v3.4 (owner-directed rewrite, 2026-07-13, supersedes v3.3):
+> "wind down and land" — finish in-flight work to done or a documented seam (nothing rushed, the
+> no-new-work fence is on *starting*), then REVIEW (struggles + wins) → REFRESH (no stale docs) →
+> BAKE (every lesson into a future-proof surface), mechanics preserved; paste-ready block +
+> manager-canonicalization note:** [`owner/universal-session-ender-v3.4.md`](owner/universal-session-ender-v3.4.md) (PR #2065).
 > **Next action then reverts to the standing program** — per-sector live queues below.
 >
 > **Ledger note:** living status ledger (project state). **Not binding.**
@@ -103,6 +108,15 @@
 > Websites remaining; owner env-mapping open) is in `.sessions/2026-07-11-fleet-dispatch-prompts.md`.
 > **Earlier post-compact record** (fleet wrap-up, merge-session results, owner-action queue) →
 > [`eap/session-handoff-2026-07-11-fleet-management.md`](eap/session-handoff-2026-07-11-fleet-management.md).
+>
+> **2026-07-13 doctrine-night reviewed (owner-live, Q-0272 path end-to-end)** — the first
+> fully-doctrined unsupervised night verified: ~190+ PRs across 12 repos, 18 hands-free
+> idea→verdict cycles, superbot-next at 51/51 parity rows (CUT-1 done), venture 3→6
+> publish-READY (~215k words verified real); the scheduler degraded again (~01:07–02:08Z)
+> but **zero seat deaths** (the failsafe doctrine held); 3 manager-tally narrative
+> distortions found (every checkable number was exact); binding constraint = owner clicks.
+> Per-lane digest + consolidated owner queue →
+> [`eap/night-review-2026-07-13.md`](eap/night-review-2026-07-13.md) (PR #2064).
 >
 > **2026-07-12 overnight batch reviewed** — the **trigger-scheduler incident** (~02:30–08:00Z:
 > 9 dropped `send_later` one-shots + 2 wedged crons; the Q-0265 failsafe doctrine validated in

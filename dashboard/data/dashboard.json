@@ -1,10 +1,10 @@
 {
   "meta": {
-    "generated_at": "2026-07-13T04:08:03Z",
+    "generated_at": "2026-07-13T07:44:45Z",
     "build": {
-      "commit": "1cc99af",
+      "commit": "c3db76c",
       "subject": "Merge remote-tracking branch 'origin/main' into claude/mineverse-flag-2",
-      "committed_at": "2026-07-13T04:08:03Z"
+      "committed_at": "2026-07-13T07:44:45Z"
     },
     "schema_version": 1,
     "counts": {
@@ -3381,6 +3381,30 @@
   "reviews": [],
   "updates": [
     {
+      "file": "2026-07-13-websites-data-plane-design.md",
+      "date": "2026-07-13",
+      "title": "2026-07-13 — Websites fleet-data-plane design (owner ask)",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-07-13-session-ender-v3-4.md",
+      "date": "2026-07-13",
+      "title": "2026-07-13 — Universal session ender v3.4 (owner-directed rewrite)",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-07-13-multi-repo-orientation-review.md",
+      "date": "2026-07-13",
+      "title": "2026-07-13 — Multi-repo orientation fleet review (owner-live)",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
       "file": "2026-07-13-mineverse-flag-2.md",
       "date": "2026-07-13",
       "title": "2026-07-13 — mineverse FLAG 2: HMAC mining write endpoint",
@@ -3392,6 +3416,22 @@
       "file": "2026-07-13-hub-upkeep-codex-p2.md",
       "date": "2026-07-13",
       "title": "2026-07-13 — Hub upkeep follow-up: Codex P2 fixes from #2054",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-07-13-friend-onboarding-prompt.md",
+      "date": "2026-07-13",
+      "title": "2026-07-13 — Friend-onboarding prompt (webshop beginner)",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-07-13-control-plane-live-review.md",
+      "date": "2026-07-13",
+      "title": "2026-07-13 — Control-plane live centralization review (owner ask)",
       "status": "complete",
       "run_type": "",
       "self_initiated": false
@@ -3819,46 +3859,6 @@
       "status": "complete",
       "run_type": "routine",
       "self_initiated": false
-    },
-    {
-      "file": "2026-07-10-reconcile-band1920.md",
-      "date": "2026-07-10",
-      "title": "Session — forty-first Q-0107 reconciliation pass (band-#1920)",
-      "status": "complete",
-      "run_type": "routine",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-07-10-gpt-5-6-sol-eval.md",
-      "date": "2026-07-10",
-      "title": "2026-07-10 — GPT-5.6 Sol research + Codex eval-prompt suite",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": true
-    },
-    {
-      "file": "2026-07-10-gen2-night-prep.md",
-      "date": "2026-07-10",
-      "title": "2026-07-10 — Gen-2 night prep (fleet boot-readiness)",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-07-10-gen1-gen2-doctrine-review.md",
-      "date": "2026-07-10",
-      "title": "2026-07-10 — gen1-gen2-doctrine-review",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-07-10-fleet-overnight-review.md",
-      "date": "2026-07-10",
-      "title": "2026-07-10 — Owner-directed cross-fleet overnight review (all 13 repos)",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": true
     }
   ],
   "bot_changelog": [
@@ -4938,6 +4938,76 @@
       "model": "fable-5",
       "effort": "high",
       "task_class": "runtime-feature",
+      "tokens_out": null,
+      "outcome": {
+        "ci_green_first_push": null,
+        "checker_findings": null,
+        "merged_pr": null,
+        "reverted_within_window": null
+      }
+    },
+    {
+      "session": "2026-07-13-multi-repo-orientation-review",
+      "date": "2026-07-13",
+      "model": "fable-5",
+      "effort": "high",
+      "task_class": "docs-only",
+      "tokens_out": null,
+      "outcome": {
+        "ci_green_first_push": null,
+        "checker_findings": null,
+        "merged_pr": null,
+        "reverted_within_window": null
+      }
+    },
+    {
+      "session": "2026-07-13-session-ender-v3-4",
+      "date": "2026-07-13",
+      "model": "fable-5",
+      "effort": "high",
+      "task_class": "docs-only",
+      "tokens_out": null,
+      "outcome": {
+        "ci_green_first_push": null,
+        "checker_findings": null,
+        "merged_pr": null,
+        "reverted_within_window": null
+      }
+    },
+    {
+      "session": "2026-07-13-websites-data-plane-design",
+      "date": "2026-07-13",
+      "model": "fable-5",
+      "effort": "high",
+      "task_class": "docs-only",
+      "tokens_out": null,
+      "outcome": {
+        "ci_green_first_push": null,
+        "checker_findings": null,
+        "merged_pr": null,
+        "reverted_within_window": null
+      }
+    },
+    {
+      "session": "2026-07-13-friend-onboarding-prompt",
+      "date": "2026-07-13",
+      "model": "opus-4.8",
+      "effort": "high",
+      "task_class": "docs-only",
+      "tokens_out": null,
+      "outcome": {
+        "ci_green_first_push": null,
+        "checker_findings": null,
+        "merged_pr": null,
+        "reverted_within_window": null
+      }
+    },
+    {
+      "session": "2026-07-13-control-plane-live-review",
+      "date": "2026-07-13",
+      "model": "opus-4.8",
+      "effort": "high",
+      "task_class": "docs-only",
       "tokens_out": null,
       "outcome": {
         "ci_green_first_push": null,
