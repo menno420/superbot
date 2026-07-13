@@ -1,10 +1,10 @@
 {
   "meta": {
-    "generated_at": "2026-07-13T07:44:45Z",
+    "generated_at": "2026-07-13T12:56:20Z",
     "build": {
-      "commit": "c3db76c",
-      "subject": "Merge remote-tracking branch 'origin/main' into claude/mineverse-flag-2",
-      "committed_at": "2026-07-13T07:44:45Z"
+      "commit": "a1c95fb",
+      "subject": "Merge origin/main into claude/mineverse-flag-2 (regenerate dashboard data)",
+      "committed_at": "2026-07-13T12:56:20Z"
     },
     "schema_version": 1
   },
@@ -23,6 +23,14 @@
       "title": "2026-07-13 — Universal session ender v3.4 (owner-directed rewrite)",
       "status": "complete",
       "run_type": "",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-07-13-reconcile-band2070.md",
+      "date": "2026-07-13",
+      "title": "2026-07-13 — Forty-sixth Q-0107 reconciliation pass (band-#2070)",
+      "status": "complete",
+      "run_type": "routine",
       "self_initiated": false
     },
     {
@@ -55,6 +63,22 @@
       "title": "2026-07-13 — Friend-onboarding prompt (webshop beginner)",
       "status": "complete",
       "run_type": "",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-07-13-eap-email3-and-owner-batch.md",
+      "date": "2026-07-13",
+      "title": "2026-07-13 — EAP email-3 send-ready + owner action/question batch",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-07-13-dashboard-conflict-recipe.md",
+      "date": "2026-07-13",
+      "title": "2026-07-13 — Durable mitigation for the generated-artifact merge-conflict class",
+      "status": "complete",
+      "run_type": "routine",
       "self_initiated": false
     },
     {
@@ -464,37 +488,13 @@
       "status": "complete",
       "run_type": "",
       "self_initiated": false
-    },
-    {
-      "file": "2026-07-10-round3-dispatch-3.md",
-      "date": "2026-07-10",
-      "title": "Session — round-3 dispatch coordination, part 3 (live copilot)",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-07-10-round3-dispatch-2.md",
-      "date": "2026-07-10",
-      "title": "Session — round-3 dispatch coordination, part 2 (live copilot)",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-07-10-reconcile-band1950.md",
-      "date": "2026-07-10",
-      "title": "2026-07-10 — Forty-second Q-0107 docs reconciliation pass (band-#1950)",
-      "status": "complete",
-      "run_type": "routine",
-      "self_initiated": false
     }
   ],
   "ideas": {
-    "total": 243,
+    "total": 244,
     "by_status": {
       "historical": 26,
-      "ideas": 214,
+      "ideas": 215,
       "reference": 3
     }
   },
@@ -1704,6 +1704,48 @@
     },
     {
       "session": "2026-07-13-control-plane-live-review",
+      "date": "2026-07-13",
+      "model": "opus-4.8",
+      "effort": "high",
+      "task_class": "docs-only",
+      "tokens_out": null,
+      "outcome": {
+        "ci_green_first_push": null,
+        "checker_findings": null,
+        "merged_pr": null,
+        "reverted_within_window": null
+      }
+    },
+    {
+      "session": "2026-07-13-dashboard-conflict-recipe",
+      "date": "2026-07-13",
+      "model": "fable-5",
+      "effort": "high",
+      "task_class": "tooling",
+      "tokens_out": null,
+      "outcome": {
+        "ci_green_first_push": null,
+        "checker_findings": null,
+        "merged_pr": null,
+        "reverted_within_window": null
+      }
+    },
+    {
+      "session": "2026-07-13-eap-email3-and-owner-batch",
+      "date": "2026-07-13",
+      "model": "opus-4.8",
+      "effort": "high",
+      "task_class": "docs-only",
+      "tokens_out": null,
+      "outcome": {
+        "ci_green_first_push": null,
+        "checker_findings": null,
+        "merged_pr": null,
+        "reverted_within_window": null
+      }
+    },
+    {
+      "session": "2026-07-13-reconcile-band2070",
       "date": "2026-07-13",
       "model": "opus-4.8",
       "effort": "high",
