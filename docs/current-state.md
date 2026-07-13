@@ -54,6 +54,9 @@
 > **▶ THE OWNER'S DIRECT-ORDER PASTE-SET (2026-07-13 night):** 8 per-seat blocks — shared
 > skeleton (incl. the **open-PRs-stay-open, keep-producing** rule) + seat actions:
 > [`owner/fleet-direct-orders-2026-07-13.md`](owner/fleet-direct-orders-2026-07-13.md).
+> **▶ THE MANAGER'S FINAL ORDER (prompt centralization → v3.5 · browsable prompt versions via
+> Websites · the standing idle-lane backup ladder):**
+> [`owner/fleet-manager-final-order-2026-07-13.md`](owner/fleet-manager-final-order-2026-07-13.md).
 > **Next action then reverts to the standing program** — per-sector live queues below.
 >
 > **Ledger note:** living status ledger (project state). **Not binding.**
