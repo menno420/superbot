@@ -65,6 +65,22 @@
 > no-new-work fence is on *starting*), then REVIEW (struggles + wins) → REFRESH (no stale docs) →
 > BAKE (every lesson into a future-proof surface), mechanics preserved; paste-ready block +
 > manager-canonicalization note:** [`owner/universal-session-ender-v3.4.md`](owner/universal-session-ender-v3.4.md) (PR #2065).
+> **▶ 2026-07-13 owner-live session — reviews + cross-repo merge sweep** (full index:
+> [`.sessions/2026-07-13-owner-live-review-and-cross-repo-merge.md`](../.sessions/2026-07-13-owner-live-review-and-cross-repo-merge.md)).
+> Shipped 7 superbot PRs (#2064 fleet review · #2065 ender v3.4 · #2066 websites data-plane design ·
+> #2068 friend-onboarding prompt [owner has SENT it] · #2069 codex fixes · #2070 control-plane
+> centralization review · #2071 EAP email-3 send-ready). Owner-directed **cross-repo merge sweep**:
+> **superbot-next** #320 + #384 merged (mining energy core + persistence); **gba-homebrew** #83 + #84
+> merged + #82/#86 auto-merge armed (dist/README unions pushed) after the owner added the `ROM builds`
+> required check. **⚑ Carry-forwards:** (a) **EAP email 3 sends 07-14** (send-ready, needs Part-1
+> voice + roster screenshot; window closes) — [`eap/anthropic-email-3-draft-2026-07-13.md`](eap/anthropic-email-3-draft-2026-07-13.md);
+> (b) **superbot-next write-parity stack #312→#371 needs the SEAT to rebase** — it is *not* a
+> mechanical rebase: main's energy work made cook/use live while the stack made craft/skill/build live,
+> so the merged state (all live) exists on neither branch; reconciling touches routing + manifest
+> PENDING-roster + parity pins + a golden re-run (#385 also red/unfinished); (c) **website
+> centralization** design + review (#2066/#2070) route to the websites lane; (d) routine-panel
+> "duplicates" = harmless disabled leftovers (one enabled failsafe per seat, verified). Owner-action
+> queue unchanged in [`eap/night-review-2026-07-13.md`](eap/night-review-2026-07-13.md) §7.
 > **Next action then reverts to the standing program** — per-sector live queues below.
 >
 > **Ledger note:** living status ledger (project state). **Not binding.**
