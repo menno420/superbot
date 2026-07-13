@@ -135,6 +135,32 @@ Prompt pair for the Project (v3.4-shaped + today's doctrine):
 grounding §10.4 updated (makerbench → curious-research). Free failsafe offset `20 */2`
 assigned.
 
+## Part 8 (2026-07-13, ~02:00Z) — the night close-out (owner asleep)
+
+Owner's closing directives executed: **(1) The fleet-wide PR sweep** (hub venue, "merge all
+actually-ready"): PAT/API path probed and confirmed proxy-walled (the documented wall holds
+— only unauth `rate_limit` passes); sweep ran via the fleet's own records + `add_repo` per
+repo. **Merged 6 (all gba-homebrew):** #75+#80 (Gloamline slices 10–11, stacked — #80
+retargeted to main after #75), #81 Tiltstone (new web puzzle, provably-solvable generator),
+#79 Undertow (new web arcade), #78 mobile-PWA foundation, #77 ORDER-005 scribe — the Game
+Lab's breadth program landed on night one. **Clear without action:** superbot-idle (#75/#76
+already landed), superbot-games (#65/#66 via the manager's ORDER-029 arming), fleet-manager
+(only #153 = its own live v3.5 stage-2, born-red mid-flight — left), superbot,
+curious-research, mineverse. **Left by design:** superbot-next's 7 (live night stack:
+#327/#331/#332 minutes old + the stacked WP-2→WP-3 parity lane under an actively-pushing
+seat) and websites' 2 (open by its own night-rule record). **(2) Fleet-live findings:** the
+manager is ACTIVE on ORDERs 039/040 — v3.5 stage-1 merged (#151), stage-2 in flight (#153),
+ORDER 041 dispatched to Websites, **backup ladder armed as R27** (sweep #1: 12/12 lanes
+active); every seat heartbeat fresh. **(3) Documentation verification:** ledger + docs
+checks green (bare exit codes); Q-0271…Q-0274 recorded; all dispatch docs on main;
+telemetry row present; claim deleted. **(4) Shipped this part:**
+[`docs/eap/anthropic-email-3-draft-2026-07-13.md`](../docs/eap/anthropic-email-3-draft-2026-07-13.md)
+(the hands-off-night email + the 7-probe morning checklist) and
+[`docs/owner/next-session-brief-2026-07-14.md`](../docs/owner/next-session-brief-2026-07-14.md)
+(the morning read · probe→send program · the standing owner surface · the hub's honest
+review of the projects and struggles · fences). The 8-PR session total on superbot becomes
+9 with this close-out PR.
+
 ## Key design decisions (decide-and-flag, Q-0240)
 
 - **Bridge, not fork:** tonight's re-arm rides startup prompts over the currently-pasted
