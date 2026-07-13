@@ -814,6 +814,33 @@ async def test_audit_rides_the_real_seam_extra_fields(monkeypatch):
 
 
 # ---------------------------------------------------------------------------
+# Log/audit hygiene (CodeQL round: taint-free canonicalizers, scrubbed sinks)
+# ---------------------------------------------------------------------------
+
+
+def test_log_canonicalizers_yield_constants_never_request_bytes():
+    assert mwa._clean_action("mine") == "mine"
+    assert mwa._clean_action("mine\ninjected") == "<unknown-action>"
+    action_id = "00000000-0000-4000-8000-000000000001"
+    assert mwa._clean_action_id(action_id) == action_id
+    assert mwa._clean_action_id("not-a-uuid\r\n") == mwa.PLACEHOLDER_ACTION_ID
+    assert mwa._clean_snowflake("42") == "42"
+    assert mwa._clean_snowflake("42\nfake") == "0"
+
+
+def test_economy_rejection_carries_an_explicit_public_message():
+    veto = mwa.EconomyRejectionError("the game said no")
+    assert veto.public_message == "the game said no"
+
+
+def test_audit_failure_log_interpolation_is_newline_scrubbed():
+    from services.audit_events import _log_safe
+
+    assert _log_safe("a\r\nb") == "a\\r\\nb"
+    assert _log_safe("plain") == "plain"
+
+
+# ---------------------------------------------------------------------------
 # Dormancy + registration (the control_api discipline)
 # ---------------------------------------------------------------------------
 

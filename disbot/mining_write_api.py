@@ -55,6 +55,7 @@ import logging
 import os
 import re
 import time
+import uuid
 from datetime import datetime, timezone
 from typing import Any
 
@@ -291,6 +292,40 @@ def classify_proposal(proposal: Any) -> tuple[str, str] | None:
     return None
 
 
+def _clean_action(action: str) -> str:
+    """Re-derive *action* as the matching CLOSED-enum constant.
+
+    The returned string is one of the ``ACTIONS`` literals (or a literal
+    placeholder), never the request bytes — so logging/auditing it cannot
+    carry attacker-shaped content (CodeQL py/log-injection hygiene). The
+    handler only calls this after :func:`classify_proposal` accepted the
+    proposal, so the fallback is unreachable in practice.
+    """
+    for known in ACTIONS:
+        if known == action:
+            return known
+    return "<unknown-action>"
+
+
+def _clean_action_id(action_id: str) -> str:
+    """Canonicalize *action_id* through ``uuid.UUID`` (schema-validated
+    upstream — the reconstruction is the UUID's own rendering, not the
+    request bytes; same log-injection hygiene as :func:`_clean_action`).
+    """
+    try:
+        return str(uuid.UUID(action_id))
+    except (ValueError, AttributeError, TypeError):
+        return PLACEHOLDER_ACTION_ID
+
+
+def _clean_snowflake(snowflake: str) -> str:
+    """Canonicalize a digit-string snowflake through ``int`` (same rationale)."""
+    try:
+        return str(int(snowflake))
+    except (ValueError, TypeError):
+        return "0"
+
+
 def _echoable_action_id(proposal: Any) -> str:
     if isinstance(proposal, dict):
         candidate = proposal.get("action_id")
@@ -399,14 +434,24 @@ async def _audit(proposal: dict[str, Any], outcome: str) -> None:
     the seam's own contract (a dropped audit event is logged, never raised) —
     and the DB/audit pairing here is emit-after-execute in the handler, the
     same post-commit discipline as ``economy_service.transfer``.
+
+    Every request-derived string is canonicalized first (`_clean_*`): the
+    proposal is already schema-valid here, so the cleaned values are
+    byte-identical to the wire values — but they are provably enum
+    constants / UUID renderings / digit strings, so nothing downstream
+    (the seam's own failure log included) can interpolate attacker-shaped
+    bytes (CodeQL py/log-injection).
     """
     from services.audit_events import emit_audit_action
 
+    action_id = _clean_action_id(proposal["action_id"])
+    action = _clean_action(proposal["action"])
+    suid = _clean_snowflake(proposal["suid"])
     await emit_audit_action(
-        mutation_id=proposal["action_id"],
+        mutation_id=action_id,
         subsystem="mining",
-        mutation_type=f"web_action:{proposal['action']}",
-        target=f"miner:{proposal['suid']}",
+        mutation_type=f"web_action:{action}",
+        target=f"miner:{suid}",
         scope="guild",
         guild_id=int(proposal["guild_id"]),
         prev_value=None,
@@ -415,9 +460,9 @@ async def _audit(proposal: dict[str, Any], outcome: str) -> None:
         actor_type="web_player",
         occurred_at=datetime.now(timezone.utc),
         extra_fields={
-            "action_id": proposal["action_id"],
-            "action": proposal["action"],
-            "suid": proposal["suid"],
+            "action_id": action_id,
+            "action": action,
+            "suid": suid,
             "params_digest": params_digest(proposal["params"]),
             "outcome": outcome,
             "timestamp": _iso_utc_now(),
@@ -482,7 +527,18 @@ async def _project_fields(
 
 
 class EconomyRejectionError(Exception):
-    """The game said no — ``mining_workflow``'s domain verdict, relayed (422)."""
+    """The game said no — ``mining_workflow``'s domain verdict, relayed (422).
+
+    ``public_message`` is the deliberate, user-facing domain copy (a
+    ``TradeResult.message`` / descent hint — never an internal error string).
+    The handler reads THAT attribute, not ``str(exc)``, so no
+    exception/stack-trace text can ever flow into an HTTP response
+    (CodeQL py/stack-trace-exposure hygiene).
+    """
+
+    def __init__(self, public_message: str) -> None:
+        super().__init__(public_message)
+        self.public_message = public_message
 
 
 async def _execute_action(
@@ -728,12 +784,14 @@ async def handle_action(request: web.Request) -> web.Response:
             int(proposal["guild_id"]),
         )
     except EconomyRejectionError as veto:
-        return await _reject(proposal, digest, 422, "economy_rejection", str(veto))
+        return await _reject(
+            proposal, digest, 422, "economy_rejection", veto.public_message
+        )
     except Exception:
         logger.exception(
             "mining_write_api: internal error executing %s (action_id=%s)",
-            proposal["action"],
-            proposal["action_id"],
+            _clean_action(proposal["action"]),
+            _clean_action_id(proposal["action_id"]),
         )
         # 500 is retryable with the SAME action_id (contract) — never stored.
         response = _envelope(
@@ -765,7 +823,13 @@ def register_mining_write_routes(app: web.Application, bot: Any) -> bool:
     signature symmetric with ``register_control_routes``.
     """
     if shared_secret() is None:
-        logger.info("mining_write_api: dormant (%s unset) — no route added", ENV_SECRET)
+        # The env var NAME is inlined (not interpolated via ENV_SECRET): a
+        # sensitive-named variable in a log call reads as secret logging to
+        # scanners and humans alike, even when it only carries the name.
+        logger.info(
+            "mining_write_api: dormant (MINING_WRITE_SHARED_SECRET unset)"
+            " — no route added"
+        )
         return False
     guilds = sorted(allowed_guilds())
     app.router.add_post(ACTION_PATH, handle_action)

@@ -7738,7 +7738,7 @@ const CHANGELOG = [
   {
     "version": "2026.06.19",
     "date": "Jun 19, 2026",
-    "build": "9ca313a",
+    "build": "9209108",
     "title": "New public bot website",
     "changes": [
       {
@@ -7750,7 +7750,7 @@ const CHANGELOG = [
   {
     "version": "2026.06.12",
     "date": "Jun 12, 2026",
-    "build": "9ca313a",
+    "build": "9209108",
     "title": "Owner review inbox on the dashboard",
     "changes": [
       {
@@ -7762,7 +7762,7 @@ const CHANGELOG = [
   {
     "version": "2026.06.08",
     "date": "Jun 08, 2026",
-    "build": "9ca313a",
+    "build": "9209108",
     "title": "Command-alias suggestions",
     "changes": [
       {
@@ -9143,9 +9143,9 @@ const FEATURES = [
 ];
 
 const BUILD = {
-  "commit": "9ca313a",
-  "subject": "session docs: FLAG 2 card body + idea groom note (write seam shipped)",
-  "committed_at": "2026-07-13T02:40:54Z"
+  "commit": "9209108",
+  "subject": "session close: flip mineverse FLAG 2 card complete + clear claim + refresh exports",
+  "committed_at": "2026-07-13T02:41:37Z"
 };
 
 const COUNTS = {

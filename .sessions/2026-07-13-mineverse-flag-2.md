@@ -75,6 +75,29 @@ fixtures' semantics (`tests/test_actions.py`) hold against the real endpoint.
   precedent), regenerated `docs/operations/env-vars.md` + `dashboard/data/dashboard.json`
   (+ botsite exports), telemetry row (Q-0194).
 
+## CodeQL round (1 CI-red round — 6 alerts on head 170b49b, all fixed, none dismissed)
+
+CodeQL flagged 6 new alerts in the PR's code; all were resolved by code change in the same
+session (no suppressions):
+
+- **High — clear-text logging of sensitive information** (`mining_write_api.py`, the dormant
+  startup log): the log line interpolated the `ENV_SECRET` *variable* (which only carries the
+  env var's NAME, never its value) — a sensitive-*named* symbol in a logging call. Fixed by
+  inlining the literal name; nothing secret was ever logged, but the fixed shape is safer for
+  scanners and reviewers alike.
+- **Medium — information exposure through an exception** (`_json_response`): the 422 path
+  returned `str(veto)` of a caught exception. `EconomyRejectionError` now carries an explicit
+  `public_message` attribute (the deliberate domain copy) and the handler returns that — no
+  exception rendering can reach an HTTP response.
+- **4× Medium — log injection** (the internal-error `logger.exception` in the endpoint; the
+  failure log in `services/audit_events.py` fed by the endpoint's mutation_id/mutation_type):
+  request-derived strings flowed into log interpolation. Fixed with taint-free
+  canonicalizers — `_clean_action` re-derives the CLOSED-enum constant, `_clean_action_id`
+  reconstructs through `uuid.UUID`, `_clean_snowflake` through `int` — used for logging AND
+  the audit payload (values are byte-identical for schema-valid proposals, provably inert
+  otherwise), plus a CR/LF scrub (`_log_safe`) at the audit seam's own log sink
+  (enforce-at-the-sink defense in depth). Pinned by three new tests (49 total).
+
 ## Honest nulls / decisions made alone
 
 - **`vault_deposit`/`vault_withdraw` param mapping**: the contract moves COINS
@@ -159,7 +182,7 @@ fixtures' semantics (`tests/test_actions.py`) hold against the real endpoint.
 | Metric | Value |
 |---|---|
 | PRs merged this session | 0 (1 opened, held draft by design) |
-| CI-red rounds | 0 local mirror reds fixed pre-push (atlas orphan, dashboard drift, ruff); CI pending at close |
+| CI-red rounds | 1 (CodeQL: 6 alerts — 1 high, 5 medium — on the implementation push; all fixed by code change same session, none dismissed). Local-mirror reds fixed pre-push: atlas orphan, dashboard drift, ruff |
 | Repo-rule trips | 2 (atlas top-level-module pin; dashboard env-var freshness) — both guard-caught, fixed same session |
 | New ideas contributed | 1 |
 | Ideas groomed | 1 |

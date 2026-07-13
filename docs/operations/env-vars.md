@@ -57,8 +57,8 @@ only — never a value**; the values live in Railway service variables
 | `HEALTH_PORT` | healthserver | `disbot/healthserver.py:64` *(default)* |
 | `IDENTITY_CONTRACT_STRICT` | bot1 | `disbot/bot1.py:198` *(default)* |
 | `LOG_LEVEL` | config | `disbot/config.py:181` *(default)* |
-| `MINING_WRITE_GUILD_ALLOWLIST` | mining_write_api | `disbot/mining_write_api.py:138` *(default)* |
-| `MINING_WRITE_SHARED_SECRET` | mining_write_api | `disbot/mining_write_api.py:126` *(default)* |
+| `MINING_WRITE_GUILD_ALLOWLIST` | mining_write_api | `disbot/mining_write_api.py:139` *(default)* |
+| `MINING_WRITE_SHARED_SECRET` | mining_write_api | `disbot/mining_write_api.py:127` *(default)* |
 | `OPENAI_API_KEY` | config, core, services | `disbot/config.py:217` *(default)*<br>`disbot/core/runtime/ai/providers/openai_moderation.py:68` *(default)*<br>`disbot/core/runtime/ai/providers/openai_provider.py:74` *(default)*<br>`disbot/services/setup_ai_advisor.py:205` *(default)*<br>`disbot/services/setup_ai_advisor.py:485` *(default)* |
 | `PARAGON_API_BASE_URL` | config, services | `disbot/config.py:244` *(default)*<br>`disbot/services/paragon_service.py:49` *(default)* |
 | `PARAGON_API_KEY` | config, services | `disbot/config.py:248` *(default)*<br>`disbot/services/paragon_service.py:50` *(default)* |

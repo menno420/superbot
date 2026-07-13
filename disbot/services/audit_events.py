@@ -54,6 +54,17 @@ EVT_AUDIT_ACTION_RECORDED = "audit.action_recorded"
 logger = logging.getLogger("bot.services.audit_events")
 
 
+def _log_safe(value: object) -> str:
+    """Newline-scrubbed rendering for log interpolation.
+
+    Some publishers (the mineverse write endpoint) derive ``mutation_id`` /
+    ``mutation_type`` from request material; scrubbing CR/LF here keeps the
+    failure log line-injection-proof regardless of publisher discipline
+    (CodeQL py/log-injection hygiene — enforce at the sink, not by trust).
+    """
+    return str(value).replace("\r", "\\r").replace("\n", "\\n")
+
+
 async def emit_audit_action(
     *,
     mutation_id: str,
@@ -107,9 +118,9 @@ async def emit_audit_action(
             "audit.action_recorded emission failed for "
             "mutation_id=%s (subsystem=%s, type=%s); DB state is correct, "
             "event lost.",
-            mutation_id,
-            subsystem,
-            mutation_type,
+            _log_safe(mutation_id),
+            _log_safe(subsystem),
+            _log_safe(mutation_type),
         )
         return False
     return True
