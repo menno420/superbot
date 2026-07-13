@@ -107,10 +107,16 @@ deliberately held draft; the next reconciliation pass records it post-merge.
   covers CI).
 - **Docs/tooling change that would have helped:** a "adding a new extension" checklist doc
   naming the guard set (overlay → crosswalk regen → env-vars regen → count-pinned docs).
-- **🛠 Friction → guard (Q-0194):** friction — four generated/count-pinned artifacts went stale
-  the moment a cog was added; the existing guards caught 100% of them (crosswalk test,
-  help-surface count pin, settings-map reference pin, env-usage sync test), so the system already
-  enforces this — no new guard needed, and none shipped (nothing was missable).
+- **🛠 Friction → guard (Q-0194):** friction — (a) four generated/count-pinned artifacts went
+  stale the moment a cog was added; the existing guards caught 100% of them (crosswalk test,
+  help-surface count pin, settings-map reference pin, env-usage sync test) — already enforced,
+  no new guard needed. (b) One CI-red round the local mirror could not predict: the Q-0194
+  **telemetry-row gate** (`check_session_gate --base --head`) runs only in CI with the PR's
+  base/head diff, so `check_quality.py --full` green locally still went red on push — fixed by
+  appending the session's `telemetry/model-usage.jsonl` row. Cheapest durable prevention would
+  be running the session gate with `--base origin/main --head HEAD` inside `check_quality.py`;
+  that touches the shared checker, so **proposed, not applied** (router DISCUSS candidate), and
+  recorded here for the next agent.
 
 ## 📤 Run report
 
@@ -135,7 +141,7 @@ deliberately held draft; the next reconciliation pass records it post-merge.
 
 | PRs merged | CI-red rounds | rule trips | ideas contributed | ideas groomed |
 |---|---|---|---|---|
-| 0 (1 opened, held draft by design) | 0 | 0 | 1 | 1 |
+| 0 (1 opened, held draft by design) | 1 (Q-0194 telemetry-row gate; fixed same session) | 0 | 1 | 1 |
 
 ## 💡 Session idea
 
