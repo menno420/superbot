@@ -60,6 +60,11 @@
 > **▶ THE MANAGER'S FINAL ORDER (prompt centralization → v3.5 · browsable prompt versions via
 > Websites · the standing idle-lane backup ladder):**
 > [`owner/fleet-manager-final-order-2026-07-13.md`](owner/fleet-manager-final-order-2026-07-13.md).
+> **▶ THE UNIVERSAL SESSION ENDER v3.4 (owner-directed rewrite, 2026-07-13, supersedes v3.3):
+> "wind down and land" — finish in-flight work to done or a documented seam (nothing rushed, the
+> no-new-work fence is on *starting*), then REVIEW (struggles + wins) → REFRESH (no stale docs) →
+> BAKE (every lesson into a future-proof surface), mechanics preserved; paste-ready block +
+> manager-canonicalization note:** [`owner/universal-session-ender-v3.4.md`](owner/universal-session-ender-v3.4.md) (PR #2065).
 > **Next action then reverts to the standing program** — per-sector live queues below.
 >
 > **Ledger note:** living status ledger (project state). **Not binding.**
