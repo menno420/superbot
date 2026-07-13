@@ -1,6 +1,6 @@
 # 2026-07-13 — mineverse FLAG 2: HMAC mining write endpoint
 
-> **Status:** `in-progress`
+> **Status:** `complete`
 > **Branch:** `claude/mineverse-flag-2` · **PR:** #2061 (**held DRAFT deliberately** — merge=deploy
 > Q-0193; the owner flips it ready and controls the deploy moment).
 > **Venue:** remote container (worker session, orchestrated). **📊 Model:** fable-5

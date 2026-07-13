@@ -1,10 +1,10 @@
 {
   "meta": {
-    "generated_at": "2026-07-13T02:07:10Z",
+    "generated_at": "2026-07-13T02:40:54Z",
     "build": {
-      "commit": "e00b908",
-      "subject": "claim + session card: mineverse FLAG 2 (HMAC mining write endpoint) — born-red",
-      "committed_at": "2026-07-13T02:07:10Z"
+      "commit": "9ca313a",
+      "subject": "session docs: FLAG 2 card body + idea groom note (write seam shipped)",
+      "committed_at": "2026-07-13T02:40:54Z"
     },
     "schema_version": 1,
     "counts": {
@@ -3384,8 +3384,8 @@
       "file": "2026-07-13-mineverse-flag-2.md",
       "date": "2026-07-13",
       "title": "2026-07-13 — mineverse FLAG 2: HMAC mining write endpoint",
-      "status": "in-progress",
-      "run_type": "",
+      "status": "complete",
+      "run_type": "routine",
       "self_initiated": false
     },
     {
