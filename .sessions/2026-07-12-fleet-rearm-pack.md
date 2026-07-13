@@ -102,6 +102,18 @@ gate, not suspension" verbatim) and applied → shipped as
 current-state pointer. The manager independently dispatched the v2 goals as **fm ORDERs
 030–036** and adopted the PR terminal-state + authenticity-gate doctrines fleet-side.
 
+## Part 6 (2026-07-13, ~00:40Z) — the owner's direct-order paste-set
+
+The owner (who never pasted the earlier v1/v2 blocks — the manager's ORDERs 030–036 carried
+the goals instead) asked for **8 follow-up prompts as his direct order layer**: one shared
+skeleton + per-seat actions, aligned with the live v3.4 prompt bodies (an owner turn in a
+seat chat is the top-precedence ORDER and self-records into the inbox). New tonight-rule
+baked in: **open PRs simply stay open until he's back — production continues** (land on
+green where auto-merge arms; otherwise next slice; stack dependent work on the open head;
+Game Lab explicitly ordered to push its pre-built queue as open PRs). Shipped as
+**[`docs/owner/fleet-direct-orders-2026-07-13.md`](../docs/owner/fleet-direct-orders-2026-07-13.md)**
++ full blocks delivered in chat per /prep-owner-steps.
+
 ## Key design decisions (decide-and-flag, Q-0240)
 
 - **Bridge, not fork:** tonight's re-arm rides startup prompts over the currently-pasted
