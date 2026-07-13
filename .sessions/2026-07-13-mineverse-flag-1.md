@@ -1,6 +1,6 @@
 # 2026-07-13 — mineverse FLAG 1: mining snapshot relay
 
-> **Status:** `in-progress`
+> **Status:** `complete`
 > **Branch:** `claude/mineverse-flag-1` · **PR:** #2058 (**held DRAFT deliberately** — merge=deploy
 > Q-0193; the owner flips it ready and controls the deploy moment).
 > **Venue:** remote container (worker session, orchestrated). **📊 Model:** fable-5
