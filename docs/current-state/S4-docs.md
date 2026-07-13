@@ -252,7 +252,9 @@
   surface (commands / functions / methods), then (B) **one 100%-complete design plan per step**
   before any code. Process + gates + start sequence now canonical in
   [`planning/rebuild-canonical-plan-2026-07-06.md`](../planning/rebuild-canonical-plan-2026-07-06.md)
-  (PR #1770). Still behind the G1 owner gate; no new-repo code yet.
+  (PR #1770). The gates were retired by Q-0241/#1776 (2026-07-07); the rebuild is LIVE in
+  menno420/superbot-next (50/51 parity rows ported per parity/parity.yml@33d3073 — only
+  _unmapped pending; deep-game goldens owner-gated on D-0043).
 - **▶ SuperBot retention application — startable (owner-directed brainstorm, PR #1643; Q-0214):** the
   **kit-native** context-economy engine already shipped in **#1649** (`src/engine/economy/` — now in the graduated
   [menno420/substrate-kit](https://github.com/menno420/substrate-kit) repo; the in-tree copy was removed in #1882, pin = `substrate.config.json`);
@@ -268,9 +270,10 @@
   auto-triggered by `reconciliation-trigger.yml`; run by the docs-reconciliation routine, **not** a
   manual session (Q-0124).
 - Plan-band depth is healthy — **no `PLAN-BACKLOG-THIN` flag** (buildable depth well over cadence).
-- **Owner steer (2026-06-30):** the fresh-rebuild vision re-elevates the **AI-memory substrate-kit**
+- **(Historical owner steer, 2026-06-30 — superseded):** the fresh-rebuild vision re-elevates the **AI-memory substrate-kit**
   to top focus — S3's forward queue leads with PR 2 remainder + PR 3; the full rebuild stays
-  idea-stage (gated on Fable 5 + owner keep/change spec).
+  idea-stage (gated on Fable 5 + owner keep/change spec) — the rebuild has since shipped its
+  design spec, canonical plan, and the live superbot-next repo (50/51 parity rows ported).
 
 **Cadence note:** a manually-started session does **not** run the reconciliation pass; pursue the
 work it was started for. The recon marker + Recently-shipped ledger live in
