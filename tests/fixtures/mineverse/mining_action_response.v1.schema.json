@@ -1,0 +1,100 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/menno420/superbot-mineverse/blob/main/schemas/mining_action_response.v1.schema.json",
+  "title": "Mineverse mining action response — WRITE contract v1 (TEST GUILD ONLY)",
+  "description": "The bot-side executor's answer to a mining action proposal (schemas/mining_action.v1.schema.json). Contract prose: docs/mining-write-contract.md — the reason_code taxonomy, HTTP status mapping, idempotency and audit semantics live there. Versioning: additive-only within v1; breaking changes ship a new mining_action_response.v2.schema.json.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["contract_version", "action_id", "status", "reason_code", "message", "replayed"],
+  "properties": {
+    "contract_version": {
+      "description": "WRITE-contract major version, mirroring the request. v1 is exactly the string \"1\".",
+      "const": "1"
+    },
+    "action_id": {
+      "description": "Echo of the proposal's idempotency key (lowercase UUID v4).",
+      "type": "string",
+      "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$"
+    },
+    "status": {
+      "description": "Whether the proposed action executed.",
+      "enum": ["accepted", "rejected"]
+    },
+    "reason_code": {
+      "description": "Machine-readable outcome from the CLOSED taxonomy (docs/mining-write-contract.md maps each to an HTTP status). Exactly \"ok\" on accept; never \"ok\" on reject — both directions enforced below.",
+      "enum": [
+        "ok",
+        "malformed_request",
+        "unsupported_contract_version",
+        "unknown_action",
+        "invalid_params",
+        "invalid_signature",
+        "stale_timestamp",
+        "guild_not_allowed",
+        "actor_not_found",
+        "replayed_action",
+        "economy_rejection",
+        "rate_limited",
+        "internal_error"
+      ]
+    },
+    "message": {
+      "description": "Human-readable explanation, safe to surface in the web UI.",
+      "type": "string"
+    },
+    "replayed": {
+      "description": "true iff this response was served from the idempotency store (same action_id + same body inside the retention window) instead of a fresh execution.",
+      "type": "boolean"
+    },
+    "result": {
+      "description": "Present iff status is \"accepted\" (enforced below): what changed, and the read-contract freshness pointer.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["state_delta", "snapshot_generated_at"],
+      "properties": {
+        "state_delta": {
+          "description": "The miner fields this action changed, with their NEW values, using READ-contract (mining_player_state) field names — e.g. {\"depth\": 2, \"coins\": 18470}. Open on keys: any per-miner read-contract field may appear.",
+          "type": "object"
+        },
+        "snapshot_generated_at": {
+          "description": "ISO 8601 UTC instant: the generated_at the next READ-contract snapshot reflecting this action will carry or exceed (ties the write back to the read contract's staleness semantics).",
+          "type": "string",
+          "format": "date-time"
+        }
+      }
+    }
+  },
+  "allOf": [
+    {
+      "if": { "properties": { "status": { "const": "accepted" } }, "required": ["status"] },
+      "then": {
+        "required": ["result"],
+        "properties": { "reason_code": { "const": "ok" } }
+      }
+    },
+    {
+      "if": { "properties": { "status": { "const": "rejected" } }, "required": ["status"] },
+      "then": {
+        "not": { "required": ["result"] },
+        "properties": {
+          "reason_code": {
+            "enum": [
+              "malformed_request",
+              "unsupported_contract_version",
+              "unknown_action",
+              "invalid_params",
+              "invalid_signature",
+              "stale_timestamp",
+              "guild_not_allowed",
+              "actor_not_found",
+              "replayed_action",
+              "economy_rejection",
+              "rate_limited",
+              "internal_error"
+            ]
+          }
+        }
+      }
+    }
+  ]
+}

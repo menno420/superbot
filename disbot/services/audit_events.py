@@ -32,6 +32,11 @@ Payload contract (11 fields, all keyword-only):
 * ``occurred_at``   — ISO-8601 timestamp string serialized from the
                       DB commit ``datetime``.
 
+Publishers may append additive, publisher-specific fields via the
+optional ``extra_fields`` mapping (mineverse WRITE-contract audit rows
+carry action_id/params_digest/origin etc.); the canonical 11 always win
+a key collision and subscribers accept extras (``**_extras``).
+
 The helper is failure-safe: if the event bus raises, the exception is
 logged with ``exc_info=True`` and the helper returns ``False``.  DB
 state is authoritative; a dropped audit event is non-fatal. Callers
@@ -62,29 +67,40 @@ async def emit_audit_action(
     actor_id: int | None,
     actor_type: str,
     occurred_at: datetime,
+    extra_fields: dict[str, object] | None = None,
 ) -> bool:
     """Emit ``audit.action_recorded`` for a single mutation.
 
     See module docstring for the payload contract. Returns ``True`` on
     successful emit, ``False`` on bus failure (diagnostic only — the
     caller's DB state is authoritative either way).
+
+    ``extra_fields`` (additive, 2026-07-13 — mineverse WRITE contract):
+    optional publisher-specific payload fields merged into the bus event
+    alongside the canonical 11.  The audit subscriber already tolerates
+    extras (``**_extras`` in ``server_logging._on_audit_action``).  The
+    canonical fields always win a key collision — publishers cannot
+    shadow the shared contract.
     """
     from core.events import bus
 
     try:
         await bus.emit(
             EVT_AUDIT_ACTION_RECORDED,
-            mutation_id=mutation_id,
-            subsystem=subsystem,
-            mutation_type=mutation_type,
-            target=target,
-            scope=scope,
-            guild_id=guild_id,
-            prev_value=prev_value,
-            new_value=new_value,
-            actor_id=actor_id,
-            actor_type=actor_type,
-            occurred_at=occurred_at.isoformat(),
+            **{
+                **(extra_fields or {}),
+                "mutation_id": mutation_id,
+                "subsystem": subsystem,
+                "mutation_type": mutation_type,
+                "target": target,
+                "scope": scope,
+                "guild_id": guild_id,
+                "prev_value": prev_value,
+                "new_value": new_value,
+                "actor_id": actor_id,
+                "actor_type": actor_type,
+                "occurred_at": occurred_at.isoformat(),
+            },
         )
     except Exception:
         logger.exception(

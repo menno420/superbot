@@ -201,6 +201,16 @@ async def start_health_server(
     except Exception:  # noqa: BLE001 - control API must never break health
         logger.exception("control_api: route registration failed; continuing")
 
+    # Mineverse WRITE endpoint (mineverse FLAG 2) — dormant unless
+    # MINING_WRITE_SHARED_SECRET is set. Same wrapping rule as the control
+    # API: a relay issue can never break the health server or bot startup.
+    try:
+        from mining_write_api import register_mining_write_routes
+
+        register_mining_write_routes(app, bot)
+    except Exception:  # noqa: BLE001 - the relay must never break health
+        logger.exception("mining_write_api: route registration failed; continuing")
+
     runner = web.AppRunner(app, access_log=None)
     try:
         await runner.setup()

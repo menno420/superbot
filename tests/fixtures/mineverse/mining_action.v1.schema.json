@@ -1,0 +1,107 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/menno420/superbot-mineverse/blob/main/schemas/mining_action.v1.schema.json",
+  "title": "Mineverse mining action proposal — WRITE contract v1 (TEST GUILD ONLY)",
+  "description": "The signed action-proposal document the web server POSTs to the bot-side endpoint (MINING_WRITE_ENDPOINT). Contract prose: docs/mining-write-contract.md. The bot executes via disbot/services/mining_workflow.py and MUST audit every web-originated action. Versioning: additive-only within v1 (new enum actions + params sub-schemas edit this file in place); any breaking change ships a new mining_action.v2.schema.json.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["contract_version", "action_id", "guild_id", "suid", "action", "params"],
+  "properties": {
+    "contract_version": {
+      "description": "WRITE-contract major version. v1 is exactly the string \"1\".",
+      "const": "1"
+    },
+    "action_id": {
+      "description": "Client-generated idempotency key: lowercase UUID v4, unique per intended action. Same action_id + same body = replay of the original response; same action_id + different body = replayed_action rejection.",
+      "type": "string",
+      "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$"
+    },
+    "guild_id": {
+      "description": "Discord guild snowflake as a STRING (IEEE-754 precision — same rationale as the READ contract). v1 executors hard-allowlist TEST guild ids only; anything else is guild_not_allowed.",
+      "type": "string",
+      "pattern": "^[0-9]+$"
+    },
+    "suid": {
+      "description": "Acting player's superbot user id (Discord user snowflake) as a string. Derived server-side from the verified web session — never client-asserted.",
+      "type": "string",
+      "pattern": "^[0-9]+$"
+    },
+    "action": {
+      "description": "Proposed op, from the CLOSED v1 enum. Each maps 1:1 to a mining_workflow op; widening the enum is an additive v1 change made in this schema first.",
+      "enum": ["mine", "descend", "ascend", "sell", "vault_deposit", "vault_withdraw", "equip"]
+    },
+    "params": {
+      "description": "Per-action parameters; the matching closed sub-schema is selected by the allOf/if-then blocks below. Parameterless actions send {}.",
+      "type": "object"
+    }
+  },
+  "allOf": [
+    {
+      "if": { "properties": { "action": { "enum": ["mine", "descend", "ascend"] } }, "required": ["action"] },
+      "then": { "properties": { "params": { "$ref": "#/$defs/emptyParams" } } }
+    },
+    {
+      "if": { "properties": { "action": { "const": "sell" } }, "required": ["action"] },
+      "then": { "properties": { "params": { "$ref": "#/$defs/sellParams" } } }
+    },
+    {
+      "if": { "properties": { "action": { "enum": ["vault_deposit", "vault_withdraw"] } }, "required": ["action"] },
+      "then": { "properties": { "params": { "$ref": "#/$defs/amountParams" } } }
+    },
+    {
+      "if": { "properties": { "action": { "const": "equip" } }, "required": ["action"] },
+      "then": { "properties": { "params": { "$ref": "#/$defs/equipParams" } } }
+    }
+  ],
+  "$defs": {
+    "emptyParams": {
+      "description": "No parameters: exactly the empty object.",
+      "type": "object",
+      "additionalProperties": false
+    },
+    "sellParams": {
+      "description": "sell: which inventory item, how many.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["item", "quantity"],
+      "properties": {
+        "item": {
+          "description": "Item name — an open oracle-owned string, same key space as the READ contract's mining_inventory map.",
+          "type": "string",
+          "minLength": 1
+        },
+        "quantity": {
+          "type": "integer",
+          "minimum": 1
+        }
+      }
+    },
+    "amountParams": {
+      "description": "vault_deposit / vault_withdraw: how many coins to move.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["amount"],
+      "properties": {
+        "amount": {
+          "type": "integer",
+          "minimum": 1
+        }
+      }
+    },
+    "equipParams": {
+      "description": "equip: which item into which slot. The slot enum is byte-identical to the READ contract's equipment slot set.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["item", "slot"],
+      "properties": {
+        "item": {
+          "type": "string",
+          "minLength": 1
+        },
+        "slot": {
+          "enum": ["tool", "light", "charm", "weapon", "shield", "helmet", "chestplate", "leggings", "boots"]
+        }
+      }
+    }
+  }
+}

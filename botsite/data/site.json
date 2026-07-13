@@ -1,10 +1,10 @@
 {
   "meta": {
-    "generated_at": "2026-07-12T15:30:22Z",
+    "generated_at": "2026-07-13T02:07:10Z",
     "build": {
-      "commit": "71e90041",
-      "subject": "docs: append session telemetry row (Q-0194 merge gate)",
-      "committed_at": "2026-07-12T15:30:22Z"
+      "commit": "e00b908",
+      "subject": "claim + session card: mineverse FLAG 2 (HMAC mining write endpoint) — born-red",
+      "committed_at": "2026-07-13T02:07:10Z"
     }
   },
   "counts": {

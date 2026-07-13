@@ -56,6 +56,7 @@ def test_index_is_substantial_and_classified(index):
         "control_api",
         "guild_lifecycle",
         "healthserver",
+        "mining_write_api",
     }
 
 

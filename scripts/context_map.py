@@ -49,12 +49,15 @@ LAYER_PACKAGES = ("cogs", "core", "governance", "services", "utils", "views")
 # ``control_api`` extends the ``healthserver`` HTTP surface and (later) wires the
 # audited service seams to the dashboard, so it is composition-root infra like
 # ``healthserver`` — it cannot live in a layer (it will import ``services``).
+# ``mining_write_api`` follows the same pattern: the mineverse WRITE-contract
+# endpoint on the healthserver app, fronting ``services.mining_workflow``.
 TOP_LEVEL_MODULES = {
     "bot1",
     "config",
     "control_api",
     "guild_lifecycle",
     "healthserver",
+    "mining_write_api",
 }
 
 HIGH_FAN_IN = 15

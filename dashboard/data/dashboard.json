@@ -1,10 +1,10 @@
 {
   "meta": {
-    "generated_at": "2026-07-13T00:45:52Z",
+    "generated_at": "2026-07-13T02:07:10Z",
     "build": {
-      "commit": "da848308",
-      "subject": "Merge pull request #2051 from menno420/claude/project-autonomy-workflow-bo1cjn",
-      "committed_at": "2026-07-13T00:45:52Z"
+      "commit": "e00b908",
+      "subject": "claim + session card: mineverse FLAG 2 (HMAC mining write endpoint) — born-red",
+      "committed_at": "2026-07-13T02:07:10Z"
     },
     "schema_version": 1,
     "counts": {
@@ -14,7 +14,7 @@
       "reviews": 0,
       "reviews_open": 0,
       "updates": 60,
-      "env_vars": 40,
+      "env_vars": 42,
       "cogs": 55,
       "commands": 485,
       "setting_keys": 124,
@@ -3381,6 +3381,22 @@
   "reviews": [],
   "updates": [
     {
+      "file": "2026-07-13-mineverse-flag-2.md",
+      "date": "2026-07-13",
+      "title": "2026-07-13 — mineverse FLAG 2: HMAC mining write endpoint",
+      "status": "in-progress",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-07-13-hub-upkeep-codex-p2.md",
+      "date": "2026-07-13",
+      "title": "2026-07-13 — Hub upkeep follow-up: Codex P2 fixes from #2054",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
       "file": "2026-07-12-reconcile-band2040.md",
       "date": "2026-07-12",
       "title": "Session — forty-fifth Q-0107 docs reconciliation pass (band-#2040)",
@@ -3408,6 +3424,14 @@
       "file": "2026-07-12-owner-live-part2-mineverse-signin.md",
       "date": "2026-07-12",
       "title": "Session — 2026-07-12 (part 2) — sign-in live, toggles verified, court-spam incident, fleet sweep",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-07-12-hub-upkeep.md",
+      "date": "2026-07-12",
+      "title": "2026-07-12 — Hub upkeep: stale rebuild pointers in current-state docs",
       "status": "complete",
       "run_type": "",
       "self_initiated": false
@@ -3835,30 +3859,6 @@
       "status": "complete",
       "run_type": "",
       "self_initiated": true
-    },
-    {
-      "file": "2026-07-10-eap-verification-corrections.md",
-      "date": "2026-07-10",
-      "title": "2026-07-10 — EAP docs: two verified factual corrections (from fleet-manager ultracode verification)",
-      "status": "complete",
-      "run_type": "manual",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-07-10-eap-journal-routine-observability.md",
-      "date": "2026-07-10",
-      "title": "2026-07-10 — EAP journal: routine-observability bug entry (round-3 brief §1(d))",
-      "status": "complete",
-      "run_type": "manual",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-07-10-coordinator-close-out.md",
-      "date": "2026-07-10",
-      "title": "2026-07-10 — Gen-1 games-lane coordinator close-out (grand-review prompt + Part 1 questions)",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
     }
   ],
   "bot_changelog": [
@@ -4903,6 +4903,48 @@
         "merged_pr": null,
         "reverted_within_window": null
       }
+    },
+    {
+      "session": "2026-07-12-hub-upkeep",
+      "date": "2026-07-12",
+      "model": "fable-5",
+      "effort": "high",
+      "task_class": "docs-only",
+      "tokens_out": null,
+      "outcome": {
+        "ci_green_first_push": null,
+        "checker_findings": null,
+        "merged_pr": null,
+        "reverted_within_window": null
+      }
+    },
+    {
+      "session": "2026-07-13-hub-upkeep-codex-p2",
+      "date": "2026-07-13",
+      "model": "fable-5",
+      "effort": "high",
+      "task_class": "docs-only",
+      "tokens_out": null,
+      "outcome": {
+        "ci_green_first_push": null,
+        "checker_findings": null,
+        "merged_pr": null,
+        "reverted_within_window": null
+      }
+    },
+    {
+      "session": "2026-07-13-mineverse-flag-2",
+      "date": "2026-07-13",
+      "model": "fable-5",
+      "effort": "high",
+      "task_class": "runtime-feature",
+      "tokens_out": null,
+      "outcome": {
+        "ci_green_first_push": null,
+        "checker_findings": null,
+        "merged_pr": null,
+        "reverted_within_window": null
+      }
     }
   ],
   "env_usage": [
@@ -5450,6 +5492,38 @@
           "file": "disbot/config.py",
           "line": 181,
           "layer": "config",
+          "has_default": true
+        }
+      ]
+    },
+    {
+      "name": "MINING_WRITE_GUILD_ALLOWLIST",
+      "required": false,
+      "usage_count": 1,
+      "layers": [
+        "mining_write_api"
+      ],
+      "usages": [
+        {
+          "file": "disbot/mining_write_api.py",
+          "line": 138,
+          "layer": "mining_write_api",
+          "has_default": true
+        }
+      ]
+    },
+    {
+      "name": "MINING_WRITE_SHARED_SECRET",
+      "required": false,
+      "usage_count": 1,
+      "layers": [
+        "mining_write_api"
+      ],
+      "usages": [
+        {
+          "file": "disbot/mining_write_api.py",
+          "line": 126,
+          "layer": "mining_write_api",
           "has_default": true
         }
       ]

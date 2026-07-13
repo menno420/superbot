@@ -255,3 +255,25 @@ async def record_depth(
         conn=conn,
     )
     return row is not None
+
+
+async def has_player_state(
+    user_id: str,
+    guild_id: int,
+    *,
+    conn: asyncpg.Connection | None = None,
+) -> bool:
+    """True when the player has a ``mining_player_state`` row in *guild_id*.
+
+    Read-only existence probe — the mineverse WRITE contract's
+    ``actor_not_found`` gate (a web proposal for a player with no mining
+    state in the guild must be rejected, never auto-created).  Mirrors the
+    READ contract's population rule: one snapshot miner per
+    ``mining_player_state`` row.
+    """
+    row = await pool.fetchone(
+        "SELECT 1 AS present FROM mining_player_state WHERE user_id=$1 AND guild_id=$2",
+        (user_id, guild_id),
+        conn=conn,
+    )
+    return row is not None

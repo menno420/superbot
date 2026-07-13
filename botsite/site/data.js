@@ -7738,7 +7738,7 @@ const CHANGELOG = [
   {
     "version": "2026.06.19",
     "date": "Jun 19, 2026",
-    "build": "71e90041",
+    "build": "e00b908",
     "title": "New public bot website",
     "changes": [
       {
@@ -7750,7 +7750,7 @@ const CHANGELOG = [
   {
     "version": "2026.06.12",
     "date": "Jun 12, 2026",
-    "build": "71e90041",
+    "build": "e00b908",
     "title": "Owner review inbox on the dashboard",
     "changes": [
       {
@@ -7762,7 +7762,7 @@ const CHANGELOG = [
   {
     "version": "2026.06.08",
     "date": "Jun 08, 2026",
-    "build": "71e90041",
+    "build": "e00b908",
     "title": "Command-alias suggestions",
     "changes": [
       {
@@ -9143,9 +9143,9 @@ const FEATURES = [
 ];
 
 const BUILD = {
-  "commit": "71e90041",
-  "subject": "docs: append session telemetry row (Q-0194 merge gate)",
-  "committed_at": "2026-07-12T15:30:22Z"
+  "commit": "e00b908",
+  "subject": "claim + session card: mineverse FLAG 2 (HMAC mining write endpoint) — born-red",
+  "committed_at": "2026-07-13T02:07:10Z"
 };
 
 const COUNTS = {
