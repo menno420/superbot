@@ -95,6 +95,41 @@ async def test_build_grid_embed_shows_position_depth_seed_and_map():
 
 
 @pytest.mark.asyncio
+async def test_build_grid_embed_passes_int_user_id_to_bigint_keyed_reads():
+    """Regression: ``!mine`` crashed because ``build_grid_embed`` passed the
+    *stringified* user id to ``db.get_skills`` — but ``player_skills`` is keyed on
+    a BIGINT ``user_id`` (shared with game_xp), so asyncpg raised ``DataError`` on
+    every dig-navigator open.  The mining tables above it (``mining_player_state``,
+    ``mining_equipment``, ``mining_discovered``) use a TEXT ``user_id`` and take the
+    string.  Pin BOTH halves of that split so neither side regresses; a mocked
+    ``db`` can't surface the type mismatch, only this call-arg contract can.
+    """
+    reads = {
+        name: AsyncMock(return_value=default)
+        for name, default in (
+            ("get_depth", 0),
+            ("get_position", (0, 0)),
+            ("get_world_seed", 4242),
+            ("get_discovered_window", set()),
+            ("get_energy", (60, 0)),
+            ("get_equipment", {}),
+            ("get_skills", {}),
+        )
+    }
+    with patch.multiple("views.mining.grid_mine_view.db", **reads):
+        await build_grid_embed(1234, 5678)
+
+    # BIGINT-keyed read → the raw int user id (the exact bug).
+    assert reads["get_skills"].await_args.args[0] == 1234
+    assert isinstance(reads["get_skills"].await_args.args[0], int)
+    # TEXT-keyed mining reads → the stringified id (must stay a str).
+    for text_keyed in ("get_depth", "get_position", "get_equipment", "get_energy"):
+        arg = reads[text_keyed].await_args.args[0]
+        assert arg == "1234", f"{text_keyed} should receive the str user id, got {arg!r}"
+        assert isinstance(arg, str)
+
+
+@pytest.mark.asyncio
 async def test_build_grid_embed_widens_window_with_a_brighter_light():
     # A diamond-lantern-grade light (light_radius 3 → reveal radius 4, BUG-0026)
     # widens the discovered-cell query beyond the base 2 — proving the stat is wired.
