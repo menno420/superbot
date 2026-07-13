@@ -2,7 +2,7 @@
 
 > **Status:** `complete`
 > **Branch:** `claude/i1b-disposition-relay` · **PR:** #2087
-> **📊 Model:** Claude Fable · **Run type:** routine · dispatch
+> **📊 Model:** fable-5 · **Run type:** routine · dispatch
 > **Venue:** fleet-manager coordinator dispatch worker, remote container
 
 Scope: append ONE ORDER to `control/inbox.md` relaying the fleet-manager I1b
@@ -18,8 +18,12 @@ only, no runtime code.
   `enabled`/`ended_reason` both absent; stored prompt = retired dispatch text per
   `docs/operations/autonomous-routines.md` @ `1cc5536`). Recommended disposition:
   delete or annotate-and-leave-paused; do NOT re-enable/rebind as-is. Rider: the
-  same doc's L395/L406 still present the dispatch console Schedule as live — doc
-  drift for the executing lane session to annotate.
+  same doc still presents the dispatch console Schedule as live at L30, L288–289,
+  L395, L406 (the last two flagged by fm; the first two source-verified from a
+  Codex review lead on this PR) — doc drift for the executing lane session to
+  annotate. Codex review handling (Q-0120, each lead verified against source):
+  telemetry row was already in commit 8985402; `📊 Model:` line normalized to the
+  canonical `fable-5` token; rider/done-when broadened to all stale references.
 - Sources verified in the fleet-manager clone at fm main `18c3f21` (fm PR #175):
   `control/outbox.md` § "2026-07-13 · I1b DISPOSITION" + `docs/fleet-triage.md`
   § "2026-07-13 · I1b disposition". Note: the dispatch cited branch commit
@@ -75,7 +79,7 @@ pass re-deriving why they're open.
 - **⚑ Owner decisions needed:** ORDER 003 disposition — delete the two paused triggers in the console, or annotate-and-leave-paused (fm recommends delete; pause was an owner action)
 - **⚑ Owner manual steps:** the console trigger delete itself, if that disposition is chosen
 - **⚑ Self-initiated:** none
-- **↪ Next:** next hub-touching session consumes ORDER 003 (dispose triggers + annotate autonomous-routines.md L395/L406 drift)
+- **↪ Next:** next hub-touching session consumes ORDER 003 (dispose triggers + annotate all stale live-Schedule references in autonomous-routines.md, incl. L30/L288-289/L395/L406)
 
 ## 📊 Telemetry
 
