@@ -47,6 +47,10 @@
 > wave (same PR):** boot-watch snapshot + per-seat NIGHT ORDERS (compact Q-0271 delta + quotas)
 > + the Fun Lab founding package (friend-directed gift studio) + the seat-#2 path →
 > [`owner/fleet-night-orders-2026-07-12.md`](owner/fleet-night-orders-2026-07-12.md).
+> **▶ THE GROUNDING FILE (living, Q-0274):** missions + venue model + per-seat goal ladders —
+> the one doc any session reads to understand the projects (manager-reviewed at HEAD):
+> [`owner/fleet-grounding.md`](owner/fleet-grounding.md). Night orders were rewritten to **v2**
+> (owner-revised goals, ~23:00Z, Q-0273) and dispatched by the manager as fm ORDERs 030–036.
 > **Next action then reverts to the standing program** — per-sector live queues below.
 >
 > **Ledger note:** living status ledger (project state). **Not binding.**

@@ -9888,3 +9888,32 @@ reference in an ask before acting) + `.claude/skills/prep-owner-steps/` (lead wi
 link + paste-ready blobs; map the owner's steps; batch to one sitting) — and the kit's v2
 order carries the full self-initiative program (skill-pack mechanism + the rationalization
 layer: sessions ask themselves "does this lesson deserve a permanent home I can ship now?").
+
+### Q-0274 — DIRECTED: the fleet-grounding file — one living doc any session reads to understand the projects (2026-07-12/13)
+
+> **Context.** Owner, live in the hub session (follows Q-0273), verbatim: *"I want you to also
+> commit an improved version of my previous message to the repo, and by improved I mean that
+> every goal and step should be properly listed in order, and I also want you to expand my
+> list of requets with other outstanding things, or things that you can come up with now
+> through your own reasoning, you should see this as the grounding explanation message of the
+> projects, one file that the session with your current role, or any other session, could read
+> to immediatly understand where the projectsare currently at, what their intention/goal is,
+> and what kind of tasks they have … before you commit it I want you to send the full file in
+> the chat."* The full draft was posted in chat; the **Project Manager reviewed it against
+> live HEAD in every repo** (verdict: structurally right, commit-worthy; 5 of 10 Position
+> lines stale + one citation to a then-nonexistent Q-0274; structural suggestion: trim
+> Positions to one dated sentence + heartbeat pointer, "rich Positions rot in ~2 hours") and
+> the owner relayed that review as the go.
+
+**Decision (owner-directed; manager-reviewed).** The grounding file lives at
+[`fleet-grounding.md`](./fleet-grounding.md) (`docs/owner/`, undated filename — living doc):
+§0 the system paragraph · §1 the venue model · §2–§9 per-seat **Mission (owner's words) +
+one-sentence dated Position + Goals-in-order + Standing tasks** · §10 cross-fleet expansions
+(round-trip KPI, owner-click economy, truth hygiene incl. the VERDICT-016 authenticity gate,
+the friend thread, the reboot step, the near-term calendar, platform lessons, the fleet-wide
+definition of done) · §11 usage rules. Maintenance rule: **missions/goal ladders change only
+on owner direction (with a Q); Position lines are refreshable by any session that just
+verified them at HEAD, one dated sentence max.** All manager corrections were applied before
+commit (superbot-next queue-flushed/deep-lanes-in-flight, Game Lab slice states, Ideas Lab
+16+V017/pipeline-ACTIVE, @codex gate-not-suspend per VERDICT 016, mineverse FLAGs/six-secret,
+websites 15-PR sitting), and this Q-number was minted so the file's citation is real.
