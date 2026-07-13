@@ -31,6 +31,11 @@ creds · `[owner]` needs an owner decision/action; see [`../repo-sector-map.md`]
   (derived manifest · one fetch core · commit-time recency · drift-flagging resolver), built
   to route to the **websites lane** as manager ORDERs (4 phases):
   [`../planning/websites-fleet-data-plane-2026-07-13.md`](../planning/websites-fleet-data-plane-2026-07-13.md).
+  **Live gap-analysis confirming that design** (owner ask 2026-07-13, PR #2070) — the deployed
+  control-plane renders the fleet as **six different sizes** across pages (4/9/11/15/18/18) +
+  false-"all quiet" homepage + doubled Railway estate + seat/repo naming split + blind deploy
+  state + un-observable prompt re-paste; prioritized fixes (homepage honesty + the manifest
+  first): [`../planning/control-plane-centralization-review-2026-07-13.md`](../planning/control-plane-centralization-review-2026-07-13.md).
 - **✅ CI-setup redesign DELIVERED (PR #1737, 2026-07-05)** — the target-state design + phased,
   reversible migration:
   [`../planning/ci-setup-redesign-2026-07-05.md`](../planning/ci-setup-redesign-2026-07-05.md) +
