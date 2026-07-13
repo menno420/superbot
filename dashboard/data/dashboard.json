@@ -1,10 +1,10 @@
 {
   "meta": {
-    "generated_at": "2026-07-13T13:49:18Z",
+    "generated_at": "2026-07-13T16:08:41Z",
     "build": {
-      "commit": "c0fe2e23",
-      "subject": "session: born-red card for 46th Q-0107 reconciliation pass (band-#2070)",
-      "committed_at": "2026-07-13T13:49:18Z"
+      "commit": "b00edc6e",
+      "subject": "Merge pull request #2074 from menno420/claude/reconcile-band2070-abc95547",
+      "committed_at": "2026-07-13T16:08:41Z"
     },
     "schema_version": 1,
     "counts": {
@@ -3445,6 +3445,14 @@
       "self_initiated": false
     },
     {
+      "file": "2026-07-13-dashboard-conflict-recipe.md",
+      "date": "2026-07-13",
+      "title": "2026-07-13 — Durable mitigation for the generated-artifact merge-conflict class",
+      "status": "complete",
+      "run_type": "routine",
+      "self_initiated": false
+    },
+    {
       "file": "2026-07-13-control-plane-live-review.md",
       "date": "2026-07-13",
       "title": "2026-07-13 — Control-plane live centralization review (owner ask)",
@@ -3856,14 +3864,6 @@
       "file": "2026-07-10-round3-dispatch-3.md",
       "date": "2026-07-10",
       "title": "Session — round-3 dispatch coordination, part 3 (live copilot)",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-07-10-round3-dispatch-2.md",
-      "date": "2026-07-10",
-      "title": "Session — round-3 dispatch coordination, part 2 (live copilot)",
       "status": "complete",
       "run_type": "",
       "self_initiated": false
@@ -5002,6 +5002,20 @@
       "model": "opus-4.8",
       "effort": "high",
       "task_class": "docs-only",
+      "tokens_out": null,
+      "outcome": {
+        "ci_green_first_push": null,
+        "checker_findings": null,
+        "merged_pr": null,
+        "reverted_within_window": null
+      }
+    },
+    {
+      "session": "2026-07-13-dashboard-conflict-recipe",
+      "date": "2026-07-13",
+      "model": "fable-5",
+      "effort": "high",
+      "task_class": "tooling",
       "tokens_out": null,
       "outcome": {
         "ci_green_first_push": null,
