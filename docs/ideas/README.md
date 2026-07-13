@@ -31,6 +31,13 @@ only the header block is read, so a `**Subsystem:**` *example* in an idea's body
 
 Current broad captures:
 
+- [`fleet-audit-as-saved-workflow-2026-07-13.md`](./fleet-audit-as-saved-workflow-2026-07-13.md) —
+  **session ender (2026-07-13, EAP-final-night fleet cleanup audit session):** encode
+  tonight's 18-repo parallel audit pattern (per-repo subagent + shared safety envelope +
+  live-verified merge/close decisions + rolled-up report) as a saved
+  `.claude/workflows/fleet-repo-audit.js` for future periodic sweeps, with the per-repo
+  liveness hints pulled live from fleet-manager's roster instead of hand-authored.
+  Subsystem: none.
 - [`prompt-wait-language-lint-2026-07-12.md`](./prompt-wait-language-lint-2026-07-12.md) —
   **session ender (2026-07-12, fleet re-arm session, PR #2048):** a fleet-manager registry lint
   that fails CI on **wait-language** in prompt bodies ("wait for the owner", "until confirmed",
