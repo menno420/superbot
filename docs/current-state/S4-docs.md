@@ -245,10 +245,11 @@
 - **Ledger / docs in sync** — `check_current_state_ledger.py` and `check_docs.py` green.
 
 **▶ Next:**
-- **▶ Rebuild — the review-then-plan phase (owner-directed 2026-07-03; capstone #1674 merged):** the
+- **▶ Rebuild — (historical) the review-then-plan phase (owner-directed 2026-07-03; capstone #1674 merged):** the
   new-bot capability audit is complete — verdict **GO-with-amendments** (measured all-43 fit 85.1%),
   and [`NEW-BOT-BUILD-PLAN.md`](../analysis/rebuild-discovery/new-bot-capability-audit/findings/NEW-BOT-BUILD-PLAN.md)
-  is the **frozen reference**. Next: (A) one more owner-led **content review pass** over the whole
+  is the **frozen reference**. *(Superseded 2026-07-07 by Q-0241/#1776 — see the LIVE tail below;
+  kept for the record:)* Next: (A) one more owner-led **content review pass** over the whole
   surface (commands / functions / methods), then (B) **one 100%-complete design plan per step**
   before any code. Process + gates + start sequence now canonical in
   [`planning/rebuild-canonical-plan-2026-07-06.md`](../planning/rebuild-canonical-plan-2026-07-06.md)
