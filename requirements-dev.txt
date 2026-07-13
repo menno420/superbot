@@ -17,6 +17,13 @@ pytest-asyncio==1.4.0
 # Q-0126 test-isolation follow-up made the suite parallel-safe. Pinned to match CI.
 pytest-xdist==3.8.0
 
+# JSON Schema validator for the mineverse snapshot READ-contract gate
+# (tests/unit/services/test_mining_snapshot_service.py — Draft202012Validator,
+# the same gate mineverse CI runs). Developer/agent-only, NOT installed in CI
+# (CI installs requirements.txt only); the test importorskips it, and a stdlib
+# structural gate in the same file always runs so CI still validates the shape.
+jsonschema==4.23.0
+
 # Import-graph engine for scripts/context_map.py (the file-context tool).
 # Developer/agent-only — NOT a bot-runtime dep and NOT installed in CI; the tool
 # degrades to an AST fallback when grimp is absent. See docs/context-map-tooling.md.
