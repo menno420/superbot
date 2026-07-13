@@ -7738,7 +7738,7 @@ const CHANGELOG = [
   {
     "version": "2026.06.19",
     "date": "Jun 19, 2026",
-    "build": "9209108",
+    "build": "3051855",
     "title": "New public bot website",
     "changes": [
       {
@@ -7750,7 +7750,7 @@ const CHANGELOG = [
   {
     "version": "2026.06.12",
     "date": "Jun 12, 2026",
-    "build": "9209108",
+    "build": "3051855",
     "title": "Owner review inbox on the dashboard",
     "changes": [
       {
@@ -7762,7 +7762,7 @@ const CHANGELOG = [
   {
     "version": "2026.06.08",
     "date": "Jun 08, 2026",
-    "build": "9209108",
+    "build": "3051855",
     "title": "Command-alias suggestions",
     "changes": [
       {
@@ -9143,9 +9143,9 @@ const FEATURES = [
 ];
 
 const BUILD = {
-  "commit": "9209108",
-  "subject": "session close: flip mineverse FLAG 2 card complete + clear claim + refresh exports",
-  "committed_at": "2026-07-13T02:41:37Z"
+  "commit": "3051855",
+  "subject": "security: resolve all 6 CodeQL alerts on the write endpoint (no dismissals)",
+  "committed_at": "2026-07-13T03:04:13Z"
 };
 
 const COUNTS = {

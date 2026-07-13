@@ -1,10 +1,10 @@
 {
   "meta": {
-    "generated_at": "2026-07-13T02:41:37Z",
+    "generated_at": "2026-07-13T03:04:13Z",
     "build": {
-      "commit": "9209108",
-      "subject": "session close: flip mineverse FLAG 2 card complete + clear claim + refresh exports",
-      "committed_at": "2026-07-13T02:41:37Z"
+      "commit": "3051855",
+      "subject": "security: resolve all 6 CodeQL alerts on the write endpoint (no dismissals)",
+      "committed_at": "2026-07-13T03:04:13Z"
     },
     "schema_version": 1,
     "counts": {
