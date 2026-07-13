@@ -51,6 +51,9 @@
 > the one doc any session reads to understand the projects (manager-reviewed at HEAD):
 > [`owner/fleet-grounding.md`](owner/fleet-grounding.md). Night orders were rewritten to **v2**
 > (owner-revised goals, ~23:00Z, Q-0273) and dispatched by the manager as fm ORDERs 030–036.
+> **▶ THE OWNER'S DIRECT-ORDER PASTE-SET (2026-07-13 night):** 8 per-seat blocks — shared
+> skeleton (incl. the **open-PRs-stay-open, keep-producing** rule) + seat actions:
+> [`owner/fleet-direct-orders-2026-07-13.md`](owner/fleet-direct-orders-2026-07-13.md).
 > **Next action then reverts to the standing program** — per-sector live queues below.
 >
 > **Ledger note:** living status ledger (project state). **Not binding.**
