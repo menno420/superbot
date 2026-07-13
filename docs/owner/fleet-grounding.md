@@ -283,9 +283,13 @@ go/no-go.
    heartbeat claims verified at HEAD (Q-0120), and external-review output passed through the
    **authenticity gate** before trust (VERDICT 016: pre-trust check, not suspension — 3/3
    fabrications caught, 0/24 false alarms on the 2026-07-12 incidents).
-4. **The friend thread** — the makerbench gift repo (Ideas Lab blueprint, awaiting the owner's
-   tweak reply: name · visibility · project cut · arm-hardware path · buy-list) and, if wanted
-   later, the standing Fun Lab studio (founding package in night-orders v1, git history).
+4. **The friend thread — LIVE as `curious-research`** (owner-created 2026-07-13, public, +
+   the "Curious Research" Project seat): seeded with kit v1.15.0 + the binding visual-teaching
+   doctrine (thorough step-by-step + animated HTML explainers) + the founding animated guide +
+   14 idea seeds (curious-research PR #1; prompts:
+   [`curious-research-project-prompts-2026-07-13.md`](curious-research-project-prompts-2026-07-13.md)).
+   Supersedes the makerbench naming; the Ideas Lab blueprint remains the projects
+   (a–e) build manual, routed as slices when the owner wants them.
 5. **The next structural step** — the website-served prompt reboot
    (`next-session-brief-2026-07-13.md`): the prompt library becomes the paste source, seats
    re-paste from it, drift rows keep deployed-vs-canonical honest.
