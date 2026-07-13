@@ -1,21 +1,59 @@
 # 2026-07-13 — Websites fleet-data-plane design (owner ask)
 
-> **Status:** `in-progress`
-> **Branch:** `claude/multi-repo-orientation-review-p5ztfi` (restarted from main; prior PRs #2064/#2065 merged)
+> **Status:** `complete`
+> **Branch:** `claude/multi-repo-orientation-review-p5ztfi` (restarted from main; prior PRs #2064/#2065 merged) · **PR:** #2066
 > **📊 Model:** Claude 5 family (Fable)
 > **Venue:** owner-live chat, remote container (hub repo)
 
-## What is about to happen
+## What happened
 
-Owner ask (exploratory → design): find out how all the website services get their live
-data today; assess whether it can be centralized; design the failsafe the owner described
-— a correctly-named file misplaced by an agent (wrong dir/repo) is still found, and
-recency decides which copy is authoritative — improved per Q-0254 (reason the fragment
-forward: commit-time over hand-written stamps, canonical-path precedence with drift
-warnings instead of silent masking, manifest derived from kit config + fm roster).
+Owner ask (exploratory → design, Q-0254 possibility-space-first): how do the websites get
+their live data; can it be centralized; design the misplaced-file failsafe (correctly-named
+file in the wrong place is still found; recency decides). One read-only survey agent mapped
+`menno420/websites` @ HEAD (all four services, every fetch site cited file:line); hub-side
+checks confirmed the producer feeds (`scripts/export_dashboard_data.py` → contracted
+`dashboard.json`/`console.json`/`site.json`) and the kit's per-repo self-declared manifests
+(`substrate.config.json` `heartbeat_files` etc., verified fleet-wide).
 
-Research: one read-only survey agent over menno420/websites (data-access map, bake
-pipeline, #250 classifier) + hub-side checks (substrate.config.json heartbeat manifest,
-dashboard export path). Deliverable: `docs/planning/websites-fleet-data-plane-2026-07-13.md`
-(design brief, routable to the websites lane as a manager ORDER) + chat answer.
-Execution stays websites-lane — no cross-repo writes from here.
+**Shipped:** [`docs/planning/websites-fleet-data-plane-2026-07-13.md`](../docs/planning/websites-fleet-data-plane-2026-07-13.md)
+— grounded current-state map (4 services, 4 styles; 5 hand-kept repo lists; 3 duplicate
+fetch layers; script-literal parsing of fm's roster), the design (one derived manifest =
+`lanes.json` × `substrate.config.json` × kind table · one fetch core · three lanes ·
+the resolver: canonical-first → name-pattern discovery → **commit-time recency over
+agent-written stamps** → canonical-precedence with loud drift rows → `misplaced.json`
+consumed by the fm wake = self-healing), feasibility verdict (yes — all primitives exist),
+and a 4-phase build order routable as websites ORDERs. Execution stays websites-lane.
+
+## ⚑ Self-initiated (Q-0172)
+
+None — owner-directed ask; the design doc is the deliverable.
+
+## 💡 Session idea (Q-0089)
+
+**Kit gate check `check_misplaced_artifacts` (prevent at the source).** The design's
+render-time failsafe has a cheaper commit-time twin: a substrate-gate check that scans the
+committing repo for artifact-kind files outside their `substrate.config.json`-declared
+homes (a `status*.md` outside `control/`, a session card outside `sessions_dir`, a verdict
+outside `sims/`) and warns before merge. Misplacement then gets caught where it happens,
+and the website failsafe becomes the backstop instead of the only net. Kit lane; §2.5 of
+the design doc carries the pointer. Dedup: no `docs/ideas/` entry covers misplaced-artifact
+guarding (grep 2026-07-13).
+
+## ⟲ Previous-session review (Q-0102)
+
+The ender-v3.4 session (#2065, same chat) was tight: intent reflected back before building,
+v3.3's incident-hardened mechanics preserved verbatim-in-substance, one flagged design call
+(worker reviews fold into coordinator reports) instead of a silent choice. Nothing it
+missed worth flagging — genuinely. **System improvement it surfaces:** it hand-assembled
+its close-out again rather than invoking `/session-close` — same gap two sessions running;
+the ender-compliance gate idea from its own card is the enforcing fix and should be built
+soon (this card's close-out was again hand-run, checks-first).
+
+## Docs audit (Q-0104)
+
+- New doc reachable: `docs/planning/` is check_docs-scanned; the plan is also pointed to
+  from this card and the PR body; S5-ops sector queue pickup is the reconciliation pass's
+  job (next at #2070) — no current-state head edit needed for a routable lane plan.
+- Telemetry row appended in this PR (Q-0194). Claim deleted at close.
+- Nothing valuable chat-only: the full design lives in the committed doc; chat carries the
+  owner summary.
