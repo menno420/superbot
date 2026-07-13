@@ -1,7 +1,7 @@
 # 2026-07-13 — Fix `!mine` breakage: str user_id passed to a BIGINT-keyed read
 
-> **Status:** `in-progress`
-> **Branch:** `claude/mining-command-breakage-ypve0d` · **PR:** pending
+> **Status:** `complete`
+> **Branch:** `claude/mining-command-breakage-ypve0d` · **PR:** #2089
 > **Venue:** remote container (owner-directed from a Discord screen-recording). **📊 Model:** Opus 4.8 (Claude Opus family).
 > **Scope:** one-line runtime bug fix in `build_grid_embed` + a durable regression guard. No schema, no cross-cutting change.
 
@@ -46,8 +46,9 @@ correctly. The mining subsystem is otherwise clean.
   `test_build_grid_embed_passes_int_user_id_to_bigint_keyed_reads` pins BOTH halves — `get_skills`
   gets the **int** id; the TEXT-keyed reads get the **str**. Verified it **fails on the old code**
   (`assert '1234' == 1234`) and passes with the fix — a real guard, not a rubber stamp.
-- Quality mirror: `python3.10 scripts/check_quality.py --full` → _(recorded at close)_ ·
-  `check_architecture --mode strict` → exit 0 (only pre-existing known warnings).
+- Quality mirror: `python3.10 scripts/check_quality.py --full` → **All checks passed ✓**
+  (13996 passed, 42 skipped, 2 xfailed) · `check_architecture --mode strict` → exit 0
+  (only pre-existing known warnings). Clear the claim file at close.
 
 ## Enders
 
