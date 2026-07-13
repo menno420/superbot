@@ -45,7 +45,11 @@ async def build_grid_embed(
     # the same radius feeds the discovered-cell query and the render so they
     # stay in lock-step. light_radius 0-1 keeps the prior default of 2.
     equipped = await db.get_equipment(suid, guild_id)
-    alloc = await db.get_skills(suid, guild_id)
+    # get_skills is keyed on a BIGINT user_id (player_skills, shared with game_xp),
+    # unlike the TEXT-keyed mining tables above — so it takes the int user_id, not
+    # suid. Passing the string raised asyncpg DataError on every !mine (the grid
+    # navigator crash the mocked unit tests could not see; pinned below).
+    alloc = await db.get_skills(user_id, guild_id)
     radius = grid.reveal_radius(character_stats(equipped, alloc).light_radius)
     discovered = await db.get_discovered_window(
         suid,
