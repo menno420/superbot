@@ -57,7 +57,7 @@ non-blocking / `continue-on-error`) · **R** = routine (schedule/dispatch, not p
 | 10 | `design-system-ci.yml` | **paths:`design-system/**`** | **A** | no | — | React/Tailwind typecheck + test + build. |
 | 11 | `tool-pins.yml` | **paths:** pin sources | **A** | no | — | `check_tool_pins.py` — fails when the 3 formatter-pin locations drift (#1315). Not required → shows red but doesn't block. |
 | 12 | `reconciliation-trigger.yml` | `push:main`, issues | **R** | — | — | Opens the `reconcile` issue at every 30th-PR boundary (Q-0107). |
-| 13 | `dashboard-data-refresh.yml` | `schedule 17 */2`, dispatch | **R** | — | — | Regenerates `dashboard/data/dashboard.json`, opens a PR. |
+| 13 | `dashboard-data-refresh.yml` | `schedule 17 */2`, dispatch | **R** | — | — | Regenerates `dashboard/data/dashboard.json`, opens a PR. Its merges re-conflict open branches that also regenerated — resolve with [the generated-data merge recipe](generated-data-merge-recipe.md) (`scripts/resolve_generated_conflicts.py`). |
 | 14 | `btd6-data-refresh.yml` | dispatch-only | **R** | — | — | BTD6 data re-seed → reviewable PR (Q-0049). |
 | 15 | `backup-db.yml` | daily+monthly cron, dispatch | **R** | — | — | Postgres backup. |
 | 16 | `parity-replay.yml` | dispatch-only | **A/R** | — | none ⚠ | Replays the `parity/` golden harness. Add a concurrency group. |
