@@ -1,0 +1,1 @@
+- `claude/eap-night-order` · deliver EAP final-night ORDER (fm ORDER 045 relay) into `control/inbox.md` · expected files: `control/inbox.md`, `.sessions/2026-07-13-eap-night-order.md`, `telemetry/model-usage.jsonl` · 2026-07-13
