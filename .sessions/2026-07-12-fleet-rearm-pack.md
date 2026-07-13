@@ -114,6 +114,27 @@ Game Lab explicitly ordered to push its pre-built queue as open PRs). Shipped as
 **[`docs/owner/fleet-direct-orders-2026-07-13.md`](../docs/owner/fleet-direct-orders-2026-07-13.md)**
 + full blocks delivered in chat per /prep-owner-steps.
 
+## Part 7 (2026-07-13, ~01:20Z) — curious-research seeded + the Project prompt pair
+
+The owner created the friend repo (`curious-research`, public) + the "Curious Research"
+Project. This venue seeded the repo per the makerbench blueprint adapted (research/teaching
+emphasis): **kit v1.15.0 adopted** (guided, enforcement wired; slots answered; the owner's
+mock CI workflow banked by the kit's carve-out), **the teaching doctrine** (root CLAUDE.md +
+binding docs/teaching-style.md + the visual-explainers skill — the owner's founding request:
+thorough step-by-step + animated HTML artifacts), **the founding animated guide**
+(guides/how-a-pr-flows: staged animation, replay/step, reduced-motion + dark aware, + the
+3-minute first-PR exercise), git-for-makers, the idea ritual, 14 gear-matched idea seeds,
+first card + heartbeat. Landed as **curious-research PR #1** (direct main push
+ruleset-refused as designed; auto-merge armed — so the owner's "Allow auto-merge" click was
+already done). Three real gate reds fixed in-flight: the kit's own **first-adoption inbox
+grammar edge** (adopt's placeholder line vs the append-only gate — kit-upstream finding),
+then badges/reachability on the house docs — where the local green had been the **piped-tail
+exit gotcha** (the journal's own rule, violated and re-learned; verify bare exit codes).
+Prompt pair for the Project (v3.4-shaped + today's doctrine):
+[`docs/owner/curious-research-project-prompts-2026-07-13.md`](../docs/owner/curious-research-project-prompts-2026-07-13.md);
+grounding §10.4 updated (makerbench → curious-research). Free failsafe offset `20 */2`
+assigned.
+
 ## Key design decisions (decide-and-flag, Q-0240)
 
 - **Bridge, not fork:** tonight's re-arm rides startup prompts over the currently-pasted
