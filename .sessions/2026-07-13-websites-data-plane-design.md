@@ -51,9 +51,12 @@ soon (this card's close-out was again hand-run, checks-first).
 
 ## Docs audit (Q-0104)
 
-- New doc reachable: `docs/planning/` is check_docs-scanned; the plan is also pointed to
-  from this card and the PR body; S5-ops sector queue pickup is the reconciliation pass's
-  job (next at #2070) — no current-state head edit needed for a routable lane plan.
+- New doc reachable: homed in the **S5-ops sector queue**
+  ([`docs/current-state/S5-ops.md`](../docs/current-state/S5-ops.md) ▶ Next) — the
+  `check_plan_homing` reachability check caught the first push leaving it orphaned (my
+  audit note initially claimed no homing was needed; the checker was right, corrected in
+  the fix commit). Honest miss, second lesson: the check ran but its exit code was
+  swallowed by a `| tail` pipe — checks must gate the push, not decorate it.
 - Telemetry row appended in this PR (Q-0194). Claim deleted at close.
 - Nothing valuable chat-only: the full design lives in the committed doc; chat carries the
   owner summary.
