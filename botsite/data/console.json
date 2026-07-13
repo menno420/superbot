@@ -1,10 +1,10 @@
 {
   "meta": {
-    "generated_at": "2026-07-13T03:04:13Z",
+    "generated_at": "2026-07-13T04:08:03Z",
     "build": {
-      "commit": "3051855",
-      "subject": "security: resolve all 6 CodeQL alerts on the write endpoint (no dismissals)",
-      "committed_at": "2026-07-13T03:04:13Z"
+      "commit": "1cc99af",
+      "subject": "Merge remote-tracking branch 'origin/main' into claude/mineverse-flag-2",
+      "committed_at": "2026-07-13T04:08:03Z"
     },
     "schema_version": 1
   },
