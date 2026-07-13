@@ -9,6 +9,27 @@
 > S3; the docs it produces are S4.*
 
 **Recently shipped (this sector):**
+- **Forty-sixth Q-0107 reconciliation pass** (band-#2070, issue #2073 —
+  [pass record](../planning/reconciliation-pass-2026-07-13-band2070.md)): reconciled the ledger
+  (band #2041–#2071 — grouped entries, **entirely docs/tooling/control**, zero `disbot/` runtime: the
+  **multi-repo orientation-review night → doctrine refresh** #2064/#2065/#2066/#2068 — the Q-0272
+  orientation path's first full end-to-end exercise (`night-review-2026-07-13.md`), the boot-triad
+  Q-0270, fleet-reading-path Q-0272, the living `owner/fleet-grounding.md` Q-0274, universal
+  session-ender v3.4, and the websites data-plane design; the **owner-queue execution → fleet re-arm +
+  night-orders** arc #2043/#2045/#2046/#2048/#2049/#2051/#2053/#2055/#2057/#2059/#2060 (owner-live
+  credentialed queue execution + 8-seat re-arm under the Q-0271 autonomy rider + direct-order paste-set
+  + manager final order v3.5); the **hub-upkeep + Codex P2 follow-up** #2054/#2056; the **codex
+  onboarding-telemetry + control-plane live review + EAP email-3 send-ready + owner batch**
+  #2069/#2070/#2071 (the control-plane "6 sizes" non-centralization finding; email-3 Part-2 evidence
+  filled from the night review); the 45th-pass docs PR #2042; and 7 dashboard refreshes
+  #2044/#2047/#2050/#2052/#2062/#2063/#2067), trimmed Recently-shipped to 20, **disposed the open-PR
+  set** — **3 open PRs left in flight** (#2072 docs/tooling auto-merging; #2061 + #2058 deliberately-held
+  owner-controlled mineverse drafts, deploy-safety Q-0193), no stale session PR, confirmed **ROUTINE_PAT
+  set / loop self-fires** (issue #2073 authored by `menno420`), carried the forward queue intact (still
+  deep, no THIN flag — the rebuild live in superbot-next + the live SuperBot Project 8-seat program
+  dominate), refreshed the dashboard export (Q-0167), reset the marker #2040 → #2071. The 5 remaining
+  supersede-banner soft warnings are honest cross-repo supersessions the in-repo checker can't model —
+  carried forward unchanged.
 - **Forty-fifth Q-0107 reconciliation pass** (band-#2040, issue #2041 —
   [pass record](../planning/reconciliation-pass-2026-07-12-band2040.md)): reconciled the ledger
   (band #2012–#2040 — four grouped entries, **entirely docs/control/tooling**, zero `disbot/` runtime:
@@ -267,7 +288,7 @@
   startable slice. Companion: the still-unexecuted
   [orientation-cost-reduction plan](../planning/orientation-cost-reduction-plan-2026-06-30.md)
   (Q-0210 router archive now 3+ passes overdue — B0–B3 should run soon regardless).
-- **Next reconciliation pass due once merged PRs cross #2070** (every multiple of 30, Q-0134) —
+- **Next reconciliation pass due once merged PRs cross #2100** (every multiple of 30, Q-0134) —
   auto-triggered by `reconciliation-trigger.yml`; run by the docs-reconciliation routine, **not** a
   manual session (Q-0124).
 - Plan-band depth is healthy — **no `PLAN-BACKLOG-THIN` flag** (buildable depth well over cadence).

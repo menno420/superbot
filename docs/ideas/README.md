@@ -38,6 +38,14 @@ Current broad captures:
   complement to the Q-0271 AUTONOMY RIDER (which fixes the same presence-gating class at
   runtime). Would have caught the venture-lab frozen-clicks staleness + trading's "awaiting
   owner merge" drift. Subsystem: none.
+- [`s4-sector-pass-history-trim-ratchet-2026-07-13.md`](./s4-sector-pass-history-trim-ratchet-2026-07-13.md) —
+  **session ender (2026-07-13, 46th Q-0107 reconciliation pass, band-#2070):** give
+  `docs/current-state/S4-docs.md`'s reconciliation-pass bullet list the same trim ratchet
+  `current-state.md` already has (`trim_recently_shipped.py`) — it grows unbounded (21 pass bullets
+  now, +1 every ~30 PRs) while each pass's full detail already lives in its own
+  `reconciliation-pass-*.md` record. Bound it to ~8 + an "older passes" pointer, called by the
+  routine every pass. Cuts orientation cost + closes the hub-self-trims/sector-doesn't inconsistency.
+  Subsystem: none (docs tooling).
 - [`reconciliation-four-homes-consistency-guard-2026-07-12.md`](./reconciliation-four-homes-consistency-guard-2026-07-12.md) —
   **session ender (2026-07-12, 45th Q-0107 reconciliation pass, band-#2040):** a stdlib
   `check_reconciliation_consistency.py` **detector** that parses the four invariant facts (pass
