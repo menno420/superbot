@@ -1,0 +1,1 @@
+- branch `claude/mining-command-breakage-ypve0d` · scope: fix `!mine` breakage (grid navigator) + regression guard · files: `disbot/views/mining/grid_mine_view.py`, `tests/unit/views/test_mining_grid_view.py` · 2026-07-13
