@@ -88,6 +88,20 @@ checklist — its successor never woke off the 22:31Z bridge), router **Q-0273**
 `.claude/skills/chase-references/` + `.claude/skills/prep-owner-steps/` (the founding
 incident is this session's own opening-message reference miss).
 
+## Part 5 (2026-07-13, ~00:xxZ) — the fleet-grounding file (Q-0274, manager-reviewed)
+
+The owner directed a **grounding explanation file**: his goals message improved (every goal
+ordered) + expanded (verified outstanding items + reasoned additions) — one living doc any
+session reads to immediately understand the projects. Process: full draft posted in chat →
+the **Project Manager reviewed it against live HEAD in every repo** (structurally right;
+5 stale Position lines + a citation to a then-unminted Q-0274; suggestion: one-sentence dated
+Positions) → owner relayed the review as the go → corrections spot-verified (mineverse
+backlog wave + six-secret ask; idea-engine cycle ledger incl. **VERDICT 016** "authenticity
+gate, not suspension" verbatim) and applied → shipped as
+**[`docs/owner/fleet-grounding.md`](../docs/owner/fleet-grounding.md)** + router **Q-0274** +
+current-state pointer. The manager independently dispatched the v2 goals as **fm ORDERs
+030–036** and adopted the PR terminal-state + authenticity-gate doctrines fleet-side.
+
 ## Key design decisions (decide-and-flag, Q-0240)
 
 - **Bridge, not fork:** tonight's re-arm rides startup prompts over the currently-pasted
