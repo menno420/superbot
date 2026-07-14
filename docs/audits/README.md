@@ -10,6 +10,11 @@ moment, and the reasoning behind it. Read the binding docs (`architecture.md`, `
 
 ## Investigations
 
+- [`eap-project-audit-2026-07-14.md`](eap-project-audit-2026-07-14.md) — the hub seat's EAP
+  closeout audit (fleet-manager 11-section format): measured identity & scale, tooling built
+  vs. walled (verbatim classifier denials), merge/scheduling/environment friction, ceremony
+  cost, the friction→guard record, top 5 remaining pains with dispositions, wishlist, honest
+  gaps. Companion: [`../eap-closeout-walkthrough-2026-07-14.md`](../eap-closeout-walkthrough-2026-07-14.md).
 - [`fleet-doctrine-enforcement-audit-2026-07-10.md`](fleet-doctrine-enforcement-audit-2026-07-10.md)
   — adversarial audit of fleet-manager gen-2 blueprint/playbook doctrine against public repo evidence: enforcement inventory, falsified claims, and top prose-only risks.
 - [`../analysis/server-management-audit-2026-07-08.md`](../analysis/server-management-audit-2026-07-08.md)

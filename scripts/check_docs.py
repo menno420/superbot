@@ -162,7 +162,12 @@ _REACHABILITY_ALLOWLIST: frozenset[str] = frozenset()
 # doc (the cross-repo sibling of repo-navigation-map.md / repo-sector-map.md, boot-visible
 # per owner directive Q-0272). The relocation alternative (current-state-archive.md) is
 # load-bearing in trim_recently_shipped.py / check_current_state_ledger.py — not movable.
-_TOP_LEVEL_DOCS_BUDGET = 21
+# 2026-07-14: 21 -> 22 — sanctioned raise: eap-closeout-walkthrough-2026-07-14.md is
+# pinned to the docs/ root BY ORDER (control/inbox.md ORDER 006 (b) names the exact path;
+# owner-directed relay), so relocation would violate the order's done-when. Reversible:
+# once the EAP closeout is consumed, a reconciliation pass may move it under docs/eap/
+# (updating the docs/eap/README.md + docs/audits/README.md links) and re-lower to 21.
+_TOP_LEVEL_DOCS_BUDGET = 22
 
 # Soft cap on `current-state.md` § Recently shipped (newest-first merged-PR bullets).
 # Keeps the 2nd-most-read doc lean — overflow is archived to current-state-archive.md.

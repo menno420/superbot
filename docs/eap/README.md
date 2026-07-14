@@ -5,6 +5,16 @@
 > [`docs/planning/`](../planning/projects-eap-evaluation-log.md) (files prefixed
 > `projects-eap-*`). Newest first within each group.
 
+## Closeout (2026-07-14 — EAP final day)
+
+- [`../eap-closeout-walkthrough-2026-07-14.md`](../eap-closeout-walkthrough-2026-07-14.md) —
+  **the seat closeout walkthrough** (ORDER 006 b): what the hub did during the EAP, current
+  state + exact verify commands, the OWNER ACTIONS checklist (every pending click with a
+  bolded recommendation + VERIFY step), a 5-minute tour, and the handoff batons.
+- [`../audits/eap-project-audit-2026-07-14.md`](../audits/eap-project-audit-2026-07-14.md) —
+  the hub seat's EAP project audit (11-section fleet format: measured scale, verbatim
+  permission walls, ranked pains with FLEET-FIX/ANTHROPIC/ACCEPTED dispositions, honest gaps).
+
 ## Gen-2 night reviews (2026-07-11 →)
 
 - [`fleet-cleanup-audit-2026-07-13.md`](fleet-cleanup-audit-2026-07-13.md) — owner-directed
