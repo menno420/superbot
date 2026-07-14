@@ -138,6 +138,7 @@ INITIAL_EXTENSIONS = [
     "cogs.deathmatch_cog",
     "cogs.proof_channel_cog",
     "cogs.mining_cog",
+    "cogs.mining_relay_cog",
     "cogs.fishing_cog",
     "cogs.creature_cog",
     "cogs.creature_battle_cog",
