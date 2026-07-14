@@ -7,6 +7,16 @@
 
 ## Gen-2 night reviews (2026-07-11 →)
 
+- [`fleet-cleanup-audit-2026-07-13.md`](fleet-cleanup-audit-2026-07-13.md) — owner-directed
+  cross-repo audit + PR-cleanup pass over all 20 repos (EAP final night), run complementary
+  to the owner's own live fleet-manager ORDER 045 dispatch: direct cleanup in superbot (8
+  dependabot PRs merged, 2 root-cause CI bugs fixed — a codeql-action version split and a
+  tool-pin three-places violation) and gba-homebrew (4 stale PRs closed as superseded, 5
+  real Tiltstone-stack PRs flagged for a coordinator rather than blind-conflict-resolved),
+  plus an 18-repo parallel audit (one subagent per repo) that merged/closed zero PRs
+  inappropriately and surfaced 10 cross-cutting fleet patterns (worklist staleness, dead
+  `project.index.json` scaffolding, control-bus size walls, the born-red false-positive
+  class, a `list_pull_requests` "merged" boolean quirk, and more).
 - [`night-review-2026-07-12.md`](night-review-2026-07-12.md) — owner-directed fleet night
   review of the 2026-07-12 batch — **the trigger-scheduler incident**: primary-evidence
   timeline (~02:30–08:00Z degradation: 9 dropped `send_later` one-shots, 2 wedged crons,

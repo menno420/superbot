@@ -83,6 +83,15 @@
 > queue unchanged in [`eap/night-review-2026-07-13.md`](eap/night-review-2026-07-13.md) §7.
 > **Next action then reverts to the standing program** — per-sector live queues below.
 >
+> **▶ 2026-07-13 (later) — fleet-wide cleanup audit, run alongside the owner's live fleet-manager
+> ORDER 045 dispatch:** all 20 repos added to session scope; superbot's own 8-PR dependabot
+> backlog cleared (2 root-cause CI bugs fixed — a codeql-action version split, a tool-pin
+> three-places violation) and gba-homebrew's stale-PR backlog swept (4 closed superseded, 5
+> real Tiltstone PRs flagged for a coordinator, not blind-merged); an 18-repo parallel audit
+> merged/closed zero PRs inappropriately and surfaced 10 cross-cutting fleet patterns (worklist
+> staleness chief among them). Full report + all 18 per-repo audit PR links:
+> [`eap/fleet-cleanup-audit-2026-07-13.md`](eap/fleet-cleanup-audit-2026-07-13.md).
+>
 > **Ledger note:** living status ledger (project state). **Not binding.**
 > **Source code and merged PRs always win over this file.**
 > The In-flight section below is a dated snapshot — **verify open PRs against
