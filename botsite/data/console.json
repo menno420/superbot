@@ -1,10 +1,10 @@
 {
   "meta": {
-    "generated_at": "2026-07-14T15:59:34Z",
+    "generated_at": "2026-07-14T16:35:00Z",
     "build": {
-      "commit": "d23d6c6",
+      "commit": "44614d0",
       "subject": "Merge remote-tracking branch 'origin/main' into claude/mineverse-flag-2",
-      "committed_at": "2026-07-14T15:59:34Z"
+      "committed_at": "2026-07-14T16:35:00Z"
     },
     "schema_version": 1
   },
