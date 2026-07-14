@@ -1,15 +1,15 @@
 {
   "meta": {
-    "generated_at": "2026-07-14T16:01:24Z",
+    "generated_at": "2026-07-14T18:32:59Z",
     "build": {
-      "commit": "d64011fe",
-      "subject": "Merge remote-tracking branch 'origin/claude/jolly-johnson-nomqcu' into claude/jolly-johnson-nomqcu",
-      "committed_at": "2026-07-14T16:01:24Z"
+      "commit": "bdf0dccc",
+      "subject": "Merge pull request #2102 from menno420/claude/jolly-johnson-nomqcu",
+      "committed_at": "2026-07-14T18:32:59Z"
     },
     "schema_version": 1,
     "counts": {
       "functions": 43,
-      "ideas": 246,
+      "ideas": 247,
       "bugs": 31,
       "reviews": 0,
       "reviews_open": 0,
@@ -1165,6 +1165,14 @@
     }
   ],
   "ideas": [
+    {
+      "file": "dashboard-build-sha-post-merge-2026-07-14.md",
+      "title": "Idea — dashboard `build.commit` should reflect the deployed (main) SHA, not the PR-branch HEAD",
+      "status": "ideas",
+      "date": "2026-07-14",
+      "summary": "`scripts/export_dashboard_data.py` stamps `dashboard/data/dashboard.json` `meta.build.commit` with",
+      "subsystems": null
+    },
     {
       "file": "db-arg-type-binding-guard-2026-07-14.md",
       "title": "Idea — a call-site guard for `db.*` argument type-binding (str vs BIGINT `user_id`)",
