@@ -173,8 +173,9 @@
 > (grouped entries — the band is **mostly docs/control/tooling** with **one `disbot/` runtime fix**: the
 > **`!mine` breakage fix** #2089 (stringified `suid` → BIGINT-keyed `get_skills` `DataError`, plus a
 > real-Postgres regression guard), the **fleet-manager relay ORDERs** #2087/#2090/#2094 (I1b
-> frozen-trigger disposition · EAP final-night worklist · supersession-pointer ORDER), the **reconcile
-> PR + session doc + repo-audit + EAP closeout** #2074/#2088/#2092/#2096, **11 dashboard refreshes**
+> frozen-trigger disposition · EAP final-night worklist · supersession-pointer ORDER), the **dashboard-conflict
+> recipe + reconcile PR + session doc + repo-audit + EAP closeout** #2072/#2074/#2088/#2092/#2096,
+> **11 dashboard refreshes**
 > #2075/#2076/#2085/#2086/#2091/#2093/#2095/#2097/#2098/#2099/#2100, and **7 Dependabot bumps**
 > #2077/#2078/#2080/#2081/#2082/#2083/#2084), trimmed Recently-shipped to 20, **disposed the open-PR
 > set** — **1 open PR left in flight** (#2061, the deliberately-held owner-controlled mineverse FLAG 2
@@ -594,10 +595,11 @@ Source code and merged PRs win over anything written here.
   #2090 (EAP final-night worklist, fm ORDER 045 relay), **ORDER 005** #2094 (supersession pointers on three
   superseded superbot docs → their living fleet-manager counterparts). Each premise-checked against source
   per Q-0120. Control-only; no `disbot/` runtime.
-- **#2074 · #2088 · #2092 · #2096 (2026-07-13/14, workflow/EAP — reconcile PR + session doc + repo-audit + EAP closeout, docs-only)** —
-  #2074 the **forty-sixth Q-0107 reconcile PR** (band-#2070); #2088 the **07-13 owner-live review + cross-repo
-  merge sweep** session doc + enders; #2092 the **repo-audit PR cleanup** (dependabot backlog + fleet stale-PR
-  sweep); #2096 the **EAP final-closeout**. Docs/control-only.
+- **#2072 · #2074 · #2088 · #2092 · #2096 (2026-07-13/14, workflow/EAP — dashboard-conflict recipe + reconcile PR + session doc + repo-audit + EAP closeout, docs-only)** —
+  #2072 the **dashboard-conflict merge recipe** (a docs/tooling note for resolving `dashboard/data`
+  conflicts); #2074 the **forty-sixth Q-0107 reconcile PR** (band-#2070); #2088 the **07-13 owner-live
+  review + cross-repo merge sweep** session doc + enders; #2092 the **repo-audit PR cleanup** (dependabot
+  backlog + fleet stale-PR sweep); #2096 the **EAP final-closeout**. Docs/control-only.
 - **#2075 · #2076 · #2085 · #2086 · #2091 · #2093 · #2095 · #2097 · #2098 · #2099 · #2100 (2026-07-13/14, docs — dashboard-data refreshes, Q-0167)**
   and **#2077 · #2078 · #2080 · #2081 · #2082 · #2083 · #2084 (dependabot dep-bumps)** — eleven
   `dashboard/data/dashboard.json` regenerations keeping the committed export fresh, plus seven grouped

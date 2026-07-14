@@ -33,7 +33,8 @@ background.
    + a dispatch-console doc-drift rider), ORDER 004 (EAP final-night worklist, fm ORDER 045 relay),
    ORDER 005 (supersession pointers on three superseded superbot docs → their living fleet-manager
    counterparts). Each premise-checked against source per Q-0120.
-3. **Reconcile PR + session doc + repo-audit + EAP closeout** (#2074 · #2088 · #2092 · #2096) —
+3. **Dashboard-conflict recipe + reconcile PR + session doc + repo-audit + EAP closeout**
+   (#2072 · #2074 · #2088 · #2092 · #2096) — #2072 the dashboard-conflict merge recipe (docs/tooling);
    #2074 the forty-sixth Q-0107 reconcile PR (band-#2070); #2088 the 07-13 owner-live review +
    cross-repo merge sweep session doc + enders; #2092 the repo-audit PR cleanup; #2096 the EAP
    final-closeout.
