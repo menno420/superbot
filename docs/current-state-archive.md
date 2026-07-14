@@ -86,6 +86,15 @@
 
 ## Recently shipped — archived (newest first)
 
+- **#1995 (2026-07-11, CI — codex-final-review workflow YAML fixed; first valid parse since its birth in #1105)** —
+  `.github/workflows/codex-final-review.yml` had been **invalid YAML since its creating commit
+  `bfe99084` (PR #1105, 2026-06-19)** — the multi-line `gh pr comment --body "@codex review…"`
+  string de-indented to column 1, terminating the `run: |` block scalar, so *every* trigger
+  (~2,808 runs) instant-failed with "Invalid workflow file … line 78" and the `@codex review`
+  final-head request **never fired once**. Fix: body built via `printf` into
+  `"$RUNNER_TEMP/body.md"` + posted with `--body-file` (wording preserved verbatim);
+  `concurrency.cancel-in-progress` flipped to `true` so rapid synchronize pushes don't stack.
+  Triggers / gate / idempotency marker unchanged. Workflow-and-docs-only; zero `disbot/` runtime.
 - **#1953 · #1955 · #1957 · #1958 · #1959 · #1961 · #1962 · #1963 · #1964 · #1965 · #1966 · #1967 · #1968 · #1969 · #1971 · #1972 · #1973 · #1975 · #1978 (2026-07-10/11, S3/EAP — the round-3 dispatch program run to CAPSTONE + the games program founded, docs/tooling-only)** —
   the band's dominant thread: the **round-3 fleet dispatch program** driven from part 2 through the
   **part-4k CAPSTONE** (#1978 — "dispatch program COMPLETE; copilot loop closed"), booting all six core

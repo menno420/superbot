@@ -1,10 +1,10 @@
 {
   "meta": {
-    "generated_at": "2026-07-14T15:53:30Z",
+    "generated_at": "2026-07-14T16:01:24Z",
     "build": {
-      "commit": "1061eba6",
-      "subject": "docs: open forty-seventh Q-0107 reconciliation pass (band-#2100)",
-      "committed_at": "2026-07-14T15:53:30Z"
+      "commit": "d64011fe",
+      "subject": "Merge remote-tracking branch 'origin/claude/jolly-johnson-nomqcu' into claude/jolly-johnson-nomqcu",
+      "committed_at": "2026-07-14T16:01:24Z"
     },
     "schema_version": 1
   },
@@ -13,7 +13,7 @@
       "file": "2026-07-14-reconcile-band2100.md",
       "date": "2026-07-14",
       "title": "2026-07-14 — Forty-seventh Q-0107 reconciliation pass (band-#2100)",
-      "status": "in-progress",
+      "status": "complete",
       "run_type": "routine",
       "self_initiated": false
     },
@@ -79,6 +79,14 @@
       "title": "2026-07-13 — Fix `!mine` breakage: str user_id passed to a BIGINT-keyed read",
       "status": "complete",
       "run_type": "",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-07-13-mineverse-flag-1.md",
+      "date": "2026-07-13",
+      "title": "2026-07-13 — mineverse FLAG 1: mining snapshot relay",
+      "status": "complete",
+      "run_type": "routine",
       "self_initiated": false
     },
     {
@@ -480,21 +488,13 @@
       "status": "complete",
       "run_type": "",
       "self_initiated": false
-    },
-    {
-      "file": "2026-07-10-round3-dispatch-4g-world-destale.md",
-      "date": "2026-07-10",
-      "title": "Session — round-3 dispatch, part 4g: world-package de-stale (check-in sweep findings)",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
     }
   ],
   "ideas": {
-    "total": 245,
+    "total": 246,
     "by_status": {
       "historical": 26,
-      "ideas": 216,
+      "ideas": 217,
       "reference": 3
     }
   },
@@ -1633,6 +1633,20 @@
       }
     },
     {
+      "session": "2026-07-13-mineverse-flag-1",
+      "date": "2026-07-13",
+      "model": "fable-5",
+      "effort": "high",
+      "task_class": "runtime-feature",
+      "tokens_out": null,
+      "outcome": {
+        "ci_green_first_push": null,
+        "checker_findings": null,
+        "merged_pr": null,
+        "reverted_within_window": null
+      }
+    },
+    {
       "session": "2026-07-13-multi-repo-orientation-review",
       "date": "2026-07-13",
       "model": "fable-5",
@@ -1832,6 +1846,20 @@
       "session": "2026-07-14-fm-eap-final-dispatch",
       "date": "2026-07-14",
       "model": "fable-5",
+      "effort": "high",
+      "task_class": "docs-only",
+      "tokens_out": null,
+      "outcome": {
+        "ci_green_first_push": null,
+        "checker_findings": null,
+        "merged_pr": null,
+        "reverted_within_window": null
+      }
+    },
+    {
+      "session": "2026-07-14-reconcile-band2100",
+      "date": "2026-07-14",
+      "model": "opus-4.8",
       "effort": "high",
       "task_class": "docs-only",
       "tokens_out": null,

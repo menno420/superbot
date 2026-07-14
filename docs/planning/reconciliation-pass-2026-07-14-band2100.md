@@ -58,8 +58,10 @@ background.
 
 - **#2061** — mineverse FLAG 2 (HMAC-signed mining WRITE endpoint), **draft, owner-held** for
   deploy-safety (Q-0193). Left in flight — the owner controls the deploy moment.
-- **#2058** — mineverse FLAG 1 (mining snapshot READ-relay), **draft, owner-held** for
-  deploy-safety (Q-0193). Left in flight.
+- **#2058** — mineverse FLAG 1 (mining snapshot READ-relay): **merged to main mid-pass** — the owner
+  flipped it ready from its held draft during this reconcile. It is a late low-numbered merge
+  (2058 < the band floor), so it is recorded as its own Recently-shipped entry and the marker stays
+  at the highest, **#2100**. The pass branch merged origin/main to absorb it before ship.
 
 No stale session PR; no red-CI orphan to fix.
 

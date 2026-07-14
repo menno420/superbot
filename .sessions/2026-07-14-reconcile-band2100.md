@@ -21,9 +21,10 @@ The Q-0107 docs-only review + planning pass triggered by `reconcile` issue **#21
   honest cross-repo supersessions (successors in fleet-manager `projects/superbot-next/`) the in-repo
   checker can't model — carried forward (idea already logged:
   `ideas/supersede-integrity-cross-repo-tier-2026-07-11.md`).
-- **Open-PR disposition (Q-0125)** — only **#2061** + **#2058** open, both deliberately-held
-  owner-controlled mineverse deploy-safety drafts (Q-0193) → left in flight. No stale session PR, no
-  red-CI orphan.
+- **Open-PR disposition (Q-0125)** — **#2061** (mineverse FLAG 2 WRITE draft) left in flight,
+  owner-held for deploy-safety (Q-0193). **#2058 (mineverse FLAG 1 READ-relay) merged to main mid-pass**
+  (owner flipped it ready) — absorbed via an origin/main merge and recorded as its own Recently-shipped
+  entry (late low-numbered merge; marker stays #2100). No stale session PR, no red-CI orphan.
 - **Control-plane (Q-0135)** — `check_loop_health` SKIP (`gh` unavailable); MCP fallback: issue #2101
   authored by `menno420` → **ROUTINE_PAT set / loop self-fires**. No table drift.
 - **Plan band (Q-0164)** — forward queue still deep (rebuild live in superbot-next + the live 8-seat
@@ -68,8 +69,8 @@ loop's purpose (a bug that escaped once becomes a check that catches its class n
   #2071 → #2100, S4 refreshed, open-PRs disposed, dashboard export refreshed, one guard idea logged
 - **Run type:** `routine · reconciliation`
 - **⚑ Owner decisions needed:** `none`
-- **⚑ Owner manual steps:** `none` (the 2 open PRs #2061/#2058 are owner-held mineverse deploy-safety
-  drafts by design — the owner flips them ready when he wants the deploy; not a step this pass requests)
+- **⚑ Owner manual steps:** `none` (the 1 open PR #2061 is an owner-held mineverse WRITE deploy-safety
+  draft by design — the owner flips it ready when he wants the deploy; #2058 he already flipped mid-pass)
 - **⚑ Self-initiated:** `none` (docs-only reconciliation; the Q-0089 idea is captured, not promoted)
 - **↪ Next:** standing program — rebuild live in superbot-next (parity drain + D-0043 go/no-go) + the
   live SuperBot Project 8-seat program; next recon at #2130

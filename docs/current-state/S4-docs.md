@@ -18,8 +18,9 @@
   session doc + repo-audit + EAP closeout** #2074/#2088/#2092/#2096, 11 dashboard refreshes
   #2075/#2076/#2085/#2086/#2091/#2093/#2095/#2097/#2098/#2099/#2100, and 7 Dependabot bumps
   #2077/#2078/#2080/#2081/#2082/#2083/#2084), trimmed Recently-shipped to 20, **disposed the open-PR
-  set** — **2 open PRs left in flight** (#2061 + #2058, deliberately-held owner-controlled mineverse
-  drafts, deploy-safety Q-0193), no stale session PR, confirmed **ROUTINE_PAT set / loop self-fires**
+  set** — **1 open PR left in flight** (#2061, the owner-held mineverse FLAG 2 WRITE draft, Q-0193);
+  **#2058 (mineverse FLAG 1 READ-relay) merged to main mid-pass** (owner-flipped from its held draft →
+  recorded as a merged entry), no stale session PR, confirmed **ROUTINE_PAT set / loop self-fires**
   (issue #2101 authored by `menno420`), carried the forward queue intact (still deep, no THIN flag —
   the rebuild live in superbot-next + the live SuperBot Project 8-seat program dominate), refreshed
   the dashboard export (Q-0167), reset the marker #2071 → #2100. The 5 remaining supersede-banner soft

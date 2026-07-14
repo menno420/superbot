@@ -177,8 +177,10 @@
 > PR + session doc + repo-audit + EAP closeout** #2074/#2088/#2092/#2096, **11 dashboard refreshes**
 > #2075/#2076/#2085/#2086/#2091/#2093/#2095/#2097/#2098/#2099/#2100, and **7 Dependabot bumps**
 > #2077/#2078/#2080/#2081/#2082/#2083/#2084), trimmed Recently-shipped to 20, **disposed the open-PR
-> set** — **2 open PRs left in flight** (#2061 + #2058, deliberately-held owner-controlled mineverse
-> drafts, deploy-safety Q-0193), no stale session PR; confirmed ROUTINE_PAT set / loop self-fires (issue
+> set** — **1 open PR left in flight** (#2061, the deliberately-held owner-controlled mineverse FLAG 2
+> WRITE draft, deploy-safety Q-0193); **#2058 (mineverse FLAG 1 READ-relay) merged to main mid-pass**
+> — the owner flipped it ready, so it is recorded below as a merged entry (a late low-numbered merge;
+> marker stays at the highest, #2100), no stale session PR; confirmed ROUTINE_PAT set / loop self-fires (issue
 > #2101 authored by `menno420`), forward queue still deep (no THIN flag — the rebuild live in
 > superbot-next + the live SuperBot Project 8-seat program dominate), refreshed the dashboard export,
 > marker #2071 → #2100. The 5 remaining supersede-banner soft warnings are honest cross-repo
@@ -568,7 +570,17 @@ Source code and merged PRs win over anything written here.
 > auto-opens a `reconcile` issue at the boundary that fires the docs-reconciliation routine). Reset
 > this marker to the latest PR after a pass.
 
-- **#2089 (2026-07-13, S1/mining — `!mine` runtime bug fix, the band's only `disbot/` change)** —
+- **#2058 (2026-07-14, S1/mineverse — mining snapshot READ-relay projection, owner-flipped from a held draft)** —
+  a late low-numbered merge (opened 2026-07-13 as a deploy-safety draft, Q-0193; the owner flipped it
+  ready during the band-#2100 reconcile pass). Adds `services/mining_snapshot_service.py` (`build_snapshot()`
+  — one v1 envelope per configured guild, every miner's depth/energy/coins/XP/gear/inventory/vault/skills/
+  structures) + `push_snapshot()` and `cogs/mining_relay_cog.py` (a command-free 60s `tasks.loop`).
+  **Feature-off by default** — with `MINING_SNAPSHOT_RELAY_URL` / `MINING_SNAPSHOT_RELAY_GUILD_ID` unset
+  (every current deploy) there is no loop and no network call; a relay outage can never affect bot
+  operation. Contract of record: mineverse `schemas/mining_snapshot.v1.schema.json` (vendored under
+  `tests/fixtures/mineverse/`). Record:
+  [`.sessions/2026-07-13-mineverse-flag-1.md`](../.sessions/2026-07-13-mineverse-flag-1.md).
+- **#2089 (2026-07-13, S1/mining — `!mine` runtime bug fix, a `disbot/` change)** —
   `build_grid_embed` passed a stringified `suid` to the BIGINT-keyed `db.get_skills`, so asyncpg raised
   `DataError` on **every** `!mine` open (the Mining Hub never reads `player_skills` on its overview path,
   which is why only `!mine` broke); introduced by `0c4b70b6` (BUG-0026). Fixed to the int `user_id` +
@@ -702,16 +714,7 @@ Source code and merged PRs win over anything written here.
   sessions, carries the review digest + ⚑ mirror); ORDER 002 consumption block appended to the
   inbox; two stale claim files from a completed same-day session removed (Q-0166 fix-on-sight).
   Docs/control-only; zero `disbot/` runtime.
-- **#1995 (2026-07-11, CI — codex-final-review workflow YAML fixed; first valid parse since its birth in #1105)** —
-  `.github/workflows/codex-final-review.yml` had been **invalid YAML since its creating commit
-  `bfe99084` (PR #1105, 2026-06-19)** — the multi-line `gh pr comment --body "@codex review…"`
-  string de-indented to column 1, terminating the `run: |` block scalar, so *every* trigger
-  (~2,808 runs) instant-failed with "Invalid workflow file … line 78" and the `@codex review`
-  final-head request **never fired once**. Fix: body built via `printf` into
-  `"$RUNNER_TEMP/body.md"` + posted with `--body-file` (wording preserved verbatim);
-  `concurrency.cancel-in-progress` flipped to `true` so rapid synchronize pushes don't stack.
-  Triggers / gate / idempotency marker unchanged. Workflow-and-docs-only; zero `disbot/` runtime.
-- **Older merges (#1980 … #535) → [`current-state-archive.md`](current-state-archive.md).** Recently-shipped keeps the ~20 newest; older entries are trimmed to the archive (newest-first), which `scripts/check_docs.py` soft-ratchets at 20 and `check_current_state_ledger.py` treats as present. *(Thematic grouping by date means the live/archive PR-number spans overlap slightly — the floor pointer is approximate prose, not a strict bound; the per-band pass records carry the exact moved sets.)* *(The twenty-first Q-0107 pass — band-#1320, 2026-06-22 — added the band #1294–#1320 work as seven grouped entries (fishing minigame #1296/#1298/#1299/#1301/#1303/#1304, role management #1300/#1302/#1306, help surface #1294/#1297, BTD6 answerability #1295/#1316, botsite React PR1 #1305, CI/ledger/tool-pin hygiene #1308/#1317/#1320, dependency bumps + dashboard #1307/#1309/#1311/#1312/#1313/#1314/#1315); trimmed the live ledger to 20, moving #1208-band · #1226-band · #1211-band · #1210 · #1203-band · #1209-band · #1183-band to the archive.)* *(The twentieth Q-0107 pass — band-#1290, 2026-06-22 — added the band #1265–#1291 work as six grouped entries; trimmed the live ledger to 20, moving #1186 · #1156-band · #1147-band · #1143-band · #1162-band · #1149-band to the archive.)*
+- **Older merges (#1995 … #535) → [`current-state-archive.md`](current-state-archive.md).** Recently-shipped keeps the ~20 newest; older entries are trimmed to the archive (newest-first), which `scripts/check_docs.py` soft-ratchets at 20 and `check_current_state_ledger.py` treats as present. *(Thematic grouping by date means the live/archive PR-number spans overlap slightly — the floor pointer is approximate prose, not a strict bound; the per-band pass records carry the exact moved sets.)* *(The twenty-first Q-0107 pass — band-#1320, 2026-06-22 — added the band #1294–#1320 work as seven grouped entries (fishing minigame #1296/#1298/#1299/#1301/#1303/#1304, role management #1300/#1302/#1306, help surface #1294/#1297, BTD6 answerability #1295/#1316, botsite React PR1 #1305, CI/ledger/tool-pin hygiene #1308/#1317/#1320, dependency bumps + dashboard #1307/#1309/#1311/#1312/#1313/#1314/#1315); trimmed the live ledger to 20, moving #1208-band · #1226-band · #1211-band · #1210 · #1203-band · #1209-band · #1183-band to the archive.)* *(The twentieth Q-0107 pass — band-#1290, 2026-06-22 — added the band #1265–#1291 work as six grouped entries; trimmed the live ledger to 20, moving #1186 · #1156-band · #1147-band · #1143-band · #1162-band · #1149-band to the archive.)*
 
 > Older than this: see `docs/planning/*` trackers and `docs/decisions/*` ADRs.
 
