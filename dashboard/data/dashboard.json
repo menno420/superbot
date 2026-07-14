@@ -1,10 +1,10 @@
 {
   "meta": {
-    "generated_at": "2026-07-14T18:52:49Z",
+    "generated_at": "2026-07-14T23:18:18Z",
     "build": {
-      "commit": "0b90ad35",
-      "subject": "docs: EAP project audit + closeout walkthrough (ORDER 006) (#2105)",
-      "committed_at": "2026-07-14T18:52:49Z"
+      "commit": "5179d933",
+      "subject": "Merge pull request #2106 from menno420/bot/dashboard-refresh",
+      "committed_at": "2026-07-14T23:18:18Z"
     },
     "schema_version": 1,
     "counts": {
