@@ -1,15 +1,15 @@
 {
   "meta": {
-    "generated_at": "2026-07-13T15:23:20Z",
+    "generated_at": "2026-07-14T15:59:34Z",
     "build": {
-      "commit": "0cc9a62",
-      "subject": "Merge origin/main into claude/mineverse-flag-2 (dashboard refresh #2075; regenerate producer outputs)",
-      "committed_at": "2026-07-13T15:23:20Z"
+      "commit": "d23d6c6",
+      "subject": "Merge remote-tracking branch 'origin/main' into claude/mineverse-flag-2",
+      "committed_at": "2026-07-14T15:59:34Z"
     },
     "schema_version": 1,
     "counts": {
       "functions": 43,
-      "ideas": 245,
+      "ideas": 247,
       "bugs": 31,
       "reviews": 0,
       "reviews_open": 0,
@@ -1165,6 +1165,22 @@
     }
   ],
   "ideas": [
+    {
+      "file": "dashboard-build-sha-post-merge-2026-07-14.md",
+      "title": "Idea — dashboard `build.commit` should reflect the deployed (main) SHA, not the PR-branch HEAD",
+      "status": "ideas",
+      "date": "2026-07-14",
+      "summary": "`scripts/export_dashboard_data.py` stamps `dashboard/data/dashboard.json` `meta.build.commit` with",
+      "subsystems": null
+    },
+    {
+      "file": "db-arg-type-binding-guard-2026-07-14.md",
+      "title": "Idea — a call-site guard for `db.*` argument type-binding (str vs BIGINT `user_id`)",
+      "status": "ideas",
+      "date": "2026-07-14",
+      "summary": "PR **#2089** fixed `!mine` crashing on **every** open: `build_grid_embed` passed a stringified",
+      "subsystems": null
+    },
     {
       "file": "fleet-audit-as-saved-workflow-2026-07-13.md",
       "title": "Fleet-wide repo audit as a saved, reusable workflow (2026-07-13)",
@@ -3397,6 +3413,14 @@
   "reviews": [],
   "updates": [
     {
+      "file": "2026-07-14-reconcile-band2100.md",
+      "date": "2026-07-14",
+      "title": "2026-07-14 — Forty-seventh Q-0107 reconciliation pass (band-#2100)",
+      "status": "complete",
+      "run_type": "routine",
+      "self_initiated": false
+    },
+    {
       "file": "2026-07-14-fm-eap-final-dispatch.md",
       "date": "2026-07-14",
       "title": "2026-07-14 — Fleet-manager relay: EAP final-day closeout ORDER (dispatch)",
@@ -3864,14 +3888,6 @@
       "file": "2026-07-10-shift-b-lane-overlap-remote.md",
       "date": "2026-07-10",
       "title": "2026-07-10 — Overnight shift B: `check_lane_overlap.py --remote` + docs hygiene",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-07-10-round3-dispatch-coordination.md",
-      "date": "2026-07-10",
-      "title": "Session — round-3 dispatch coordination (live copilot)",
       "status": "complete",
       "run_type": "",
       "self_initiated": false
@@ -5176,6 +5192,20 @@
       "session": "2026-07-14-fm-eap-final-dispatch",
       "date": "2026-07-14",
       "model": "fable-5",
+      "effort": "high",
+      "task_class": "docs-only",
+      "tokens_out": null,
+      "outcome": {
+        "ci_green_first_push": null,
+        "checker_findings": null,
+        "merged_pr": null,
+        "reverted_within_window": null
+      }
+    },
+    {
+      "session": "2026-07-14-reconcile-band2100",
+      "date": "2026-07-14",
+      "model": "opus-4.8",
       "effort": "high",
       "task_class": "docs-only",
       "tokens_out": null,

@@ -7738,7 +7738,7 @@ const CHANGELOG = [
   {
     "version": "2026.06.19",
     "date": "Jun 19, 2026",
-    "build": "0cc9a62",
+    "build": "d23d6c6",
     "title": "New public bot website",
     "changes": [
       {
@@ -7750,7 +7750,7 @@ const CHANGELOG = [
   {
     "version": "2026.06.12",
     "date": "Jun 12, 2026",
-    "build": "0cc9a62",
+    "build": "d23d6c6",
     "title": "Owner review inbox on the dashboard",
     "changes": [
       {
@@ -7762,7 +7762,7 @@ const CHANGELOG = [
   {
     "version": "2026.06.08",
     "date": "Jun 08, 2026",
-    "build": "0cc9a62",
+    "build": "d23d6c6",
     "title": "Command-alias suggestions",
     "changes": [
       {
@@ -9143,9 +9143,9 @@ const FEATURES = [
 ];
 
 const BUILD = {
-  "commit": "0cc9a62",
-  "subject": "Merge origin/main into claude/mineverse-flag-2 (dashboard refresh #2075; regenerate producer outputs)",
-  "committed_at": "2026-07-13T15:23:20Z"
+  "commit": "d23d6c6",
+  "subject": "Merge remote-tracking branch 'origin/main' into claude/mineverse-flag-2",
+  "committed_at": "2026-07-14T15:59:34Z"
 };
 
 const COUNTS = {

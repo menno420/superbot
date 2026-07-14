@@ -1,10 +1,10 @@
 {
   "meta": {
-    "generated_at": "2026-07-13T15:23:20Z",
+    "generated_at": "2026-07-14T15:59:34Z",
     "build": {
-      "commit": "0cc9a62",
-      "subject": "Merge origin/main into claude/mineverse-flag-2 (dashboard refresh #2075; regenerate producer outputs)",
-      "committed_at": "2026-07-13T15:23:20Z"
+      "commit": "d23d6c6",
+      "subject": "Merge remote-tracking branch 'origin/main' into claude/mineverse-flag-2",
+      "committed_at": "2026-07-14T15:59:34Z"
     }
   },
   "counts": {

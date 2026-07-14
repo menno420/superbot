@@ -86,6 +86,38 @@
 
 ## Recently shipped — archived (newest first)
 
+- **#1995 (2026-07-11, CI — codex-final-review workflow YAML fixed; first valid parse since its birth in #1105)** —
+  `.github/workflows/codex-final-review.yml` had been **invalid YAML since its creating commit
+  `bfe99084` (PR #1105, 2026-06-19)** — the multi-line `gh pr comment --body "@codex review…"`
+  string de-indented to column 1, terminating the `run: |` block scalar, so *every* trigger
+  (~2,808 runs) instant-failed with "Invalid workflow file … line 78" and the `@codex review`
+  final-head request **never fired once**. Fix: body built via `printf` into
+  `"$RUNNER_TEMP/body.md"` + posted with `--body-file` (wording preserved verbatim);
+  `concurrency.cancel-in-progress` flipped to `true` so rapid synchronize pushes don't stack.
+  Triggers / gate / idempotency marker unchanged. Workflow-and-docs-only; zero `disbot/` runtime.
+- **#1953 · #1955 · #1957 · #1958 · #1959 · #1961 · #1962 · #1963 · #1964 · #1965 · #1966 · #1967 · #1968 · #1969 · #1971 · #1972 · #1973 · #1975 · #1978 (2026-07-10/11, S3/EAP — the round-3 dispatch program run to CAPSTONE + the games program founded, docs/tooling-only)** —
+  the band's dominant thread: the **round-3 fleet dispatch program** driven from part 2 through the
+  **part-4k CAPSTONE** (#1978 — "dispatch program COMPLETE; copilot loop closed"), booting all six core
+  seats **BOOTED→LIVE** and folding **owner rulings Q-0264…Q-0267** into live doctrine. Highlights:
+  the builder / substrate-kit / idea-engine / simulator (`sim-lab`, seat 6) / trading founding packages
+  (#1953/#1955/#1957/#1963), the **Q-0265 continuous-mode** amendment for all six seats (#1958) folded
+  into the gen-3 deployment standard (#1962), the **owner-shaped games program** — theme-engine +
+  website-first provisioning (Q-0267), world + idle-engine founding packages (#1966/#1968/#1969) — and
+  the **3rd/4th dedicated game Projects** (Q-0259 r.5): the Retro-Games studio + a read-write
+  browsergame on the LIVE mining economy (#1972). Housekeeping in-arc: **registry-SUPERSEDED banners**
+  on the five core founding packages (#1967, re-badged `historical` this pass), forge calibration/live
+  de-stale (#1959/#1961), check-in verifies (#1973/#1975). Entirely docs/tooling; **zero `disbot/`
+  runtime** in the whole band.
+- **#1956 · #1960 · #1970 · #1976 · #1979 · #1980 (2026-07-10/11, docs — dashboard-data refreshes, Q-0167)** —
+  six `dashboard/data/dashboard.json` regenerations keeping the committed export fresh as the round-3
+  dispatch / games-program arc landed structural surfaces.
+- **#1954 (2026-07-11, EAP/fleet — fleet-manifest re-stamped to post-launch reality, manager ORDER 002)** —
+  the manager's ORDER-002 sweep re-stamped every `docs/eap/fleet-manifest.md` row to its live
+  post-launch seat/lane state (the manifest was later retired to a pointer stub in #1974 — this was the
+  last hand-stamp before the generated roster became canonical). Docs-only.
+- **#1952 (2026-07-10, workflow — forty-second Q-0107 reconciliation pass, band-#1950)** —
+  reconciled band #1921–#1950, trimmed Recently-shipped to 20, disposed the open-PR set (1 left in
+  flight), marker #1920 → #1950 ([pass record](planning/reconciliation-pass-2026-07-10-band1950.md)).
 - **#1977 (2026-07-11, EAP/fleet — hub inbox `control/inbox.md` + 📊 Model card line, docs/control-only)** —
   closes the two gaps the fleet-manager ORDER 010 relay found (fm PR #63 merge `dd8dc10`,
   completion fm PR #64): superbot was the only fleet repo with **no `control/inbox.md`**, so
