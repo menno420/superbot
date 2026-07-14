@@ -70,9 +70,16 @@ PR #2061, no `control/status.md` writes.
 
 ## 🛠 Friction → guard
 
-None hard this run. Observed: `check_docs --strict` soft-warns the top-level `docs/*.md`
-pile grew 22 vs ratchet 21 (the ORDER pins the walkthrough's docs-root path) — already a
-soft checker, no new guard needed; the next recon pass can raise the ratchet or relocate.
+One CI red: the local `check_docs --strict` reports the top-level `docs/*.md` ratchet as a
+**soft** warning ("not a CI failure"), but the pytest invariant
+`tests/unit/scripts/test_check_docs.py::test_repo_top_level_docs_within_ratchet` enforces
+the same number **hard** — so the walkthrough (path pinned to docs/ root by ORDER 006 (b))
+reddened code-quality (22 > 21) after a green local pre-push. Guard shipped: the ratchet
+raise 21 → 22 in `scripts/check_docs.py` carries a dated provenance comment citing the
+ORDER pin *and* the reversal path (relocate + re-lower at a recon pass). The checker/test
+severity mismatch itself is worth a follow-up: the script's "(soft — not a CI failure)"
+wording is misleading while the twin test is hard — flagged here rather than patched, since
+rewording the checker is outside this docs lane's dispatch scope.
 
 ## 💡 Session idea (Q-0089)
 
@@ -118,7 +125,7 @@ made → no router append. Nothing chat-only left undocumented: the accounting l
 | Metric | Value |
 |---|---|
 | PRs merged this session | 0 (1 pending auto-merge — #2105) |
-| CI-red rounds | 0 (born-red hold only, by design) |
+| CI-red rounds | 1 (top-level docs ratchet test; fixed by a provenance-cited ratchet raise) |
 | Repo-rule trips | 0 |
 | New ideas contributed | 1 (telemetry outcome backfill) |
 | Ideas groomed | 0 (dispatch-scoped docs lane) |
