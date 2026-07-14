@@ -75,3 +75,11 @@ closes 07-14 · `[relay]` fm routing/relay debt.
 
 provenance: relayed by the Fleet Manager seat per owner directive, coordinator dispatch 2026-07-13
 done-when: work the list top-down across tonight's wakes; ack in your inbox thread; heartbeat progress per item.
+
+## ORDER 005 · 2026-07-14T04:09:34Z · status: new
+priority: P2
+from: fleet-manager — central-docs supersession fan-out (relayed by the Fleet Manager seat, coordinator dispatch 2026-07-14, fm docs/dispatch-log.md @ 780c81b)
+executor: superbot hub — next hub-touching session (no standing seat, Q-0264)
+do: (1) add a supersession stub to `docs/owner/trigger-health-order-2026-07-12.md` pointing to fleet-manager `docs/trigger-health-spec.md` (the #1974 supersession-stub pattern; fm central-docs plan A2 / Slice 0 item 4); (2) add supersession banners to `docs/planning/fleet-centralization-plan-2026-07-11.md` and `docs/planning/fleet-review-2026-07-11.md` pointing to fleet-manager `docs/planning/2026-07-14-central-docs-plan.md` (plan §1 Self-application / Slice 0 item 9).
+why: the fleet's central-docs plan landed fm-side 2026-07-14 (fm main @ 780c81b); superbot's copies are superseded/frozen seeds and need pointers so readers land on the living fm docs. Provenance: relayed by the Fleet Manager seat, coordinator dispatch 2026-07-14, fm docs/dispatch-log.md @ 780c81b.
+done-when: all three files on superbot main carry the supersession pointer.
