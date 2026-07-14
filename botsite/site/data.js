@@ -7738,7 +7738,7 @@ const CHANGELOG = [
   {
     "version": "2026.06.19",
     "date": "Jun 19, 2026",
-    "build": "c0fe2e23",
+    "build": "1061eba6",
     "title": "New public bot website",
     "changes": [
       {
@@ -7750,7 +7750,7 @@ const CHANGELOG = [
   {
     "version": "2026.06.12",
     "date": "Jun 12, 2026",
-    "build": "c0fe2e23",
+    "build": "1061eba6",
     "title": "Owner review inbox on the dashboard",
     "changes": [
       {
@@ -7762,7 +7762,7 @@ const CHANGELOG = [
   {
     "version": "2026.06.08",
     "date": "Jun 08, 2026",
-    "build": "c0fe2e23",
+    "build": "1061eba6",
     "title": "Command-alias suggestions",
     "changes": [
       {
@@ -9143,9 +9143,9 @@ const FEATURES = [
 ];
 
 const BUILD = {
-  "commit": "c0fe2e23",
-  "subject": "session: born-red card for 46th Q-0107 reconciliation pass (band-#2070)",
-  "committed_at": "2026-07-13T13:49:18Z"
+  "commit": "1061eba6",
+  "subject": "docs: open forty-seventh Q-0107 reconciliation pass (band-#2100)",
+  "committed_at": "2026-07-14T15:53:30Z"
 };
 
 const COUNTS = {
