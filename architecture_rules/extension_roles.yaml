@@ -123,6 +123,11 @@ extensions:
   mining:
     role: product_subsystem
     note: Mining character platform (large vertical).
+  mining_relay:
+    role: operational_adapter
+    backs: mining
+    note: Bot-to-web mineverse READ-relay push loop (mining snapshot v1 contract);
+      dormant unless the relay env vars are set.
   fishing:
     role: product_subsystem
     note: Fishing minigame (ecosystem #2 — the second character-platform activity).
