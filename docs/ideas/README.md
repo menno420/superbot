@@ -75,6 +75,13 @@ Current broad captures:
   Production-evidenced by the 2026-07-12 scheduler incident (`docs/eap/night-review-2026-07-12.md`);
   complement to the in-band [`trigger-registry-liveness-sweep-2026-07-10.md`](./trigger-registry-liveness-sweep-2026-07-10.md)
   (groomed same day with the two new failure classes).
+- [`dashboard-build-sha-post-merge-2026-07-14.md`](./dashboard-build-sha-post-merge-2026-07-14.md) —
+  **session ender (2026-07-14, 47th Q-0107 reconciliation pass, band-#2100):** the committed
+  `dashboard.json` `meta.build.commit` records the PR-branch HEAD (a transient merge commit not in
+  `main`'s ancestry), so status-page build links resolve to a dead revision. Fix in the exporter —
+  omit the SHA and fill it at serve time from the deployed revision, or backfill post-merge. Codex P3
+  on PR #2102. Subsystem: tooling / docs-system.
+
 - [`db-arg-type-binding-guard-2026-07-14.md`](./db-arg-type-binding-guard-2026-07-14.md) —
   **session ender (2026-07-14, 47th Q-0107 reconciliation pass, band-#2100):** an AST call-site guard
   (`check_db_arg_types.py`) that maps each `utils/db/**` accessor to its keyed column type (TEXT vs
