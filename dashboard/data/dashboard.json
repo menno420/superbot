@@ -1,15 +1,15 @@
 {
   "meta": {
-    "generated_at": "2026-07-14T12:15:30Z",
+    "generated_at": "2026-07-14T18:32:59Z",
     "build": {
-      "commit": "b8221962",
-      "subject": "Merge pull request #2097 from menno420/bot/dashboard-refresh",
-      "committed_at": "2026-07-14T12:15:30Z"
+      "commit": "bdf0dccc",
+      "subject": "Merge pull request #2102 from menno420/claude/jolly-johnson-nomqcu",
+      "committed_at": "2026-07-14T18:32:59Z"
     },
     "schema_version": 1,
     "counts": {
       "functions": 43,
-      "ideas": 245,
+      "ideas": 247,
       "bugs": 31,
       "reviews": 0,
       "reviews_open": 0,
@@ -1165,6 +1165,22 @@
     }
   ],
   "ideas": [
+    {
+      "file": "dashboard-build-sha-post-merge-2026-07-14.md",
+      "title": "Idea — dashboard `build.commit` should reflect the deployed (main) SHA, not the PR-branch HEAD",
+      "status": "ideas",
+      "date": "2026-07-14",
+      "summary": "`scripts/export_dashboard_data.py` stamps `dashboard/data/dashboard.json` `meta.build.commit` with",
+      "subsystems": null
+    },
+    {
+      "file": "db-arg-type-binding-guard-2026-07-14.md",
+      "title": "Idea — a call-site guard for `db.*` argument type-binding (str vs BIGINT `user_id`)",
+      "status": "ideas",
+      "date": "2026-07-14",
+      "summary": "PR **#2089** fixed `!mine` crashing on **every** open: `build_grid_embed` passed a stringified",
+      "subsystems": null
+    },
     {
       "file": "fleet-audit-as-saved-workflow-2026-07-13.md",
       "title": "Fleet-wide repo audit as a saved, reusable workflow (2026-07-13)",
@@ -3397,6 +3413,14 @@
   "reviews": [],
   "updates": [
     {
+      "file": "2026-07-14-reconcile-band2100.md",
+      "date": "2026-07-14",
+      "title": "2026-07-14 — Forty-seventh Q-0107 reconciliation pass (band-#2100)",
+      "status": "complete",
+      "run_type": "routine",
+      "self_initiated": false
+    },
+    {
       "file": "2026-07-14-fm-eap-final-dispatch.md",
       "date": "2026-07-14",
       "title": "2026-07-14 — Fleet-manager relay: EAP final-day closeout ORDER (dispatch)",
@@ -3458,6 +3482,14 @@
       "title": "2026-07-13 — Fix `!mine` breakage: str user_id passed to a BIGINT-keyed read",
       "status": "complete",
       "run_type": "",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-07-13-mineverse-flag-1.md",
+      "date": "2026-07-13",
+      "title": "2026-07-13 — mineverse FLAG 1: mining snapshot relay",
+      "status": "complete",
+      "run_type": "routine",
       "self_initiated": false
     },
     {
@@ -3856,22 +3888,6 @@
       "file": "2026-07-10-round3-dispatch-coordination.md",
       "date": "2026-07-10",
       "title": "Session — round-3 dispatch coordination (live copilot)",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-07-10-round3-dispatch-4g-world-destale.md",
-      "date": "2026-07-10",
-      "title": "Session — round-3 dispatch, part 4g: world-package de-stale (check-in sweep findings)",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-07-10-round3-dispatch-4f-games-packages.md",
-      "date": "2026-07-10",
-      "title": "Session — round-3 dispatch, part 4f: the two games founding packages",
       "status": "complete",
       "run_type": "",
       "self_initiated": false
@@ -4949,6 +4965,20 @@
       }
     },
     {
+      "session": "2026-07-13-mineverse-flag-1",
+      "date": "2026-07-13",
+      "model": "fable-5",
+      "effort": "high",
+      "task_class": "runtime-feature",
+      "tokens_out": null,
+      "outcome": {
+        "ci_green_first_push": null,
+        "checker_findings": null,
+        "merged_pr": null,
+        "reverted_within_window": null
+      }
+    },
+    {
       "session": "2026-07-13-multi-repo-orientation-review",
       "date": "2026-07-13",
       "model": "fable-5",
@@ -5157,6 +5187,20 @@
         "merged_pr": null,
         "reverted_within_window": null
       }
+    },
+    {
+      "session": "2026-07-14-reconcile-band2100",
+      "date": "2026-07-14",
+      "model": "opus-4.8",
+      "effort": "high",
+      "task_class": "docs-only",
+      "tokens_out": null,
+      "outcome": {
+        "ci_green_first_push": null,
+        "checker_findings": null,
+        "merged_pr": null,
+        "reverted_within_window": null
+      }
     }
   ],
   "env_usage": [
@@ -5225,7 +5269,7 @@
       "usages": [
         {
           "file": "disbot/config.py",
-          "line": 235,
+          "line": 236,
           "layer": "config",
           "has_default": true
         },
@@ -5247,7 +5291,7 @@
       "usages": [
         {
           "file": "disbot/config.py",
-          "line": 234,
+          "line": 235,
           "layer": "config",
           "has_default": true
         }
@@ -5280,7 +5324,7 @@
       "usages": [
         {
           "file": "disbot/config.py",
-          "line": 218,
+          "line": 219,
           "layer": "config",
           "has_default": true
         },
@@ -5318,7 +5362,7 @@
       "usages": [
         {
           "file": "disbot/config.py",
-          "line": 281,
+          "line": 282,
           "layer": "config",
           "has_default": true
         }
@@ -5366,7 +5410,7 @@
       "usages": [
         {
           "file": "disbot/config.py",
-          "line": 273,
+          "line": 274,
           "layer": "config",
           "has_default": true
         }
@@ -5414,7 +5458,7 @@
       "usages": [
         {
           "file": "disbot/config.py",
-          "line": 261,
+          "line": 262,
           "layer": "config",
           "has_default": true
         }
@@ -5430,7 +5474,7 @@
       "usages": [
         {
           "file": "disbot/config.py",
-          "line": 264,
+          "line": 265,
           "layer": "config",
           "has_default": true
         }
@@ -5446,7 +5490,7 @@
       "usages": [
         {
           "file": "disbot/config.py",
-          "line": 267,
+          "line": 268,
           "layer": "config",
           "has_default": true
         }
@@ -5606,7 +5650,7 @@
       "usages": [
         {
           "file": "disbot/config.py",
-          "line": 180,
+          "line": 181,
           "layer": "config",
           "has_default": true
         }
@@ -5702,7 +5746,7 @@
       "usages": [
         {
           "file": "disbot/config.py",
-          "line": 181,
+          "line": 182,
           "layer": "config",
           "has_default": true
         }
@@ -5720,7 +5764,7 @@
       "usages": [
         {
           "file": "disbot/config.py",
-          "line": 217,
+          "line": 218,
           "layer": "config",
           "has_default": true
         },
@@ -5761,7 +5805,7 @@
       "usages": [
         {
           "file": "disbot/config.py",
-          "line": 244,
+          "line": 245,
           "layer": "config",
           "has_default": true
         },
@@ -5784,7 +5828,7 @@
       "usages": [
         {
           "file": "disbot/config.py",
-          "line": 248,
+          "line": 249,
           "layer": "config",
           "has_default": true
         },
@@ -5823,7 +5867,7 @@
       "usages": [
         {
           "file": "disbot/config.py",
-          "line": 216,
+          "line": 217,
           "layer": "config",
           "has_default": true
         },
@@ -5847,7 +5891,7 @@
       "usages": [
         {
           "file": "disbot/config.py",
-          "line": 215,
+          "line": 216,
           "layer": "config",
           "has_default": true
         },

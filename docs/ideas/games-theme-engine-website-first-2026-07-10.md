@@ -60,7 +60,11 @@ mechanically identical — support, balance, and bugfixes stay ONE codebase.
 
 ## 3. Website-first provisioning — the web↔bot contract's second half
 
-The read-only **data API** (part-4d relay) is the bot→web read path. The owner's
+The read-only **data API** (part-4d relay) is the bot→web read path.
+*(Groom note 2026-07-13: the mining projection of that read path now exists —
+`services/mining_snapshot_service.py` + `cogs/mining_relay_cog.py` emit the
+mineverse v1 snapshot contract, PR #2058 — so this idea's read-side dependency
+is no longer hypothetical.)* The owner's
 pre-invite selection is the **web→bot write path**: a versioned **server provisioning
 manifest** (features on/off + theme per game + config), exactly the
 dashboard-data-contract discipline applied in the other direction.

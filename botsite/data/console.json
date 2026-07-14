@@ -1,14 +1,38 @@
 {
   "meta": {
-    "generated_at": "2026-07-13T13:49:18Z",
+    "generated_at": "2026-07-14T16:01:24Z",
     "build": {
-      "commit": "c0fe2e23",
-      "subject": "session: born-red card for 46th Q-0107 reconciliation pass (band-#2070)",
-      "committed_at": "2026-07-13T13:49:18Z"
+      "commit": "d64011fe",
+      "subject": "Merge remote-tracking branch 'origin/claude/jolly-johnson-nomqcu' into claude/jolly-johnson-nomqcu",
+      "committed_at": "2026-07-14T16:01:24Z"
     },
     "schema_version": 1
   },
   "sessions": [
+    {
+      "file": "2026-07-14-reconcile-band2100.md",
+      "date": "2026-07-14",
+      "title": "2026-07-14 — Forty-seventh Q-0107 reconciliation pass (band-#2100)",
+      "status": "complete",
+      "run_type": "routine",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-07-14-fm-eap-final-dispatch.md",
+      "date": "2026-07-14",
+      "title": "2026-07-14 — Fleet-manager relay: EAP final-day closeout ORDER (dispatch)",
+      "status": "complete",
+      "run_type": "routine",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-07-14-fm-dispatch-relay.md",
+      "date": "2026-07-14",
+      "title": "2026-07-14 — Fleet-manager relay: supersession-pointer ORDER (dispatch)",
+      "status": "complete",
+      "run_type": "routine",
+      "self_initiated": false
+    },
     {
       "file": "2026-07-13-websites-data-plane-design.md",
       "date": "2026-07-13",
@@ -34,11 +58,43 @@
       "self_initiated": false
     },
     {
+      "file": "2026-07-13-owner-live-review-and-cross-repo-merge.md",
+      "date": "2026-07-13",
+      "title": "2026-07-13 — Owner-live hub session: reviews, doctrine, cross-repo merge sweep",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
       "file": "2026-07-13-multi-repo-orientation-review.md",
       "date": "2026-07-13",
       "title": "2026-07-13 — Multi-repo orientation fleet review (owner-live)",
       "status": "complete",
       "run_type": "",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-07-13-mining-command-breakage.md",
+      "date": "2026-07-13",
+      "title": "2026-07-13 — Fix `!mine` breakage: str user_id passed to a BIGINT-keyed read",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-07-13-mineverse-flag-1.md",
+      "date": "2026-07-13",
+      "title": "2026-07-13 — mineverse FLAG 1: mining snapshot relay",
+      "status": "complete",
+      "run_type": "routine",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-07-13-i1b-disposition-relay.md",
+      "date": "2026-07-13",
+      "title": "2026-07-13 — I1b frozen-trigger disposition relay (fleet-manager dispatch)",
+      "status": "complete",
+      "run_type": "routine",
       "self_initiated": false
     },
     {
@@ -58,11 +114,35 @@
       "self_initiated": false
     },
     {
+      "file": "2026-07-13-fleet-repo-audit-pr-cleanup.md",
+      "date": "2026-07-13",
+      "title": "2026-07-13 — Fleet-wide repo audit + PR cleanup (EAP final night)",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": true
+    },
+    {
+      "file": "2026-07-13-eap-night-order.md",
+      "date": "2026-07-13",
+      "title": "2026-07-13 — EAP final-night ORDER delivery (fleet-manager dispatch)",
+      "status": "complete",
+      "run_type": "routine",
+      "self_initiated": false
+    },
+    {
       "file": "2026-07-13-eap-email3-and-owner-batch.md",
       "date": "2026-07-13",
       "title": "2026-07-13 — EAP email-3 send-ready + owner action/question batch",
       "status": "complete",
       "run_type": "",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-07-13-dashboard-conflict-recipe.md",
+      "date": "2026-07-13",
+      "title": "2026-07-13 — Durable mitigation for the generated-artifact merge-conflict class",
+      "status": "complete",
+      "run_type": "routine",
       "self_initiated": false
     },
     {
@@ -408,93 +488,13 @@
       "status": "complete",
       "run_type": "",
       "self_initiated": false
-    },
-    {
-      "file": "2026-07-10-round3-dispatch-4g-world-destale.md",
-      "date": "2026-07-10",
-      "title": "Session — round-3 dispatch, part 4g: world-package de-stale (check-in sweep findings)",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-07-10-round3-dispatch-4f-games-packages.md",
-      "date": "2026-07-10",
-      "title": "Session — round-3 dispatch, part 4f: the two games founding packages",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-07-10-round3-dispatch-4e-games-mapping.md",
-      "date": "2026-07-10",
-      "title": "Session — round-3 dispatch, part 4e: owner shapes the games mapping (theme engine + website-first)",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-07-10-round3-dispatch-4d-prompt-registry.md",
-      "date": "2026-07-10",
-      "title": "Session — round-3 dispatch, part 4d: games relay pasted + manager prompt registry",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-07-10-round3-dispatch-4c-selfawareness.md",
-      "date": "2026-07-10",
-      "title": "Session — round-3 dispatch, part 4c: capability self-awareness + boot verifications",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-07-10-round3-dispatch-4b-trading-package.md",
-      "date": "2026-07-10",
-      "title": "Session — round-3 dispatch, part 4b: trading founding package",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-07-10-round3-dispatch-4-sim-lab.md",
-      "date": "2026-07-10",
-      "title": "Session — round-3 dispatch, part 4: sim-lab repo setup (seat 6)",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-07-10-round3-dispatch-3b.md",
-      "date": "2026-07-10",
-      "title": "Session — round-3 dispatch part 3b: Q-0265 continuous mode (live copilot)",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-07-10-round3-dispatch-3.md",
-      "date": "2026-07-10",
-      "title": "Session — round-3 dispatch coordination, part 3 (live copilot)",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-07-10-round3-dispatch-2.md",
-      "date": "2026-07-10",
-      "title": "Session — round-3 dispatch coordination, part 2 (live copilot)",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
     }
   ],
   "ideas": {
-    "total": 244,
+    "total": 246,
     "by_status": {
       "historical": 26,
-      "ideas": 215,
+      "ideas": 217,
       "reference": 3
     }
   },
@@ -1633,6 +1633,20 @@
       }
     },
     {
+      "session": "2026-07-13-mineverse-flag-1",
+      "date": "2026-07-13",
+      "model": "fable-5",
+      "effort": "high",
+      "task_class": "runtime-feature",
+      "tokens_out": null,
+      "outcome": {
+        "ci_green_first_push": null,
+        "checker_findings": null,
+        "merged_pr": null,
+        "reverted_within_window": null
+      }
+    },
+    {
       "session": "2026-07-13-multi-repo-orientation-review",
       "date": "2026-07-13",
       "model": "fable-5",
@@ -1703,6 +1717,20 @@
       }
     },
     {
+      "session": "2026-07-13-dashboard-conflict-recipe",
+      "date": "2026-07-13",
+      "model": "fable-5",
+      "effort": "high",
+      "task_class": "tooling",
+      "tokens_out": null,
+      "outcome": {
+        "ci_green_first_push": null,
+        "checker_findings": null,
+        "merged_pr": null,
+        "reverted_within_window": null
+      }
+    },
+    {
       "session": "2026-07-13-eap-email3-and-owner-batch",
       "date": "2026-07-13",
       "model": "opus-4.8",
@@ -1719,6 +1747,118 @@
     {
       "session": "2026-07-13-reconcile-band2070",
       "date": "2026-07-13",
+      "model": "opus-4.8",
+      "effort": "high",
+      "task_class": "docs-only",
+      "tokens_out": null,
+      "outcome": {
+        "ci_green_first_push": null,
+        "checker_findings": null,
+        "merged_pr": null,
+        "reverted_within_window": null
+      }
+    },
+    {
+      "session": "2026-07-13-i1b-disposition-relay",
+      "date": "2026-07-13",
+      "model": "fable-5",
+      "effort": "high",
+      "task_class": "docs-only",
+      "tokens_out": null,
+      "outcome": {
+        "ci_green_first_push": null,
+        "checker_findings": null,
+        "merged_pr": null,
+        "reverted_within_window": null
+      }
+    },
+    {
+      "session": "2026-07-13-owner-live-review-and-cross-repo-merge",
+      "date": "2026-07-13",
+      "model": "opus-4.8",
+      "effort": "high",
+      "task_class": "docs-only",
+      "tokens_out": null,
+      "outcome": {
+        "ci_green_first_push": null,
+        "checker_findings": null,
+        "merged_pr": null,
+        "reverted_within_window": null
+      }
+    },
+    {
+      "session": "2026-07-13-fleet-repo-audit-pr-cleanup",
+      "date": "2026-07-13",
+      "model": "sonnet-5",
+      "effort": "high",
+      "task_class": "ci-fix",
+      "tokens_out": null,
+      "outcome": {
+        "ci_green_first_push": null,
+        "checker_findings": null,
+        "merged_pr": null,
+        "reverted_within_window": null
+      }
+    },
+    {
+      "session": "2026-07-13-eap-night-order",
+      "date": "2026-07-13",
+      "model": "fable-5",
+      "effort": "high",
+      "task_class": "docs-only",
+      "tokens_out": null,
+      "outcome": {
+        "ci_green_first_push": null,
+        "checker_findings": null,
+        "merged_pr": null,
+        "reverted_within_window": null
+      }
+    },
+    {
+      "session": "2026-07-13-mining-command-breakage",
+      "date": "2026-07-13",
+      "model": "opus-4.8",
+      "effort": "high",
+      "task_class": "runtime bugfix",
+      "tokens_out": null,
+      "outcome": {
+        "ci_green_first_push": null,
+        "checker_findings": null,
+        "merged_pr": null,
+        "reverted_within_window": null
+      }
+    },
+    {
+      "session": "2026-07-14-fm-dispatch-relay",
+      "date": "2026-07-14",
+      "model": "fable-5",
+      "effort": "high",
+      "task_class": "docs-only",
+      "tokens_out": null,
+      "outcome": {
+        "ci_green_first_push": null,
+        "checker_findings": null,
+        "merged_pr": null,
+        "reverted_within_window": null
+      }
+    },
+    {
+      "session": "2026-07-14-fm-eap-final-dispatch",
+      "date": "2026-07-14",
+      "model": "fable-5",
+      "effort": "high",
+      "task_class": "docs-only",
+      "tokens_out": null,
+      "outcome": {
+        "ci_green_first_push": null,
+        "checker_findings": null,
+        "merged_pr": null,
+        "reverted_within_window": null
+      }
+    },
+    {
+      "session": "2026-07-14-reconcile-band2100",
+      "date": "2026-07-14",
       "model": "opus-4.8",
       "effort": "high",
       "task_class": "docs-only",
