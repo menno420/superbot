@@ -1,10 +1,10 @@
 {
   "meta": {
-    "generated_at": "2026-07-13T22:43:25Z",
+    "generated_at": "2026-07-14T01:45:40Z",
     "build": {
-      "commit": "bbc524e4",
-      "subject": "control: ORDER 004 — EAP final-night worklist (fm ORDER 045 relay) (#2090)",
-      "committed_at": "2026-07-13T22:43:25Z"
+      "commit": "34775943",
+      "subject": "build(deps): bump the python-minor-patch group with 3 updates (#2083)",
+      "committed_at": "2026-07-14T01:45:40Z"
     },
     "schema_version": 1,
     "counts": {
