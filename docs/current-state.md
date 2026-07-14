@@ -561,9 +561,9 @@ Source code and merged PRs win over anything written here.
 > get it from live GitHub. The newest merge a session sees may not be added yet; that
 > lag is expected (the next session reconciles). A merged PR tagged "pending" is the bug.
 >
-> **Last reconciliation pass:** PR #2102 (2026-07-14, forty-seventh Q-0107 cadence pass, band-#2100 —
-> [the pass record + next-band queue](planning/reconciliation-pass-2026-07-14-band2100.md); marker reset
-> to the latest merged PR **#2100**). The next
+> **Last reconciliation pass:** PR #2100 (2026-07-14, forty-seventh Q-0107 cadence pass in PR #2102,
+> band-#2100 — [the pass record + next-band queue](planning/reconciliation-pass-2026-07-14-band2100.md);
+> marker reset to the latest merged PR **#2100**). The next
 > **docs-only review + planning reconciliation** is due once merged PRs cross #2130 (every
 > multiple of **30** — Q-0107 cadence raised 10→20 on 2026-06-12, then 20→30 on 2026-06-14 per
 > Q-0134; `check_reconciliation_due.py` flags it, and `.github/workflows/reconciliation-trigger.yml`
