@@ -9,8 +9,8 @@
 # from CI and produces "passes locally, fails in CI" churn (and vice
 # versa). When bumping a tool here, bump it in code-quality.yml AND
 # .pre-commit-config.yaml in the same change.
-ruff==0.15.20  # format + lint + import-sort (replaced black + isort, A3 2026-07-06). MUST match code-quality.yml + .pre-commit-config.yaml (bumped together to 0.15.20 in #1556; lone Dependabot bumps drifted this file in #1074/#1315 — scripts/check_tool_pins.py guards it)
-mypy==2.1.0
+ruff==0.15.21  # format + lint + import-sort (replaced black + isort, A3 2026-07-06). MUST match code-quality.yml + .pre-commit-config.yaml (bumped together to 0.15.20 in #1556; lone Dependabot bumps drifted this file in #1074/#1315 — scripts/check_tool_pins.py guards it)
+mypy==2.3.0
 pytest==9.1.1
 pytest-asyncio==1.4.0
 # Parallel test runner (`pytest -n auto`) — the ~3x CI speedup re-enabled after the
@@ -18,11 +18,13 @@ pytest-asyncio==1.4.0
 pytest-xdist==3.8.0
 
 # JSON Schema validator for the mineverse contract gates
-# (tests/unit/runtime/test_mining_write_api.py — Draft202012Validator, the
-# same gate mineverse CI runs on its side of the WRITE contract). Developer/
-# agent-only, NOT installed in CI (CI installs requirements.txt only); the
-# tests fall back to an always-running stdlib structural gate derived from
-# the vendored schema JSON, so CI still validates the shapes.
+# (tests/unit/runtime/test_mining_write_api.py — WRITE contract — and
+# tests/unit/services/test_mining_snapshot_service.py — snapshot READ
+# contract; both use Draft202012Validator, the same gates mineverse CI runs).
+# Developer/agent-only, NOT installed in CI (CI installs requirements.txt
+# only); the tests importorskip/fall back to always-running stdlib structural
+# gates derived from the vendored schema JSON, so CI still validates the
+# shapes.
 jsonschema==4.23.0
 
 # Import-graph engine for scripts/context_map.py (the file-context tool).

@@ -65,7 +65,32 @@
 > no-new-work fence is on *starting*), then REVIEW (struggles + wins) → REFRESH (no stale docs) →
 > BAKE (every lesson into a future-proof surface), mechanics preserved; paste-ready block +
 > manager-canonicalization note:** [`owner/universal-session-ender-v3.4.md`](owner/universal-session-ender-v3.4.md) (PR #2065).
+> **▶ 2026-07-13 owner-live session — reviews + cross-repo merge sweep** (full index:
+> [`.sessions/2026-07-13-owner-live-review-and-cross-repo-merge.md`](../.sessions/2026-07-13-owner-live-review-and-cross-repo-merge.md)).
+> Shipped 7 superbot PRs (#2064 fleet review · #2065 ender v3.4 · #2066 websites data-plane design ·
+> #2068 friend-onboarding prompt [owner has SENT it] · #2069 codex fixes · #2070 control-plane
+> centralization review · #2071 EAP email-3 send-ready). Owner-directed **cross-repo merge sweep**:
+> **superbot-next** #320 + #384 merged (mining energy core + persistence); **gba-homebrew** #83 + #84
+> merged + #82/#86 auto-merge armed (dist/README unions pushed) after the owner added the `ROM builds`
+> required check. **⚑ Carry-forwards:** (a) **EAP email 3 sends 07-14** (send-ready, needs Part-1
+> voice + roster screenshot; window closes) — [`eap/anthropic-email-3-draft-2026-07-13.md`](eap/anthropic-email-3-draft-2026-07-13.md);
+> (b) **superbot-next write-parity stack #312→#371 needs the SEAT to rebase** — it is *not* a
+> mechanical rebase: main's energy work made cook/use live while the stack made craft/skill/build live,
+> so the merged state (all live) exists on neither branch; reconciling touches routing + manifest
+> PENDING-roster + parity pins + a golden re-run (#385 also red/unfinished); (c) **website
+> centralization** design + review (#2066/#2070) route to the websites lane; (d) routine-panel
+> "duplicates" = harmless disabled leftovers (one enabled failsafe per seat, verified). Owner-action
+> queue unchanged in [`eap/night-review-2026-07-13.md`](eap/night-review-2026-07-13.md) §7.
 > **Next action then reverts to the standing program** — per-sector live queues below.
+>
+> **▶ 2026-07-13 (later) — fleet-wide cleanup audit, run alongside the owner's live fleet-manager
+> ORDER 045 dispatch:** all 20 repos added to session scope; superbot's own 8-PR dependabot
+> backlog cleared (2 root-cause CI bugs fixed — a codeql-action version split, a tool-pin
+> three-places violation) and gba-homebrew's stale-PR backlog swept (4 closed superseded, 5
+> real Tiltstone PRs flagged for a coordinator, not blind-merged); an 18-repo parallel audit
+> merged/closed zero PRs inappropriately and surfaced 10 cross-cutting fleet patterns (worklist
+> staleness chief among them). Full report + all 18 per-repo audit PR links:
+> [`eap/fleet-cleanup-audit-2026-07-13.md`](eap/fleet-cleanup-audit-2026-07-13.md).
 >
 > **Ledger note:** living status ledger (project state). **Not binding.**
 > **Source code and merged PRs always win over this file.**

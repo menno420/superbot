@@ -231,6 +231,25 @@ async def set_energy(
     )
 
 
+async def list_guild_miner_ids(
+    guild_id: int,
+    *,
+    conn: asyncpg.Connection | None = None,
+) -> list[str]:
+    """Every ``user_id`` with a ``mining_player_state`` row in *guild_id*.
+
+    Read-only enumeration for guild-wide projections (the mineverse
+    snapshot relay: one snapshot miner per ``mining_player_state`` row —
+    the READ-contract's population rule).  Ordered for determinism.
+    """
+    rows = await pool.fetchall(
+        "SELECT user_id FROM mining_player_state WHERE guild_id=$1 ORDER BY user_id",
+        (guild_id,),
+        conn=conn,
+    )
+    return [r["user_id"] for r in rows]
+
+
 async def record_depth(
     user_id: str,
     guild_id: int,

@@ -1,15 +1,15 @@
 {
   "meta": {
-    "generated_at": "2026-07-13T14:11:39Z",
+    "generated_at": "2026-07-13T15:23:20Z",
     "build": {
-      "commit": "e5a4e1e",
-      "subject": "Merge remote-tracking branch 'origin/main' into claude/mineverse-flag-2",
-      "committed_at": "2026-07-13T14:11:39Z"
+      "commit": "0cc9a62",
+      "subject": "Merge origin/main into claude/mineverse-flag-2 (dashboard refresh #2075; regenerate producer outputs)",
+      "committed_at": "2026-07-13T15:23:20Z"
     },
     "schema_version": 1,
     "counts": {
       "functions": 43,
-      "ideas": 244,
+      "ideas": 245,
       "bugs": 31,
       "reviews": 0,
       "reviews_open": 0,
@@ -1165,6 +1165,14 @@
     }
   ],
   "ideas": [
+    {
+      "file": "fleet-audit-as-saved-workflow-2026-07-13.md",
+      "title": "Fleet-wide repo audit as a saved, reusable workflow (2026-07-13)",
+      "status": "ideas",
+      "date": "2026-07-13",
+      "summary": "Tonight's owner-directed fleet cleanup audit (`docs/eap/fleet-cleanup-audit-2026-07-13.md`)",
+      "subsystems": null
+    },
     {
       "file": "s4-sector-pass-history-trim-ratchet-2026-07-13.md",
       "title": "Idea — give the S4-docs sector's reconciliation-pass history the same trim ratchet as current-state.md",
@@ -3389,6 +3397,22 @@
   "reviews": [],
   "updates": [
     {
+      "file": "2026-07-14-fm-eap-final-dispatch.md",
+      "date": "2026-07-14",
+      "title": "2026-07-14 — Fleet-manager relay: EAP final-day closeout ORDER (dispatch)",
+      "status": "complete",
+      "run_type": "routine",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-07-14-fm-dispatch-relay.md",
+      "date": "2026-07-14",
+      "title": "2026-07-14 — Fleet-manager relay: supersession-pointer ORDER (dispatch)",
+      "status": "complete",
+      "run_type": "routine",
+      "self_initiated": false
+    },
+    {
       "file": "2026-07-13-websites-data-plane-design.md",
       "date": "2026-07-13",
       "title": "2026-07-13 — Websites fleet-data-plane design (owner ask)",
@@ -3413,6 +3437,14 @@
       "self_initiated": false
     },
     {
+      "file": "2026-07-13-owner-live-review-and-cross-repo-merge.md",
+      "date": "2026-07-13",
+      "title": "2026-07-13 — Owner-live hub session: reviews, doctrine, cross-repo merge sweep",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
       "file": "2026-07-13-multi-repo-orientation-review.md",
       "date": "2026-07-13",
       "title": "2026-07-13 — Multi-repo orientation fleet review (owner-live)",
@@ -3421,9 +3453,33 @@
       "self_initiated": false
     },
     {
+      "file": "2026-07-13-mining-command-breakage.md",
+      "date": "2026-07-13",
+      "title": "2026-07-13 — Fix `!mine` breakage: str user_id passed to a BIGINT-keyed read",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
       "file": "2026-07-13-mineverse-flag-2.md",
       "date": "2026-07-13",
       "title": "2026-07-13 — mineverse FLAG 2: HMAC mining write endpoint",
+      "status": "complete",
+      "run_type": "routine",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-07-13-mineverse-flag-1.md",
+      "date": "2026-07-13",
+      "title": "2026-07-13 — mineverse FLAG 1: mining snapshot relay",
+      "status": "complete",
+      "run_type": "routine",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-07-13-i1b-disposition-relay.md",
+      "date": "2026-07-13",
+      "title": "2026-07-13 — I1b frozen-trigger disposition relay (fleet-manager dispatch)",
       "status": "complete",
       "run_type": "routine",
       "self_initiated": false
@@ -3442,6 +3498,22 @@
       "title": "2026-07-13 — Friend-onboarding prompt (webshop beginner)",
       "status": "complete",
       "run_type": "",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-07-13-fleet-repo-audit-pr-cleanup.md",
+      "date": "2026-07-13",
+      "title": "2026-07-13 — Fleet-wide repo audit + PR cleanup (EAP final night)",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": true
+    },
+    {
+      "file": "2026-07-13-eap-night-order.md",
+      "date": "2026-07-13",
+      "title": "2026-07-13 — EAP final-night ORDER delivery (fleet-manager dispatch)",
+      "status": "complete",
+      "run_type": "routine",
       "self_initiated": false
     },
     {
@@ -3800,70 +3872,6 @@
       "file": "2026-07-10-round3-dispatch-coordination.md",
       "date": "2026-07-10",
       "title": "Session — round-3 dispatch coordination (live copilot)",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-07-10-round3-dispatch-4g-world-destale.md",
-      "date": "2026-07-10",
-      "title": "Session — round-3 dispatch, part 4g: world-package de-stale (check-in sweep findings)",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-07-10-round3-dispatch-4f-games-packages.md",
-      "date": "2026-07-10",
-      "title": "Session — round-3 dispatch, part 4f: the two games founding packages",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-07-10-round3-dispatch-4e-games-mapping.md",
-      "date": "2026-07-10",
-      "title": "Session — round-3 dispatch, part 4e: owner shapes the games mapping (theme engine + website-first)",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-07-10-round3-dispatch-4d-prompt-registry.md",
-      "date": "2026-07-10",
-      "title": "Session — round-3 dispatch, part 4d: games relay pasted + manager prompt registry",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-07-10-round3-dispatch-4c-selfawareness.md",
-      "date": "2026-07-10",
-      "title": "Session — round-3 dispatch, part 4c: capability self-awareness + boot verifications",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-07-10-round3-dispatch-4b-trading-package.md",
-      "date": "2026-07-10",
-      "title": "Session — round-3 dispatch, part 4b: trading founding package",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-07-10-round3-dispatch-4-sim-lab.md",
-      "date": "2026-07-10",
-      "title": "Session — round-3 dispatch, part 4: sim-lab repo setup (seat 6)",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-07-10-round3-dispatch-3b.md",
-      "date": "2026-07-10",
-      "title": "Session — round-3 dispatch part 3b: Q-0265 continuous mode (live copilot)",
       "status": "complete",
       "run_type": "",
       "self_initiated": false
@@ -4955,6 +4963,20 @@
       }
     },
     {
+      "session": "2026-07-13-mineverse-flag-1",
+      "date": "2026-07-13",
+      "model": "fable-5",
+      "effort": "high",
+      "task_class": "runtime-feature",
+      "tokens_out": null,
+      "outcome": {
+        "ci_green_first_push": null,
+        "checker_findings": null,
+        "merged_pr": null,
+        "reverted_within_window": null
+      }
+    },
+    {
       "session": "2026-07-13-multi-repo-orientation-review",
       "date": "2026-07-13",
       "model": "fable-5",
@@ -5065,6 +5087,104 @@
         "merged_pr": null,
         "reverted_within_window": null
       }
+    },
+    {
+      "session": "2026-07-13-i1b-disposition-relay",
+      "date": "2026-07-13",
+      "model": "fable-5",
+      "effort": "high",
+      "task_class": "docs-only",
+      "tokens_out": null,
+      "outcome": {
+        "ci_green_first_push": null,
+        "checker_findings": null,
+        "merged_pr": null,
+        "reverted_within_window": null
+      }
+    },
+    {
+      "session": "2026-07-13-owner-live-review-and-cross-repo-merge",
+      "date": "2026-07-13",
+      "model": "opus-4.8",
+      "effort": "high",
+      "task_class": "docs-only",
+      "tokens_out": null,
+      "outcome": {
+        "ci_green_first_push": null,
+        "checker_findings": null,
+        "merged_pr": null,
+        "reverted_within_window": null
+      }
+    },
+    {
+      "session": "2026-07-13-fleet-repo-audit-pr-cleanup",
+      "date": "2026-07-13",
+      "model": "sonnet-5",
+      "effort": "high",
+      "task_class": "ci-fix",
+      "tokens_out": null,
+      "outcome": {
+        "ci_green_first_push": null,
+        "checker_findings": null,
+        "merged_pr": null,
+        "reverted_within_window": null
+      }
+    },
+    {
+      "session": "2026-07-13-eap-night-order",
+      "date": "2026-07-13",
+      "model": "fable-5",
+      "effort": "high",
+      "task_class": "docs-only",
+      "tokens_out": null,
+      "outcome": {
+        "ci_green_first_push": null,
+        "checker_findings": null,
+        "merged_pr": null,
+        "reverted_within_window": null
+      }
+    },
+    {
+      "session": "2026-07-13-mining-command-breakage",
+      "date": "2026-07-13",
+      "model": "opus-4.8",
+      "effort": "high",
+      "task_class": "runtime bugfix",
+      "tokens_out": null,
+      "outcome": {
+        "ci_green_first_push": null,
+        "checker_findings": null,
+        "merged_pr": null,
+        "reverted_within_window": null
+      }
+    },
+    {
+      "session": "2026-07-14-fm-dispatch-relay",
+      "date": "2026-07-14",
+      "model": "fable-5",
+      "effort": "high",
+      "task_class": "docs-only",
+      "tokens_out": null,
+      "outcome": {
+        "ci_green_first_push": null,
+        "checker_findings": null,
+        "merged_pr": null,
+        "reverted_within_window": null
+      }
+    },
+    {
+      "session": "2026-07-14-fm-eap-final-dispatch",
+      "date": "2026-07-14",
+      "model": "fable-5",
+      "effort": "high",
+      "task_class": "docs-only",
+      "tokens_out": null,
+      "outcome": {
+        "ci_green_first_push": null,
+        "checker_findings": null,
+        "merged_pr": null,
+        "reverted_within_window": null
+      }
     }
   ],
   "env_usage": [
@@ -5133,7 +5253,7 @@
       "usages": [
         {
           "file": "disbot/config.py",
-          "line": 235,
+          "line": 236,
           "layer": "config",
           "has_default": true
         },
@@ -5155,7 +5275,7 @@
       "usages": [
         {
           "file": "disbot/config.py",
-          "line": 234,
+          "line": 235,
           "layer": "config",
           "has_default": true
         }
@@ -5188,7 +5308,7 @@
       "usages": [
         {
           "file": "disbot/config.py",
-          "line": 218,
+          "line": 219,
           "layer": "config",
           "has_default": true
         },
@@ -5226,7 +5346,7 @@
       "usages": [
         {
           "file": "disbot/config.py",
-          "line": 281,
+          "line": 282,
           "layer": "config",
           "has_default": true
         }
@@ -5274,7 +5394,7 @@
       "usages": [
         {
           "file": "disbot/config.py",
-          "line": 273,
+          "line": 274,
           "layer": "config",
           "has_default": true
         }
@@ -5322,7 +5442,7 @@
       "usages": [
         {
           "file": "disbot/config.py",
-          "line": 261,
+          "line": 262,
           "layer": "config",
           "has_default": true
         }
@@ -5338,7 +5458,7 @@
       "usages": [
         {
           "file": "disbot/config.py",
-          "line": 264,
+          "line": 265,
           "layer": "config",
           "has_default": true
         }
@@ -5354,7 +5474,7 @@
       "usages": [
         {
           "file": "disbot/config.py",
-          "line": 267,
+          "line": 268,
           "layer": "config",
           "has_default": true
         }
@@ -5514,7 +5634,7 @@
       "usages": [
         {
           "file": "disbot/config.py",
-          "line": 180,
+          "line": 181,
           "layer": "config",
           "has_default": true
         }
@@ -5610,7 +5730,7 @@
       "usages": [
         {
           "file": "disbot/config.py",
-          "line": 181,
+          "line": 182,
           "layer": "config",
           "has_default": true
         }
@@ -5660,7 +5780,7 @@
       "usages": [
         {
           "file": "disbot/config.py",
-          "line": 217,
+          "line": 218,
           "layer": "config",
           "has_default": true
         },
@@ -5701,7 +5821,7 @@
       "usages": [
         {
           "file": "disbot/config.py",
-          "line": 244,
+          "line": 245,
           "layer": "config",
           "has_default": true
         },
@@ -5724,7 +5844,7 @@
       "usages": [
         {
           "file": "disbot/config.py",
-          "line": 248,
+          "line": 249,
           "layer": "config",
           "has_default": true
         },
@@ -5763,7 +5883,7 @@
       "usages": [
         {
           "file": "disbot/config.py",
-          "line": 216,
+          "line": 217,
           "layer": "config",
           "has_default": true
         },
@@ -5787,7 +5907,7 @@
       "usages": [
         {
           "file": "disbot/config.py",
-          "line": 215,
+          "line": 216,
           "layer": "config",
           "has_default": true
         },
