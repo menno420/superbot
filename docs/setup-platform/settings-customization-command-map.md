@@ -92,7 +92,8 @@ cog. The 14 loaded extensions that are **not** one-to-one subsystems are
 Hermes→Claude dispatch bridge — admin-only slash commands with no subsystem
 row), `media_maintenance_cog` (the YouTube cache-retention task owner — no
 commands, no subsystem row), `health_maintenance_cog` (the health-findings
-retention task owner — no commands, no subsystem row), `role_grants_cog` (the
+retention task owner — no commands, no subsystem row), `mining_relay_cog`
+(the bot→web mineverse snapshot push loop — no commands, no subsystem row), `role_grants_cog` (the
 temporary-role expiry sweep loop + the `!temprole` grant command — backs the
 role product, no subsystem row), `creature_battle_cog` (the creature PvP
 `!cbattle` command — part of the Creatures subsystem, surfaced via

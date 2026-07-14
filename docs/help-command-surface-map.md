@@ -23,9 +23,9 @@ Post-PR-#142 routing summary (relevant to every row in §2):
   routes call the host cog's `build_help_menu_view` hook for hub +
   subsystem destinations and fall back to a command-list embed only
   when the hook is missing or raises.
-- 43 of the 58 loaded extensions (`config.INITIAL_EXTENSIONS`) define
+- 43 of the 59 loaded extensions (`config.INITIAL_EXTENSIONS`) define
   `build_help_menu_view` — equivalently, 41 of the 42 subsystem-owning
-  cogs expose it. The 14 extensions without the hook: the bootstrap
+  cogs expose it. The 16 extensions without the hook: the bootstrap
   access guard (not a Help surface), `help_cog` itself (it IS the Help
   surface), the five split BTD6 support cogs (`btd6_reference` /
   `btd6_events` / `btd6_strategy` / `paragon` / `btd6_ops` — their
@@ -39,7 +39,9 @@ Post-PR-#142 routing summary (relevant to every row in §2):
   commands, no subsystem row), `media_maintenance_cog` (the YouTube
   cache-retention task owner — no commands, no subsystem row),
   `health_maintenance_cog` (the health-findings retention task owner —
-  no commands, no subsystem row), `role_grants_cog` (free temp-role
+  no commands, no subsystem row), `mining_relay_cog` (the bot→web
+  mineverse snapshot push loop — no commands, no subsystem row),
+  `role_grants_cog` (free temp-role
   grants — a sweep task-loop plus `!temprole`, no subsystem row), and
   `starboard_cog`
   (the Starboard / Hall-of-Fame raw-reaction listener plus the `!starboard`
@@ -94,7 +96,7 @@ so every feature is reachable in ≤ 3 clicks with no paginated-Advanced detour.
 ## 2. Subsystem inventory
 
 43 registered subsystems in `utils/subsystem_registry.py` (one row
-each below); 58 loaded extensions in `config.INITIAL_EXTENSIONS` (the
+each below); 59 loaded extensions in `config.INITIAL_EXTENSIONS` (the
 extension↔subsystem mapping is many-to-one — see the routing summary
 above for the 15 extensions without a hook). Every subsystem's host cog
 defines `build_help_menu_view` except `help` itself, so the Help route

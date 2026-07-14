@@ -1,0 +1,189 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/menno420/superbot-mineverse/blob/main/schemas/mining_snapshot.v1.schema.json",
+  "title": "Mineverse mining snapshot — READ contract v1",
+  "description": "Envelope the superbot bot side pushes into the read relay and the web app consumes via GET /api/snapshot. Contract prose: docs/mining-data-contract.md. Versioning: additive-only within v1 (new OPTIONAL fields update this file in place); any breaking change ships a new mining_snapshot.v2.schema.json.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "generated_at", "guild_id", "miners"],
+  "properties": {
+    "schema_version": {
+      "description": "Contract major version. v1 is exactly the string \"1\" (const, not a pattern — additive changes do not bump it; breaking changes go to \"2\" in a new schema file).",
+      "const": "1"
+    },
+    "generated_at": {
+      "description": "ISO 8601 UTC instant the bot projected this snapshot. Consumers compare it to now for staleness.",
+      "type": "string",
+      "format": "date-time"
+    },
+    "guild_id": {
+      "description": "Discord guild snowflake the snapshot is scoped to, as a STRING (snowflakes exceed IEEE-754 double precision; JSON numbers would silently corrupt them in JS consumers).",
+      "type": "string",
+      "pattern": "^[0-9]+$"
+    },
+    "max_depth": {
+      "description": "OPTIONAL world-shape hint: deepest reachable depth index. Oracle-confirmed depth bands are 0-3. Consumers must fall back gracefully when absent.",
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 3
+    },
+    "biomes": {
+      "description": "OPTIONAL world-shape hint: biome display name per depth index (index 0 = surface; oracle-confirmed bands 0-3, so at most 4 entries). Consumers must fall back gracefully when absent.",
+      "type": "array",
+      "items": { "type": "string" },
+      "maxItems": 4
+    },
+    "miners": {
+      "description": "One entry per mining_player_state row in the guild. May be empty.",
+      "type": "array",
+      "items": { "$ref": "#/$defs/miner" }
+    }
+  },
+  "$defs": {
+    "countMap": {
+      "description": "Dynamic name -> non-negative integer count map (item/skill/structure names are open-ended strings owned by the oracle).",
+      "type": "object",
+      "additionalProperties": {
+        "type": "integer",
+        "minimum": 0
+      }
+    },
+    "miner": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "suid",
+        "guild_id",
+        "display_name",
+        "depth",
+        "record_depth",
+        "position",
+        "energy",
+        "coins",
+        "xp",
+        "equipment",
+        "gear_wear",
+        "mining_inventory",
+        "vault",
+        "vault_level",
+        "skills",
+        "structures"
+      ],
+      "properties": {
+        "suid": {
+          "description": "Superbot user id (Discord user snowflake) as a string.",
+          "type": "string",
+          "pattern": "^[0-9]+$"
+        },
+        "guild_id": {
+          "description": "Guild snowflake as a string; with suid forms the oracle's (suid, guild_id) player-state key. Matches the envelope guild_id in v1.",
+          "type": "string",
+          "pattern": "^[0-9]+$"
+        },
+        "display_name": {
+          "description": "Guild display name resolved bot-side at projection time.",
+          "type": "string"
+        },
+        "depth": {
+          "description": "Current depth index (0 = surface). Oracle-confirmed depth bands: 0-3.",
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 3
+        },
+        "record_depth": {
+          "description": "Deepest depth ever reached by this miner (same 0-3 bands).",
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 3
+        },
+        "position": {
+          "description": "Coordinates on the current depth's grid. PERMISSIVE beyond x/y: the oracle may add discovery/exploration fields additively.",
+          "type": "object",
+          "required": ["x", "y"],
+          "properties": {
+            "x": { "type": "integer" },
+            "y": { "type": "integer" }
+          }
+        },
+        "energy": {
+          "description": "Energy meter. PERMISSIVE beyond the required pair: regen fields may arrive additively.",
+          "type": "object",
+          "required": ["current", "updated_at"],
+          "properties": {
+            "current": {
+              "description": "Oracle-confirmed energy cap: 60.",
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 60
+            },
+            "updated_at": {
+              "description": "Unix epoch seconds of the last energy recalculation.",
+              "type": "integer",
+              "minimum": 0
+            }
+          }
+        },
+        "coins": {
+          "description": "Coin balance (economy_service is the only mutator bot-side).",
+          "type": "integer",
+          "minimum": 0
+        },
+        "xp": {
+          "description": "XP projection from game_xp_service. PERMISSIVE beyond the required quartet.",
+          "type": "object",
+          "required": ["game", "game_total", "shared_total", "level"],
+          "properties": {
+            "game": { "type": "string" },
+            "game_total": { "type": "integer", "minimum": 0 },
+            "shared_total": { "type": "integer", "minimum": 0 },
+            "level": { "type": "integer", "minimum": 0 }
+          }
+        },
+        "equipment": {
+          "description": "Slot name -> equipped item name map. Slot names are the oracle-confirmed closed set (tool, light, charm, weapon, shield, helmet, chestplate, leggings, boots); item names stay open-ended strings.",
+          "type": "object",
+          "propertyNames": {
+            "enum": [
+              "tool",
+              "light",
+              "charm",
+              "weapon",
+              "shield",
+              "helmet",
+              "chestplate",
+              "leggings",
+              "boots"
+            ]
+          },
+          "additionalProperties": { "type": "string" }
+        },
+        "gear_wear": {
+          "description": "Dynamic item name -> accumulated wear map for equipped gear.",
+          "$ref": "#/$defs/countMap"
+        },
+        "mining_inventory": {
+          "description": "Dynamic item name -> quantity map: what the miner carries underground.",
+          "$ref": "#/$defs/countMap"
+        },
+        "vault": {
+          "description": "Dynamic item name -> quantity map: banked items.",
+          "$ref": "#/$defs/countMap"
+        },
+        "vault_level": {
+          "description": "Vault upgrade tier. Oracle-confirmed range: 0-6.",
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 6
+        },
+        "skills": {
+          "description": "Dynamic skill name -> rank map.",
+          "$ref": "#/$defs/countMap"
+        },
+        "structures": {
+          "description": "Dynamic structure name -> count/tier map.",
+          "$ref": "#/$defs/countMap"
+        }
+      }
+    }
+  }
+}
