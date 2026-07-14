@@ -1,15 +1,15 @@
 {
   "meta": {
-    "generated_at": "2026-07-14T04:18:04Z",
+    "generated_at": "2026-07-14T11:43:33Z",
     "build": {
-      "commit": "50481b71",
-      "subject": "Fleet-manager relay: supersession-pointer ORDER (dispatch 2026-07-14) (#2094)",
-      "committed_at": "2026-07-14T04:18:04Z"
+      "commit": "e7d4d689",
+      "subject": "Merge pull request #2096 from menno420/claude/eap-final-closeout",
+      "committed_at": "2026-07-14T11:43:33Z"
     },
     "schema_version": 1,
     "counts": {
       "functions": 43,
-      "ideas": 244,
+      "ideas": 245,
       "bugs": 31,
       "reviews": 0,
       "reviews_open": 0,
@@ -1165,6 +1165,14 @@
     }
   ],
   "ideas": [
+    {
+      "file": "fleet-audit-as-saved-workflow-2026-07-13.md",
+      "title": "Fleet-wide repo audit as a saved, reusable workflow (2026-07-13)",
+      "status": "ideas",
+      "date": "2026-07-13",
+      "summary": "Tonight's owner-directed fleet cleanup audit (`docs/eap/fleet-cleanup-audit-2026-07-13.md`)",
+      "subsystems": null
+    },
     {
       "file": "s4-sector-pass-history-trim-ratchet-2026-07-13.md",
       "title": "Idea — give the S4-docs sector's reconciliation-pass history the same trim ratchet as current-state.md",
@@ -3389,6 +3397,14 @@
   "reviews": [],
   "updates": [
     {
+      "file": "2026-07-14-fm-eap-final-dispatch.md",
+      "date": "2026-07-14",
+      "title": "2026-07-14 — Fleet-manager relay: EAP final-day closeout ORDER (dispatch)",
+      "status": "complete",
+      "run_type": "routine",
+      "self_initiated": false
+    },
+    {
       "file": "2026-07-14-fm-dispatch-relay.md",
       "date": "2026-07-14",
       "title": "2026-07-14 — Fleet-manager relay: supersession-pointer ORDER (dispatch)",
@@ -3467,6 +3483,14 @@
       "status": "complete",
       "run_type": "",
       "self_initiated": false
+    },
+    {
+      "file": "2026-07-13-fleet-repo-audit-pr-cleanup.md",
+      "date": "2026-07-13",
+      "title": "2026-07-13 — Fleet-wide repo audit + PR cleanup (EAP final night)",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": true
     },
     {
       "file": "2026-07-13-eap-night-order.md",
@@ -3848,22 +3872,6 @@
       "file": "2026-07-10-round3-dispatch-4f-games-packages.md",
       "date": "2026-07-10",
       "title": "Session — round-3 dispatch, part 4f: the two games founding packages",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-07-10-round3-dispatch-4e-games-mapping.md",
-      "date": "2026-07-10",
-      "title": "Session — round-3 dispatch, part 4e: owner shapes the games mapping (theme engine + website-first)",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-07-10-round3-dispatch-4d-prompt-registry.md",
-      "date": "2026-07-10",
-      "title": "Session — round-3 dispatch, part 4d: games relay pasted + manager prompt registry",
       "status": "complete",
       "run_type": "",
       "self_initiated": false
@@ -5081,6 +5089,20 @@
       }
     },
     {
+      "session": "2026-07-13-fleet-repo-audit-pr-cleanup",
+      "date": "2026-07-13",
+      "model": "sonnet-5",
+      "effort": "high",
+      "task_class": "ci-fix",
+      "tokens_out": null,
+      "outcome": {
+        "ci_green_first_push": null,
+        "checker_findings": null,
+        "merged_pr": null,
+        "reverted_within_window": null
+      }
+    },
+    {
       "session": "2026-07-13-eap-night-order",
       "date": "2026-07-13",
       "model": "fable-5",
@@ -5110,6 +5132,20 @@
     },
     {
       "session": "2026-07-14-fm-dispatch-relay",
+      "date": "2026-07-14",
+      "model": "fable-5",
+      "effort": "high",
+      "task_class": "docs-only",
+      "tokens_out": null,
+      "outcome": {
+        "ci_green_first_push": null,
+        "checker_findings": null,
+        "merged_pr": null,
+        "reverted_within_window": null
+      }
+    },
+    {
+      "session": "2026-07-14-fm-eap-final-dispatch",
       "date": "2026-07-14",
       "model": "fable-5",
       "effort": "high",
