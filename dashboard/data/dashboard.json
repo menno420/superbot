@@ -1,10 +1,10 @@
 {
   "meta": {
-    "generated_at": "2026-07-14T11:43:33Z",
+    "generated_at": "2026-07-14T12:15:30Z",
     "build": {
-      "commit": "e7d4d689",
-      "subject": "Merge pull request #2096 from menno420/claude/eap-final-closeout",
-      "committed_at": "2026-07-14T11:43:33Z"
+      "commit": "b8221962",
+      "subject": "Merge pull request #2097 from menno420/bot/dashboard-refresh",
+      "committed_at": "2026-07-14T12:15:30Z"
     },
     "schema_version": 1,
     "counts": {
