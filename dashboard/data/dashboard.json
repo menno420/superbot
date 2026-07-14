@@ -1,10 +1,10 @@
 {
   "meta": {
-    "generated_at": "2026-07-13T21:53:48Z",
+    "generated_at": "2026-07-14T04:18:04Z",
     "build": {
-      "commit": "1cc55365",
-      "subject": "Merge pull request #2085 from menno420/bot/dashboard-refresh",
-      "committed_at": "2026-07-13T21:53:48Z"
+      "commit": "50481b71",
+      "subject": "Fleet-manager relay: supersession-pointer ORDER (dispatch 2026-07-14) (#2094)",
+      "committed_at": "2026-07-14T04:18:04Z"
     },
     "schema_version": 1,
     "counts": {
@@ -3389,6 +3389,14 @@
   "reviews": [],
   "updates": [
     {
+      "file": "2026-07-14-fm-dispatch-relay.md",
+      "date": "2026-07-14",
+      "title": "2026-07-14 — Fleet-manager relay: supersession-pointer ORDER (dispatch)",
+      "status": "complete",
+      "run_type": "routine",
+      "self_initiated": false
+    },
+    {
       "file": "2026-07-13-websites-data-plane-design.md",
       "date": "2026-07-13",
       "title": "2026-07-13 — Websites fleet-data-plane design (owner ask)",
@@ -3413,11 +3421,35 @@
       "self_initiated": false
     },
     {
+      "file": "2026-07-13-owner-live-review-and-cross-repo-merge.md",
+      "date": "2026-07-13",
+      "title": "2026-07-13 — Owner-live hub session: reviews, doctrine, cross-repo merge sweep",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
       "file": "2026-07-13-multi-repo-orientation-review.md",
       "date": "2026-07-13",
       "title": "2026-07-13 — Multi-repo orientation fleet review (owner-live)",
       "status": "complete",
       "run_type": "",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-07-13-mining-command-breakage.md",
+      "date": "2026-07-13",
+      "title": "2026-07-13 — Fix `!mine` breakage: str user_id passed to a BIGINT-keyed read",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-07-13-i1b-disposition-relay.md",
+      "date": "2026-07-13",
+      "title": "2026-07-13 — I1b frozen-trigger disposition relay (fleet-manager dispatch)",
+      "status": "complete",
+      "run_type": "routine",
       "self_initiated": false
     },
     {
@@ -3434,6 +3466,14 @@
       "title": "2026-07-13 — Friend-onboarding prompt (webshop beginner)",
       "status": "complete",
       "run_type": "",
+      "self_initiated": false
+    },
+    {
+      "file": "2026-07-13-eap-night-order.md",
+      "date": "2026-07-13",
+      "title": "2026-07-13 — EAP final-night ORDER delivery (fleet-manager dispatch)",
+      "status": "complete",
+      "run_type": "routine",
       "self_initiated": false
     },
     {
@@ -3824,46 +3864,6 @@
       "file": "2026-07-10-round3-dispatch-4d-prompt-registry.md",
       "date": "2026-07-10",
       "title": "Session — round-3 dispatch, part 4d: games relay pasted + manager prompt registry",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-07-10-round3-dispatch-4c-selfawareness.md",
-      "date": "2026-07-10",
-      "title": "Session — round-3 dispatch, part 4c: capability self-awareness + boot verifications",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-07-10-round3-dispatch-4b-trading-package.md",
-      "date": "2026-07-10",
-      "title": "Session — round-3 dispatch, part 4b: trading founding package",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-07-10-round3-dispatch-4-sim-lab.md",
-      "date": "2026-07-10",
-      "title": "Session — round-3 dispatch, part 4: sim-lab repo setup (seat 6)",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-07-10-round3-dispatch-3b.md",
-      "date": "2026-07-10",
-      "title": "Session — round-3 dispatch part 3b: Q-0265 continuous mode (live copilot)",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-07-10-round3-dispatch-3.md",
-      "date": "2026-07-10",
-      "title": "Session — round-3 dispatch coordination, part 3 (live copilot)",
       "status": "complete",
       "run_type": "",
       "self_initiated": false
@@ -5042,6 +5042,76 @@
       "session": "2026-07-13-reconcile-band2070",
       "date": "2026-07-13",
       "model": "opus-4.8",
+      "effort": "high",
+      "task_class": "docs-only",
+      "tokens_out": null,
+      "outcome": {
+        "ci_green_first_push": null,
+        "checker_findings": null,
+        "merged_pr": null,
+        "reverted_within_window": null
+      }
+    },
+    {
+      "session": "2026-07-13-i1b-disposition-relay",
+      "date": "2026-07-13",
+      "model": "fable-5",
+      "effort": "high",
+      "task_class": "docs-only",
+      "tokens_out": null,
+      "outcome": {
+        "ci_green_first_push": null,
+        "checker_findings": null,
+        "merged_pr": null,
+        "reverted_within_window": null
+      }
+    },
+    {
+      "session": "2026-07-13-owner-live-review-and-cross-repo-merge",
+      "date": "2026-07-13",
+      "model": "opus-4.8",
+      "effort": "high",
+      "task_class": "docs-only",
+      "tokens_out": null,
+      "outcome": {
+        "ci_green_first_push": null,
+        "checker_findings": null,
+        "merged_pr": null,
+        "reverted_within_window": null
+      }
+    },
+    {
+      "session": "2026-07-13-eap-night-order",
+      "date": "2026-07-13",
+      "model": "fable-5",
+      "effort": "high",
+      "task_class": "docs-only",
+      "tokens_out": null,
+      "outcome": {
+        "ci_green_first_push": null,
+        "checker_findings": null,
+        "merged_pr": null,
+        "reverted_within_window": null
+      }
+    },
+    {
+      "session": "2026-07-13-mining-command-breakage",
+      "date": "2026-07-13",
+      "model": "opus-4.8",
+      "effort": "high",
+      "task_class": "runtime bugfix",
+      "tokens_out": null,
+      "outcome": {
+        "ci_green_first_push": null,
+        "checker_findings": null,
+        "merged_pr": null,
+        "reverted_within_window": null
+      }
+    },
+    {
+      "session": "2026-07-14-fm-dispatch-relay",
+      "date": "2026-07-14",
+      "model": "fable-5",
       "effort": "high",
       "task_class": "docs-only",
       "tokens_out": null,
