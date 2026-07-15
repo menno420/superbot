@@ -1,10 +1,10 @@
 {
   "meta": {
-    "generated_at": "2026-07-15T05:36:26Z",
+    "generated_at": "2026-07-15T14:54:46Z",
     "build": {
-      "commit": "6be93a01",
-      "subject": "Merge pull request #2108 from menno420/bot/dashboard-refresh",
-      "committed_at": "2026-07-15T05:36:26Z"
+      "commit": "3fb5dd06",
+      "subject": "Merge pull request #2111 from menno420/claude/remove-owner-only-labels-oo82ob",
+      "committed_at": "2026-07-15T14:54:46Z"
     },
     "schema_version": 1,
     "counts": {
@@ -3413,6 +3413,14 @@
   "reviews": [],
   "updates": [
     {
+      "file": "2026-07-15-decline-owner-review-scrub.md",
+      "date": "2026-07-15",
+      "title": "2026-07-15 — Declined fleet-wide \"owner review\" language scrub",
+      "status": "complete",
+      "run_type": "manual",
+      "self_initiated": true
+    },
+    {
       "file": "2026-07-14-reconcile-band2100.md",
       "date": "2026-07-14",
       "title": "2026-07-14 — Forty-seventh Q-0107 reconciliation pass (band-#2100)",
@@ -3883,14 +3891,6 @@
       "status": "complete",
       "run_type": "",
       "self_initiated": false
-    },
-    {
-      "file": "2026-07-10-shift-d-dashboard-contract.md",
-      "date": "2026-07-10",
-      "title": "2026-07-10 — dashboard.json pinned-feed contract, first slice (overnight shift, session D)",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": true
     }
   ],
   "bot_changelog": [
@@ -5222,6 +5222,20 @@
       "model": "sonnet-5",
       "effort": "high",
       "task_class": "review/verify",
+      "tokens_out": null,
+      "outcome": {
+        "ci_green_first_push": null,
+        "checker_findings": null,
+        "merged_pr": null,
+        "reverted_within_window": null
+      }
+    },
+    {
+      "session": "2026-07-15-decline-owner-review-scrub",
+      "date": "2026-07-15",
+      "model": "sonnet-5",
+      "effort": "high",
+      "task_class": "docs-only",
       "tokens_out": null,
       "outcome": {
         "ci_green_first_push": null,
