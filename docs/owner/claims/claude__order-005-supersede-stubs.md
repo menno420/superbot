@@ -1,0 +1,1 @@
+- `claude/order-005-supersede-stubs` · **ORDER 003 rider + ORDER 005 docs** — supersession banners + stale-Schedule annotations · `docs/operations/autonomous-routines.md` `docs/owner/trigger-health-order-2026-07-12.md` `docs/planning/fleet-centralization-plan-2026-07-11.md` `docs/planning/fleet-review-2026-07-11.md` · 2026-07-15 · in-progress
