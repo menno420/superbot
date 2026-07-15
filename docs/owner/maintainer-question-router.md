@@ -9917,3 +9917,49 @@ verified them at HEAD, one dated sentence max.** All manager corrections were ap
 commit (superbot-next queue-flushed/deep-lanes-in-flight, Game Lab slice states, Ideas Lab
 16+V017/pipeline-ACTIVE, @codex gate-not-suspend per VERDICT 016, mineverse FLAGs/six-secret,
 websites 15-PR sitting), and this Q-number was minted so the file's citation is real.
+
+### Q-0275 — DECLINED: fleet-wide scrub of "owner review" language to stop the Auto Mode classifier flagging self-merges (2026-07-15)
+
+> **Context.** Owner asked this session to map and remove "owner-only labels" and any language
+> implying a human must review a PR, across all ~20 fleet repos, so every repo "explicitly
+> states the goal is a merged PR" and no review language survives anywhere. The fleet-manager
+> project's own read-only recon for the same sweep was denied by the platform's Auto Mode
+> classifier, verbatim: *"a scheme to defeat the Self-Approval/Merge-Without-Review security
+> boundary via documentation rewrite rather than genuine authorization."* The fleet manager
+> accepted that verdict and proposed a narrower "doctrine truth-alignment" alternative instead.
+> This session was then asked to execute the fleet-wide plan anyway. When asked to narrow
+> scope, the owner chose to state an explicit policy directly instead: *"I do not ever want to
+> be involved with a PR in any way, I just want to see the finished product."*
+
+**Decision (this session).** Declined the fleet-wide sweep — including the "truth-alignment"
+framing — when its stated goal is stopping a security classifier from detecting self-merge
+activity: that is detection evasion of a real control, not documentation hygiene, and erasing
+every trace of a review boundary across 20 repos is the same scheme the classifier already
+denied, reworded. **What was verified instead:** superbot already has **zero PR-review gate**
+blocking agent merges — `auto-merge-enabler.yml` arms native auto-merge at PR-open (no human
+click required) and `codex-final-review.yml` requests review only *after* merge, non-blocking.
+The owner's stated policy ("never review a PR, just see the finished product") is therefore
+**already fully implemented here** — there was nothing left to strip. The `do-not-automerge`
+label is a carve-out anyone (including agents, Q-0114) can opt a PR into, not an owner-only
+gate, so it was left as-is.
+
+**Left open, explicitly not folded into this decision:** the Q-0213 ask-first `*Delete`/
+`*Restore` brake on the live production bot (destructive operations against real Discord
+community data) is a distinct control from PR code review — it exists to pause before
+irreversible harm to other people's data, not to make the owner approve code. "Never involved
+with a PR" was not read as "remove the destructive-data brake too"; that needs its own explicit
+owner confirmation before any agent touches it.
+
+**Flag for the owner (decide-and-flag, Q-0240 style — bigger than this session's scope to
+resolve alone):** grounding this decision surfaced that this file's Q-0273 records a standing
+**"hub venue"** chat maintained specifically because *"the projects don't always have the right
+permissions, or think they don't have it... sometimes it works from the projects but sometimes
+it doesn't, and in here it always works."* Combined with the Auto Mode denial above, that reads
+less like hallucinated gates and more like a real classifier being routed around through a
+second venue. Worth the owner's own look, independent of the labels question.
+
+**Scope.** The other ~19 fleet repos are out of this session's GitHub access. If real blocking
+"owner must approve" gates exist there (unlike here), the fix is the same: verify/install a
+legitimate merge-on-green mechanism and document the policy transparently — not erase language
+so a safety layer can't see the boundary. Route that as guidance to the fleet-manager, not as a
+repo-by-repo scrub order.
