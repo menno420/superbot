@@ -1,5 +1,12 @@
 # Fleet review + triage — 2026-07-11
 
+> **→ SUPERSEDED 2026-07-14 (ORDER 005; fm central-docs plan §1 Self-application / Slice 0
+> item 9):** the living home for fleet-wide review/plan doctrine is now **fleet-manager
+> [`docs/planning/2026-07-14-central-docs-plan.md`](https://github.com/menno420/fleet-manager/blob/main/docs/planning/2026-07-14-central-docs-plan.md)**
+> (fm main @ `780c81b`); the living triage register already moved to fm
+> [`docs/fleet-triage.md`](https://github.com/menno420/fleet-manager/blob/main/docs/fleet-triage.md)
+> (§1 below). This file is the **frozen 2026-07-11 seed snapshot** — re-verdict fm-side, not here.
+>
 > **Status:** `reference` — owner-directed verified full-fleet review + keep/replace/delete
 > triage. Built from a 19-agent discovery fan-out (14 repo scans + 5 cross-cutting probes,
 > ~2.9M tokens) whose every load-bearing claim was verified **against live source**, not

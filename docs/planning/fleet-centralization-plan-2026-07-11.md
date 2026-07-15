@@ -1,6 +1,15 @@
 # Fleet centralization plan — `fleet-manager` as the single source of truth
 
-> **Status:** `plan` — owner-directed. Turns the owner's ask ("fleet-manager should become
+> **→ SUPERSEDED 2026-07-14 (ORDER 005; fm central-docs plan §1 Self-application / Slice 0
+> item 9):** the living central-docs plan is now **fleet-manager
+> [`docs/planning/2026-07-14-central-docs-plan.md`](https://github.com/menno420/fleet-manager/blob/main/docs/planning/2026-07-14-central-docs-plan.md)**
+> (fm main @ `780c81b`). This file is the **superseded/frozen seed** — cross-repo/fleet doc
+> doctrine is fleet-manager-canonical (same supersession pattern as
+> [`../eap/fleet-manifest.md`](../eap/fleet-manifest.md) → the generated roster). Plan and
+> amend fm-side, not here.
+>
+> **Status:** `historical` (was `plan`; re-badged on supersession, the band-#1980-pass
+> convention) — owner-directed. Turns the owner's ask ("fleet-manager should become
 > the one source of truth… its sole purpose should be to maintain perfect doc records
 > across all repos based on its timely triggers") into a concrete, verified, phased design.
 > Grounded in the 2026-07-11 fan-out (centralization + drift probes) and firsthand reads of

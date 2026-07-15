@@ -27,8 +27,26 @@ session N leaves session N+1 better-equipped.
 
 | Routine | Trigger | Job | Class / merge |
 |---|---|---|---|
-| **superbot dispatch** — the single execution routine | **console Schedule** (every ~2–3h, `0 */2 * * *`, owner-tuned, Q-0146) + API (`/fire`) for on-demand (`/bugreport`, phone) | **ALL build work** (Q-0145): advance the next plan slice, fixes, dispatched features, bug reports. A scheduled fire has no work order → advance the next plan slice (or promote an idea→plan→build when the backlog is thin, Q-0172); a work order is a *hint*, the plan is the authority. Classifies by `CLASS:`. (Merged the former **night executor** — they always did the same job; dispatch was just the more steerable one.) | every PR self-merges on green CI (Q-0113/Q-0123; the Q-0117 hermes-review gate retired by Q-0197); *self-invented* feature → build + ship, flag ⚑ Self-initiated (Q-0172; phase gate now advisory) |
+| **superbot dispatch** — the single execution routine | **console Schedule** (every ~2–3h, `0 */2 * * *`, owner-tuned, Q-0146) **⚠ owner-paused since 2026-07-02 — NOT live; see the ORDER 003 disposition note below this table** + API (`/fire`) for on-demand (`/bugreport`, phone) | **ALL build work** (Q-0145): advance the next plan slice, fixes, dispatched features, bug reports. A scheduled fire has no work order → advance the next plan slice (or promote an idea→plan→build when the backlog is thin, Q-0172); a work order is a *hint*, the plan is the authority. Classifies by `CLASS:`. (Merged the former **night executor** — they always did the same job; dispatch was just the more steerable one.) | every PR self-merges on green CI (Q-0113/Q-0123; the Q-0117 hermes-review gate retired by Q-0197); *self-invented* feature → build + ship, flag ⚑ Self-initiated (Q-0172; phase gate now advisory) |
 | **superbot docs reconciliation** | **Issue** labeled `reconcile` | The Q-0107 every-30th-PR docs-only pass: reconcile the ledger, de-stale docs, plan the next band, **promote an idea→plan when plans run low** (Q-0144), contribute one idea. | `docs` → self-merge on green |
+
+> **⚠ 2026-07-14 ANNOTATION — dispatch trigger records are OWNER-PAUSED dormant remnants (ORDER 003,
+> the fm I1b frozen-trigger disposition; `control/inbox.md` ORDER 003 · fm PR #175):** the dispatch
+> row's console **Schedule** trigger — `trig_011XAWqPeksS8LBrS5G9RvVc` **"superbot autonomous
+> dispatch"** (live registry cron `0 */3 * * *`; the `0 */2 * * *` above is the older owner-tuned
+> value) — and its merged-away sibling `trig_01MWHvQFnRF1dVdZFSP6SM5L` **"superbot night executor"**
+> (Q-0145 remnant class) are **owner-paused/disabled and dormant since 2026-07-02**. Registry
+> evidence (fm `telemetry/triggers-snapshot.json`, captured 2026-07-13T20:42Z, fm PR #175):
+> `enabled` ABSENT + `ended_reason` ABSENT (= user-paused per the CCR `list_triggers` contract),
+> `last_fired_at` 2026-07-02T00:07:46Z, `next_run_at` FROZEN at 2026-07-02T03:07:12Z. The env's only
+> ENABLED trigger is the poke-only **docs-reconciliation** routine. **Disposition (per ORDER 003):
+> annotated-and-left-paused — do NOT re-enable or rebind as-is; the delete (or any other console
+> action on the records) is owner-gated (owner-confirming console click, the pause was an owner
+> action).** A future scheduled hub wake should be a **fresh** trigger built from current prompt
+> sources — the stored prompt is preserved in fm committed snapshots and
+> [`hermes-dispatch-bridge.md`](./hermes-dispatch-bridge.md), nothing is lost. Every "console
+> Schedule … fires" statement in this doc is **stale since the 2026-07-02 pause** and is annotated
+> in place.
 
 **Why an issue-trigger (not a schedule, not a per-PR trigger) for reconciliation:** the docs
 pass should run **promptly when due — daytime included** — so the docs + fresh plan are ready
@@ -76,7 +94,8 @@ idea and flags it ⚑ Self-initiated for review). The phase gate no longer holds
 invent-phase; it is an advisory priority readout.
 
 **Stage-1 note (workflow §10):** both routines are *unattended, self-merging* (reconciliation is
-issue-triggered; dispatch is fired by the console Schedule every ~2–3h) — real Stage-1 autonomy, earned by the
+issue-triggered; dispatch is fired by the console Schedule every ~2–3h **⚠ stale — that Schedule
+has been owner-paused since 2026-07-02, see the ORDER 003 annotation under § The fleet**) — real Stage-1 autonomy, earned by the
 Stage-0 calibration runs on 2026-06-12 (connectivity · held-for-review PR #747 · self-merge PR #751).
 Before trusting them, fire each once via **Run now** (the docs one: open a test `reconcile`
 issue) and watch. They can both touch `main`; the docs routine UNION-resolves as the reconciler.
@@ -285,7 +304,10 @@ is simply the more steerable one (it takes a work order); the fixed-prompt night
 it couldn't do. So there are now **2 routine prompts total**: **dispatch** (all execution work) +
 **docs reconciliation**.
 
-**Trigger note (Q-0146).** Dispatch's cadence is the Claude Code console **Schedule** trigger —
+**Trigger note (Q-0146).** **⚠ 2026-07-14 (ORDER 003): stale — this Schedule
+(`trig_011XAWqPeksS8LBrS5G9RvVc`) has been owner-paused since 2026-07-02 and is annotated-and-left-paused,
+NOT live; disposal/re-enable is owner-gated (console). See the disposition annotation under § The fleet.**
+Dispatch's cadence *was* the Claude Code console **Schedule** trigger —
 every **2 hours**, cron **`0 */2 * * *`** (UTC), owner-enabled 2026-06-15. A scheduled fire has no
 work order, so the routine advances the next plan slice from `current-state.md` ▶ Next action. The
 API (`/fire`) trigger stays for on-demand work-order fires. This replaced the earlier plan to drive
@@ -302,7 +324,7 @@ issue is still a valid human-filed handoff signal a dispatch run reads on its ne
 | Label | Opened by | Fires | Effect |
 |---|---|---|---|
 | `reconcile` | the cadence Action (every 30-PR band) **or** any agent/maintainer who spots docs drift | docs reconciliation routine | the Q-0107 docs-only pass; routine closes the issue |
-| `continue` | a maintainer filing a handoff (the dispatch routine itself no longer opens them — it hands off via ▶ Next action) | dispatch (fired by the console Schedule) reads it on its next fire | resume the explicit handoff; chain again if still unfinished |
+| `continue` | a maintainer filing a handoff (the dispatch routine itself no longer opens them — it hands off via ▶ Next action) | dispatch (fired by the console Schedule **⚠ owner-paused since 2026-07-02 — ORDER 003 annotation, § The fleet**) reads it on its next fire | resume the explicit handoff; chain again if still unfinished |
 
 This is the self-driving loop in two signals: reconcile keeps the docs honest, and continue
 chains big work across bounded runs. (The `needs-hermes-review` PR-review gate was retired
@@ -334,7 +356,8 @@ The routine treats the issue as the go-signal, runs the docs-only pass, and clos
 - **Watch runs:** each fire is a session in your list; a green run-status means it *started and
   exited cleanly*, not that the task succeeded — open the run to confirm.
 - **Cost:** routines draw subscription usage + a daily run cap. The reconciliation issue-trigger
-  (cadence gated in the Action) + the every-2h dispatch Schedule keep volume bounded; the cap is also a runaway stop.
+  (cadence gated in the Action) + the every-2h dispatch Schedule *(⚠ owner-paused since 2026-07-02 —
+  ORDER 003 annotation, § The fleet)* keep volume bounded; the cap is also a runaway stop.
 - **Improve the prompts here, not only in the console** — edit this doc, then re-paste into the
   routine. This keeps the fleet's behavior reviewable in git.
 
@@ -392,7 +415,9 @@ branch" / the conflict banner remain available by hand.
 > eliminate the multi-hour variance. The timezone is correct (crons are always UTC, documented in
 > `executor-nightly.yml`); the lag is GitHub's scheduler. **Resolved 2026-06-15 (Q-0146):** the
 > dispatch cadence moved off GitHub cron entirely onto the Claude Code console **Schedule** trigger
-> (`0 */2 * * *`, every 2h), which fires reliably — this caveat now applies only to the remaining
+> (`0 */2 * * *`, every 2h), which fires reliably *(⚠ 2026-07-14, ORDER 003: stale — that Schedule
+> trigger has been owner-paused since 2026-07-02; see the disposition annotation under § The
+> fleet)* — this caveat now applies only to the remaining
 > GitHub-`schedule:` workflows (e.g. `backup-db.yml`); `executor-nightly.yml` was removed 2026-06-15.
 
 ## See also
@@ -403,5 +428,7 @@ branch" / the conflict banner remain available by hand.
 - `scripts/check_loop_health.py` — live-GitHub probe of the Control-plane state table (Q-0135; `gh` → stdlib-REST fallback, PR #1174); run it in the reconciliation pass.
 - `scripts/check_plan_homing.py` — asserts every live `plan` doc is linked from a routing doc (PR #1174); run `--strict` in the reconciliation pass after (re)planning.
 - `.github/workflows/reconciliation-trigger.yml` — opens the `reconcile` issue on the 30-PR boundary.
-  *(The dispatch cadence is the console Schedule, `0 */2 * * *`, Q-0146 — `executor-nightly.yml` was removed 2026-06-15.)*
+  *(The dispatch cadence was the console Schedule, `0 */2 * * *`, Q-0146 — `executor-nightly.yml`
+  was removed 2026-06-15. **⚠ owner-paused since 2026-07-02**, annotated-and-left-paused per ORDER
+  003 — see the disposition annotation under § The fleet.)*
 - `docs/owner/ai-project-workflow.md` §10 (staging/continuation) · §12 (the loop).

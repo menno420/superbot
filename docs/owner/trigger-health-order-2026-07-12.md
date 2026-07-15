@@ -1,6 +1,15 @@
 # ORDER — Project Manager (fleet-manager): add a per-wake trigger-health check
 
-> **Status:** `owner-guidance` — a paste-in order for the **Project Manager** seat
+> **Status:** `historical` — **SUPERSEDED 2026-07-14 by the fleet-manager trigger-health spec**
+> (ORDER 005 supersession stub, the #1974 `fleet-manifest.md` pattern; badge was `owner-guidance`).
+>
+> **The living trigger-health doctrine now lives at `menno420/fleet-manager`
+> [`docs/trigger-health-spec.md`](https://github.com/menno420/fleet-manager/blob/main/docs/trigger-health-spec.md)**
+> (fm central-docs plan A2 / Slice 0 item 4, fm main @ `780c81b`). This file is the **frozen
+> 2026-07-12 owner-order seed** — the order was delivered and the check's doctrine is maintained
+> fm-side; read and amend it there, not here.
+>
+> *(Original header, kept for provenance:)* a paste-in order for the **Project Manager** seat
 > (`menno420/fleet-manager`), authored 2026-07-12 at the owner's direction. It closes the
 > detection gap exposed by the 2026-07-12 scheduler-degradation incident
 > ([`../eap/night-review-2026-07-12.md`](../eap/night-review-2026-07-12.md), owner-action queue
