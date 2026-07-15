@@ -27,7 +27,7 @@ session N leaves session N+1 better-equipped.
 
 | Routine | Trigger | Job | Class / merge |
 |---|---|---|---|
-| **superbot dispatch** — the single execution routine | **console Schedule** (every ~2–3h, `0 */2 * * *`, owner-tuned, Q-0146) **⚠ owner-paused since 2026-07-02 — NOT live; see the ORDER 003 disposition note below this table** + API (`/fire`) for on-demand (`/bugreport`, phone) | **ALL build work** (Q-0145): advance the next plan slice, fixes, dispatched features, bug reports. A scheduled fire has no work order → advance the next plan slice (or promote an idea→plan→build when the backlog is thin, Q-0172); a work order is a *hint*, the plan is the authority. Classifies by `CLASS:`. (Merged the former **night executor** — they always did the same job; dispatch was just the more steerable one.) | every PR self-merges on green CI (Q-0113/Q-0123; the Q-0117 hermes-review gate retired by Q-0197); *self-invented* feature → build + ship, flag ⚑ Self-initiated (Q-0172; phase gate now advisory) |
+| **superbot dispatch** — the single execution routine | **console Schedule** (every ~2–3h, `0 */2 * * *`, owner-tuned, Q-0146) + API (`/fire`) for on-demand (`/bugreport`, phone) — **⚠ BOTH paths owner-paused since 2026-07-02 — NOT live** (the `/fire` route fires the same paused trigger record); **see the ORDER 003 disposition note below this table**. The env's only ENABLED trigger is the **docs-reconciliation** routine (next row) — currently the only live route. | **ALL build work** (Q-0145): advance the next plan slice, fixes, dispatched features, bug reports. A scheduled fire has no work order → advance the next plan slice (or promote an idea→plan→build when the backlog is thin, Q-0172); a work order is a *hint*, the plan is the authority. Classifies by `CLASS:`. (Merged the former **night executor** — they always did the same job; dispatch was just the more steerable one.) | every PR self-merges on green CI (Q-0113/Q-0123; the Q-0117 hermes-review gate retired by Q-0197); *self-invented* feature → build + ship, flag ⚑ Self-initiated (Q-0172; phase gate now advisory) |
 | **superbot docs reconciliation** | **Issue** labeled `reconcile` | The Q-0107 every-30th-PR docs-only pass: reconcile the ledger, de-stale docs, plan the next band, **promote an idea→plan when plans run low** (Q-0144), contribute one idea. | `docs` → self-merge on green |
 
 > **⚠ 2026-07-14 ANNOTATION — dispatch trigger records are OWNER-PAUSED dormant remnants (ORDER 003,
@@ -93,9 +93,11 @@ the dispatch routine fixes it. The reconciliation routine never invents features
 idea and flags it ⚑ Self-initiated for review). The phase gate no longer holds features until
 invent-phase; it is an advisory priority readout.
 
-**Stage-1 note (workflow §10):** both routines are *unattended, self-merging* (reconciliation is
-issue-triggered; dispatch is fired by the console Schedule every ~2–3h **⚠ stale — that Schedule
-has been owner-paused since 2026-07-02, see the ORDER 003 annotation under § The fleet**) — real Stage-1 autonomy, earned by the
+**Stage-1 note (workflow §10):** both routines are *unattended, self-merging* by design
+(reconciliation is issue-triggered; dispatch **was** fired by the console Schedule every ~2–3h
+**until the 2026-07-02 owner pause** — **⚠ that Schedule is owner-paused and dormant, see the
+ORDER 003 annotation under § The fleet; the issue-triggered reconciliation lane is currently the
+only live autonomous route**) — Stage-1 autonomy earned by the
 Stage-0 calibration runs on 2026-06-12 (connectivity · held-for-review PR #747 · self-merge PR #751).
 Before trusting them, fire each once via **Run now** (the docs one: open a test `reconcile`
 issue) and watch. They can both touch `main`; the docs routine UNION-resolves as the reconciler.

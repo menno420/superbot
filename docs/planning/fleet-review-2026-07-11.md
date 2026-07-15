@@ -7,7 +7,7 @@
 > [`docs/fleet-triage.md`](https://github.com/menno420/fleet-manager/blob/main/docs/fleet-triage.md)
 > (§1 below). This file is the **frozen 2026-07-11 seed snapshot** — re-verdict fm-side, not here.
 >
-> **Status:** `reference` — owner-directed verified full-fleet review + keep/replace/delete
+> **Status:** `historical` — owner-directed verified full-fleet review + keep/replace/delete
 > triage. Built from a 19-agent discovery fan-out (14 repo scans + 5 cross-cutting probes,
 > ~2.9M tokens) whose every load-bearing claim was verified **against live source**, not
 > against status/report text (Q-0120). Companion to the [centralization
