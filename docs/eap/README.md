@@ -5,6 +5,17 @@
 > [`docs/planning/`](../planning/projects-eap-evaluation-log.md) (files prefixed
 > `projects-eap-*`). Newest first within each group.
 
+## Permission classifier — consolidated (2026-07-16)
+
+- [`permission-classifier-findings-consolidated-2026-07-16.md`](permission-classifier-findings-consolidated-2026-07-16.md)
+  — **one durable home for the whole permission-problem picture**: the stable 2026-07-08 boundary,
+  the 2026-07-15→16 regression (~30 denials · 8 projects · 36h · 10 classes), the *session-not-action*
+  mechanism and its four consequences (candor hardens enforcement; the self-documentation recursion;
+  the collateral cascade), the two compounding factors, the two-layer prompt finding, the scoped-grant
+  proposal, and the state of the Anthropic correspondence. Consolidates (does not replace) the probe
+  report, the evaluation journal, the sent emails, the `CAPABILITIES` ledgers, and the 2026-07-16
+  classifier-regression evidence pack; each claim is source-mapped in §9.
+
 ## Closeout (2026-07-14 — EAP final day)
 
 - [`../eap-closeout-walkthrough-2026-07-14.md`](../eap-closeout-walkthrough-2026-07-14.md) —
