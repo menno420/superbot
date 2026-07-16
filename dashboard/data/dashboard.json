@@ -1,10 +1,10 @@
 {
   "meta": {
-    "generated_at": "2026-07-16T08:37:18Z",
+    "generated_at": "2026-07-16T14:18:48Z",
     "build": {
-      "commit": "2985434e",
-      "subject": "Merge pull request #2119 from menno420/bot/dashboard-refresh",
-      "committed_at": "2026-07-16T08:37:18Z"
+      "commit": "adb3bc14",
+      "subject": "Merge pull request #2121 from menno420/claude/fleet-manager-permission-denials-36vdny",
+      "committed_at": "2026-07-16T14:18:48Z"
     },
     "schema_version": 1,
     "counts": {
