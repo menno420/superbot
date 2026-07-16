@@ -7,6 +7,12 @@
 
 ## Permission classifier — consolidated (2026-07-16)
 
+- [`anthropic-email-4-classifier-regression-sent-2026-07-16.md`](anthropic-email-4-classifier-regression-sent-2026-07-16.md)
+  — **archived record of the 4th Anthropic email (SENT 2026-07-16 ~21:12Z)**: the auto-mode
+  classifier-regression report. Part 1 (owner) + Part 2 (agent, six findings), the scoped-grant
+  ask, the changelog correlation (v2.1.178 / v2.1.210), and an "open threads" list of the
+  follow-ups still pending (attachment reply, feature-release reply, new-vs-old project test,
+  cross-project-messaging email, post-EAP interactivity note, kit fresh-repo re-test).
 - [`permission-classifier-findings-consolidated-2026-07-16.md`](permission-classifier-findings-consolidated-2026-07-16.md)
   — **one durable home for the whole permission-problem picture**: the stable 2026-07-08 boundary,
   the 2026-07-15→16 regression (~30 denials · 8 projects · 36h · 10 classes), the *session-not-action*
