@@ -581,7 +581,7 @@ Source code and merged PRs win over anything written here.
 > get it from live GitHub. The newest merge a session sees may not be added yet; that
 > lag is expected (the next session reconciles). A merged PR tagged "pending" is the bug.
 >
-> **Last reconciliation pass:** PR #2130 (2026-07-17, forty-eighth Q-0107 cadence pass in PR #TBD,
+> **Last reconciliation pass:** PR #2130 (2026-07-17, forty-eighth Q-0107 cadence pass in PR #2132,
 > band-#2130 — [the pass record + next-band queue](planning/reconciliation-pass-2026-07-17-band2130.md);
 > marker reset to the latest merged PR **#2130**). The next
 > **docs-only review + planning reconciliation** is due once merged PRs cross #2160 (every

@@ -1,7 +1,7 @@
 # 2026-07-17 — Forty-eighth Q-0107 reconciliation pass (band-#2130)
 
 > **Status:** `complete`
-> **Branch:** `claude/jolly-johnson-m3fyun` · **PR:** #TBD
+> **Branch:** `claude/jolly-johnson-m3fyun` · **PR:** #2132
 > **📊 Model:** Opus 4.8 (Claude Opus family) · **Run type:** routine · reconciliation
 > **Venue:** SuperBot docs-reconciliation routine, remote container (autonomous, self-merge on green)
 
