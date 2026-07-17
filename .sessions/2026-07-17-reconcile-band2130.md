@@ -71,7 +71,7 @@ last silent-drift channel in the docs census (the #2000 Rule-6 graduation closed
   export regenerated, pass record + session log + one new idea (supersede-banner count ratchet).
 - **Verification:** `check_current_state_ledger.py --strict` ✓ · `check_docs.py --strict` ✓ ·
   `check_dashboard_data.py --drift` OK ✓.
-- **⚑ Self-initiated:** the supersede-banner count-ratchet idea (docs/ideas) — captured only, not built
-  (docs-only pass; runtime/tooling change routes to a dispatch session).
+- **⚑ Self-initiated:** `none` (docs-only reconciliation; the Q-0089 supersede-banner count-ratchet
+  idea is captured, not promoted — its runtime/tooling change routes to a dispatch session).
 - **⚑ Owner-decisions:** none.
 - **⚑ Owner-manual-steps:** none.
