@@ -167,7 +167,11 @@ _REACHABILITY_ALLOWLIST: frozenset[str] = frozenset()
 # owner-directed relay), so relocation would violate the order's done-when. Reversible:
 # once the EAP closeout is consumed, a reconciliation pass may move it under docs/eap/
 # (updating the docs/eap/README.md + docs/audits/README.md links) and re-lower to 21.
-_TOP_LEVEL_DOCS_BUDGET = 22
+# 2026-07-17: 22 -> 23 — sanctioned raise: NEXT-TASKS.md is a genuine top-level content peer (the
+# ranked next-task ledger alongside current-state.md / roadmap.md / bot-changelog.md, linked from
+# current-state.md as a docs-reachability root). Not a plan/audit/historical snapshot (those still
+# belong in subdirs); relocating it would break the current-state.md link + the reachability root.
+_TOP_LEVEL_DOCS_BUDGET = 23
 
 # Soft cap on `current-state.md` § Recently shipped (newest-first merged-PR bullets).
 # Keeps the 2nd-most-read doc lean — overflow is archived to current-state-archive.md.

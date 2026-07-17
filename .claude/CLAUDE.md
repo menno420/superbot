@@ -288,8 +288,8 @@ is **per-file**. Full convention: `docs/owner/ai-project-workflow.md` §9.
   exists — never apply it; every PR auto-merges on green CI. **Owner-directed work is NEVER held for
   review — always merge immediately (owner directive Q-0191, 2026-06-21).** When the owner *personally*
   directs a task (a session prompt, an in-chat instruction, "build PR N / continue the plan"), owner
-  direction **is** the review: open the PR **ready**, do **not** label it `do-not-automerge`, and arm
-  auto-merge so it lands the instant CI is green.
+  direction **is** the review: open the PR **ready**, do **not** label it `do-not-automerge`, and
+  let the server-side workflow land it the instant CI is green (do not arm auto-merge yourself).
   "Merge immediately" means *merge the moment it's mergeable* (still requires CI green), not bypass CI.
   **Merging IS deploying (owner directive Q-0193, 2026-06-21):** Railway auto-redeploys `worker` on every
   merge to `main`, so a merged change is **live on its own within minutes** — you neither perform nor wait
