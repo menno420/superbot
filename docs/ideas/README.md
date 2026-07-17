@@ -96,6 +96,14 @@ Current broad captures:
   `[pinned]` failure — the path-pin sibling of the supersede cross-repo tier. Subsystem: tooling /
   docs-system.
 
+- [`supersede-banner-count-ratchet-2026-07-17.md`](./supersede-banner-count-ratchet-2026-07-17.md) —
+  **session ender (2026-07-17, 48th Q-0107 reconciliation pass, band-#2130):** add a soft ratchet on
+  the supersede-banner *warning count* (like the Recently-shipped / top-level ratchets) so net-new
+  banner drift is flagged at the diff, not 30 PRs later — this pass the count grew 5→9 silently.
+  Complements (does not duplicate) the two cross-repo-awareness ideas: they suppress false positives,
+  this bounds the count so a real regression can't hide among them. Disposable (Q-0105). Subsystem:
+  tooling / docs-system.
+
 - [`supersede-integrity-cross-repo-tier-2026-07-11.md`](./supersede-integrity-cross-repo-tier-2026-07-11.md) —
   **session ender (2026-07-11, 43rd Q-0107 reconciliation pass, band-#1980):** teach
   `check_supersede_integrity.py` a cross-repo successor tier so a SUPERSEDED banner naming a

@@ -9,6 +9,23 @@
 > S3; the docs it produces are S4.*
 
 **Recently shipped (this sector):**
+- **Forty-eighth Q-0107 reconciliation pass** (band-#2130, issue #2131 —
+  [pass record](../planning/reconciliation-pass-2026-07-17-band2130.md)): reconciled the ledger
+  (band #2102–#2130 — grouped entries, **entirely docs/tooling/control**, zero `disbot/` runtime: the
+  **fleet pre-archive sweep + EAP closeout arc** #2104/#2105/#2110/#2111/#2121/#2126 (owner-live
+  pre-archive sweep · EAP project-audit closeout walkthrough ORDER 006 → top-level-docs ratchet 21→22 ·
+  ORDER 005 supersede-stubs + ORDER 003 annotations with Codex review folded · **Q-0275** declining the
+  fleet-wide "owner review" language scrub · auto-mode permission-classifier EAP findings + sent-email
+  archive), the **47th-pass reconcile PR** #2102, and 22 dashboard refreshes
+  #2103/#2106/#2107/#2108/#2109/#2112/#2113/#2114/#2115/#2116/#2117/#2118/#2119/#2120/#2122/#2123/#2124/#2125/#2127/#2128/#2129/#2130),
+  trimmed Recently-shipped to 20, **disposed the open-PR set** — **1 open PR left in flight** (#2061,
+  the owner-held mineverse FLAG 2 WRITE draft, Q-0193), no stale session PR, confirmed **ROUTINE_PAT set
+  / loop self-fires** (issue #2131 authored by `menno420`), carried the forward queue intact (still deep,
+  no THIN flag — the rebuild live in superbot-next + the live SuperBot Project 8-seat program dominate),
+  refreshed the dashboard export (Q-0167), reset the marker #2100 → #2130. Supersede-banner soft warnings
+  grew 5 → 9 (+4 phantom cross-repo successor links in the fleet-centralization / fleet-review /
+  trigger-health docs) — all honest cross-repo supersessions the in-repo checker can't resolve, carried
+  forward unchanged.
 - **Forty-seventh Q-0107 reconciliation pass** (band-#2100, issue #2101 —
   [pass record](../planning/reconciliation-pass-2026-07-14-band2100.md)): reconciled the ledger
   (band #2072–#2100 — grouped entries, **mostly docs/control/tooling** with **one `disbot/` runtime
