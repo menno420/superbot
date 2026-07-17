@@ -98,8 +98,9 @@ Current broad captures:
 
 - [`supersede-banner-count-ratchet-2026-07-17.md`](./supersede-banner-count-ratchet-2026-07-17.md) —
   **session ender (2026-07-17, 48th Q-0107 reconciliation pass, band-#2130):** add a soft ratchet on
-  the supersede-banner *warning count* (like the Recently-shipped / top-level ratchets) so net-new
-  banner drift is flagged at the diff, not 30 PRs later — this pass the count grew 5→9 silently.
+  the supersede-banner *warning set* — keyed on banner identity, not a bare count (a count-only floor
+  is defeated by a resolve-one/add-one edit, per Codex on #2132) — so net-new banner drift is flagged
+  at the diff, not 30 PRs later; this pass the set grew 5→9 silently.
   Complements (does not duplicate) the two cross-repo-awareness ideas: they suppress false positives,
   this bounds the count so a real regression can't hide among them. Disposable (Q-0105). Subsystem:
   tooling / docs-system.

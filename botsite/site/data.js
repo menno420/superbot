@@ -7738,7 +7738,7 @@ const CHANGELOG = [
   {
     "version": "2026.06.19",
     "date": "Jun 19, 2026",
-    "build": "20851caa",
+    "build": "38c15cb8",
     "title": "New public bot website",
     "changes": [
       {
@@ -7750,7 +7750,7 @@ const CHANGELOG = [
   {
     "version": "2026.06.12",
     "date": "Jun 12, 2026",
-    "build": "20851caa",
+    "build": "38c15cb8",
     "title": "Owner review inbox on the dashboard",
     "changes": [
       {
@@ -7762,7 +7762,7 @@ const CHANGELOG = [
   {
     "version": "2026.06.08",
     "date": "Jun 08, 2026",
-    "build": "20851caa",
+    "build": "38c15cb8",
     "title": "Command-alias suggestions",
     "changes": [
       {
@@ -9143,9 +9143,9 @@ const FEATURES = [
 ];
 
 const BUILD = {
-  "commit": "20851caa",
-  "subject": "Merge pull request #2130 from menno420/bot/dashboard-refresh",
-  "committed_at": "2026-07-17T12:18:15Z"
+  "commit": "38c15cb8",
+  "subject": "Merge pull request #2132 from menno420/claude/jolly-johnson-m3fyun",
+  "committed_at": "2026-07-17T12:36:17Z"
 };
 
 const COUNTS = {

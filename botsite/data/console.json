@@ -1,14 +1,22 @@
 {
   "meta": {
-    "generated_at": "2026-07-17T12:18:15Z",
+    "generated_at": "2026-07-17T12:36:17Z",
     "build": {
-      "commit": "20851caa",
-      "subject": "Merge pull request #2130 from menno420/bot/dashboard-refresh",
-      "committed_at": "2026-07-17T12:18:15Z"
+      "commit": "38c15cb8",
+      "subject": "Merge pull request #2132 from menno420/claude/jolly-johnson-m3fyun",
+      "committed_at": "2026-07-17T12:36:17Z"
     },
     "schema_version": 1
   },
   "sessions": [
+    {
+      "file": "2026-07-17-reconcile-band2130.md",
+      "date": "2026-07-17",
+      "title": "2026-07-17 — Forty-eighth Q-0107 reconciliation pass (band-#2130)",
+      "status": "complete",
+      "run_type": "routine",
+      "self_initiated": false
+    },
     {
       "file": "2026-07-15-order-005-supersede-stubs.md",
       "date": "2026-07-15",
@@ -480,21 +488,13 @@
       "status": "complete",
       "run_type": "",
       "self_initiated": true
-    },
-    {
-      "file": "2026-07-10-shift-e2-coordinator-self-review.md",
-      "date": "2026-07-10",
-      "title": "2026-07-10 — coordinator self-review vs the #1901 retro question set (overnight shift, session E, PR 2)",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
     }
   ],
   "ideas": {
-    "total": 247,
+    "total": 248,
     "by_status": {
       "historical": 26,
-      "ideas": 218,
+      "ideas": 219,
       "reference": 3
     }
   },
@@ -1922,6 +1922,20 @@
       "outcome": {
         "ci_green_first_push": null,
         "checker_findings": null,
+        "merged_pr": null,
+        "reverted_within_window": null
+      }
+    },
+    {
+      "session": "2026-07-17-reconcile-band2130",
+      "date": "2026-07-17",
+      "model": "opus-4.8",
+      "effort": "high",
+      "task_class": "docs-only",
+      "tokens_out": null,
+      "outcome": {
+        "ci_green_first_push": false,
+        "checker_findings": "check_session_gate telemetry-row (fixed in-PR)",
         "merged_pr": null,
         "reverted_within_window": null
       }
