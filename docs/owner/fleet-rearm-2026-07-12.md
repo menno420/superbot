@@ -1,6 +1,9 @@
 # Fleet re-arm — 2026-07-12 night run (autonomy doctrine + per-seat dispatch)
 
-> **Status:** `owner-guidance` — authored at the owner's direction, 2026-07-12 evening
+> **⚠ RETIRED 2026-07-17** — dated fleet-dispatch scaffolding; the autonomous apparatus is wound
+> down for the EAP read-only cutover. Historical only — do not act on this.
+
+> **Status:** `historical` — authored at the owner's direction, 2026-07-12 evening
 > (superbot PR #2048), after the owner sent every seat its session-ender prompt. **Purpose:**
 > re-arm all 8 Project seats for the next run (tonight) with the **owner-presence-gating
 > stall class designed out** — the owner's observation: *"a lot of projects hallucinate what

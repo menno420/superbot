@@ -2,96 +2,47 @@
 
 > **Status:** `living-ledger` — living status ledger; **not binding — source code + merged PRs win.**
 >
-> ### ✅ DONE 2026-07-12: the second Anthropic email SHIPPED — top priority cleared
-> The second Anthropic EAP email was **sent by the owner 2026-07-12 13:24Z** — a reply on the
-> July 8 thread `19f41cd2e5380bb3` (msg `19f568051da9e3d6`), To `claude-code-early-access@`,
-> cc Diana/Omid/Matt, with a few final owner tweaks. The ready-to-attach figure gallery is linked
-> from the email ([`eap/email-attachment-set-2026-07-12.md`](eap/email-attachment-set-2026-07-12.md)).
-> Full record: [`eap/NEXT-SESSION-finalize-email.md`](eap/NEXT-SESSION-finalize-email.md).
-> **Watch for:** replies (EAP window through **Tue 2026-07-14**) + Matt's optional 10–15 min interview.
+> ### 🧭 2026-07-17 — fresh-start cleanup: the autonomous apparatus is winding down
+> **superbot is FROZEN as the behavioral oracle for the `superbot-next` rebuild.** No new
+> feature work is expected here; the live production bot is stable and the forward queue is
+> docs / oracle maintenance, not new features. Ranked next steps: [`NEXT-TASKS.md`](NEXT-TASKS.md).
 >
-> ### 🚚 2026-07-12 owner-live FLEET-DRIVE session (same session, after the email)
-> Cleared a cross-repo merge backlog and fixed two systemic root-causes. Full record +
-> the live EAP data points: [`.sessions/2026-07-12-fleet-drive-and-websites.md`](../.sessions/2026-07-12-fleet-drive-and-websites.md).
-> - **Merged (owner live-authorized):** mineverse **#42** (CSRF → Games flagship gate cleared);
->   fleet-manager **#113** + **#117** (fresh roster landed); **websites 11/14 PRs** (review-site
->   refresh #175/#174/#172, tester-recruit #176/#179, +#167/#165/#173/#159/#170/#168).
-> - **Root-causes found:** fleet-manager roster-regen fails every run (Actions can't create PRs);
->   websites "stuck merges" = "require branches up-to-date" + no merge queue → serial cascade
->   (**owner removed that rule mid-session → backlog cleared**).
-> - **▶ Next-agent (websites):** 3 PRs need rebasing (real conflicts) — **#160, #161, #166**;
->   #163 is a draft card. Route to the websites lane.
-> - **⚑ OWNER-ACTION QUEUE — mostly EXECUTED 2026-07-12 by the owner-live credentialed session
->   (superbot #2043; full record: [`.sessions/2026-07-12-owner-queue-execution.md`](../.sessions/2026-07-12-owner-queue-execution.md);
->   canonical live queue: [the fleet-manager owner queue](https://github.com/menno420/fleet-manager/blob/main/docs/owner-queue.md)):**
->   ✅ (4) websites `ANTHROPIC_API_KEY` — set on BOTH review services (live `reliable-grace`/review
->   redeployed); ✅ (5) both orders delivered as fleet-manager inbox **ORDER 019/020** (no pasting
->   needed); ✅ (2-part) mineverse web host CREATED + LIVE (Railway `superbot-mineverse`/`web`,
->   `web-production-97636.up.railway.app` → HTTP 200, read-only degraded by design; 3/6 vars set;
->   deployability fix = mineverse PR #44, merged).
->   **EVENING UPDATE (same session, part-2 card):** the owner clicked BOTH Actions toggles
->   (live-verified; roster self-lands, bake self-lands; the bridge routines were deleted) and
->   completed the Discord portal steps — after the mineverse UA-403 token-exchange fix
->   (mineverse #45, Cloudflare rejects urllib's default User-Agent) **player sign-in is LIVE,
->   owner-verified end-to-end**. The court-spam tick-pile-up incident was pruned + guarded
->   (ORDER 020 amendment). **Remaining owner:** venture-lab publish EVIDENCE (listing URL) ·
->   optional Matt interview · the 07-14 bundled-sitting decisions.
-> **▶▶ NEXT SESSION (2026-07-14 morning): read the night → run the 7 probes → SEND EMAIL 3
-> (EAP window closes today)** — full program + the hub's honest projects review:
-> [`owner/next-session-brief-2026-07-14.md`](owner/next-session-brief-2026-07-14.md); email
-> draft: [`eap/anthropic-email-3-draft-2026-07-13.md`](eap/anthropic-email-3-draft-2026-07-13.md).
-> *(The 07-13 reboot brief is EXECUTED — v3.4 pasted, all seats rebooted, v3.5 in the
-> manager's registry lane: [`owner/next-session-brief-2026-07-13.md`](owner/next-session-brief-2026-07-13.md).)*
-> **▶ TONIGHT first — the 2026-07-12 fleet re-arm (owner-directed, PR #2048):** all 8 seats
-> re-dispatched with the **Q-0271 AUTONOMY RIDER** (seats never gate work on owner presence;
-> owner-only list is the sole park class; queue-and-continue; SIM-REQUEST valve) — expanded
-> vision + 8 paste-and-go prompts + the 3-click owner list:
-> [`owner/fleet-rearm-2026-07-12.md`](owner/fleet-rearm-2026-07-12.md). **Post-reboot follow-up
-> wave (same PR):** boot-watch snapshot + per-seat NIGHT ORDERS (compact Q-0271 delta + quotas)
-> + the Fun Lab founding package (friend-directed gift studio) + the seat-#2 path →
-> [`owner/fleet-night-orders-2026-07-12.md`](owner/fleet-night-orders-2026-07-12.md).
-> **▶ THE GROUNDING FILE (living, Q-0274):** missions + venue model + per-seat goal ladders —
-> the one doc any session reads to understand the projects (manager-reviewed at HEAD):
-> [`owner/fleet-grounding.md`](owner/fleet-grounding.md). Night orders were rewritten to **v2**
-> (owner-revised goals, ~23:00Z, Q-0273) and dispatched by the manager as fm ORDERs 030–036.
-> **▶ THE OWNER'S DIRECT-ORDER PASTE-SET (2026-07-13 night):** 8 per-seat blocks — shared
-> skeleton (incl. the **open-PRs-stay-open, keep-producing** rule) + seat actions:
-> [`owner/fleet-direct-orders-2026-07-13.md`](owner/fleet-direct-orders-2026-07-13.md).
-> **▶ THE MANAGER'S FINAL ORDER (prompt centralization → v3.5 · browsable prompt versions via
-> Websites · the standing idle-lane backup ladder):**
-> [`owner/fleet-manager-final-order-2026-07-13.md`](owner/fleet-manager-final-order-2026-07-13.md).
-> **▶ THE UNIVERSAL SESSION ENDER v3.4 (owner-directed rewrite, 2026-07-13, supersedes v3.3):
-> "wind down and land" — finish in-flight work to done or a documented seam (nothing rushed, the
-> no-new-work fence is on *starting*), then REVIEW (struggles + wins) → REFRESH (no stale docs) →
-> BAKE (every lesson into a future-proof surface), mechanics preserved; paste-ready block +
-> manager-canonicalization note:** [`owner/universal-session-ender-v3.4.md`](owner/universal-session-ender-v3.4.md) (PR #2065).
-> **▶ 2026-07-13 owner-live session — reviews + cross-repo merge sweep** (full index:
-> [`.sessions/2026-07-13-owner-live-review-and-cross-repo-merge.md`](../.sessions/2026-07-13-owner-live-review-and-cross-repo-merge.md)).
-> Shipped 7 superbot PRs (#2064 fleet review · #2065 ender v3.4 · #2066 websites data-plane design ·
-> #2068 friend-onboarding prompt [owner has SENT it] · #2069 codex fixes · #2070 control-plane
-> centralization review · #2071 EAP email-3 send-ready). Owner-directed **cross-repo merge sweep**:
-> **superbot-next** #320 + #384 merged (mining energy core + persistence); **gba-homebrew** #83 + #84
-> merged + #82/#86 auto-merge armed (dist/README unions pushed) after the owner added the `ROM builds`
-> required check. **⚑ Carry-forwards:** (a) **EAP email 3 sends 07-14** (send-ready, needs Part-1
-> voice + roster screenshot; window closes) — [`eap/anthropic-email-3-draft-2026-07-13.md`](eap/anthropic-email-3-draft-2026-07-13.md);
-> (b) **superbot-next write-parity stack #312→#371 needs the SEAT to rebase** — it is *not* a
-> mechanical rebase: main's energy work made cook/use live while the stack made craft/skill/build live,
-> so the merged state (all live) exists on neither branch; reconciling touches routing + manifest
-> PENDING-roster + parity pins + a golden re-run (#385 also red/unfinished); (c) **website
-> centralization** design + review (#2066/#2070) route to the websites lane; (d) routine-panel
-> "duplicates" = harmless disabled leftovers (one enabled failsafe per seat, verified). Owner-action
-> queue unchanged in [`eap/night-review-2026-07-13.md`](eap/night-review-2026-07-13.md) §7.
-> **Next action then reverts to the standing program** — per-sector live queues below.
+> **EAP status (Claude Code Projects Early-Access Program):** the review window was **extended
+> to Tue 2026-07-21**, when the Projects go **read-only** — *not* 2026-07-14, as older entries
+> lower in this ledger still say (that earlier date is superseded). The owner is **winding down
+> the autonomous coordinator→worker apparatus** and will **recreate the Projects** with better
+> coordination after the read-only cutover.
 >
-> **▶ 2026-07-13 (later) — fleet-wide cleanup audit, run alongside the owner's live fleet-manager
-> ORDER 045 dispatch:** all 20 repos added to session scope; superbot's own 8-PR dependabot
-> backlog cleared (2 root-cause CI bugs fixed — a codeql-action version split, a tool-pin
-> three-places violation) and gba-homebrew's stale-PR backlog swept (4 closed superseded, 5
-> real Tiltstone PRs flagged for a coordinator, not blind-merged); an 18-repo parallel audit
-> merged/closed zero PRs inappropriately and surfaced 10 cross-cutting fleet patterns (worklist
-> staleness chief among them). Full report + all 18 per-repo audit PR links:
-> [`eap/fleet-cleanup-audit-2026-07-13.md`](eap/fleet-cleanup-audit-2026-07-13.md).
+> **⚠️ Permission-classifier regression (from 2026-07-15):** around 2026-07-15 an Anthropic
+> permission-classifier change began **denying autonomous coordinator→worker merges and
+> ready-flips**, freezing finished, CI-green PRs across the fleet (and pushing agents to invent
+> restrictions). The owner sent two further escalation emails on **2026-07-16** (email 4 SENT:
+> [`eap/anthropic-email-4-classifier-regression-sent-2026-07-16.md`](eap/anthropic-email-4-classifier-regression-sent-2026-07-16.md)).
+> Consolidated analysis + the working interim fix:
+> [`eap/permission-classifier-findings-consolidated-2026-07-16.md`](eap/permission-classifier-findings-consolidated-2026-07-16.md).
 >
+> **Merge doctrine (corrected 2026-07-17):** open PRs **READY** and do nothing else — the
+> installed **server-side `auto-merge-enabler` workflow** lands them on green (as
+> `github-actions[bot]`). **Do NOT perform agent-side ready-flips or REST/MCP merges** — those
+> are the exact actions the classifier now denies (since 2026-07-15). Full corrected rule:
+> `.claude/CLAUDE.md` § "Session & plan workflow".
+>
+> **✅ 2026-07-17 — fleet-wide PR backlog cleared.** The frozen CI-green work across the fleet
+> was dispositioned/landed; on superbot specifically the open-PR surface is now down to one.
+>
+> **In flight (verify against live GitHub):** **exactly one open PR — #2061**
+> (mineverse FLAG 2, the HMAC-signed mining WRITE endpoint). It is **deliberately held DRAFT**
+> and **owner-gated for deploy safety** (Q-0193 merge=deploy; dormant unless
+> `MINING_WRITE_SHARED_SECRET` is set). It is **not** a classifier-freeze victim — it has a real
+> merge conflict with `main` that needs a rebase first, then an owner go/no-go on activating a
+> live web-write endpoint. FLAG 1 (#2058, the READ relay) is already merged. Do not auto-flip it.
+>
+> **Recent records (historical pointers):** fleet-wide cleanup audit
+> [`eap/fleet-cleanup-audit-2026-07-13.md`](eap/fleet-cleanup-audit-2026-07-13.md); the 07-13
+> doctrine-night review [`eap/night-review-2026-07-13.md`](eap/night-review-2026-07-13.md); the
+> 07-12 night review [`eap/night-review-2026-07-12.md`](eap/night-review-2026-07-12.md). The dated
+> fleet-dispatch / re-arm order docs under `owner/` are **retired scaffolding — historical only**
+> (see `NEXT-TASKS.md` and their in-file banners).
 > **Ledger note:** living status ledger (project state). **Not binding.**
 > **Source code and merged PRs always win over this file.**
 > The In-flight section below is a dated snapshot — **verify open PRs against

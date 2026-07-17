@@ -68,10 +68,10 @@ The short version that governs how you work:
   owner only genuine **product/intent** ambiguity; irreversible / production / external work is
   **decided-and-flagged-for-veto, not blocked** — the sole stop-and-wait is *executing* something
   irreversible before the gate. Full model: `docs/owner/agent-decision-authority.md`.
-  **Rebuild override — never-wait (owner directive Q-0241, 2026-07-07):** for the **rebuild program**
-  (building `superbot-next` + porting the bot) even that last stop-and-wait is retired — the coordinator
-  builds **in logical order**, **live-tests each piece in a real server** (an agent drives all commands
-  live), and **never waits for the owner: silence = consent = done.** The G1/G2/👤 gates in the canonical
+  **Rebuild-program autonomy (owner directive Q-0241, 2026-07-07; corrected 2026-07-17):** for the
+  **rebuild program** (building `superbot-next` + porting the bot) the coordinator builds **in logical
+  order** and **live-tests each piece in a real server**. Honest rule: reversible work proceeds and is flagged; irreversible,
+  production, and external work is flagged and waits for the owner's explicit action. The G1/G2/👤 gates in the canonical
   rebuild plan are no longer blockers; the owner's control is *reacting to what he sees in the server*.
   Retained (flagged, vetoable, *not a gate*): the destructive tier (prod data import, CUT-3 token swap,
   deleting old-bot data) executes via the reversible path the plan specifies (shadow-first, N=7d rollback,
@@ -160,10 +160,13 @@ configuration; state it family-level — it also feeds the session card's `📊 
 headless wake · subagent; remote container vs local); **(3) what that venue can and cannot
 do** (the ability envelope: merge authority, permission prompts, cross-session limits,
 push/infra walls — consult the repo's documented walls before probing). Then direct the
-work accordingly: **autonomous/Project sessions pre-route around every known stall class**
-(park only on a *real* denial, never preemptively); **owner-live sessions assume NO special
-limitations apply** — act and merge directly (Q-0269); when an ability is genuinely
-uncertain, try it once and read the refusal rather than assuming a wall.
+work accordingly: **autonomous/Project sessions must expect real walls now** — since 2026-07-15
+the Anthropic permission classifier denies autonomous coordinator→worker merges and ready-flips,
+so open PRs **ready** and let the repo's server-side `auto-merge-enabler` workflow land them on
+green (never an agent-side merge/flip); park only on a **real** denial and report it verbatim.
+**Owner-live sessions** act directly on the work, but still land merges via the server-side
+workflow, not by hand — no venue is a "no special limitations" venue. When an ability is
+genuinely uncertain, try it once and read the refusal rather than assuming a wall.
 
 At the **start** of every session, read in this order: **this file**
 (`.claude/CLAUDE.md`, including the Working agreement above) →
@@ -272,28 +275,34 @@ is **per-file**. Full convention: `docs/owner/ai-project-workflow.md` §9.
   so it can't "forget" a deferred merge (the #778 failure). You just **open the PR ready**; the
   Q-0103 terminal state is reached automatically on green (or **close** the PR if it shouldn't
   land). **If you open the PR via the GitHub MCP (`create_pull_request`), the enabler workflow
-  does NOT fire** — an app/integration token doesn't trigger workflows (the #778 recursion-guard
-  class) — so arm it yourself: call `enable_pr_auto_merge` right after creating the PR (owner
-  decision Q-0127, 2026-06-16); the enabler stays the backstop for branch-pushed PRs. The one
+  does NOT fire** — an app/integration token doesn't trigger workflows — so the PR simply waits for
+  the server-side path (the enabler on a branch-pushed PR, or the owner). **Do NOT arm it yourself
+  (`enable_pr_auto_merge`) or REST/MCP-merge it (corrected 2026-07-17, retiring the Q-0127 "arm it
+  yourself" instruction):** since **2026-07-15** the Anthropic permission classifier denies those
+  autonomous coordinator→worker actions, and paraphrasing an "arm auto-merge / REST-merge on green"
+  step into a worker prompt is what trips it
+  (`docs/eap/permission-classifier-findings-consolidated-2026-07-16.md` §6). The one
   remaining carve-out stays manual — a PR labelled `do-not-automerge` (Q-0114) is never auto-armed.
   **The `needs-hermes-review` carve-out (and its Hermes review-merge gate) is RETIRED (owner directive
   Q-0197, 2026-06-22):** the label was unused and only got in the way of clean merges, so it no longer
   exists — never apply it; every PR auto-merges on green CI. **Owner-directed work is NEVER held for
   review — always merge immediately (owner directive Q-0191, 2026-06-21).** When the owner *personally*
   directs a task (a session prompt, an in-chat instruction, "build PR N / continue the plan"), owner
-  direction **is** the review: open the PR **ready**, do **not** label it `do-not-automerge`, and arm
-  auto-merge so it lands the instant CI is green.
+  direction **is** the review: open the PR **ready**, do **not** label it `do-not-automerge`, and
+  let the server-side workflow land it the instant CI is green (do not arm auto-merge yourself).
   "Merge immediately" means *merge the moment it's mergeable* (still requires CI green), not bypass CI.
   **Merging IS deploying (owner directive Q-0193, 2026-06-21):** Railway auto-redeploys `worker` on every
   merge to `main`, so a merged change is **live on its own within minutes** — you neither perform nor wait
   for a manual deploy, and the deploy *is* the restart. **Never tell the maintainer to "restart" or "deploy"
   a merge to apply it** (the misinformation this Q corrects). What stays his is **live verification /
   rollback** + any per-PR *data* step a change names (e.g. `!btd6ops seed-data`, or an operator button to
-  clear stale rows) — not the deploy. Canonical: `docs/operations/production-deployment.md`. *If you ever
-  merge by hand* (a carve-out, or auto-merge is down): re-verify **CI green on the final head** and **never
-  defer the merge to the maintainer's next message** — that deferral was the #778 root cause.
-- **Open your session card born-red as the FIRST commit; flip it green as the LAST (owner
-  directive Q-0133, 2026-06-14).** Auto-merge fires the instant **Code Quality** is green, so a
+  clear stale rows) — not the deploy. Canonical: `docs/operations/production-deployment.md`. *Agent-side
+  manual merges are no longer a normal carve-out (corrected 2026-07-17 — classifier-denied since
+  2026-07-15):* if the server-side path is down, leave the PR **ready** for the owner rather than merging
+  or arming it yourself, and report the denial verbatim.
+- **Session card gate (owner directive Q-0133, 2026-06-14 — RETIRING 2026-07-17: autonomy
+  scaffolding slated for teardown when the Projects are recreated; the CI check stays live until
+  then, so honor it but don't extend it).** Historically: the gate fires the instant **Code Quality** is green, so a
   session that pushes code first and its close-out docs (ledger entry, `.sessions/` log) second
   can merge a *partial* PR before those docs land — the #843 race. The fix is one per-session
   file that is **both** the start-declaration (*what is about to happen* — visible to parallel /

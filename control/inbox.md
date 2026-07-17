@@ -1,5 +1,10 @@
 # superbot · inbox
 
+> **⚠ RETIRED 2026-07-17** — the coordinator→worker ORDER bus is retired scaffolding. The
+> autonomous apparatus is being wound down for the EAP read-only cutover (Tue 2026-07-21) and the
+> Projects will be recreated with a new coordination model. **Historical only — do not append or
+> act on ORDERs here.**
+
 > ORDERS to this repo. **ONE writer: the fleet manager** — never edit or reorder an
 > existing ORDER; **append-only** (new blocks at the end, next free number). superbot is
 > the fleet **hub with no standing seat (Q-0264)**: ORDERs landing here are consumed by

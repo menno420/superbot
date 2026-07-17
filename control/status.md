@@ -1,5 +1,10 @@
 # superbot · status
 
+> **⚠ RETIRED 2026-07-17** — this hub heartbeat is retired scaffolding and is stale (it predates
+> the 2026-07-15 permission-classifier freeze). The autonomous apparatus is being wound down for
+> the EAP read-only cutover; the Projects will be recreated. **Historical only — do not rely on
+> this; verify live status in `docs/current-state.md`.**
+
 > **Hub heartbeat.** superbot is the fleet **hub with NO standing seat (Q-0264)** — this
 > file is updated by **hub-touching sessions** (not a standing lane seat), so its cadence
 > is irregular by design; between updates the manager's HEAD-activity fallback applies.
