@@ -1,5 +1,9 @@
 # Active-work claims — one file per claim
 
+> **⚠ RETIRING 2026-07-17** — the lane-claim apparatus is autonomous-coordination scaffolding
+> being wound down for the EAP read-only cutover; the Projects will be recreated with a new
+> coordination model. Still functional until teardown; do not build new tooling on it.
+
 > **Status:** `living-ledger` — the parallel-agent claim mechanism. Not a roadmap, not a
 > tracker of merged work (that's `docs/current-state.md`). Source + merged PRs win.
 > Owner decisions Q-0126 (claim-before-start) · **Q-0195 (one-file-per-claim, 2026-06-22)**.

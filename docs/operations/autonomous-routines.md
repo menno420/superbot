@@ -1,5 +1,9 @@
 # SuperBot autonomous routines (the routine fleet)
 
+> **⚠ RETIRING 2026-07-17** — the saved routine/wake prompts are autonomous-apparatus scaffolding
+> being wound down for the EAP read-only cutover; the Projects will be recreated with a new routine
+> model. Reference/historical until teardown; do not arm new routines from here.
+
 > **Status:** `living-ledger` — the durable, version-controlled home for the Claude Code
 > **Routine** prompts SuperBot runs autonomously. Routines are created/managed in the console
 > ([claude.ai/code/routines](https://claude.ai/code/routines)); these are the **source of

@@ -1,6 +1,9 @@
 # Fleet direct orders — 2026-07-13 night run (owner paste-set, one per seat)
 
-> **Status:** `owner-guidance` — authored at the owner's direction ~00:30Z 2026-07-13 (hub
+> **⚠ RETIRED 2026-07-17** — dated fleet-dispatch scaffolding; the autonomous apparatus is wound
+> down for the EAP read-only cutover. Historical only — do not act on this.
+
+> **Status:** `historical` — authored at the owner's direction ~00:30Z 2026-07-13 (hub
 > session, follows Q-0271…Q-0274). **Situation:** the seats have been running properly since
 > the reboot; the manager already dispatched the owner's v2 goals into every repo inbox
 > (fm ORDERs 030–036). These eight blocks are the **owner's direct order layer** on top: one

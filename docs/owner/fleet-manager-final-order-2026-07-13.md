@@ -1,6 +1,8 @@
 # Fleet Manager — the final order of the 07-13 night (prompt centralization + backup doctrine)
 
-> **Status:** `owner-guidance` — the owner's closing order to the Project Manager for tonight,
+> **Status:** `historical` — **RETIRED 2026-07-17** (autonomous apparatus wound down for the EAP
+> read-only cutover; the Projects will be recreated). Historical only — do not act on this.
+> Originally the owner's closing order to the Project Manager for tonight,
 > authored ~01:30Z 2026-07-13 in the hub session. Paste the block below into the Fleet Manager
 > chat (owner turn = top-precedence ORDER; it self-records into the inbox). It hands the
 > manager: (1) where the hub stored tonight's prompt/doctrine artifacts and the task of

@@ -1,6 +1,8 @@
 # ▶ NEXT SESSION — finalize the second Anthropic email (owner's top priority)
 
-> **Status:** `reference` — ✅ **SENT 2026-07-12 13:24Z** — task complete; kept as the record.
+> **Status:** `historical` — ✅ **SENT 2026-07-12 13:24Z** — task complete; kept as the record.
+> **Retired 2026-07-17** (fresh-start cleanup): this EAP email is superseded by the 2026-07-16
+> classifier-regression escalation; historical only.
 > The second Anthropic EAP email was **sent by the owner** as a **reply on the July 8 thread**
 > `19f41cd2e5380bb3` (sent msg `19f568051da9e3d6`), **To** `claude-code-early-access@anthropic.com`,
 > **cc** `dliu@` / `omid@` / `mattg@`, with a few final owner tweaks. Assembly: the owner's Part 1

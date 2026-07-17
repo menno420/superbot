@@ -1,6 +1,9 @@
 # Fleet night orders — 2026-07-12 (post-reboot productivity wave + two new seats)
 
-> **Status:** `owner-guidance` — authored at the owner's direction, 2026-07-12 ~21:00Z
+> **⚠ RETIRED 2026-07-17** — dated fleet-dispatch scaffolding; the autonomous apparatus is wound
+> down for the EAP read-only cutover. Historical only — do not act on this.
+
+> **Status:** `historical` — authored at the owner's direction, 2026-07-12 ~21:00Z
 > (superbot PR #2049), **revised to v2 ~23:00Z at the owner's direction** (superbot PR #2053
 > lane): per-seat goals replaced with the owner's revised night ambitions, the venue
 > correction recorded (§0b), and the manager-boot-first dispatch order (§5). v1's blocks live

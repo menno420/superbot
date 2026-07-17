@@ -1,6 +1,9 @@
 # Dispatch kit — 2026-07-11 (paste-ready session prompts + the fleet permissions block)
 
-> **Status:** `owner-guidance` — the re-dispatch kit for the next batch of help sessions.
+> **⚠ RETIRED 2026-07-17** — dated fleet-dispatch scaffolding; the autonomous apparatus is wound
+> down for the EAP read-only cutover. Historical only — do not act on this.
+
+> **Status:** `historical` — the re-dispatch kit for the next batch of help sessions.
 > **Part A** is the canonical *Permissions & Workarounds* block (fleet-verified 2026-07-11)
 > — paste it into **every Claude Code routine / founding package** so the errors we've hit
 > are prevented from the start (your "bake the right permissions in" ask). **Part B** is the
