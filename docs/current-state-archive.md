@@ -86,6 +86,23 @@
 
 ## Recently shipped — archived (newest first)
 
+- **#2003 (2026-07-11, S5/fleet — ORDER 002 consumed: hub self-review filed + `control/status.md` heartbeat created)** —
+  the owner-requested fleet-wide self-review (control/inbox.md ORDER 002, P1) executed by a
+  hub-touching session (no standing seat, Q-0264): every claim verified against git/PR/CI evidence
+  and filed at the repo's retro convention home
+  [`retro/self-review-2026-07-11.md`](retro/self-review-2026-07-11.md) — went-wrong headliners:
+  codex-final-review born-broken 2026-06-19→#1995 · fleet-manifest retired stale (#1974) · the
+  hub's missing relay surfaces (inbox #1977, heartbeat this PR) · no repo-side record of the
+  15:00Z GraphQL exhaustion · the Codex cap→flap tail-line staleness; owner-attention: **none new
+  hub-specific** (checked against the fleet-manager owner queue). **`control/status.md` CREATED**
+  (⚑ self-initiated — closes the gen-1 retro F2 gap: kit heartbeat format, updated by hub-touching
+  sessions, carries the review digest + ⚑ mirror); ORDER 002 consumption block appended to the
+  inbox; two stale claim files from a completed same-day session removed (Q-0166 fix-on-sight).
+  Docs/control-only; zero `disbot/` runtime.
+- **#1984 · #1991 · #1999 · #2009 (2026-07-10/11, docs — dashboard-data refreshes, Q-0167)** —
+  four `dashboard/data/dashboard.json` regenerations keeping the committed export fresh as the
+  fleet-management / EAP-email arc landed structural surfaces.
+
 - **#1995 (2026-07-11, CI — codex-final-review workflow YAML fixed; first valid parse since its birth in #1105)** —
   `.github/workflows/codex-final-review.yml` had been **invalid YAML since its creating commit
   `bfe99084` (PR #1105, 2026-06-19)** — the multi-line `gh pr comment --body "@codex review…"`
