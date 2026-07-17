@@ -1,10 +1,10 @@
 {
   "meta": {
-    "generated_at": "2026-07-17T16:42:18Z",
+    "generated_at": "2026-07-17T17:44:15Z",
     "build": {
-      "commit": "88df0fef",
-      "subject": "Merge pull request #2136 from menno420/claude/fresh-start-cleanup",
-      "committed_at": "2026-07-17T16:42:18Z"
+      "commit": "bd7b7385",
+      "subject": "Merge pull request #2137 from menno420/bot/dashboard-refresh",
+      "committed_at": "2026-07-17T17:44:15Z"
     },
     "schema_version": 1,
     "counts": {
