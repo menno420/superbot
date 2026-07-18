@@ -1,0 +1,75 @@
+name: branch-cleanup
+
+# Server-side stale-branch cleanup. Agents cannot delete refs (the session
+# git proxy 403s `git push --delete`); a workflow runs on GitHub's runners
+# with its own token and CAN. Dispatch manually; dry_run defaults to true.
+#
+# Selection (owner choice 2026-07-18 — "merged + closed-PR branches"):
+#   DELETE a branch matching `pattern` when it is either
+#     (a) fully merged into the default branch (0 commits ahead), or
+#     (b) the head of a CLOSED pull request (merged OR closed-unmerged).
+#   KEEP it when it has an OPEN PR, or is unmerged with no closed PR, or is protected.
+
+on:
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "true = list only (delete nothing); false = actually delete"
+        type: boolean
+        default: true
+      pattern:
+        description: "Only consider branches whose name starts with this prefix"
+        type: string
+        default: "claude/"
+
+permissions:
+  contents: write
+  pull-requests: read
+
+jobs:
+  cleanup:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/github-script@v7
+        env:
+          DRY_RUN: ${{ inputs.dry_run }}
+          PATTERN: ${{ inputs.pattern }}
+        with:
+          script: |
+            const dry = process.env.DRY_RUN !== 'false';
+            const pattern = process.env.PATTERN || 'claude/';
+            const { owner, repo } = context.repo;
+            const def = (await github.rest.repos.get({ owner, repo })).data.default_branch;
+            const branches = await github.paginate(github.rest.repos.listBranches, { owner, repo, per_page: 100 });
+            const del = [], keep = [];
+            for (const b of branches) {
+              if (b.name === def || !b.name.startsWith(pattern)) continue;
+              if (b.protected) { keep.push(`${b.name} (protected)`); continue; }
+              let hit = null;
+              try {
+                const cmp = await github.rest.repos.compareCommitsWithBasehead({ owner, repo, basehead: `${def}...${b.name}` });
+                if (cmp.data.ahead_by === 0) hit = `merged-into-${def}`;
+              } catch (e) { /* compare can 404 on odd refs; fall through to PR check */ }
+              if (!hit) {
+                const prs = await github.paginate(github.rest.pulls.list, { owner, repo, state: 'all', head: `${owner}:${b.name}`, per_page: 100 });
+                const open = prs.find(p => p.state === 'open');
+                if (open) { keep.push(`${b.name} (open PR #${open.number})`); continue; }
+                const closed = prs.find(p => p.state === 'closed');
+                if (closed) hit = closed.merged_at ? `closed-merged-PR#${closed.number}` : `closed-unmerged-PR#${closed.number}`;
+              }
+              if (hit) del.push({ name: b.name, reason: hit });
+              else keep.push(`${b.name} (unmerged, no closed PR — kept)`);
+            }
+            core.summary.addHeading(`branch-cleanup ${dry ? '(DRY RUN — nothing deleted)' : '(LIVE)'} · pattern "${pattern}"`);
+            core.summary.addRaw(`\n**${del.length}** to delete · **${keep.length}** kept\n\n`);
+            core.summary.addRaw(`### Would delete (${del.length})\n` + (del.map(d => `- \`${d.name}\` — ${d.reason}`).join('\n') || '_none_') + '\n\n');
+            core.summary.addRaw(`### Kept (${keep.length})\n` + (keep.map(k => `- \`${k}\``).join('\n') || '_none_') + '\n');
+            let deleted = 0, failed = 0;
+            for (const d of del) {
+              if (dry) { console.log(`[dry] would delete ${d.name} (${d.reason})`); continue; }
+              try { await github.rest.git.deleteRef({ owner, repo, ref: `heads/${d.name}` }); deleted++; console.log(`deleted ${d.name} (${d.reason})`); }
+              catch (e) { failed++; console.log(`FAILED ${d.name}: ${e.message}`); }
+            }
+            if (!dry) core.summary.addRaw(`\n**Deleted ${deleted}, failed ${failed}.**\n`);
+            await core.summary.write();
+            console.log(`${dry ? 'DRY RUN' : 'LIVE'}: ${del.length} selected for deletion, ${keep.length} kept.`);
