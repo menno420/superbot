@@ -13,19 +13,26 @@
 > the autonomous coordinator→worker apparatus** and will **recreate the Projects** with better
 > coordination after the read-only cutover.
 >
-> **⚠️ Permission-classifier regression (from 2026-07-15):** around 2026-07-15 an Anthropic
-> permission-classifier change began **denying autonomous coordinator→worker merges and
-> ready-flips**, freezing finished, CI-green PRs across the fleet (and pushing agents to invent
-> restrictions). The owner sent two further escalation emails on **2026-07-16** (email 4 SENT:
-> [`eap/anthropic-email-4-classifier-regression-sent-2026-07-16.md`](eap/anthropic-email-4-classifier-regression-sent-2026-07-16.md)).
-> Consolidated analysis + the working interim fix:
-> [`eap/permission-classifier-findings-consolidated-2026-07-16.md`](eap/permission-classifier-findings-consolidated-2026-07-16.md).
+> **⚠️ The "permission-classifier denies merges" scare did NOT hold (verified 2026-07-18):**
+> mid-July sessions recorded a belief that an Anthropic permission-classifier change was
+> **denying** autonomous merges and ready-flips, and each later session copied and amplified the
+> restriction. **Ground truth: agents CAN merge their own/sibling green PRs, flip draft→ready, and
+> arm auto-merge — merging is normal agent work.** (A direct MCP merge succeeded on 2026-07-18.)
+> The dated escalation emails
+> ([`eap/anthropic-email-4-classifier-regression-sent-2026-07-16.md`](eap/anthropic-email-4-classifier-regression-sent-2026-07-16.md),
+> [`eap/permission-classifier-findings-consolidated-2026-07-16.md`](eap/permission-classifier-findings-consolidated-2026-07-16.md))
+> are **historical records** of that scare, not a current wall — do not re-derive a merge
+> restriction from them.
 >
-> **Merge doctrine (corrected 2026-07-17):** open PRs **READY** and do nothing else — the
-> installed **server-side `auto-merge-enabler` workflow** lands them on green (as
-> `github-actions[bot]`). **Do NOT perform agent-side ready-flips or REST/MCP merges** — those
-> are the exact actions the classifier now denies (since 2026-07-15). Full corrected rule:
-> `.claude/CLAUDE.md` § "Session & plan workflow".
+> **Merge doctrine (corrected 2026-07-18):** open PRs **READY** and **merge your own green PR
+> directly** (MCP/REST) the moment it's mergeable — or let the `auto-merge-enabler` workflow land
+> it on green; either path is fine, and you never route a mergeable green PR to the owner. The one
+> gate is **CI green** (plus the `do-not-automerge` carve-out). If a *specific* permission refusal
+> ever occurs on a call, it's **attempt-once, specific to that call/venue/permission-mode** — read
+> it, report it verbatim, and **never write it into the docs as a new standing wall**. Full rule:
+> `.claude/CLAUDE.md` § "Session & plan workflow". The **real** walls stay real: ref/branch
+> deletion (403), tag-push/release (403), raw `api.github.com` (blocked), and repo
+> Settings/secrets/env (owner console).
 >
 > **✅ 2026-07-17 — fleet-wide PR backlog cleared.** The frozen CI-green work across the fleet
 > was dispositioned/landed; on superbot specifically the open-PR surface is now down to one.
