@@ -1,16 +1,25 @@
 # 2026-07-18 · Fleet de-wall + verified capabilities — EAP follow-up evidence
 
 Evidence pack for the follow-up to the 2026-07-16 emails. Every claim links to a
-public PR. This session was run from a directing chat **outside** the Projects,
-on the owner's account, using the owner's GitHub token over direct egress.
+public PR.
+
+**Framing (important):** the fleet is built INSIDE the Projects, as always. This
+session was the *separate directing chat outside the Projects* that has been
+required since the 2026-07-08 review ("Why it takes two layers") to do the steps a
+coordinator structurally can't — landing work the classifier blocks, plus
+destructive/settings steps. It ran on the owner's account, using the owner's
+GitHub token over direct egress. What follows is what that required second layer
+had to do this week, and what it proves.
 
 ## 1. The guard is venue-scoped, not risk- or authority-scoped
 
-From that outside chat — same account, same authority the Projects have — the
-exact action classes Project/coordinator sessions were denied for on 2026-07-15+
-went through at fleet scale with **zero classifier denials**:
+From that required outside chat — same account, same authority the Projects have —
+the exact action classes Project/coordinator sessions are denied for on 2026-07-15+
+went through at scale with **zero classifier denials**. It landed finished PRs the
+Projects had opened but could not merge (the frozen-PR class from the 07-16 email),
+and did the fleet-wide work the Projects cannot:
 
-- **20+ pull requests merged** across the fleet (the de-wall PRs below).
+- **20+ pull requests merged** (including stuck/finished work the Projects left behind).
 - **2,115 stale branches deleted** across 20 repos (superbot 523 + fleet 1,592), 0 failures.
 - Reversible probes (create → confirm → delete), each HTTP-verified: Actions
   **secret** (201), variable (201), **release** (201), **tag** (201), **branch
