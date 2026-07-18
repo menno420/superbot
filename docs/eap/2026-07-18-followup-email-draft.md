@@ -1,6 +1,6 @@
 # DRAFT — follow-up email to Claude Code Projects team (NOT SENT)
 
-> Status: **draft, owner will send tonight** with additional points. Do not send.
+> **Status:** `reference` — DRAFT email, owner will send tonight with additional points. Do not send as-is.
 > Thread: "Re: Claude Code Projects Review" (cc dliu@, omid@, mattg@ as before).
 >
 > **Optional strengthening (real numbers, verified):** yesterday's outside hub

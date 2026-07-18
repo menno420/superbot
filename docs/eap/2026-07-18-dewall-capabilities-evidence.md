@@ -1,5 +1,8 @@
 # 2026-07-18 · Fleet de-wall + verified capabilities — EAP follow-up evidence
 
+> **Status:** `reference` — EAP follow-up evidence pack (2026-07-18); every claim links
+> to a public PR. Indexed from [`README.md`](README.md).
+
 Evidence pack for the follow-up to the 2026-07-16 emails. Every claim links to a
 public PR.
 

@@ -5,6 +5,20 @@
 > [`docs/planning/`](../planning/projects-eap-evaluation-log.md) (files prefixed
 > `projects-eap-*`). Newest first within each group.
 
+## Follow-up + de-wall evidence (2026-07-18)
+
+- [`2026-07-18-followup-email-draft.md`](2026-07-18-followup-email-draft.md) — **draft of the
+  next Anthropic follow-up email** (owner sends): Part 1 owner voice + Part 2 paste-ready. New
+  evidence, not a new ask — the venue-scoped guard, the agent-memory wall propagation + CI
+  antidote, the stale-text-outranks-live-instruction failure, and the trigger-tool
+  forced-approval finding (no owner setting suppresses it; ~1,900 tombstones as the cost;
+  session-ender v3.8 as the agent-side mitigation).
+- [`2026-07-18-dewall-capabilities-evidence.md`](2026-07-18-dewall-capabilities-evidence.md) —
+  the evidence pack behind that email, every claim linked to a public PR: venue-scoped
+  capability proof (2,115 branch deletes, reversible probes), the de-wall repair (18 repos +
+  templates + the `check_no_false_walls` CI guard), the precedence rule, post-EAP recreation
+  prep, and §5 the trigger-tool forced-approval finding + the v3.8 ender verified live.
+
 ## Permission classifier — consolidated (2026-07-16)
 
 - [`anthropic-email-4-classifier-regression-sent-2026-07-16.md`](anthropic-email-4-classifier-regression-sent-2026-07-16.md)
