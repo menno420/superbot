@@ -1,10 +1,10 @@
 {
   "meta": {
-    "generated_at": "2026-07-18T10:50:14Z",
+    "generated_at": "2026-07-18T13:23:36Z",
     "build": {
-      "commit": "71d7cfc0",
-      "subject": "Merge pull request #2146 from menno420/claude/branch-cleanup-workflow",
-      "committed_at": "2026-07-18T10:50:14Z"
+      "commit": "f7da20b0",
+      "subject": "Merge pull request #2147 from menno420/bot/dashboard-refresh",
+      "committed_at": "2026-07-18T13:23:36Z"
     },
     "schema_version": 1,
     "counts": {
