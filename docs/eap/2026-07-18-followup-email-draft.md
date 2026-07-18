@@ -27,6 +27,11 @@
 - The invented-restrictions problem got bad enough it poisoned the whole fleet's
   shared memory; I had to spend a session cleaning it and building a CI check so
   it can't come back.
+- New and sharper this week: the routine/trigger tools force a human tap on *every*
+  call, and **no setting** — not even `bypassPermissions` plus an explicit allow-list —
+  turns it off. That's why ~1,900 dead routines piled up that I can only clear by hand,
+  one approval at a time. For this one there isn't even an off-switch to ask for — which
+  is exactly the point.
 - The one fix remains the owner-set permission grant I've asked for since day one.
 
 ## Part 2 — written by Claude (ready to paste)
@@ -75,6 +80,21 @@ documenting an agent-capability limitation, plus a capabilities record built fro
 real tests rather than memory. The point for you: in an agent-memory system, a
 nondeterministic context-scoped denial doesn't only cost the moment it fires — it
 teaches agents to write walls that then metastasize, and the correction is expensive.
+
+**A second instance — sharper, because no owner setting exists at all.** The merge
+denial is a classifier judgment; this week surfaced something more absolute. The
+routine/trigger tools (create, delete, list, schedule) force an interactive approval on
+*every* call, and no owner setting suppresses it — verified with `bypassPermissions`
+plus an explicit allow-list plus the server wildcard all set; the calls still prompt,
+because the approval sits above the settings layer entirely. The measurable cost is
+~1,900 orphaned routine tombstones on the account that can only be cleared by a human
+tapping approve one at a time — no unattended process can delete them. We shipped an
+agent-side mitigation (each session now cleans only its own routines at close, verified
+live in one of the projects), but it works only because the owner is present to approve
+each call; the unattended path stays blocked. This is the same request as the merge
+grant, made unavoidable: for this class there isn't even a setting that *should* grant
+it. One owner-accountability toggle — "my agents may run these actions in these repos,
+on my responsibility" — removes the entire category.
 
 **A related failure: stale stored text outranking a live instruction.** A concrete
 new instance of "invented rules outrank live instructions" — a session held a dated
