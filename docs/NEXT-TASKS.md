@@ -7,9 +7,10 @@
 > churn. Full live status: [`current-state.md`](current-state.md).
 
 Context: the Claude Code Projects EAP goes **read-only Tue 2026-07-21**; the owner is
-**winding down** the autonomous coordinator→worker apparatus (frozen since the 2026-07-15
-permission-classifier regression) and will **recreate the Projects** with better
-coordination. These are the highest-value next steps to pick up in the re-created project.
+**winding down** the autonomous coordinator→worker apparatus and will **recreate the Projects**
+with better coordination. (The mid-July "permission-classifier freeze" belief did not hold —
+agents merge their own green PRs normally; see `current-state.md`.) These are the highest-value
+next steps to pick up in the re-created project.
 
 ## Ranked next steps
 

@@ -44,12 +44,12 @@
 - **Decide-and-flag** reversible calls; route only genuine product/irreversible forks
   to you.
 - **Guardrails carried in from the 2026-07-11 sessions:** no `delete_trigger` /
-  destructive approval-gated ops unless you say so; in Project sessions never
-  self-merge (classifier wall). **Hub/live sessions don't just *can* merge — they
-  MUST (Q-0269, 2026-07-12): any mergeable PR in finished state (green, complete,
-  READY) is merged immediately by the agent; directing the owner to a green PR is
-  a workflow failure.** Park-READY+green is a Project-seat fallback only, and only
-  after a real classifier denial.
+  destructive approval-gated ops unless you say so. **Merging is normal agent work in
+  every venue — agents don't just *can* merge, they MUST (Q-0269, 2026-07-12): any
+  mergeable PR in finished state (green, complete, READY) is merged immediately by the
+  agent; directing the owner to a green PR is a workflow failure.** Only a *specific*
+  permission refusal on a *specific* call is a reason to park a green PR READY — read it,
+  report it verbatim, and never generalize it into a standing "agents can't merge" wall.
 
 ## Growing this file
 
