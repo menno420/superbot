@@ -1,10 +1,10 @@
 {
   "meta": {
-    "generated_at": "2026-07-18T23:12:33Z",
+    "generated_at": "2026-07-19T01:15:51Z",
     "build": {
-      "commit": "2f4658f1",
-      "subject": "Merge pull request #2148 from menno420/claude/eap-followup-evidence-2026-07-18",
-      "committed_at": "2026-07-18T23:12:33Z"
+      "commit": "5f900b7c",
+      "subject": "Merge pull request #2153 from menno420/bot/dashboard-refresh",
+      "committed_at": "2026-07-19T01:15:51Z"
     },
     "schema_version": 1,
     "counts": {
