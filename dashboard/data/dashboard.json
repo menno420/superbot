@@ -1,10 +1,10 @@
 {
   "meta": {
-    "generated_at": "2026-07-19T19:39:39Z",
+    "generated_at": "2026-07-19T21:37:12Z",
     "build": {
-      "commit": "2f9268c8",
-      "subject": "Merge pull request #2162 from menno420/claude/jolly-johnson-k07yo0",
-      "committed_at": "2026-07-19T19:39:39Z"
+      "commit": "2cfcd77a",
+      "subject": "Merge pull request #2163 from menno420/bot/dashboard-refresh",
+      "committed_at": "2026-07-19T21:37:12Z"
     },
     "schema_version": 1,
     "counts": {
