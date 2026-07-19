@@ -9,6 +9,21 @@
 > S3; the docs it produces are S4.*
 
 **Recently shipped (this sector):**
+- **Forty-ninth Q-0107 reconciliation pass** (band-#2160, issue #2161 —
+  record in [`.sessions/2026-07-19-reconcile.md`](../../.sessions/2026-07-19-reconcile.md)): reconciled
+  the ledger (band #2132–#2160, 29 PRs — **entirely docs/CI/tooling + generated artifact, zero `disbot/`
+  runtime**, matching oracle-freeze: 6 docs/CI/tooling PRs — the **48th-pass reconcile** #2132 + its
+  **Codex follow-up** #2133, the **fresh-start oracle-freeze banner + `NEXT-TASKS.md`** #2136, the
+  **"dewall"** removing the false *"agents cannot merge"* wall #2145, a **manual branch-cleanup
+  workflow** #2146, **EAP follow-up evidence** #2148; plus 23 dashboard refreshes), trimmed
+  Recently-shipped to 20, **disposed the open-PR set** — **zero open PRs** (the former sole open PR
+  #2061, mineverse FLAG 2 WRITE draft, was **closed unmerged 2026-07-17** — real merge conflict + owner
+  deploy-safety call; `NEXT-TASKS.md` item 1 updated), no stale session PR, confirmed **ROUTINE_PAT set
+  / loop self-fires** (issue #2161 authored by `menno420`), **⚠️ raised PLAN BACKLOG THIN** (the in-repo
+  product backlog is intentionally frozen — no 30-PR feature band to plan; forward queue is `NEXT-TASKS.md`:
+  superbot-next rebuild cutover + docs curation + owner-gated calls), refreshed the dashboard export
+  (Q-0167), reset the marker #2130 → #2160. Supersede-banner soft warnings unchanged at 9 (honest
+  cross-repo phantom successors in fleet-manager the in-repo checker can't resolve).
 - **Forty-eighth Q-0107 reconciliation pass** (band-#2130, issue #2131 —
   [pass record](../planning/reconciliation-pass-2026-07-17-band2130.md)): reconciled the ledger
   (band #2102–#2130 — grouped entries, **entirely docs/tooling/control**, zero `disbot/` runtime: the
@@ -321,10 +336,15 @@
   startable slice. Companion: the still-unexecuted
   [orientation-cost-reduction plan](../planning/orientation-cost-reduction-plan-2026-06-30.md)
   (Q-0210 router archive now 3+ passes overdue — B0–B3 should run soon regardless).
-- **Next reconciliation pass due once merged PRs cross #2130** (every multiple of 30, Q-0134) —
+- **Next reconciliation pass due once merged PRs cross #2190** (every multiple of 30, Q-0134) —
   auto-triggered by `reconciliation-trigger.yml`; run by the docs-reconciliation routine, **not** a
   manual session (Q-0124).
-- Plan-band depth is healthy — **no `PLAN-BACKLOG-THIN` flag** (buildable depth well over cadence).
+- **⚠️ `PLAN BACKLOG THIN` (raised band-#2160, 2026-07-19)** — the in-repo product backlog is
+  **intentionally frozen** (superbot is the behavioral oracle for the `superbot-next` rebuild), so there
+  is no 30-PR in-repo feature band to plan. This is the Q-0164 *signal*, not a failure: the honest
+  forward queue is [`NEXT-TASKS.md`](../NEXT-TASKS.md) — superbot-next rebuild cutover + backlog
+  curation + the autonomy-apparatus wind-down + owner-gated product/deploy calls. The flag clears if
+  the owner re-opens in-repo product work (NEXT-TASKS item 6).
 - **(Historical owner steer, 2026-06-30 — superseded):** the fresh-rebuild vision re-elevates the **AI-memory substrate-kit**
   to top focus — S3's forward queue leads with PR 2 remainder + PR 3; the full rebuild stays
   idea-stage (gated on Fable 5 + owner keep/change spec) — the rebuild has since shipped its

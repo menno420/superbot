@@ -31,6 +31,13 @@ only the header block is read, so a `**Subsystem:**` *example* in an idea's body
 
 Current broad captures:
 
+- [`reconciliation-cadence-exclude-generated-prs-2026-07-19.md`](./reconciliation-cadence-exclude-generated-prs-2026-07-19.md) —
+  **session ender (2026-07-19, 49th Q-0107 reconciliation pass, band-#2160):** the reconciliation
+  cadence counts raw PR numbers, but **79% of band-#2160 (23/29 PRs) were automated
+  `bot/dashboard-refresh` regenerations** — so the owner-attention-costing docs-reconciliation
+  routine fires ~5× faster than substantive work warrants on a frozen oracle repo. Exclude known
+  generated/automated PR classes (`bot/dashboard-refresh`, Dependabot) from the cadence counter in
+  `check_reconciliation_due.py` so a pass fires on real drift, not artifact churn. Subsystem: none.
 - [`fleet-audit-as-saved-workflow-2026-07-13.md`](./fleet-audit-as-saved-workflow-2026-07-13.md) —
   **session ender (2026-07-13, EAP-final-night fleet cleanup audit session):** encode
   tonight's 18-repo parallel audit pattern (per-repo subagent + shared safety envelope +
