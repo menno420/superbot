@@ -14,12 +14,15 @@ next steps to pick up in the re-created project.
 
 ## Ranked next steps
 
-1. **Resolve open PR #2061 (mineverse FLAG 2 — HMAC-signed mining WRITE endpoint).**
-   Rebase `claude/mineverse-flag-2` onto `main` (it has a real merge conflict — it is *not*
-   a classifier-freeze victim), then take the **owner go/no-go** on activating a live
-   web-write endpoint. If go: set `MINING_WRITE_SHARED_SECRET` + `MINING_WRITE_GUILD_ALLOWLIST`
+1. **(Owner call — mineverse FLAG 2, the HMAC-signed mining WRITE endpoint.)** The prior
+   attempt **PR #2061 was closed unmerged on 2026-07-17** (it carried a real merge conflict with
+   `main` and a live web-write endpoint is an owner deploy-safety decision, so it was retired
+   rather than rebased-and-held). FLAG 1 (#2058, the READ relay) is already merged and dormant. If
+   the WRITE endpoint is still wanted, it reopens as **fresh work off the current `main`** (not by
+   reviving the stale draft): re-port the executor, then take the **owner go/no-go** on activating a
+   live web-write endpoint. If go: set `MINING_WRITE_SHARED_SECRET` + `MINING_WRITE_GUILD_ALLOWLIST`
    on Railway and the matching secret + `MINING_WRITE_ENDPOINT` on the mineverse web host.
-   FLAG 1 (#2058, the READ relay) is already merged. Owner-gated for deploy safety (Q-0193).
+   Owner-gated for deploy safety (Q-0193).
 
 2. **Finish the `superbot-next` rebuild cutover, using superbot as the frozen oracle.**
    status.md reports 51/51 parity rows ported and CUT-1 done; drive the write-parity stack +

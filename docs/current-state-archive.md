@@ -86,6 +86,20 @@
 
 ## Recently shipped — archived (newest first)
 
+- **#1983 · #1998 · #2002 · #2004 · #2005 · #2006 · #2008 · #2011 (2026-07-11, S5/fleet — the 8-seat consolidation → next-round founding-prompt arc, docs-only)** —
+  the owner-directed fleet-management hub work. The **multi-project review dispatch** #1998/#1983
+  (cross-fleet triage session), the **dispatch-kit permissions block** update folding gen-3
+  coordinator lessons #2002, the **synthesis of 4 external strategy reviews + the Codex-PR disposal**
+  #2004, the **fleet consolidation blueprint + verified next-round founding-prompt kit** #2005, the
+  **fleet-triage supersede pointer** → the fleet-manager repo's `fleet-triage.md` #2006, the **post-compact
+  continuation** recording superbot-games #52/#54/#55 merged + the **8-seat fleet structure** #2008,
+  and the **session close-out** — 8-seat dispatch leg + routine-arming recipe + next-session brief
+  #2011. Docs-only; no `disbot/` runtime.
+- **#2000 (2026-07-11, tooling — `check_consistency` Rule 6 activated on inert `cogs/` scope + graduated to error)** —
+  the consistency checker's Rule 6 now covers the previously-inert `cogs/` scope and fails CI (was
+  warn-only) — the friction→guard (Q-0194) hardening of a check that had been advisory. Tooling-only;
+  no `disbot/` runtime logic. (Companion CI fix already carded: **#1995** — the codex-final-review
+  workflow YAML, broken since #1105.)
 - **#2003 (2026-07-11, S5/fleet — ORDER 002 consumed: hub self-review filed + `control/status.md` heartbeat created)** —
   the owner-requested fleet-wide self-review (control/inbox.md ORDER 002, P1) executed by a
   hub-touching session (no standing seat, Q-0264): every claim verified against git/PR/CI evidence
