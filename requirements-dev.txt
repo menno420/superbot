@@ -9,7 +9,7 @@
 # from CI and produces "passes locally, fails in CI" churn (and vice
 # versa). When bumping a tool here, bump it in code-quality.yml AND
 # .pre-commit-config.yaml in the same change.
-ruff==0.15.21  # format + lint + import-sort (replaced black + isort, A3 2026-07-06). MUST match code-quality.yml + .pre-commit-config.yaml (bumped together to 0.15.20 in #1556; lone Dependabot bumps drifted this file in #1074/#1315 — scripts/check_tool_pins.py guards it)
+ruff==0.15.22  # format + lint + import-sort (replaced black + isort, A3 2026-07-06). MUST match code-quality.yml + .pre-commit-config.yaml (bumped together to 0.15.20 in #1556; lone Dependabot bumps drifted this file in #1074/#1315 — scripts/check_tool_pins.py guards it)
 mypy==2.3.0
 pytest==9.1.1
 pytest-asyncio==1.4.0
@@ -22,7 +22,7 @@ pytest-xdist==3.8.0
 # the same gate mineverse CI runs). Developer/agent-only, NOT installed in CI
 # (CI installs requirements.txt only); the test importorskips it, and a stdlib
 # structural gate in the same file always runs so CI still validates the shape.
-jsonschema==4.23.0
+jsonschema==4.26.0
 
 # Import-graph engine for scripts/context_map.py (the file-context tool).
 # Developer/agent-only — NOT a bot-runtime dep and NOT installed in CI; the tool
@@ -34,4 +34,4 @@ grimp==3.15
 # NOT installed in CI's jobs and NOT a runtime dep: CI installs the already-compiled
 # lockfile, it never recompiles. Pinned so regeneration is reproducible across agents
 # (a newer resolver could pin a different closure). See dashboard/requirements.in.
-pip-tools==7.5.3
+pip-tools==7.6.0
