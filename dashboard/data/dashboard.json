@@ -1,10 +1,10 @@
 {
   "meta": {
-    "generated_at": "2026-07-21T21:47:39Z",
+    "generated_at": "2026-07-22T00:02:02Z",
     "build": {
-      "commit": "d4c1837b",
-      "subject": "chore: append telemetry row for 2026-07-21-reconcile session (Q-0194 gate)",
-      "committed_at": "2026-07-21T21:47:39Z"
+      "commit": "9caa8e8d",
+      "subject": "Merge pull request #2192 from menno420/claude/jolly-johnson-up1xqp",
+      "committed_at": "2026-07-22T00:02:02Z"
     },
     "schema_version": 1,
     "counts": {
