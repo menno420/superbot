@@ -1,15 +1,15 @@
 {
   "meta": {
-    "generated_at": "2026-07-21T21:57:11Z",
+    "generated_at": "2026-07-21T21:47:39Z",
     "build": {
-      "commit": "87a3fa02",
-      "subject": "Merge pull request #2189 from menno420/bot/dashboard-refresh",
-      "committed_at": "2026-07-21T21:57:11Z"
+      "commit": "d4c1837b",
+      "subject": "chore: append telemetry row for 2026-07-21-reconcile session (Q-0194 gate)",
+      "committed_at": "2026-07-21T21:47:39Z"
     },
     "schema_version": 1,
     "counts": {
       "functions": 43,
-      "ideas": 249,
+      "ideas": 250,
       "bugs": 31,
       "reviews": 0,
       "reviews_open": 0,
@@ -1165,6 +1165,14 @@
     }
   ],
   "ideas": [
+    {
+      "file": "reconcile-thin-flag-standing-vs-newly-raised-2026-07-21.md",
+      "title": "Idea — distinguish a *standing* PLAN BACKLOG THIN from a *newly-raised* one",
+      "status": "ideas",
+      "date": "2026-07-21",
+      "summary": "`⚠️ PLAN BACKLOG THIN` (Q-0164) has now fired on **three consecutive reconciliation passes** — the",
+      "subsystems": null
+    },
     {
       "file": "reconciliation-cadence-exclude-generated-prs-2026-07-19.md",
       "title": "Idea: reconciliation cadence should exclude generated / automated PRs",
@@ -3429,6 +3437,14 @@
   "reviews": [],
   "updates": [
     {
+      "file": "2026-07-21-reconcile.md",
+      "date": "2026-07-21",
+      "title": "2026-07-21 — Fiftieth Q-0107 reconciliation pass (band-#2190)",
+      "status": "complete",
+      "run_type": "routine",
+      "self_initiated": false
+    },
+    {
       "file": "2026-07-19-reconcile.md",
       "date": "2026-07-19",
       "title": "2026-07-19 — Forty-ninth Q-0107 reconciliation pass (band-#2160)",
@@ -3896,14 +3912,6 @@
       "file": "2026-07-11-email2-part2-polish.md",
       "date": "2026-07-11",
       "title": "2026-07-11 — Email #2: owner's Part 1 landed + agents' Part 2 fact-refresh",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-07-11-email2-idle-observability.md",
-      "date": "2026-07-11",
-      "title": "2026-07-11 — Email #2: idle-Project empty-session-list finding (owner recording) → fig-19 + b6",
       "status": "complete",
       "run_type": "",
       "self_initiated": false
@@ -5319,6 +5327,20 @@
     {
       "session": "2026-07-19-reconcile",
       "date": "2026-07-19",
+      "model": "opus-4.8",
+      "effort": "high",
+      "task_class": "docs-only",
+      "tokens_out": null,
+      "outcome": {
+        "ci_green_first_push": false,
+        "checker_findings": "check_session_gate telemetry-row (fixed in-PR)",
+        "merged_pr": null,
+        "reverted_within_window": null
+      }
+    },
+    {
+      "session": "2026-07-21-reconcile",
+      "date": "2026-07-21",
       "model": "opus-4.8",
       "effort": "high",
       "task_class": "docs-only",

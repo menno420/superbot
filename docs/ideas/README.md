@@ -38,6 +38,14 @@ Current broad captures:
   routine fires ~5× faster than substantive work warrants on a frozen oracle repo. Exclude known
   generated/automated PR classes (`bot/dashboard-refresh`, Dependabot) from the cadence counter in
   `check_reconciliation_due.py` so a pass fires on real drift, not artifact churn. Subsystem: none.
+- [`reconcile-thin-flag-standing-vs-newly-raised-2026-07-21.md`](./reconcile-thin-flag-standing-vs-newly-raised-2026-07-21.md) —
+  **session ender (2026-07-21, 50th Q-0107 reconciliation pass, band-#2190):** `PLAN BACKLOG THIN`
+  (Q-0164) has now fired on three consecutive passes (48th/49th/50th) as a **standing, intentional
+  oracle-freeze condition** — yet each pass "raises" it afresh on the loud `⚑ Owner-decisions needed:`
+  line, re-alerting the owner about a state they deliberately created. Track a `THIN-since: band-#N`
+  marker so the routine reports a *carried* THIN quietly (`standing, not urgent`) and keeps the loud
+  alert for a *newly-raised* THIN (a real, unexpected backlog drain). Complements the cadence-exclude
+  idea above (that reduces firing frequency; this reduces alert noise). Subsystem: none.
 - [`fleet-audit-as-saved-workflow-2026-07-13.md`](./fleet-audit-as-saved-workflow-2026-07-13.md) —
   **session ender (2026-07-13, EAP-final-night fleet cleanup audit session):** encode
   tonight's 18-repo parallel audit pattern (per-repo subagent + shared safety envelope +
