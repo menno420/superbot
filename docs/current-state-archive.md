@@ -86,6 +86,17 @@
 
 ## Recently shipped — archived (newest first)
 
+- **#2015 · #2016 · #2022 · #2028 · #2036 · #2040 (2026-07-11/12, docs — dashboard-data refreshes, Q-0167)** —
+  six `dashboard/data/dashboard.json` regenerations keeping the committed export fresh as the
+  fleet-drive / overnight-review arc landed structural surfaces.
+- **#1982 · #1985 · #1986 · #1990 · #1992 · #1993 · #1994 · #1996 · #1997 · #2007 (2026-07-11, EAP — the Anthropic-feedback email + fleet-review arc, docs/control-only)** —
+  the band's dominant thread. The **fleet night review 2026-07-11** #1985 (owner vocab/skills +
+  routine-model findings), the **ORDER-002 self-review** #1982 (the fleet-wide self-review filed at
+  the retro convention home), the **second Anthropic email draft** #1986 (mock Part 1 + updated Part 2
+  + screenshot drop-folder), the **email-fleet-handoff session** #1990/#1992/#1993/#1994/#1997 (the
+  multi-PR handoff that assembled + refined the two-part reviewer email), the **Codex prompt-1 number
+  refresh** #1996 (superbot-next 37/49, gate 218/218, #111–#191), and the **durable pre-compact
+  session handoff + continuation brief** #2007. Entirely docs/control; **zero `disbot/` runtime**.
 - **#1983 · #1998 · #2002 · #2004 · #2005 · #2006 · #2008 · #2011 (2026-07-11, S5/fleet — the 8-seat consolidation → next-round founding-prompt arc, docs-only)** —
   the owner-directed fleet-management hub work. The **multi-project review dispatch** #1998/#1983
   (cross-fleet triage session), the **dispatch-kit permissions block** update folding gen-3

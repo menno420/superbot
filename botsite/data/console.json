@@ -1,14 +1,22 @@
 {
   "meta": {
-    "generated_at": "2026-07-19T19:20:46Z",
+    "generated_at": "2026-07-21T23:39:10Z",
     "build": {
-      "commit": "0b72ba13",
-      "subject": "Merge pull request #2160 from menno420/bot/dashboard-refresh",
-      "committed_at": "2026-07-19T19:20:46Z"
+      "commit": "c5fee42f",
+      "subject": "Merge pull request #2190 from menno420/bot/dashboard-refresh",
+      "committed_at": "2026-07-21T23:39:10Z"
     },
     "schema_version": 1
   },
   "sessions": [
+    {
+      "file": "2026-07-19-reconcile.md",
+      "date": "2026-07-19",
+      "title": "2026-07-19 — Forty-ninth Q-0107 reconciliation pass (band-#2160)",
+      "status": "complete",
+      "run_type": "routine",
+      "self_initiated": false
+    },
     {
       "file": "2026-07-18-triggers-ender-eap.md",
       "date": "2026-07-18",
@@ -480,21 +488,13 @@
       "status": "complete",
       "run_type": "",
       "self_initiated": false
-    },
-    {
-      "file": "2026-07-11-email-fleet-handoff.md",
-      "date": "2026-07-11",
-      "title": "2026-07-11 — Anthropic email #2 + fleet-management session (HANDOFF BRIEF)",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
     }
   ],
   "ideas": {
-    "total": 248,
+    "total": 249,
     "by_status": {
       "historical": 26,
-      "ideas": 219,
+      "ideas": 220,
       "reference": 3
     }
   },
@@ -1957,6 +1957,20 @@
     {
       "session": "2026-07-18-triggers-ender-eap",
       "date": "2026-07-18",
+      "model": "opus-4.8",
+      "effort": "high",
+      "task_class": "docs-only",
+      "tokens_out": null,
+      "outcome": {
+        "ci_green_first_push": false,
+        "checker_findings": "check_session_gate telemetry-row (fixed in-PR)",
+        "merged_pr": null,
+        "reverted_within_window": null
+      }
+    },
+    {
+      "session": "2026-07-19-reconcile",
+      "date": "2026-07-19",
       "model": "opus-4.8",
       "effort": "high",
       "task_class": "docs-only",
