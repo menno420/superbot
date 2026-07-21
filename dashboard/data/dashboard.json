@@ -1,10 +1,10 @@
 {
   "meta": {
-    "generated_at": "2026-07-21T08:47:31Z",
+    "generated_at": "2026-07-21T12:37:59Z",
     "build": {
-      "commit": "87e165e4",
-      "subject": "chore(deps): bump fastapi (#2174)",
-      "committed_at": "2026-07-21T08:47:31Z"
+      "commit": "83779d93",
+      "subject": "Merge pull request #2186 from menno420/bot/dashboard-refresh",
+      "committed_at": "2026-07-21T12:37:59Z"
     },
     "schema_version": 1,
     "counts": {
