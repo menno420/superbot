@@ -1,10 +1,10 @@
 {
   "meta": {
-    "generated_at": "2026-07-21T23:39:10Z",
+    "generated_at": "2026-07-21T21:47:39Z",
     "build": {
-      "commit": "c5fee42f",
-      "subject": "Merge pull request #2190 from menno420/bot/dashboard-refresh",
-      "committed_at": "2026-07-21T23:39:10Z"
+      "commit": "d4c1837b",
+      "subject": "chore: append telemetry row for 2026-07-21-reconcile session (Q-0194 gate)",
+      "committed_at": "2026-07-21T21:47:39Z"
     }
   },
   "counts": {

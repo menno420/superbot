@@ -7738,7 +7738,7 @@ const CHANGELOG = [
   {
     "version": "2026.06.19",
     "date": "Jun 19, 2026",
-    "build": "c5fee42f",
+    "build": "d4c1837b",
     "title": "New public bot website",
     "changes": [
       {
@@ -7750,7 +7750,7 @@ const CHANGELOG = [
   {
     "version": "2026.06.12",
     "date": "Jun 12, 2026",
-    "build": "c5fee42f",
+    "build": "d4c1837b",
     "title": "Owner review inbox on the dashboard",
     "changes": [
       {
@@ -7762,7 +7762,7 @@ const CHANGELOG = [
   {
     "version": "2026.06.08",
     "date": "Jun 08, 2026",
-    "build": "c5fee42f",
+    "build": "d4c1837b",
     "title": "Command-alias suggestions",
     "changes": [
       {
@@ -9143,9 +9143,9 @@ const FEATURES = [
 ];
 
 const BUILD = {
-  "commit": "c5fee42f",
-  "subject": "Merge pull request #2190 from menno420/bot/dashboard-refresh",
-  "committed_at": "2026-07-21T23:39:10Z"
+  "commit": "d4c1837b",
+  "subject": "chore: append telemetry row for 2026-07-21-reconcile session (Q-0194 gate)",
+  "committed_at": "2026-07-21T21:47:39Z"
 };
 
 const COUNTS = {
