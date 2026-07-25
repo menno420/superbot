@@ -1,10 +1,10 @@
 {
   "meta": {
-    "generated_at": "2026-07-25T09:00:47Z",
+    "generated_at": "2026-07-25T12:05:32Z",
     "build": {
-      "commit": "cdc255d9",
-      "subject": "Merge pull request #2223 from menno420/claude/reconcile-band2220-codex-followup",
-      "committed_at": "2026-07-25T09:00:47Z"
+      "commit": "6d825113",
+      "subject": "Merge pull request #2224 from menno420/bot/dashboard-refresh",
+      "committed_at": "2026-07-25T12:05:32Z"
     },
     "schema_version": 1,
     "counts": {
