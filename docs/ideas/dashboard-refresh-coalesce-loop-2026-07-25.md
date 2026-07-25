@@ -34,18 +34,35 @@ cadence.
 Coalesce/debounce the `bot/dashboard-refresh` loop so it produces far fewer, larger PRs.
 Cheapest first:
 
-1. **Single rolling refresh PR (amend-in-place).** Keep **one** open `bot/dashboard-refresh`
-   PR; each refresh tick force-pushes the regenerated artifact onto that same branch (or
-   no-ops when the diff is empty) instead of opening a new PR. It merges on its own schedule
-   (daily, or when a substantive PR lands). One CI run per merge, not per tick.
-2. **Debounced digest cadence.** Run the export loop unchanged but only *open/merge* a refresh
-   PR on a fixed cadence (e.g. once/day) or when the diff exceeds a structural-change threshold
-   (`check_dashboard_data.py --drift` already computes what changed — gate the PR on a non-noise
-   delta). Trivial re-serializations that don't change any surface never mint a PR.
-3. **Skip-if-noise guard.** At minimum, have the loop **not open a PR when the only diff is
+**Starting point — what already exists.** `dashboard-data-refresh.yml` already reuses **one**
+branch (`bot/dashboard-refresh`, force-updated) and is **scheduled every ~2h** (not per-merge), so
+"one rolling PR" is *partly* built. The churn is that each 2-hourly run with drift force-updates the
+PR, it auto-merges, and the next run opens it afresh — ≈one merge per cadence tick over the band.
+The lever is therefore the **cadence + the per-push CI**, not the PR count.
+
+1. **Debounce the pushes/cadence themselves — not just the PR count.** Note the trap Codex flagged
+   on this PR: `code-quality.yml` triggers on **every `pull_request` update** with
+   `cancel-in-progress: false` (a merge-safety invariant, `check_workflow_concurrency.py`), and the
+   refresh workflow force-updates the PR branch — so *every* drift tick starts a **full,
+   un-cancellable** Code Quality run regardless of how rarely the PR merges. Consolidating into one
+   rolling PR alone does **not** yield "one CI run per merge." The real fix debounces the
+   **force-push cadence** (e.g. lengthen the 2h schedule to daily, or only push when a real delta
+   exists) — or changes the gating so an artifact-only refresh PR runs a cheap docs-lane check
+   instead of the full matrix.
+2. **Gate the refresh on a *feed-aware* delta — not `--drift`.** Trap #2 Codex flagged: gating
+   refresh PRs on `check_dashboard_data.py --drift` would **never fire for feed-only updates**,
+   because `--drift` *deliberately* compares only structural identifier sets (cogs/commands/
+   env-vars/settings/catalogue keys) and **ignores the volatile feeds — ideas/sessions/bugs — plus
+   timestamps/build SHA** (its docstring says so). Those feeds are exactly what the scheduled
+   workflow exists to keep current, so on a frozen repo they'd go stale indefinitely. Use a
+   comparison that **excludes build-only metadata (timestamp, `meta.build.commit`) but still treats
+   feed-content changes as meaningful** — i.e. a purpose-built "is this a real content change?"
+   check, not the structural-only `--drift`.
+3. **Skip-if-noise guard.** At minimum, have the loop **not push/open a PR when the only diff is
    `meta.build.commit` / timestamps** — the exact churn the
    [`dashboard-build-sha-post-merge-2026-07-14.md`](dashboard-build-sha-post-merge-2026-07-14.md)
-   idea already flags as a dead PR-branch SHA. That single guard removes the emptiest refreshes.
+   idea already flags as a dead PR-branch SHA. That single guard removes the emptiest refreshes, and
+   is the concrete kernel of the feed-aware delta in (2).
 
 ## Why it's worth having
 
