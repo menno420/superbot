@@ -7738,7 +7738,7 @@ const CHANGELOG = [
   {
     "version": "2026.06.19",
     "date": "Jun 19, 2026",
-    "build": "690f678c",
+    "build": "98a07923",
     "title": "New public bot website",
     "changes": [
       {
@@ -7750,7 +7750,7 @@ const CHANGELOG = [
   {
     "version": "2026.06.12",
     "date": "Jun 12, 2026",
-    "build": "690f678c",
+    "build": "98a07923",
     "title": "Owner review inbox on the dashboard",
     "changes": [
       {
@@ -7762,7 +7762,7 @@ const CHANGELOG = [
   {
     "version": "2026.06.08",
     "date": "Jun 08, 2026",
-    "build": "690f678c",
+    "build": "98a07923",
     "title": "Command-alias suggestions",
     "changes": [
       {
@@ -9143,9 +9143,9 @@ const FEATURES = [
 ];
 
 const BUILD = {
-  "commit": "690f678c",
-  "subject": "Merge pull request #2220 from menno420/bot/dashboard-refresh",
-  "committed_at": "2026-07-25T08:34:51Z"
+  "commit": "98a07923",
+  "subject": "Merge pull request #2222 from menno420/claude/reconcile-band2220",
+  "committed_at": "2026-07-25T08:51:26Z"
 };
 
 const COUNTS = {

@@ -1,15 +1,15 @@
 {
   "meta": {
-    "generated_at": "2026-07-25T08:34:51Z",
+    "generated_at": "2026-07-25T08:51:26Z",
     "build": {
-      "commit": "690f678c",
-      "subject": "Merge pull request #2220 from menno420/bot/dashboard-refresh",
-      "committed_at": "2026-07-25T08:34:51Z"
+      "commit": "98a07923",
+      "subject": "Merge pull request #2222 from menno420/claude/reconcile-band2220",
+      "committed_at": "2026-07-25T08:51:26Z"
     },
     "schema_version": 1,
     "counts": {
       "functions": 43,
-      "ideas": 250,
+      "ideas": 251,
       "bugs": 31,
       "reviews": 0,
       "reviews_open": 0,
@@ -1165,6 +1165,14 @@
     }
   ],
   "ideas": [
+    {
+      "file": "dashboard-refresh-coalesce-loop-2026-07-25.md",
+      "title": "Idea — coalesce the dashboard-refresh loop into far fewer PRs (attack the churn at the source)",
+      "status": "ideas",
+      "date": "2026-07-25",
+      "summary": "Band-#2220 (#2191–#2220) was **28 merged PRs: 27 were automated `bot/dashboard-refresh`",
+      "subsystems": null
+    },
     {
       "file": "reconcile-thin-flag-standing-vs-newly-raised-2026-07-21.md",
       "title": "Idea — distinguish a *standing* PLAN BACKLOG THIN from a *newly-raised* one",
@@ -3437,6 +3445,14 @@
   "reviews": [],
   "updates": [
     {
+      "file": "2026-07-25-reconcile.md",
+      "date": "2026-07-25",
+      "title": "2026-07-25 — Fifty-first Q-0107 reconciliation pass (band-#2220)",
+      "status": "complete",
+      "run_type": "routine",
+      "self_initiated": false
+    },
+    {
       "file": "2026-07-21-reconcile.md",
       "date": "2026-07-21",
       "title": "2026-07-21 — Fiftieth Q-0107 reconciliation pass (band-#2190)",
@@ -3904,14 +3920,6 @@
       "file": "2026-07-11-email2-sidebar-correction.md",
       "date": "2026-07-11",
       "title": "2026-07-11 — Email #2: sidebar-nesting correction (owner screenshot)",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-07-11-email2-part2-polish.md",
-      "date": "2026-07-11",
-      "title": "2026-07-11 — Email #2: owner's Part 1 landed + agents' Part 2 fact-refresh",
       "status": "complete",
       "run_type": "",
       "self_initiated": false
@@ -5341,6 +5349,20 @@
     {
       "session": "2026-07-21-reconcile",
       "date": "2026-07-21",
+      "model": "opus-4.8",
+      "effort": "high",
+      "task_class": "docs-only",
+      "tokens_out": null,
+      "outcome": {
+        "ci_green_first_push": false,
+        "checker_findings": "check_session_gate telemetry-row (fixed in-PR)",
+        "merged_pr": null,
+        "reverted_within_window": null
+      }
+    },
+    {
+      "session": "2026-07-25-reconcile",
+      "date": "2026-07-25",
       "model": "opus-4.8",
       "effort": "high",
       "task_class": "docs-only",
