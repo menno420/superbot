@@ -9,6 +9,20 @@
 > S3; the docs it produces are S4.*
 
 **Recently shipped (this sector):**
+- **Fifty-first Q-0107 reconciliation pass** (band-#2220, issue #2221 —
+  record in [`.sessions/2026-07-25-reconcile.md`](../../.sessions/2026-07-25-reconcile.md)): reconciled
+  the ledger (band #2191–#2220, 28 PRs — **entirely docs + generated artifact, zero `disbot/` runtime**,
+  matching oracle-freeze: the **50th-pass reconcile PR** #2192 and **27 dashboard refreshes**
+  #2193…#2216/#2218/#2219/#2220), trimmed Recently-shipped to 20, **disposed the open-PR set** —
+  **8 open Dependabot dep-bump PRs** (#2171/#2172/#2173/#2175/#2176/#2178/#2184/#2185 — the runtime dep
+  lane, Q-0256, left in flight; not this docs-only pass) and **closed #2217** (an external drive-by
+  adding a redundant generic `python-app.yml` CI workflow duplicating the pinned `code-quality.yml`),
+  no stale session PR, confirmed **ROUTINE_PAT set / loop self-fires** (issue #2221 authored by
+  `menno420`), **⚠️ carried PLAN BACKLOG THIN** (the in-repo product backlog is intentionally frozen —
+  no 30-PR feature band to plan; forward queue is `NEXT-TASKS.md`: superbot-next rebuild cutover
+  + docs curation + owner-gated calls), refreshed the dashboard export (Q-0167), reset the marker
+  #2190 → #2220. Supersede-banner soft warnings unchanged at 9 (honest cross-repo phantom successors in
+  fleet-manager the in-repo checker can't resolve).
 - **Fiftieth Q-0107 reconciliation pass** (band-#2190, issue #2191 —
   record in [`.sessions/2026-07-21-reconcile.md`](../../.sessions/2026-07-21-reconcile.md)): reconciled
   the ledger (band #2161–#2190, 20 PRs — **entirely docs/CI/tooling + generated artifact + 2 dep bumps,

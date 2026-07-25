@@ -86,6 +86,19 @@
 
 ## Recently shipped — archived (newest first)
 
+- **#2017 · #2018 · #2019 · #2020 · #2021 · #2025 · #2026 · #2027 · #2029 · #2030 · #2031 (2026-07-12, EAP — the Projects overnight batch review + EAP figure gallery, docs-only)** —
+  the overnight cross-fleet batch review ([`eap/night-review-2026-07-12.md`](eap/night-review-2026-07-12.md)):
+  the **trigger-scheduler incident** (~02:30–08:00Z — 9 dropped `send_later` one-shots + 2 wedged
+  crons; the Q-0265 failsafe doctrine validated in production; Venture Lab dark, kit-lab manually
+  re-fired; cross-session trigger revival org-disabled) + the per-seat digest, lessons, fix-first
+  list and owner-action queue — and the **EAP figure gallery** (fig-20…fig-32 screenshots +
+  [`eap/email-attachment-set-2026-07-12.md`](eap/email-attachment-set-2026-07-12.md), the set linked
+  from the sent email). Includes the Q-0174 post-merge Codex pass on #2017 (5 verified findings fixed).
+  Entirely docs/control; **zero `disbot/` runtime**.
+- **#2013 · #2014 (2026-07-11/12, S4 — routine-arming doctrine correction + band-#2010 reconcile follow-up)** —
+  #2013 corrected the routine-arming doctrine (routines are **agent-armed, never owner-armed**) in the
+  `.claude/` control docs; #2014 is the band-#2010 reconcile follow-up (ledger + archive + the
+  `check-docs-cross-repo-path-awareness` idea). Docs/control-only.
 - **#2015 · #2016 · #2022 · #2028 · #2036 · #2040 (2026-07-11/12, docs — dashboard-data refreshes, Q-0167)** —
   six `dashboard/data/dashboard.json` regenerations keeping the committed export fresh as the
   fleet-drive / overnight-review arc landed structural surfaces.

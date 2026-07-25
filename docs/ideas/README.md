@@ -38,6 +38,13 @@ Current broad captures:
   routine fires ~5× faster than substantive work warrants on a frozen oracle repo. Exclude known
   generated/automated PR classes (`bot/dashboard-refresh`, Dependabot) from the cadence counter in
   `check_reconciliation_due.py` so a pass fires on real drift, not artifact churn. Subsystem: none.
+- [`dashboard-refresh-coalesce-loop-2026-07-25.md`](./dashboard-refresh-coalesce-loop-2026-07-25.md) —
+  **session ender (2026-07-25, 51st Q-0107 reconciliation pass, band-#2220):** **27 of 28 PRs in the
+  band were automated `bot/dashboard-refresh` PRs**, each a full Code Quality CI run + merge + redeploy
+  on the frozen oracle repo. The **producer-side** complement to the 2026-07-19 consumer-side cadence
+  idea: coalesce/debounce the refresh loop into far fewer PRs (one rolling amend-in-place PR · daily
+  digest · skip-if-diff-is-noise) to cut the repo's dominant Actions cost at its source. Subsystem:
+  S4/S5 (docs-system / ops tooling).
 - [`reconcile-thin-flag-standing-vs-newly-raised-2026-07-21.md`](./reconcile-thin-flag-standing-vs-newly-raised-2026-07-21.md) —
   **session ender (2026-07-21, 50th Q-0107 reconciliation pass, band-#2190):** `PLAN BACKLOG THIN`
   (Q-0164) has now fired on three consecutive passes (48th/49th/50th) as a **standing, intentional
