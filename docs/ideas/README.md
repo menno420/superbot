@@ -31,6 +31,13 @@ only the header block is read, so a `**Subsystem:**` *example* in an idea's body
 
 Current broad captures:
 
+- [`control-plane-marker-staleness-guard-2026-07-27.md`](./control-plane-marker-staleness-guard-2026-07-27.md) —
+  **session ender (2026-07-27, 52nd Q-0107 reconciliation pass, band-#2250):** the Control-plane
+  `ROUTINE_PAT` row's manual "re-confirmed through #N" list **silently stalled at #1264 for ~30 passes**
+  while the loop kept self-firing — a Q-0194 friction→guard candidate: a warn-only stdlib check that
+  flags when the confirmation marker is more than one cadence-step behind the live reconciliation marker,
+  so the freshness note can't age unnoticed. Distinct from the `gh`-fallback idea (that probes the live
+  control-plane; this guards the doc marker's freshness). Subsystem: S4/S5 (docs-system / ops tooling).
 - [`reconciliation-cadence-exclude-generated-prs-2026-07-19.md`](./reconciliation-cadence-exclude-generated-prs-2026-07-19.md) —
   **session ender (2026-07-19, 49th Q-0107 reconciliation pass, band-#2160):** the reconciliation
   cadence counts raw PR numbers, but **79% of band-#2160 (23/29 PRs) were automated

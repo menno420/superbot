@@ -4,6 +4,9 @@
 > **Class:** workflow / reconciliation-routine + run-report. Small, cheap, disposable (Q-0105).
 > **Routes to:** a dispatch/tooling session (touches the routine + `current-state.md` convention),
 > not a docs-only reconciliation pass.
+>
+> **▶ COLLECTED (2026-07-27, 52nd pass) → [`planning/routine-debt.md`](../planning/routine-debt.md) item 4**
+> (self-mergeable `check_*` / doc-convention; ships in the batch's docs-tooling PR).
 
 ## The observation
 

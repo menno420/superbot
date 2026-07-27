@@ -86,6 +86,22 @@
 
 ## Recently shipped — archived (newest first)
 
+- **#2044 · #2047 · #2050 · #2052 · #2062 · #2063 · #2067 (2026-07-12/13, docs — dashboard-data refreshes, Q-0167)** —
+  seven `dashboard/data/dashboard.json` regenerations keeping the committed export fresh as the
+  owner-queue / fleet-rearm / orientation-review arc landed structural surfaces.
+- **#2032 · #2033 · #2034 · #2035 · #2037 · #2038 · #2039 (2026-07-12, EAP/S5 — the owner-live fleet-drive: 2nd Anthropic email SENT + fleet PR drive + two owner work-orders, docs/control-only)** —
+  the band's headline. The **second Anthropic EAP email finalized + SENT** (owner sent 2026-07-12
+  13:24Z, reply on the July 8 thread) — staged as a clean draft #2032, gallery figures #2033, SENT
+  state recorded #2034, and the **gallery image links fixed** #2038 (relative → full
+  `blob/main/...?raw=true` URLs). Two **owner work-orders** written + merged for paste-in to the
+  target Projects: the **websites review-site refresh + on-site AI assistant + homepage** order #2035
+  and the **Project-Manager trigger-health check** order #2037. Session close-out (fleet-drive record
+  + centralized owner-action queue) #2039. The live fleet-drive itself merged cross-repo (mineverse
+  #42 CSRF → Games flagship gate cleared; fleet-manager #113/#117; websites 11/14 PRs) and found two
+  systemic root-causes (fleet-manager roster-regen blocked on the Actions-create-PR toggle; websites
+  serial-merge cascade from "require branches up-to-date" without a merge queue, owner-removed
+  mid-session). Full record: [`.sessions/2026-07-12-fleet-drive-and-websites.md`](../.sessions/2026-07-12-fleet-drive-and-websites.md).
+  Entirely docs/control; **zero `disbot/` runtime**.
 - **#2017 · #2018 · #2019 · #2020 · #2021 · #2025 · #2026 · #2027 · #2029 · #2030 · #2031 (2026-07-12, EAP — the Projects overnight batch review + EAP figure gallery, docs-only)** —
   the overnight cross-fleet batch review ([`eap/night-review-2026-07-12.md`](eap/night-review-2026-07-12.md)):
   the **trigger-scheduler incident** (~02:30–08:00Z — 9 dropped `send_later` one-shots + 2 wedged

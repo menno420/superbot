@@ -1,14 +1,22 @@
 {
   "meta": {
-    "generated_at": "2026-07-25T08:51:26Z",
+    "generated_at": "2026-07-27T23:29:11Z",
     "build": {
-      "commit": "98a07923",
-      "subject": "Merge pull request #2222 from menno420/claude/reconcile-band2220",
-      "committed_at": "2026-07-25T08:51:26Z"
+      "commit": "93be74a9",
+      "subject": "Merge pull request #2250 from menno420/bot/dashboard-refresh",
+      "committed_at": "2026-07-27T23:29:11Z"
     },
     "schema_version": 1
   },
   "sessions": [
+    {
+      "file": "2026-07-27-reconcile.md",
+      "date": "2026-07-27",
+      "title": "2026-07-27 — fifty-second Q-0107 docs reconciliation pass (band-#2250)",
+      "status": "complete",
+      "run_type": "routine",
+      "self_initiated": true
+    },
     {
       "file": "2026-07-25-reconcile.md",
       "date": "2026-07-25",
@@ -480,21 +488,13 @@
       "status": "complete",
       "run_type": "manual",
       "self_initiated": false
-    },
-    {
-      "file": "2026-07-11-email2-sidebar-correction.md",
-      "date": "2026-07-11",
-      "title": "2026-07-11 — Email #2: sidebar-nesting correction (owner screenshot)",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
     }
   ],
   "ideas": {
-    "total": 251,
+    "total": 252,
     "by_status": {
       "historical": 26,
-      "ideas": 222,
+      "ideas": 223,
       "reference": 3
     }
   },
@@ -1999,6 +1999,20 @@
     {
       "session": "2026-07-25-reconcile",
       "date": "2026-07-25",
+      "model": "opus-4.8",
+      "effort": "high",
+      "task_class": "docs-only",
+      "tokens_out": null,
+      "outcome": {
+        "ci_green_first_push": false,
+        "checker_findings": "check_session_gate telemetry-row (fixed in-PR)",
+        "merged_pr": null,
+        "reverted_within_window": null
+      }
+    },
+    {
+      "session": "2026-07-27-reconcile",
+      "date": "2026-07-27",
       "model": "opus-4.8",
       "effort": "high",
       "task_class": "docs-only",
