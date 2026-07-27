@@ -3,6 +3,9 @@
 > **Status:** `ideas` — session idea (Q-0089), captured 2026-07-25 (fifty-first Q-0107 reconciliation
 > pass, band-#2220). Not approved for implementation. · **Class:** friction→guard · **Subsystem:**
 > S4/S5 (docs-system / ops tooling — the `bot/dashboard-refresh` producer loop).
+>
+> **▶ COLLECTED (2026-07-27, 52nd pass) → [`planning/routine-debt.md`](../planning/routine-debt.md) item 1**
+> (⚑ owner-gated — touches a workflow; the highest-leverage item in the batch).
 
 ## The observation
 

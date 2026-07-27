@@ -2,6 +2,9 @@
 
 > **Status:** `ideas` — session idea (Q-0089), captured 2026-07-19 (49th Q-0107 reconciliation pass,
 > band-#2160). Not approved for implementation. · **Subsystem:** none (agent-workflow / meta)
+>
+> **▶ COLLECTED (2026-07-27, 52nd pass) → [`planning/routine-debt.md`](../planning/routine-debt.md) item 2**
+> (self-mergeable `check_*` change; ships in the batch's docs-tooling PR).
 
 ## The observation
 

@@ -194,7 +194,10 @@
   **middle/bottom layers** (folio completeness + cog/idea leaf-wiring — the "larger nav build" the
   sector-map session flagged).
 - **Next:** idea-backlog **grooming** cadence (Q-0015 — every idea ends implemented or discussed) ·
-  orientation-route upkeep mined from `.sessions/` **context-deltas** · doc-reachability maintenance.
+  orientation-route upkeep mined from `.sessions/` **context-deltas** · doc-reachability maintenance ·
+  **▶ the reconciliation-routine tooling-debt batch** [`planning/routine-debt.md`](planning/routine-debt.md)
+  (four converging ungated `check_*`/workflow ideas the 49th–52nd passes surfaced — items 2/3/4 ship as
+  one self-mergeable docs-tooling PR; item 1, the dashboard-refresh coalesce, is owner-gated).
 - **Later / recurring:** the **Q-0107 reconciliation** *content* pass (de-stale docs · refactor the
   roadmap · keep the ledger honest) — its trigger/checker **machinery** is S3, the docs it produces are
   S4. Cadence: every 30th PR (Q-0134).
