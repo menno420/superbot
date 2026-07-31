@@ -86,6 +86,20 @@
 
 ## Recently shipped — archived (newest first)
 
+- **#2043 · #2045 · #2046 · #2048 · #2049 · #2051 · #2053 · #2055 · #2057 · #2059 · #2060 (2026-07-12/13, S5/fleet — owner-queue execution → fleet re-arm + night-orders, docs/control-only)** —
+  the **owner-queue execution** #2043 (owner-live, credentialed: websites `ANTHROPIC_API_KEY` set on
+  both review services, both work-orders delivered as fleet-manager ORDER 019/020, mineverse web host
+  created + LIVE, Actions-toggle bridge) — full record
+  [`.sessions/2026-07-12-owner-queue-execution.md`](../.sessions/2026-07-12-owner-queue-execution.md)
+  + the evening mineverse-signin part-2; the **fleet re-arm** #2048 (all 8 seats re-dispatched with the
+  Q-0271 autonomy rider) + **night orders v2** and the **direct-order paste-set**
+  [`owner/fleet-direct-orders-2026-07-13.md`](owner/fleet-direct-orders-2026-07-13.md) + the **manager's
+  final order** (prompt centralization → v3.5) + the **07-13 next-session brief**; plus the
+  **settings-permission sweep** #2045 and the **07-12 session close-out** #2046. Docs/control-only; no
+  `disbot/` runtime.
+- **#2042 (2026-07-12, workflow — forty-fifth Q-0107 reconciliation pass, band-#2040)** —
+  reconciled band #2012–#2040, trimmed Recently-shipped to 20, disposed the open-PR set (zero open),
+  marker #2011 → #2040 ([pass record](planning/reconciliation-pass-2026-07-12-band2040.md)).
 - **#2044 · #2047 · #2050 · #2052 · #2062 · #2063 · #2067 (2026-07-12/13, docs — dashboard-data refreshes, Q-0167)** —
   seven `dashboard/data/dashboard.json` regenerations keeping the committed export fresh as the
   owner-queue / fleet-rearm / orientation-review arc landed structural surfaces.

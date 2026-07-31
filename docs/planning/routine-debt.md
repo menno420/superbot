@@ -12,6 +12,12 @@
 > adjacent), which is owner-gated per the Q-0194 split — those are flagged **⚑ owner-gated** below and
 > should be *proposed* (router DISCUSS Q) rather than self-applied unless owner-directed in-session.
 
+> **Carry status:** `carried-since:` band-#2250 (built 52nd pass) · **carried 1 pass** as of the 53rd
+> pass (band-#2280, 2026-07-31) — batch still unexecuted; items 2/3/4 remain one self-mergeable
+> docs-tooling PR awaiting a tooling-capable session. Per
+> [`../ideas/routine-debt-carry-escalation-2026-07-31.md`](../ideas/routine-debt-carry-escalation-2026-07-31.md),
+> the reconciliation run report surfaces this carry so the batch can't age unnoticed.
+
 ## Why these belong together
 
 All four ideas below were surfaced as Q-0089 session-enders by consecutive reconciliation passes, and

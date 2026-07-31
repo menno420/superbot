@@ -31,6 +31,13 @@ only the header block is read, so a `**Subsystem:**` *example* in an idea's body
 
 Current broad captures:
 
+- [`routine-debt-carry-escalation-2026-07-31.md`](./routine-debt-carry-escalation-2026-07-31.md) —
+  **session ender (2026-07-31, 53rd Q-0107 reconciliation pass, band-#2280):** the 52nd pass built the
+  `routine-debt.md` collector (4 ungated tooling ideas, items 2/3/4 = one self-mergeable PR), but this
+  pass **carried it unexecuted again** and the reconciliation routine has **no owner-facing channel** to
+  flag a ready-but-undrained tooling batch (only `PLAN BACKLOG THIN` exists). Add a parallel
+  `⚑ Routine-debt: N items, carried P passes` run-report line (convention now, warn-only `check_*` later)
+  — the *drain mechanism* for the collector, distinct from the four debts inside it. Subsystem: S4/S5.
 - [`control-plane-marker-staleness-guard-2026-07-27.md`](./control-plane-marker-staleness-guard-2026-07-27.md) —
   **session ender (2026-07-27, 52nd Q-0107 reconciliation pass, band-#2250):** the Control-plane
   `ROUTINE_PAT` row's manual "re-confirmed through #N" list **silently stalled at #1264 for ~30 passes**
