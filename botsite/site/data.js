@@ -7738,7 +7738,7 @@ const CHANGELOG = [
   {
     "version": "2026.06.19",
     "date": "Jun 19, 2026",
-    "build": "861518e6",
+    "build": "880c872f",
     "title": "New public bot website",
     "changes": [
       {
@@ -7750,7 +7750,7 @@ const CHANGELOG = [
   {
     "version": "2026.06.12",
     "date": "Jun 12, 2026",
-    "build": "861518e6",
+    "build": "880c872f",
     "title": "Owner review inbox on the dashboard",
     "changes": [
       {
@@ -7762,7 +7762,7 @@ const CHANGELOG = [
   {
     "version": "2026.06.08",
     "date": "Jun 08, 2026",
-    "build": "861518e6",
+    "build": "880c872f",
     "title": "Command-alias suggestions",
     "changes": [
       {
@@ -9143,9 +9143,9 @@ const FEATURES = [
 ];
 
 const BUILD = {
-  "commit": "861518e6",
-  "subject": "Merge pull request #2280 from menno420/bot/dashboard-refresh",
-  "committed_at": "2026-07-31T12:57:31Z"
+  "commit": "880c872f",
+  "subject": "docs: teach the reconcile routine to append its telemetry row before first push",
+  "committed_at": "2026-07-31T11:08:33Z"
 };
 
 const COUNTS = {

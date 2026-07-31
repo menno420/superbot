@@ -7,9 +7,11 @@
 
 The 52nd pass (band-#2250) did the right thing: it stopped minting a fresh standalone idea file every
 pass and built [`planning/routine-debt.md`](../planning/routine-debt.md), a **collector** of the four
-converging, ungated, self-mergeable tooling ideas the reconciliation passes keep surfacing (dashboard
-coalesce · cadence-exclude-generated · control-plane marker staleness guard · THIN standing-vs-raised).
-Items 2/3/4 are explicitly designed to ship as **one** docs-tooling PR; item 1 is owner-gated.
+converging tooling ideas the reconciliation passes keep surfacing (dashboard coalesce ·
+cadence-exclude-generated · control-plane marker staleness guard · THIN standing-vs-raised). **Items 2/3/4
+are ungated and self-mergeable and are explicitly designed to ship as one docs-tooling PR; item 1
+(dashboard-coalesce) is owner-gated** (it touches a workflow — Q-0194 split) and must be proposed
+separately, never folded into the self-mergeable batch.
 
 This 53rd pass carried that batch **one more pass, unexecuted** — and that is the gap. The reconciliation
 routine has exactly one owner-facing escalation channel on its run report: the `⚑ PLAN BACKLOG THIN`

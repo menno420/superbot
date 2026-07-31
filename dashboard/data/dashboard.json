@@ -1,15 +1,15 @@
 {
   "meta": {
-    "generated_at": "2026-07-31T12:57:31Z",
+    "generated_at": "2026-07-31T11:08:33Z",
     "build": {
-      "commit": "861518e6",
-      "subject": "Merge pull request #2280 from menno420/bot/dashboard-refresh",
-      "committed_at": "2026-07-31T12:57:31Z"
+      "commit": "880c872f",
+      "subject": "docs: teach the reconcile routine to append its telemetry row before first push",
+      "committed_at": "2026-07-31T11:08:33Z"
     },
     "schema_version": 1,
     "counts": {
       "functions": 43,
-      "ideas": 252,
+      "ideas": 253,
       "bugs": 31,
       "reviews": 0,
       "reviews_open": 0,
@@ -1165,6 +1165,14 @@
     }
   ],
   "ideas": [
+    {
+      "file": "routine-debt-carry-escalation-2026-07-31.md",
+      "title": "Idea — escalate carried routine-debt on the reconciliation run report",
+      "status": "ideas",
+      "date": "2026-07-31",
+      "summary": "The 52nd pass (band-#2250) did the right thing: it stopped minting a fresh standalone idea file every",
+      "subsystems": null
+    },
     {
       "file": "control-plane-marker-staleness-guard-2026-07-27.md",
       "title": "Idea — a staleness guard on the Control-plane \"re-confirmed through #N\" marker",
@@ -3453,6 +3461,14 @@
   "reviews": [],
   "updates": [
     {
+      "file": "2026-07-31-reconcile.md",
+      "date": "2026-07-31",
+      "title": "2026-07-31 — fifty-third Q-0107 docs reconciliation pass (band-#2280)",
+      "status": "complete",
+      "run_type": "routine",
+      "self_initiated": true
+    },
+    {
       "file": "2026-07-27-reconcile.md",
       "date": "2026-07-27",
       "title": "2026-07-27 — fifty-second Q-0107 docs reconciliation pass (band-#2250)",
@@ -3922,14 +3938,6 @@
       "title": "2026-07-11 — Fix codex-final-review workflow YAML (broken since #1105)",
       "status": "complete",
       "run_type": "",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-07-11-env-grant-and-relaunch-handoff.md",
-      "date": "2026-07-11",
-      "title": "2026-07-11 — Env-grant docs + live-env-visibility plan + RELAUNCH/TRIAGE handoff",
-      "status": "complete",
-      "run_type": "manual",
       "self_initiated": false
     }
   ],
@@ -5385,6 +5393,20 @@
     {
       "session": "2026-07-27-reconcile",
       "date": "2026-07-27",
+      "model": "opus-4.8",
+      "effort": "high",
+      "task_class": "docs-only",
+      "tokens_out": null,
+      "outcome": {
+        "ci_green_first_push": false,
+        "checker_findings": "check_session_gate telemetry-row (fixed in-PR)",
+        "merged_pr": null,
+        "reverted_within_window": null
+      }
+    },
+    {
+      "session": "2026-07-31-reconcile",
+      "date": "2026-07-31",
       "model": "opus-4.8",
       "effort": "high",
       "task_class": "docs-only",
