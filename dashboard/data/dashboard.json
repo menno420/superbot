@@ -1,10 +1,10 @@
 {
   "meta": {
-    "generated_at": "2026-07-31T11:08:33Z",
+    "generated_at": "2026-07-31T13:21:54Z",
     "build": {
-      "commit": "880c872f",
-      "subject": "docs: teach the reconcile routine to append its telemetry row before first push",
-      "committed_at": "2026-07-31T11:08:33Z"
+      "commit": "9f510406",
+      "subject": "Merge pull request #2282 from menno420/claude/reconcile-band2280",
+      "committed_at": "2026-07-31T13:21:54Z"
     },
     "schema_version": 1,
     "counts": {
