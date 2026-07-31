@@ -288,11 +288,18 @@ STEP 4 — CLOSE THE LOOP (memory write-back, always):
     the ⚑ Owner-decisions / ⚑ Owner-manual-steps lines are required (`none` when empty), and the
     **Run type:** line set to `routine · reconciliation` (Q-0165 — the dashboard updates feed
     badges routine vs. manual work off this line).
+  - **APPEND YOUR TELEMETRY ROW *before the first push* — this is the #1 recurring first-push CI red
+    (every reconcile pass through #2280 tripped it and "fixed in-PR", burning a Code Quality run).**
+    The `check_session_gate` Q-0194 guard holds the merge red whenever a PR adds a `.sessions/` card
+    dated ≥ 2026-07-09 without appending ≥1 line to `telemetry/model-usage.jsonl`. Append one row now —
+    copy the newest existing row's shape (`{session, date, model, effort, task_class: "docs-only",
+    tokens_out: null, outcome:{…}}`; schema: `telemetry/README.md`) — so your **first** push is green.
 
 STEP 5 — SHIP: FIRST re-run `python3.10 scripts/export_dashboard_data.py` (the STEP-2 order caveat) so
   the committed feeds include this pass's own `.sessions/` card + telemetry row + new idea, and commit
   the refreshed JSON. Then open a docs-only claude/ PR; ensure check_docs, check_current_state_ledger,
-  and check_session_log all pass; SELF-MERGE on green CI: re-sync origin/main first, UNION-resolve
+  check_session_log, **and check_session_gate** (`--base <main-sha> --head HEAD`, the telemetry-row guard
+  above) all pass; SELF-MERGE on green CI: re-sync origin/main first, UNION-resolve
   conflicts (you are the reconciler), require CI green on the final head, merge-commit. Then
   CLOSE the triggering `reconcile` issue (reference the merged PR).
 
