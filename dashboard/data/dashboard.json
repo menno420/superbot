@@ -1,10 +1,10 @@
 {
   "meta": {
-    "generated_at": "2026-08-03T09:51:00Z",
+    "generated_at": "2026-08-03T11:52:58Z",
     "build": {
-      "commit": "40d21af0",
-      "subject": "Merge pull request #2309 from menno420/bot/dashboard-refresh",
-      "committed_at": "2026-08-03T09:51:00Z"
+      "commit": "46c3ca81",
+      "subject": "docs(reconcile): open band-#2310 Q-0107 pass (born-red card + claim)",
+      "committed_at": "2026-08-03T11:52:58Z"
     },
     "schema_version": 1,
     "counts": {
@@ -3461,6 +3461,14 @@
   "reviews": [],
   "updates": [
     {
+      "file": "2026-08-03-reconcile.md",
+      "date": "2026-08-03",
+      "title": "2026-08-03 — fifty-fourth Q-0107 docs reconciliation pass (band-#2310)",
+      "status": "in-progress",
+      "run_type": "routine",
+      "self_initiated": false
+    },
+    {
       "file": "2026-07-31-reconcile.md",
       "date": "2026-07-31",
       "title": "2026-07-31 — fifty-third Q-0107 docs reconciliation pass (band-#2280)",
@@ -3928,14 +3936,6 @@
       "file": "2026-07-11-fleet-consolidation-next-round.md",
       "date": "2026-07-11",
       "title": "2026-07-11 — consolidation + next-round blueprint (4 owner decisions finalized)",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-07-11-fix-codex-final-review-yaml.md",
-      "date": "2026-07-11",
-      "title": "2026-07-11 — Fix codex-final-review workflow YAML (broken since #1105)",
       "status": "complete",
       "run_type": "",
       "self_initiated": false

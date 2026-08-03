@@ -7738,7 +7738,7 @@ const CHANGELOG = [
   {
     "version": "2026.06.19",
     "date": "Jun 19, 2026",
-    "build": "880c872f",
+    "build": "46c3ca81",
     "title": "New public bot website",
     "changes": [
       {
@@ -7750,7 +7750,7 @@ const CHANGELOG = [
   {
     "version": "2026.06.12",
     "date": "Jun 12, 2026",
-    "build": "880c872f",
+    "build": "46c3ca81",
     "title": "Owner review inbox on the dashboard",
     "changes": [
       {
@@ -7762,7 +7762,7 @@ const CHANGELOG = [
   {
     "version": "2026.06.08",
     "date": "Jun 08, 2026",
-    "build": "880c872f",
+    "build": "46c3ca81",
     "title": "Command-alias suggestions",
     "changes": [
       {
@@ -9143,9 +9143,9 @@ const FEATURES = [
 ];
 
 const BUILD = {
-  "commit": "880c872f",
-  "subject": "docs: teach the reconcile routine to append its telemetry row before first push",
-  "committed_at": "2026-07-31T11:08:33Z"
+  "commit": "46c3ca81",
+  "subject": "docs(reconcile): open band-#2310 Q-0107 pass (born-red card + claim)",
+  "committed_at": "2026-08-03T11:52:58Z"
 };
 
 const COUNTS = {
