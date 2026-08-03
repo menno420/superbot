@@ -1,10 +1,10 @@
 {
   "meta": {
-    "generated_at": "2026-07-31T11:08:33Z",
+    "generated_at": "2026-08-03T11:52:58Z",
     "build": {
-      "commit": "880c872f",
-      "subject": "docs: teach the reconcile routine to append its telemetry row before first push",
-      "committed_at": "2026-07-31T11:08:33Z"
+      "commit": "46c3ca81",
+      "subject": "docs(reconcile): open band-#2310 Q-0107 pass (born-red card + claim)",
+      "committed_at": "2026-08-03T11:52:58Z"
     }
   },
   "counts": {

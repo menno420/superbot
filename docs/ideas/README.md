@@ -38,6 +38,16 @@ Current broad captures:
   flag a ready-but-undrained tooling batch (only `PLAN BACKLOG THIN` exists). Add a parallel
   `⚑ Routine-debt: N items, carried P passes` run-report line (convention now, warn-only `check_*` later)
   — the *drain mechanism* for the collector, distinct from the four debts inside it. Subsystem: S4/S5.
+- [`routine-self-improvement-backlog-has-no-executor-2026-08-03.md`](./routine-self-improvement-backlog-has-no-executor-2026-08-03.md) —
+  **session ender (2026-08-03, 54th Q-0107 reconciliation pass, band-#2310):** dedup-checking hit **two
+  already-promoted-but-never-executed** reconcile-routine plans back to back (the `loop-health` `gh`-fallback,
+  promoted 2026-06-20 and *still* SKIPping this pass; the cadence-exclude-generated-PRs `routine-debt.md`
+  item 2). Root cause under the layer the 53rd-pass carry-escalation measured: the self-improvement backlog
+  has **no executor** — the DOCS-ONLY reconcile routine can't ship `scripts/*` changes, and no dispatch/
+  tooling session ever runs on the frozen oracle repo. Proposes either (1) a narrow DOCS-ONLY carve-out
+  letting the reconcile routine ship *its own* self-scoped `check_*` fixes, or (2) a periodic routine-debt
+  drain seat — else make Q-0089 skippable under freeze so the backlog stops growing. Owner-decision
+  dimension (flagged on the run report). Subsystem: none (agent-workflow / meta).
 - [`control-plane-marker-staleness-guard-2026-07-27.md`](./control-plane-marker-staleness-guard-2026-07-27.md) —
   **session ender (2026-07-27, 52nd Q-0107 reconciliation pass, band-#2250):** the Control-plane
   `ROUTINE_PAT` row's manual "re-confirmed through #N" list **silently stalled at #1264 for ~30 passes**

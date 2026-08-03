@@ -86,6 +86,19 @@
 
 ## Recently shipped — archived (newest first)
 
+- **#2054 · #2056 (2026-07-13, hub-upkeep — stale rebuild pointers + Codex P2 follow-up, docs-only)** —
+  #2054 refreshed stale rebuild pointers in the hub docs; #2056 fixed the two verified-genuine Codex P2
+  line comments it drew (D-0043 qualified to its owning superbot-next artifact; the retired "▶ Rebuild
+  review-then-plan" framing re-badged historical). Docs-only.
+- **#2069 · #2070 · #2071 (2026-07-13, EAP/S5 — codex onboarding-telemetry + control-plane live review + EAP email-3 send-ready + owner batch, docs/control-only)** —
+  #2069 the friend-onboarding webshop prompt + a telemetry append; #2070 the **control-plane live
+  centralization review** [`planning/control-plane-centralization-review-2026-07-13.md`](planning/control-plane-centralization-review-2026-07-13.md)
+  (headline: the same fleet renders as **6 different sizes** across pages = non-centralization made
+  visible; six findings + prioritized fixes, homed in S5-ops); #2071 the **EAP email-3 draft made
+  send-ready** [`eap/anthropic-email-3-draft-2026-07-13.md`](eap/anthropic-email-3-draft-2026-07-13.md)
+  (Part 2 evidence filled from the morning night review: 51/51 parity, 18 hands-free idea→verdict
+  cycles, ~215k words prose, 6 game builds, 41 website PRs, zero seat deaths) + the owner do-now /
+  question batch. Entirely docs/control; **zero `disbot/` runtime**.
 - **#2043 · #2045 · #2046 · #2048 · #2049 · #2051 · #2053 · #2055 · #2057 · #2059 · #2060 (2026-07-12/13, S5/fleet — owner-queue execution → fleet re-arm + night-orders, docs/control-only)** —
   the **owner-queue execution** #2043 (owner-live, credentialed: websites `ANTHROPIC_API_KEY` set on
   both review services, both work-orders delivered as fleet-manager ORDER 019/020, mineverse web host
