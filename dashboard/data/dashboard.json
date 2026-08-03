@@ -1,15 +1,15 @@
 {
   "meta": {
-    "generated_at": "2026-08-03T11:52:58Z",
+    "generated_at": "2026-08-03T14:08:50Z",
     "build": {
-      "commit": "46c3ca81",
-      "subject": "docs(reconcile): open band-#2310 Q-0107 pass (born-red card + claim)",
-      "committed_at": "2026-08-03T11:52:58Z"
+      "commit": "30444015",
+      "subject": "Merge pull request #2312 from menno420/claude/reconcile-band2310",
+      "committed_at": "2026-08-03T14:08:50Z"
     },
     "schema_version": 1,
     "counts": {
       "functions": 43,
-      "ideas": 253,
+      "ideas": 254,
       "bugs": 31,
       "reviews": 0,
       "reviews_open": 0,
@@ -1165,6 +1165,14 @@
     }
   ],
   "ideas": [
+    {
+      "file": "routine-self-improvement-backlog-has-no-executor-2026-08-03.md",
+      "title": "Idea — the reconcile routine's self-improvement backlog has no executor under oracle-freeze",
+      "status": "ideas",
+      "date": "2026-08-03",
+      "summary": "Dedup-checking for this pass's Q-0089 idea, I hit **two already-promoted-but-never-executed**",
+      "subsystems": null
+    },
     {
       "file": "routine-debt-carry-escalation-2026-07-31.md",
       "title": "Idea — escalate carried routine-debt on the reconciliation run report",
@@ -3464,9 +3472,9 @@
       "file": "2026-08-03-reconcile.md",
       "date": "2026-08-03",
       "title": "2026-08-03 — fifty-fourth Q-0107 docs reconciliation pass (band-#2310)",
-      "status": "in-progress",
+      "status": "complete",
       "run_type": "routine",
-      "self_initiated": false
+      "self_initiated": true
     },
     {
       "file": "2026-07-31-reconcile.md",
@@ -5407,6 +5415,20 @@
     {
       "session": "2026-07-31-reconcile",
       "date": "2026-07-31",
+      "model": "opus-4.8",
+      "effort": "high",
+      "task_class": "docs-only",
+      "tokens_out": null,
+      "outcome": {
+        "ci_green_first_push": false,
+        "checker_findings": "check_session_gate telemetry-row (fixed in-PR)",
+        "merged_pr": null,
+        "reverted_within_window": null
+      }
+    },
+    {
+      "session": "2026-08-03-reconcile",
+      "date": "2026-08-03",
       "model": "opus-4.8",
       "effort": "high",
       "task_class": "docs-only",

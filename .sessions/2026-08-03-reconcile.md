@@ -22,8 +22,10 @@ Reconciliation actions:
 - **Docs** (`check_docs.py --strict`): green — ratchets intact (top-level 23, Recently-shipped 20). The
   **9 supersede-banner soft warnings are unchanged** (honest cross-repo phantom successors that live in
   fleet-manager; the in-repo checker can't resolve them — carried, not a CI failure).
-- **Ledger check** (`check_current_state_ledger.py --strict`): in sync — last 15 merged PRs all present;
-  the 27 merges newer than the (now #2310) marker are benign lag, recorded by this pass.
+- **Ledger check** (`check_current_state_ledger.py --strict`): in sync — last 15 merged PRs all present.
+  At pass start it counted **27 merges newer than the pre-pass #2280 marker** (benign lag) — the band
+  #2283–#2310 dashboard refreshes this pass then reconciled; after resetting the marker to #2310 the
+  count is zero.
 - **Open-PR disposition:** 9 open PRs, **all Dependabot dep-bumps**
   (#2171/#2172/#2173/#2175/#2176/#2178/#2185/#2247/#2248) — the Q-0256 runtime-dep lane, left in flight
   (not this docs-only pass). No external drive-by and no stale session PR to dispose this band.
@@ -71,6 +73,21 @@ surface a backlog that structurally cannot move. **Lesson / improvement:** a vis
 half a loop; the same pass that adds one should name (or flag the absence of) the consumer. This pass acted
 on that by capturing the no-executor root as the Q-0089 idea and flagging it as an owner decision. No
 filler — the observation is concrete (two dead plans in one grep) and the fix is a real owner call.
+
+## ⟲ Codex-review follow-up (post-merge, PR #2312 → follow-up PR)
+
+PR #2312 auto-merged on green CI before the Codex final review landed (expected — Q-0174). Codex then
+posted three verified-genuine findings against the merged commit; a merged PR is finished, so they are
+fixed here as a **fresh follow-up PR** off `main`:
+- **P2 — stale dashboard export.** `export_dashboard_data.py` was run mid-pass, *before* the card flipped
+  to `complete` and *before* the new idea file existed, so the committed `dashboard.json` + botsite mirrors
+  recorded this run as `in-progress`/`self_initiated:false` and 253 ideas (not 254). Re-ran the exporter
+  against the final tree and committed every mirror (idea count now 254). *Process note:* the dashboard
+  regen must be the **last** step of a pass, after the card is flipped — captured for the next reconcile.
+- **P2 — stale S4 `▶ Next` boundary.** `S4-docs.md`'s live `▶ Next` still said "due once merges cross
+  #2310"; advanced to #2340 to match the marker + hub + run report.
+- **P3 — ledger-lag attribution wording.** The validation note called the 27 merges "newer than the (now
+  #2310) marker" (internally impossible); corrected to attribute them to the pre-pass #2280 marker.
 
 ## 📤 Run report
 
