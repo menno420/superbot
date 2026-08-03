@@ -1,10 +1,10 @@
 {
   "meta": {
-    "generated_at": "2026-08-03T14:17:20Z",
+    "generated_at": "2026-08-03T17:19:42Z",
     "build": {
-      "commit": "95c514fb",
-      "subject": "Merge pull request #2313 from menno420/claude/reconcile-2310-codex-followup",
-      "committed_at": "2026-08-03T14:17:20Z"
+      "commit": "47ea2641",
+      "subject": "Merge pull request #2314 from menno420/bot/dashboard-refresh",
+      "committed_at": "2026-08-03T17:19:42Z"
     },
     "schema_version": 1,
     "counts": {
