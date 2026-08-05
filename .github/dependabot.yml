@@ -44,3 +44,12 @@ updates:
       day: "monday"
     open-pull-requests-limit: 5
     labels: ["dependencies"]
+    # Grouped for correctness, not just noise. A multi-step action
+    # (github/codeql-action init + autobuild + analyze) MUST move as one
+    # commit: CodeQL hard-fails with "Not all workflow steps that use
+    # github/codeql-action actions use the same version" if the refs differ,
+    # so an ungrouped bump ships three PRs that are each red by construction
+    # and individually unmergeable. Measured 2026-08-05 on #2171/#2172/#2175.
+    groups:
+      github-actions-all:
+        patterns: ["*"]
