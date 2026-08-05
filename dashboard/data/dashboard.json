@@ -1,10 +1,10 @@
 {
   "meta": {
-    "generated_at": "2026-08-05T22:42:38Z",
+    "generated_at": "2026-08-05T23:38:20Z",
     "build": {
-      "commit": "d07e2cc8",
-      "subject": "Merge pull request #2345 from menno420/claude/botsite-uvicorn-remainder",
-      "committed_at": "2026-08-05T22:42:38Z"
+      "commit": "b137f6de",
+      "subject": "Merge pull request #2346 from menno420/bot/dashboard-refresh",
+      "committed_at": "2026-08-05T23:38:20Z"
     },
     "schema_version": 1,
     "counts": {
