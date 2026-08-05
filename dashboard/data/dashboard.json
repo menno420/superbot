@@ -1,10 +1,10 @@
 {
   "meta": {
-    "generated_at": "2026-08-05T16:41:05Z",
+    "generated_at": "2026-08-05T21:49:33Z",
     "build": {
-      "commit": "dd289888",
-      "subject": "Merge pull request #2332 from menno420/bot/dashboard-refresh",
-      "committed_at": "2026-08-05T16:41:05Z"
+      "commit": "d9eb314b",
+      "subject": "Merge pull request #2338 from menno420/claude/dependabot-scoping-and-merge-policy",
+      "committed_at": "2026-08-05T21:49:33Z"
     },
     "schema_version": 1,
     "counts": {
