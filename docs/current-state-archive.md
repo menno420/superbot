@@ -86,6 +86,25 @@
 
 ## Recently shipped — archived (newest first)
 
+- **#2075 · #2076 · #2085 · #2086 · #2091 · #2093 · #2095 · #2097 · #2098 · #2099 · #2100 (2026-07-13/14, docs — dashboard-data refreshes, Q-0167)**
+  and **#2077 · #2078 · #2080 · #2081 · #2082 · #2083 · #2084 (dependabot dep-bumps)** — eleven
+  `dashboard/data/dashboard.json` regenerations keeping the committed export fresh, plus seven grouped
+  Dependabot bumps (codeql-action, actions/checkout·cache·upload-artifact, uvicorn, openai, the
+  python-minor-patch group) landed under the Q-0256 auto-merge policy.
+- **#2064 · #2065 · #2066 · #2068 (2026-07-13, EAP/S4 — the multi-repo orientation-review night → doctrine refresh, docs-only)** —
+  the band's headline. The **Q-0272 multi-repo orientation path's first full end-to-end exercise**
+  (owner said the *review* word): `fleet_status.py` → reading path → fleet-manager baseline → five
+  parallel read-only survey agents (each re-verifying the manager's tally at HEAD per Q-0120) →
+  hub-side MCP verification, producing [`eap/night-review-2026-07-13.md`](eap/night-review-2026-07-13.md)
+  (≈22 exact / 3 narrative-mismatch / 2 undercount scorecard; trigger degradation absorbed with
+  **zero seat deaths**; 10-lane digest + consolidated owner queue). Plus the doctrine surfaces this
+  arc landed: the **boot-triad** (Q-0270 — know model/venue/envelope every session), the
+  **fleet-reading path** [`fleet-reading-path.md`](fleet-reading-path.md) (Q-0272), the **living
+  grounding file** [`owner/fleet-grounding.md`](owner/fleet-grounding.md) (Q-0274), the **universal
+  session-ender v3.4** [`owner/universal-session-ender-v3.4.md`](owner/universal-session-ender-v3.4.md)
+  (#2065 — "wind down and land"), the **websites data-plane design** #2066, and the **07-14 next-session
+  brief** [`owner/next-session-brief-2026-07-14.md`](owner/next-session-brief-2026-07-14.md).
+  Entirely docs/orientation; **zero `disbot/` runtime**.
 - **#2054 · #2056 (2026-07-13, hub-upkeep — stale rebuild pointers + Codex P2 follow-up, docs-only)** —
   #2054 refreshed stale rebuild pointers in the hub docs; #2056 fixed the two verified-genuine Codex P2
   line comments it drew (D-0043 qualified to its owning superbot-next artifact; the retired "▶ Rebuild

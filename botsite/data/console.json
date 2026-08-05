@@ -1,14 +1,22 @@
 {
   "meta": {
-    "generated_at": "2026-08-03T14:08:50Z",
+    "generated_at": "2026-08-05T22:00:00Z",
     "build": {
-      "commit": "30444015",
-      "subject": "Merge pull request #2312 from menno420/claude/reconcile-band2310",
-      "committed_at": "2026-08-03T14:08:50Z"
+      "commit": "d7ba091f",
+      "subject": "Merge pull request #2337 from menno420/claude/deps-python-group-with-ruff-pins",
+      "committed_at": "2026-08-05T22:00:00Z"
     },
     "schema_version": 1
   },
   "sessions": [
+    {
+      "file": "2026-08-05-reconcile.md",
+      "date": "2026-08-05",
+      "title": "2026-08-05 — fifty-fifth Q-0107 docs reconciliation pass (band-#2340)",
+      "status": "complete",
+      "run_type": "routine",
+      "self_initiated": true
+    },
     {
       "file": "2026-08-03-reconcile.md",
       "date": "2026-08-03",
@@ -480,21 +488,13 @@
       "status": "complete",
       "run_type": "",
       "self_initiated": false
-    },
-    {
-      "file": "2026-07-11-fleet-consolidation-next-round.md",
-      "date": "2026-07-11",
-      "title": "2026-07-11 — consolidation + next-round blueprint (4 owner decisions finalized)",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
     }
   ],
   "ideas": {
-    "total": 254,
+    "total": 255,
     "by_status": {
       "historical": 26,
-      "ideas": 225,
+      "ideas": 226,
       "reference": 3
     }
   },

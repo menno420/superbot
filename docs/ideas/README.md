@@ -38,6 +38,15 @@ Current broad captures:
   flag a ready-but-undrained tooling batch (only `PLAN BACKLOG THIN` exists). Add a parallel
   `⚑ Routine-debt: N items, carried P passes` run-report line (convention now, warn-only `check_*` later)
   — the *drain mechanism* for the collector, distinct from the four debts inside it. Subsystem: S4/S5.
+- [`reconcile-band-coverage-linter-2026-08-05.md`](./reconcile-band-coverage-linter-2026-08-05.md) —
+  **session ender (2026-08-05, 55th Q-0107 reconciliation pass, band-#2340):** nothing verifies the
+  pass's two grouped Recently-shipped bullets actually *cover* the merged band — `check_ledger` only
+  asserts the last-15 are present, `check_reconcile_marker` guards the marker number, `check_docs`
+  guards reachability. A small offline checker would diff the git merged set for `(prev, new]` against
+  the PR numbers named in the two newest grouped bullets and flag missing/extra/mis-split entries — the
+  transcription-drift class the three current guards are blind to (Q-0120). Keep it a Q-0105 disposable
+  sibling to `check_reconcile_marker.py`; warn-only first. **Same executor caveat as the 08-03 idea** —
+  it's a `scripts/*` change the docs-only routine can't ship itself. Subsystem: S4 (docs system).
 - [`routine-self-improvement-backlog-has-no-executor-2026-08-03.md`](./routine-self-improvement-backlog-has-no-executor-2026-08-03.md) —
   **session ender (2026-08-03, 54th Q-0107 reconciliation pass, band-#2310):** dedup-checking hit **two
   already-promoted-but-never-executed** reconcile-routine plans back to back (the `loop-health` `gh`-fallback,

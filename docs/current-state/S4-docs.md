@@ -9,6 +9,19 @@
 > S3; the docs it produces are S4.*
 
 **Recently shipped (this sector):**
+- **Fifty-fifth Q-0107 reconciliation pass** (band-#2340, issue #2342 —
+  record in [`.sessions/2026-08-05-reconcile.md`](../../.sessions/2026-08-05-reconcile.md)): reconciled
+  the ledger (band #2311–#2341 — **entirely docs/CI/tooling + generated artifact, zero `disbot/` runtime**,
+  matching oracle-freeze: the **54th-pass reconcile PR** #2312 + its **Codex follow-up** #2313, four
+  **deps/CI PRs** #2334/#2335/#2337/#2338, and **19 dashboard refreshes** #2314/#2315/#2318…#2333/#2341),
+  trimmed Recently-shipped to 20, **disposed the open-PR set** — **3 open Dependabot dep-bump PRs**
+  (#2339/#2340/#2343 — the runtime dep lane, Q-0256, left in flight; not this docs-only pass), no external
+  drive-by and no stale session PR to dispose this band, confirmed **ROUTINE_PAT set / loop self-fires**
+  (issue #2342 authored by `menno420`), **⚠️ carried PLAN BACKLOG THIN** (the in-repo product backlog is
+  intentionally frozen — no 30-PR feature band to plan; forward queue is `NEXT-TASKS.md`: superbot-next
+  rebuild cutover + docs curation + owner-gated calls), refreshed the dashboard export (Q-0167), reset the
+  marker #2310 → #2341. Supersede-banner soft warnings unchanged at 9 (honest cross-repo phantom
+  successors in fleet-manager the in-repo checker can't resolve).
 - **Fifty-fourth Q-0107 reconciliation pass** (band-#2310, issue #2311 —
   record in [`.sessions/2026-08-03-reconcile.md`](../../.sessions/2026-08-03-reconcile.md)): reconciled
   the ledger (band #2281–#2310, 29 PRs — **entirely docs + generated artifact, zero `disbot/` runtime**,
@@ -75,22 +88,7 @@
   + docs curation + owner-gated calls), refreshed the dashboard export (Q-0167), reset the marker
   #2160 → #2190. Supersede-banner soft warnings unchanged at 9 (honest cross-repo phantom successors in
   fleet-manager the in-repo checker can't resolve).
-- **Forty-ninth Q-0107 reconciliation pass** (band-#2160, issue #2161 —
-  record in [`.sessions/2026-07-19-reconcile.md`](../../.sessions/2026-07-19-reconcile.md)): reconciled
-  the ledger (band #2132–#2160, 29 PRs — **entirely docs/CI/tooling + generated artifact, zero `disbot/`
-  runtime**, matching oracle-freeze: 6 docs/CI/tooling PRs — the **48th-pass reconcile** #2132 + its
-  **Codex follow-up** #2133, the **fresh-start oracle-freeze banner + `NEXT-TASKS.md`** #2136, the
-  **"dewall"** removing the false *"agents cannot merge"* wall #2145, a **manual branch-cleanup
-  workflow** #2146, **EAP follow-up evidence** #2148; plus 23 dashboard refreshes), trimmed
-  Recently-shipped to 20, **disposed the open-PR set** — **zero open PRs** (the former sole open PR
-  #2061, mineverse FLAG 2 WRITE draft, was **closed unmerged 2026-07-17** — real merge conflict + owner
-  deploy-safety call; `NEXT-TASKS.md` item 1 updated), no stale session PR, confirmed **ROUTINE_PAT set
-  / loop self-fires** (issue #2161 authored by `menno420`), **⚠️ raised PLAN BACKLOG THIN** (the in-repo
-  product backlog is intentionally frozen — no 30-PR feature band to plan; forward queue is `NEXT-TASKS.md`:
-  superbot-next rebuild cutover + docs curation + owner-gated calls), refreshed the dashboard export
-  (Q-0167), reset the marker #2130 → #2160. Supersede-banner soft warnings unchanged at 9 (honest
-  cross-repo phantom successors in fleet-manager the in-repo checker can't resolve).
-- **Forty-eighth … twenty-fifth Q-0107 passes (band-#2130 … band-#1440)** — collapsed to keep this sector list lean; the newest six passes are above, and every older pass is preserved in full in its own `planning/reconciliation-pass-*.md` record + `.sessions/*-reconcile.md` log (and the hub [`../current-state-archive.md`](../current-state-archive.md) Recently-shipped archive). Each was a docs-only ledger reconcile (marker bump + Recently-shipped trim to 20 + open-PR disposition + control-plane ROUTINE_PAT confirm); the band-#2160-and-later passes carried **PLAN BACKLOG THIN** under the oracle-freeze.
+- **Forty-ninth … twenty-fifth Q-0107 passes (band-#2160 … band-#1440)** — collapsed to keep this sector list lean; the newest six passes are above, and every older pass is preserved in full in its own `planning/reconciliation-pass-*.md` record + `.sessions/*-reconcile.md` log (and the hub [`../current-state-archive.md`](../current-state-archive.md) Recently-shipped archive). Each was a docs-only ledger reconcile (marker bump + Recently-shipped trim to 20 + open-PR disposition + control-plane ROUTINE_PAT confirm); the band-#2160-and-later passes carried **PLAN BACKLOG THIN** under the oracle-freeze.
 - **Help-reachability CI guard (#1297)** — `check_docs`/the help tree now fails CI when a subsystem
   isn't homed, and a **tool-pin CI guard (#1320)** closes the three-places-pin-drift class at the root.
 - **Ledger / docs in sync** — `check_current_state_ledger.py` and `check_docs.py` green.
@@ -118,7 +116,7 @@
   startable slice. Companion: the still-unexecuted
   [orientation-cost-reduction plan](../planning/orientation-cost-reduction-plan-2026-06-30.md)
   (Q-0210 router archive now 3+ passes overdue — B0–B3 should run soon regardless).
-- **Next reconciliation pass due once merged PRs cross #2340** (every multiple of 30, Q-0134) —
+- **Next reconciliation pass due once merged PRs cross #2370** (every multiple of 30, Q-0134) —
   auto-triggered by `reconciliation-trigger.yml`; run by the docs-reconciliation routine, **not** a
   manual session (Q-0124).
 - **⚠️ `PLAN BACKLOG THIN` (raised band-#2160, 2026-07-19)** — the in-repo product backlog is
