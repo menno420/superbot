@@ -31,6 +31,30 @@ only the header block is read, so a `**Subsystem:**` *example* in an idea's body
 
 Current broad captures:
 
+- [`routine-debt-carry-escalation-2026-07-31.md`](./routine-debt-carry-escalation-2026-07-31.md) —
+  **session ender (2026-07-31, 53rd Q-0107 reconciliation pass, band-#2280):** the 52nd pass built the
+  `routine-debt.md` collector (4 ungated tooling ideas, items 2/3/4 = one self-mergeable PR), but this
+  pass **carried it unexecuted again** and the reconciliation routine has **no owner-facing channel** to
+  flag a ready-but-undrained tooling batch (only `PLAN BACKLOG THIN` exists). Add a parallel
+  `⚑ Routine-debt: N items, carried P passes` run-report line (convention now, warn-only `check_*` later)
+  — the *drain mechanism* for the collector, distinct from the four debts inside it. Subsystem: S4/S5.
+- [`routine-self-improvement-backlog-has-no-executor-2026-08-03.md`](./routine-self-improvement-backlog-has-no-executor-2026-08-03.md) —
+  **session ender (2026-08-03, 54th Q-0107 reconciliation pass, band-#2310):** dedup-checking hit **two
+  already-promoted-but-never-executed** reconcile-routine plans back to back (the `loop-health` `gh`-fallback,
+  promoted 2026-06-20 and *still* SKIPping this pass; the cadence-exclude-generated-PRs `routine-debt.md`
+  item 2). Root cause under the layer the 53rd-pass carry-escalation measured: the self-improvement backlog
+  has **no executor** — the DOCS-ONLY reconcile routine can't ship `scripts/*` changes, and no dispatch/
+  tooling session ever runs on the frozen oracle repo. Proposes either (1) a narrow DOCS-ONLY carve-out
+  letting the reconcile routine ship *its own* self-scoped `check_*` fixes, or (2) a periodic routine-debt
+  drain seat — else make Q-0089 skippable under freeze so the backlog stops growing. Owner-decision
+  dimension (flagged on the run report). Subsystem: none (agent-workflow / meta).
+- [`control-plane-marker-staleness-guard-2026-07-27.md`](./control-plane-marker-staleness-guard-2026-07-27.md) —
+  **session ender (2026-07-27, 52nd Q-0107 reconciliation pass, band-#2250):** the Control-plane
+  `ROUTINE_PAT` row's manual "re-confirmed through #N" list **silently stalled at #1264 for ~30 passes**
+  while the loop kept self-firing — a Q-0194 friction→guard candidate: a warn-only stdlib check that
+  flags when the confirmation marker is more than one cadence-step behind the live reconciliation marker,
+  so the freshness note can't age unnoticed. Distinct from the `gh`-fallback idea (that probes the live
+  control-plane; this guards the doc marker's freshness). Subsystem: S4/S5 (docs-system / ops tooling).
 - [`reconciliation-cadence-exclude-generated-prs-2026-07-19.md`](./reconciliation-cadence-exclude-generated-prs-2026-07-19.md) —
   **session ender (2026-07-19, 49th Q-0107 reconciliation pass, band-#2160):** the reconciliation
   cadence counts raw PR numbers, but **79% of band-#2160 (23/29 PRs) were automated
@@ -38,6 +62,21 @@ Current broad captures:
   routine fires ~5× faster than substantive work warrants on a frozen oracle repo. Exclude known
   generated/automated PR classes (`bot/dashboard-refresh`, Dependabot) from the cadence counter in
   `check_reconciliation_due.py` so a pass fires on real drift, not artifact churn. Subsystem: none.
+- [`dashboard-refresh-coalesce-loop-2026-07-25.md`](./dashboard-refresh-coalesce-loop-2026-07-25.md) —
+  **session ender (2026-07-25, 51st Q-0107 reconciliation pass, band-#2220):** **27 of 28 PRs in the
+  band were automated `bot/dashboard-refresh` PRs**, each a full Code Quality CI run + merge + redeploy
+  on the frozen oracle repo. The **producer-side** complement to the 2026-07-19 consumer-side cadence
+  idea: coalesce/debounce the refresh loop into far fewer PRs (one rolling amend-in-place PR · daily
+  digest · skip-if-diff-is-noise) to cut the repo's dominant Actions cost at its source. Subsystem:
+  S4/S5 (docs-system / ops tooling).
+- [`reconcile-thin-flag-standing-vs-newly-raised-2026-07-21.md`](./reconcile-thin-flag-standing-vs-newly-raised-2026-07-21.md) —
+  **session ender (2026-07-21, 50th Q-0107 reconciliation pass, band-#2190):** `PLAN BACKLOG THIN`
+  (Q-0164) has now fired on three consecutive passes (48th/49th/50th) as a **standing, intentional
+  oracle-freeze condition** — yet each pass "raises" it afresh on the loud `⚑ Owner-decisions needed:`
+  line, re-alerting the owner about a state they deliberately created. Track a `THIN-since: band-#N`
+  marker so the routine reports a *carried* THIN quietly (`standing, not urgent`) and keeps the loud
+  alert for a *newly-raised* THIN (a real, unexpected backlog drain). Complements the cadence-exclude
+  idea above (that reduces firing frequency; this reduces alert noise). Subsystem: none.
 - [`fleet-audit-as-saved-workflow-2026-07-13.md`](./fleet-audit-as-saved-workflow-2026-07-13.md) —
   **session ender (2026-07-13, EAP-final-night fleet cleanup audit session):** encode
   tonight's 18-repo parallel audit pattern (per-repo subagent + shared safety envelope +

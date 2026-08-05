@@ -86,6 +86,73 @@
 
 ## Recently shipped — archived (newest first)
 
+- **#2054 · #2056 (2026-07-13, hub-upkeep — stale rebuild pointers + Codex P2 follow-up, docs-only)** —
+  #2054 refreshed stale rebuild pointers in the hub docs; #2056 fixed the two verified-genuine Codex P2
+  line comments it drew (D-0043 qualified to its owning superbot-next artifact; the retired "▶ Rebuild
+  review-then-plan" framing re-badged historical). Docs-only.
+- **#2069 · #2070 · #2071 (2026-07-13, EAP/S5 — codex onboarding-telemetry + control-plane live review + EAP email-3 send-ready + owner batch, docs/control-only)** —
+  #2069 the friend-onboarding webshop prompt + a telemetry append; #2070 the **control-plane live
+  centralization review** [`planning/control-plane-centralization-review-2026-07-13.md`](planning/control-plane-centralization-review-2026-07-13.md)
+  (headline: the same fleet renders as **6 different sizes** across pages = non-centralization made
+  visible; six findings + prioritized fixes, homed in S5-ops); #2071 the **EAP email-3 draft made
+  send-ready** [`eap/anthropic-email-3-draft-2026-07-13.md`](eap/anthropic-email-3-draft-2026-07-13.md)
+  (Part 2 evidence filled from the morning night review: 51/51 parity, 18 hands-free idea→verdict
+  cycles, ~215k words prose, 6 game builds, 41 website PRs, zero seat deaths) + the owner do-now /
+  question batch. Entirely docs/control; **zero `disbot/` runtime**.
+- **#2043 · #2045 · #2046 · #2048 · #2049 · #2051 · #2053 · #2055 · #2057 · #2059 · #2060 (2026-07-12/13, S5/fleet — owner-queue execution → fleet re-arm + night-orders, docs/control-only)** —
+  the **owner-queue execution** #2043 (owner-live, credentialed: websites `ANTHROPIC_API_KEY` set on
+  both review services, both work-orders delivered as fleet-manager ORDER 019/020, mineverse web host
+  created + LIVE, Actions-toggle bridge) — full record
+  [`.sessions/2026-07-12-owner-queue-execution.md`](../.sessions/2026-07-12-owner-queue-execution.md)
+  + the evening mineverse-signin part-2; the **fleet re-arm** #2048 (all 8 seats re-dispatched with the
+  Q-0271 autonomy rider) + **night orders v2** and the **direct-order paste-set**
+  [`owner/fleet-direct-orders-2026-07-13.md`](owner/fleet-direct-orders-2026-07-13.md) + the **manager's
+  final order** (prompt centralization → v3.5) + the **07-13 next-session brief**; plus the
+  **settings-permission sweep** #2045 and the **07-12 session close-out** #2046. Docs/control-only; no
+  `disbot/` runtime.
+- **#2042 (2026-07-12, workflow — forty-fifth Q-0107 reconciliation pass, band-#2040)** —
+  reconciled band #2012–#2040, trimmed Recently-shipped to 20, disposed the open-PR set (zero open),
+  marker #2011 → #2040 ([pass record](planning/reconciliation-pass-2026-07-12-band2040.md)).
+- **#2044 · #2047 · #2050 · #2052 · #2062 · #2063 · #2067 (2026-07-12/13, docs — dashboard-data refreshes, Q-0167)** —
+  seven `dashboard/data/dashboard.json` regenerations keeping the committed export fresh as the
+  owner-queue / fleet-rearm / orientation-review arc landed structural surfaces.
+- **#2032 · #2033 · #2034 · #2035 · #2037 · #2038 · #2039 (2026-07-12, EAP/S5 — the owner-live fleet-drive: 2nd Anthropic email SENT + fleet PR drive + two owner work-orders, docs/control-only)** —
+  the band's headline. The **second Anthropic EAP email finalized + SENT** (owner sent 2026-07-12
+  13:24Z, reply on the July 8 thread) — staged as a clean draft #2032, gallery figures #2033, SENT
+  state recorded #2034, and the **gallery image links fixed** #2038 (relative → full
+  `blob/main/...?raw=true` URLs). Two **owner work-orders** written + merged for paste-in to the
+  target Projects: the **websites review-site refresh + on-site AI assistant + homepage** order #2035
+  and the **Project-Manager trigger-health check** order #2037. Session close-out (fleet-drive record
+  + centralized owner-action queue) #2039. The live fleet-drive itself merged cross-repo (mineverse
+  #42 CSRF → Games flagship gate cleared; fleet-manager #113/#117; websites 11/14 PRs) and found two
+  systemic root-causes (fleet-manager roster-regen blocked on the Actions-create-PR toggle; websites
+  serial-merge cascade from "require branches up-to-date" without a merge queue, owner-removed
+  mid-session). Full record: [`.sessions/2026-07-12-fleet-drive-and-websites.md`](../.sessions/2026-07-12-fleet-drive-and-websites.md).
+  Entirely docs/control; **zero `disbot/` runtime**.
+- **#2017 · #2018 · #2019 · #2020 · #2021 · #2025 · #2026 · #2027 · #2029 · #2030 · #2031 (2026-07-12, EAP — the Projects overnight batch review + EAP figure gallery, docs-only)** —
+  the overnight cross-fleet batch review ([`eap/night-review-2026-07-12.md`](eap/night-review-2026-07-12.md)):
+  the **trigger-scheduler incident** (~02:30–08:00Z — 9 dropped `send_later` one-shots + 2 wedged
+  crons; the Q-0265 failsafe doctrine validated in production; Venture Lab dark, kit-lab manually
+  re-fired; cross-session trigger revival org-disabled) + the per-seat digest, lessons, fix-first
+  list and owner-action queue — and the **EAP figure gallery** (fig-20…fig-32 screenshots +
+  [`eap/email-attachment-set-2026-07-12.md`](eap/email-attachment-set-2026-07-12.md), the set linked
+  from the sent email). Includes the Q-0174 post-merge Codex pass on #2017 (5 verified findings fixed).
+  Entirely docs/control; **zero `disbot/` runtime**.
+- **#2013 · #2014 (2026-07-11/12, S4 — routine-arming doctrine correction + band-#2010 reconcile follow-up)** —
+  #2013 corrected the routine-arming doctrine (routines are **agent-armed, never owner-armed**) in the
+  `.claude/` control docs; #2014 is the band-#2010 reconcile follow-up (ledger + archive + the
+  `check-docs-cross-repo-path-awareness` idea). Docs/control-only.
+- **#2015 · #2016 · #2022 · #2028 · #2036 · #2040 (2026-07-11/12, docs — dashboard-data refreshes, Q-0167)** —
+  six `dashboard/data/dashboard.json` regenerations keeping the committed export fresh as the
+  fleet-drive / overnight-review arc landed structural surfaces.
+- **#1982 · #1985 · #1986 · #1990 · #1992 · #1993 · #1994 · #1996 · #1997 · #2007 (2026-07-11, EAP — the Anthropic-feedback email + fleet-review arc, docs/control-only)** —
+  the band's dominant thread. The **fleet night review 2026-07-11** #1985 (owner vocab/skills +
+  routine-model findings), the **ORDER-002 self-review** #1982 (the fleet-wide self-review filed at
+  the retro convention home), the **second Anthropic email draft** #1986 (mock Part 1 + updated Part 2
+  + screenshot drop-folder), the **email-fleet-handoff session** #1990/#1992/#1993/#1994/#1997 (the
+  multi-PR handoff that assembled + refined the two-part reviewer email), the **Codex prompt-1 number
+  refresh** #1996 (superbot-next 37/49, gate 218/218, #111–#191), and the **durable pre-compact
+  session handoff + continuation brief** #2007. Entirely docs/control; **zero `disbot/` runtime**.
 - **#1983 · #1998 · #2002 · #2004 · #2005 · #2006 · #2008 · #2011 (2026-07-11, S5/fleet — the 8-seat consolidation → next-round founding-prompt arc, docs-only)** —
   the owner-directed fleet-management hub work. The **multi-project review dispatch** #1998/#1983
   (cross-fleet triage session), the **dispatch-kit permissions block** update folding gen-3
