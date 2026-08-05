@@ -1,15 +1,15 @@
 {
   "meta": {
-    "generated_at": "2026-08-05T21:49:33Z",
+    "generated_at": "2026-08-05T20:12:26Z",
     "build": {
-      "commit": "d9eb314b",
-      "subject": "Merge pull request #2338 from menno420/claude/dependabot-scoping-and-merge-policy",
-      "committed_at": "2026-08-05T21:49:33Z"
+      "commit": "c9af4fac",
+      "subject": "docs: fifty-fifth Q-0107 reconciliation pass (band-#2340)",
+      "committed_at": "2026-08-05T20:12:26Z"
     },
     "schema_version": 1,
     "counts": {
       "functions": 43,
-      "ideas": 254,
+      "ideas": 255,
       "bugs": 31,
       "reviews": 0,
       "reviews_open": 0,
@@ -1165,6 +1165,14 @@
     }
   ],
   "ideas": [
+    {
+      "file": "reconcile-band-coverage-linter-2026-08-05.md",
+      "title": "Idea — a reconciliation-band coverage linter (prose PR-list vs. git merged set)",
+      "status": "ideas",
+      "date": "2026-08-05",
+      "summary": "Under oracle-freeze the reconciliation pass is now almost entirely mechanical: each pass hand-writes",
+      "subsystems": null
+    },
     {
       "file": "routine-self-improvement-backlog-has-no-executor-2026-08-03.md",
       "title": "Idea — the reconcile routine's self-improvement backlog has no executor under oracle-freeze",
@@ -3469,6 +3477,14 @@
   "reviews": [],
   "updates": [
     {
+      "file": "2026-08-05-reconcile.md",
+      "date": "2026-08-05",
+      "title": "2026-08-05 — fifty-fifth Q-0107 docs reconciliation pass (band-#2340)",
+      "status": "complete",
+      "run_type": "routine",
+      "self_initiated": true
+    },
+    {
       "file": "2026-08-03-reconcile.md",
       "date": "2026-08-03",
       "title": "2026-08-03 — fifty-fourth Q-0107 docs reconciliation pass (band-#2310)",
@@ -3936,14 +3952,6 @@
       "file": "2026-07-11-fleet-dispatch-prompts.md",
       "date": "2026-07-11",
       "title": "2026-07-11 — fleet dispatch prompts (continuation): 8-seat structure → complete paste-and-go startup prompts",
-      "status": "complete",
-      "run_type": "",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-07-11-fleet-consolidation-next-round.md",
-      "date": "2026-07-11",
-      "title": "2026-07-11 — consolidation + next-round blueprint (4 owner decisions finalized)",
       "status": "complete",
       "run_type": "",
       "self_initiated": false
@@ -5437,6 +5445,20 @@
         "ci_green_first_push": false,
         "checker_findings": "check_session_gate telemetry-row (fixed in-PR)",
         "merged_pr": null,
+        "reverted_within_window": null
+      }
+    },
+    {
+      "session": "2026-08-05-reconcile",
+      "date": "2026-08-05",
+      "model": "opus-4.8",
+      "effort": "high",
+      "task_class": "docs-only",
+      "tokens_out": null,
+      "outcome": {
+        "ci_green_first_push": false,
+        "checker_findings": "check_session_gate telemetry-row (fixed in-PR)",
+        "merged_pr": 2344,
         "reverted_within_window": null
       }
     }
