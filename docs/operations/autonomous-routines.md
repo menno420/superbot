@@ -288,11 +288,18 @@ STEP 4 — CLOSE THE LOOP (memory write-back, always):
     the ⚑ Owner-decisions / ⚑ Owner-manual-steps lines are required (`none` when empty), and the
     **Run type:** line set to `routine · reconciliation` (Q-0165 — the dashboard updates feed
     badges routine vs. manual work off this line).
+  - **APPEND YOUR TELEMETRY ROW *before the first push* — this is the #1 recurring first-push CI red
+    (every reconcile pass through #2280 tripped it and "fixed in-PR", burning a Code Quality run).**
+    The `check_session_gate` Q-0194 guard holds the merge red whenever a PR adds a `.sessions/` card
+    dated ≥ 2026-07-09 without appending ≥1 line to `telemetry/model-usage.jsonl`. Append one row now —
+    copy the newest existing row's shape (`{session, date, model, effort, task_class: "docs-only",
+    tokens_out: null, outcome:{…}}`; schema: `telemetry/README.md`) — so your **first** push is green.
 
 STEP 5 — SHIP: FIRST re-run `python3.10 scripts/export_dashboard_data.py` (the STEP-2 order caveat) so
   the committed feeds include this pass's own `.sessions/` card + telemetry row + new idea, and commit
   the refreshed JSON. Then open a docs-only claude/ PR; ensure check_docs, check_current_state_ledger,
-  and check_session_log all pass; SELF-MERGE on green CI: re-sync origin/main first, UNION-resolve
+  check_session_log, **and check_session_gate** (`--base <main-sha> --head HEAD`, the telemetry-row guard
+  above) all pass; SELF-MERGE on green CI: re-sync origin/main first, UNION-resolve
   conflicts (you are the reconciler), require CI green on the final head, merge-commit. Then
   CLOSE the triggering `reconcile` issue (reference the merged PR).
 
@@ -400,7 +407,7 @@ branch" / the conflict banner remain available by hand.
 
 | # | Maintainer action | Why it matters | Source PR | Verified? |
 |---|---|---|---|---|
-| 1 | Add repo secret **`ROUTINE_PAT`** (fine-grained PAT, this repo, **Issues: read/write**) | **Hard blocker for the whole loop** — without it, cron/cadence trigger issues are authored by `github-actions[bot]`, which **does not start a Claude routine** (A/B-verified: real-user issue #776 fired in <1 min; bot's #768 never did) | #778 | ✅ **2026-06-14** (live-evidence verify: the scheduled executor issue #819 and the cadence reconcile issues #822/#841 were auto-opened by the workflows yet authored by **`menno420`** — the PAT owner — not `github-actions[bot]`. With `GITHUB_TOKEN` they would be bot-authored. So `ROUTINE_PAT` is set and active. **Re-confirmed every reconciliation pass since:** the cadence reconcile issues #931 (band-#990 era), #961, #1021 (band-#1020 pass, 2026-06-17), #1051 (band-#1050 pass, 2026-06-18), #1095 (band-#1080 pass, 2026-06-19), #1111 (band-#1110 pass, 2026-06-19), #1141 (band-#1140 pass, 2026-06-19), #1171 (band-#1170 pass, 2026-06-20), #1202 (band-#1200 pass, 2026-06-20), #1232 (band-#1230 pass, 2026-06-21), and **#1264 (band-#1260 pass, 2026-06-21)** were each auto-opened yet authored by `menno420`.) |
+| 1 | Add repo secret **`ROUTINE_PAT`** (fine-grained PAT, this repo, **Issues: read/write**) | **Hard blocker for the whole loop** — without it, cron/cadence trigger issues are authored by `github-actions[bot]`, which **does not start a Claude routine** (A/B-verified: real-user issue #776 fired in <1 min; bot's #768 never did) | #778 | ✅ **2026-06-14** (live-evidence verify: the scheduled executor issue #819 and the cadence reconcile issues #822/#841 were auto-opened by the workflows yet authored by **`menno420`** — the PAT owner — not `github-actions[bot]`. With `GITHUB_TOKEN` they would be bot-authored. So `ROUTINE_PAT` is set and active. **Re-confirmed every reconciliation pass since:** the cadence reconcile issues #931 (band-#990 era), #961, #1021 (band-#1020 pass, 2026-06-17), #1051 (band-#1050 pass, 2026-06-18), #1095 (band-#1080 pass, 2026-06-19), #1111 (band-#1110 pass, 2026-06-19), #1141 (band-#1140 pass, 2026-06-19), #1171 (band-#1170 pass, 2026-06-20), #1202 (band-#1200 pass, 2026-06-20), #1232 (band-#1230 pass, 2026-06-21), and **#1264 (band-#1260 pass, 2026-06-21)** were each auto-opened yet authored by `menno420`. **Continuously re-confirmed every cadence pass since through #2311 (band-#2310 pass, 2026-08-03)** — each auto-opened reconcile issue has stayed `menno420`-authored, so `ROUTINE_PAT` remains set and active; the running list is capped here to avoid unbounded growth.) |
 | 2 | Add repo secret **`DATABASE_PUBLIC_URL`** (Railway Postgres public proxy URL) | the daily `backup-db.yml` `pg_dump` is inert without it (workflow fails + opens an issue) | #769 | ✅ **2026-06-14 — set + working.** After the PR #862 pg18-client + resolved-URL fix, the backup **succeeded at 17:41:49Z** (run history: `success` workflow_dispatch). The earlier daily "Postgres backup failed" issues (#823/#860/#861) predated the fix and were stale (failure-issues don't auto-close on success); **closed 2026-06-14.** The next *scheduled* run confirms the cron path end-to-end. |
 | 3 | Railway → **Deploy** the staged `CLAUDE_ROUTINE_*` env vars | `/bugreport` + `/dispatch` (HermesCog #757) may be inactive until the worker redeploys with the vars live | #765 | ⬜ (not verifiable from the repo) |
 | 4 | Confirm the **dispatch routine prompt** is the free-form version | the owner finished routine setup *before* the #761 free-form prompt was handed over — it may carry the older prompt | #761/#765 | ⬜ (not verifiable from the repo) |

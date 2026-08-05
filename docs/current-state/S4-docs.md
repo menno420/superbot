@@ -9,6 +9,72 @@
 > S3; the docs it produces are S4.*
 
 **Recently shipped (this sector):**
+- **Fifty-fourth Q-0107 reconciliation pass** (band-#2310, issue #2311 —
+  record in [`.sessions/2026-08-03-reconcile.md`](../../.sessions/2026-08-03-reconcile.md)): reconciled
+  the ledger (band #2281–#2310, 29 PRs — **entirely docs + generated artifact, zero `disbot/` runtime**,
+  matching oracle-freeze: the **53rd-pass reconcile PR** #2282 and **28 dashboard refreshes**
+  #2283…#2310), trimmed Recently-shipped to 20, **disposed the open-PR set** — **9 open Dependabot
+  dep-bump PRs** (#2171/#2172/#2173/#2175/#2176/#2178/#2185/#2247/#2248 — the runtime dep lane, Q-0256,
+  left in flight; not this docs-only pass), no external drive-by and no stale session PR to dispose this
+  band, confirmed **ROUTINE_PAT set / loop self-fires** (issue #2311 authored by `menno420`), **⚠️ carried
+  PLAN BACKLOG THIN** (the in-repo product backlog is intentionally frozen — no 30-PR feature band to
+  plan; forward queue is `NEXT-TASKS.md`: superbot-next rebuild cutover + docs curation + owner-gated
+  calls), refreshed the dashboard export (Q-0167), reset the marker #2280 → #2310. Supersede-banner soft
+  warnings unchanged at 9 (honest cross-repo phantom successors in fleet-manager the in-repo checker
+  can't resolve).
+- **Fifty-third Q-0107 reconciliation pass** (band-#2280, issue #2281 —
+  record in [`.sessions/2026-07-31-reconcile.md`](../../.sessions/2026-07-31-reconcile.md)): reconciled
+  the ledger (band #2251–#2280, 29 PRs — **entirely docs + generated artifact, zero `disbot/` runtime**,
+  matching oracle-freeze: the **52nd-pass reconcile PR** #2252 and **28 dashboard refreshes**
+  #2253…#2280), trimmed Recently-shipped to 20, **disposed the open-PR set** — **9 open Dependabot
+  dep-bump PRs** (#2171/#2172/#2173/#2175/#2176/#2178/#2185/#2247/#2248 — the runtime dep lane, Q-0256,
+  left in flight; not this docs-only pass), no external drive-by and no stale session PR to dispose this
+  band, confirmed **ROUTINE_PAT set / loop self-fires** (issue #2281 authored by `menno420`), **⚠️ carried
+  PLAN BACKLOG THIN** (the in-repo product backlog is intentionally frozen — no 30-PR feature band to
+  plan; forward queue is `NEXT-TASKS.md`: superbot-next rebuild cutover + docs curation + owner-gated
+  calls), refreshed the dashboard export (Q-0167), reset the marker #2250 → #2280. Supersede-banner soft
+  warnings unchanged at 9 (honest cross-repo phantom successors in fleet-manager the in-repo checker
+  can't resolve).
+- **Fifty-second Q-0107 reconciliation pass** (band-#2250, issue #2251 —
+  record in [`.sessions/2026-07-27-reconcile.md`](../../.sessions/2026-07-27-reconcile.md)): reconciled
+  the ledger (band #2221–#2250, 27 PRs — **entirely docs + generated artifact, zero `disbot/` runtime**,
+  matching oracle-freeze: the **51st-pass reconcile PR** #2222 + its **Codex follow-up** #2223 and
+  **25 dashboard refreshes** #2224…#2246/#2249/#2250), trimmed Recently-shipped to 20, **disposed the
+  open-PR set** — **9 open Dependabot dep-bump PRs** (#2171/#2172/#2173/#2175/#2176/#2178/#2185 + the
+  two new #2247/#2248 — the runtime dep lane, Q-0256, left in flight; not this docs-only pass), no
+  external drive-by and no stale session PR to dispose this band, confirmed **ROUTINE_PAT set / loop
+  self-fires** (issue #2251 authored by `menno420`), **⚠️ carried PLAN BACKLOG THIN** (the in-repo
+  product backlog is intentionally frozen — no 30-PR feature band to plan; forward queue is
+  `NEXT-TASKS.md`: superbot-next rebuild cutover + docs curation + owner-gated calls), refreshed the
+  dashboard export (Q-0167), reset the marker #2220 → #2250. Supersede-banner soft warnings unchanged
+  at 9 (honest cross-repo phantom successors in fleet-manager the in-repo checker can't resolve).
+- **Fifty-first Q-0107 reconciliation pass** (band-#2220, issue #2221 —
+  record in [`.sessions/2026-07-25-reconcile.md`](../../.sessions/2026-07-25-reconcile.md)): reconciled
+  the ledger (band #2191–#2220, 28 PRs — **entirely docs + generated artifact, zero `disbot/` runtime**,
+  matching oracle-freeze: the **50th-pass reconcile PR** #2192 and **27 dashboard refreshes**
+  #2193…#2216/#2218/#2219/#2220), trimmed Recently-shipped to 20, **disposed the open-PR set** —
+  **8 open Dependabot dep-bump PRs** (#2171/#2172/#2173/#2175/#2176/#2178/#2184/#2185 — the runtime dep
+  lane, Q-0256, left in flight; not this docs-only pass) and **closed #2217** (an external drive-by
+  adding a redundant generic `python-app.yml` CI workflow duplicating the pinned `code-quality.yml`),
+  no stale session PR, confirmed **ROUTINE_PAT set / loop self-fires** (issue #2221 authored by
+  `menno420`), **⚠️ carried PLAN BACKLOG THIN** (the in-repo product backlog is intentionally frozen —
+  no 30-PR feature band to plan; forward queue is `NEXT-TASKS.md`: superbot-next rebuild cutover
+  + docs curation + owner-gated calls), refreshed the dashboard export (Q-0167), reset the marker
+  #2190 → #2220. Supersede-banner soft warnings unchanged at 9 (honest cross-repo phantom successors in
+  fleet-manager the in-repo checker can't resolve).
+- **Fiftieth Q-0107 reconciliation pass** (band-#2190, issue #2191 —
+  record in [`.sessions/2026-07-21-reconcile.md`](../../.sessions/2026-07-21-reconcile.md)): reconciled
+  the ledger (band #2161–#2190, 20 PRs — **entirely docs/CI/tooling + generated artifact + 2 dep bumps,
+  zero `disbot/` runtime**, matching oracle-freeze: the **49th-pass reconcile** #2162, **2 Dependabot
+  bumps** #2174 (fastapi) / #2179 (anthropic), and **17 dashboard refreshes** #2163…#2170/#2180…#2183/#2186…#2190),
+  trimmed Recently-shipped to 20, **disposed the open-PR set** — **8 open Dependabot dep-bump PRs**
+  (#2171/#2172/#2173/#2175/#2176/#2178/#2184/#2185 — the runtime dep lane, Q-0256, left in flight; not
+  this docs-only pass), no stale session PR, confirmed **ROUTINE_PAT set / loop self-fires** (issue #2191
+  authored by `menno420`), **⚠️ carried PLAN BACKLOG THIN** (the in-repo product backlog is intentionally
+  frozen — no 30-PR feature band to plan; forward queue is `NEXT-TASKS.md`: superbot-next rebuild cutover
+  + docs curation + owner-gated calls), refreshed the dashboard export (Q-0167), reset the marker
+  #2160 → #2190. Supersede-banner soft warnings unchanged at 9 (honest cross-repo phantom successors in
+  fleet-manager the in-repo checker can't resolve).
 - **Forty-ninth Q-0107 reconciliation pass** (band-#2160, issue #2161 —
   record in [`.sessions/2026-07-19-reconcile.md`](../../.sessions/2026-07-19-reconcile.md)): reconciled
   the ledger (band #2132–#2160, 29 PRs — **entirely docs/CI/tooling + generated artifact, zero `disbot/`
@@ -24,291 +90,7 @@
   superbot-next rebuild cutover + docs curation + owner-gated calls), refreshed the dashboard export
   (Q-0167), reset the marker #2130 → #2160. Supersede-banner soft warnings unchanged at 9 (honest
   cross-repo phantom successors in fleet-manager the in-repo checker can't resolve).
-- **Forty-eighth Q-0107 reconciliation pass** (band-#2130, issue #2131 —
-  [pass record](../planning/reconciliation-pass-2026-07-17-band2130.md)): reconciled the ledger
-  (band #2102–#2130 — grouped entries, **entirely docs/tooling/control**, zero `disbot/` runtime: the
-  **fleet pre-archive sweep + EAP closeout arc** #2104/#2105/#2110/#2111/#2121/#2126 (owner-live
-  pre-archive sweep · EAP project-audit closeout walkthrough ORDER 006 → top-level-docs ratchet 21→22 ·
-  ORDER 005 supersede-stubs + ORDER 003 annotations with Codex review folded · **Q-0275** declining the
-  fleet-wide "owner review" language scrub · auto-mode permission-classifier EAP findings + sent-email
-  archive), the **47th-pass reconcile PR** #2102, and 22 dashboard refreshes
-  #2103/#2106/#2107/#2108/#2109/#2112/#2113/#2114/#2115/#2116/#2117/#2118/#2119/#2120/#2122/#2123/#2124/#2125/#2127/#2128/#2129/#2130),
-  trimmed Recently-shipped to 20, **disposed the open-PR set** — **1 open PR left in flight** (#2061,
-  the owner-held mineverse FLAG 2 WRITE draft, Q-0193), no stale session PR, confirmed **ROUTINE_PAT set
-  / loop self-fires** (issue #2131 authored by `menno420`), carried the forward queue intact (still deep,
-  no THIN flag — the rebuild live in superbot-next + the live SuperBot Project 8-seat program dominate),
-  refreshed the dashboard export (Q-0167), reset the marker #2100 → #2130. Supersede-banner soft warnings
-  grew 5 → 9 (+4 phantom cross-repo successor links in the fleet-centralization / fleet-review /
-  trigger-health docs) — all honest cross-repo supersessions the in-repo checker can't resolve, carried
-  forward unchanged.
-- **Forty-seventh Q-0107 reconciliation pass** (band-#2100, issue #2101 —
-  [pass record](../planning/reconciliation-pass-2026-07-14-band2100.md)): reconciled the ledger
-  (band #2072–#2100 — grouped entries, **mostly docs/control/tooling** with **one `disbot/` runtime
-  fix**: the **`!mine` breakage fix** #2089 (stringified `suid` → BIGINT-keyed `get_skills` `DataError`
-  + a real-Postgres regression guard), the **fleet-manager relay ORDERs** #2087/#2090/#2094 (I1b
-  frozen-trigger disposition · EAP final-night worklist · supersession-pointer), the **reconcile PR +
-  session doc + repo-audit + EAP closeout** #2074/#2088/#2092/#2096, 11 dashboard refreshes
-  #2075/#2076/#2085/#2086/#2091/#2093/#2095/#2097/#2098/#2099/#2100, and 7 Dependabot bumps
-  #2077/#2078/#2080/#2081/#2082/#2083/#2084), trimmed Recently-shipped to 20, **disposed the open-PR
-  set** — **1 open PR left in flight** (#2061, the owner-held mineverse FLAG 2 WRITE draft, Q-0193);
-  **#2058 (mineverse FLAG 1 READ-relay) merged to main mid-pass** (owner-flipped from its held draft →
-  recorded as a merged entry), no stale session PR, confirmed **ROUTINE_PAT set / loop self-fires**
-  (issue #2101 authored by `menno420`), carried the forward queue intact (still deep, no THIN flag —
-  the rebuild live in superbot-next + the live SuperBot Project 8-seat program dominate), refreshed
-  the dashboard export (Q-0167), reset the marker #2071 → #2100. The 5 remaining supersede-banner soft
-  warnings are honest cross-repo supersessions the in-repo checker can't model — carried forward unchanged.
-- **Forty-sixth Q-0107 reconciliation pass** (band-#2070, issue #2073 —
-  [pass record](../planning/reconciliation-pass-2026-07-13-band2070.md)): reconciled the ledger
-  (band #2041–#2071 — grouped entries, **entirely docs/tooling/control**, zero `disbot/` runtime: the
-  **multi-repo orientation-review night → doctrine refresh** #2064/#2065/#2066/#2068 — the Q-0272
-  orientation path's first full end-to-end exercise (`night-review-2026-07-13.md`), the boot-triad
-  Q-0270, fleet-reading-path Q-0272, the living `owner/fleet-grounding.md` Q-0274, universal
-  session-ender v3.4, and the websites data-plane design; the **owner-queue execution → fleet re-arm +
-  night-orders** arc #2043/#2045/#2046/#2048/#2049/#2051/#2053/#2055/#2057/#2059/#2060 (owner-live
-  credentialed queue execution + 8-seat re-arm under the Q-0271 autonomy rider + direct-order paste-set
-  + manager final order v3.5); the **hub-upkeep + Codex P2 follow-up** #2054/#2056; the **codex
-  onboarding-telemetry + control-plane live review + EAP email-3 send-ready + owner batch**
-  #2069/#2070/#2071 (the control-plane "6 sizes" non-centralization finding; email-3 Part-2 evidence
-  filled from the night review); the 45th-pass docs PR #2042; and 7 dashboard refreshes
-  #2044/#2047/#2050/#2052/#2062/#2063/#2067), trimmed Recently-shipped to 20, **disposed the open-PR
-  set** — **3 open PRs left in flight** (#2072 docs/tooling auto-merging; #2061 + #2058 deliberately-held
-  owner-controlled mineverse drafts, deploy-safety Q-0193), no stale session PR, confirmed **ROUTINE_PAT
-  set / loop self-fires** (issue #2073 authored by `menno420`), carried the forward queue intact (still
-  deep, no THIN flag — the rebuild live in superbot-next + the live SuperBot Project 8-seat program
-  dominate), refreshed the dashboard export (Q-0167), reset the marker #2040 → #2071. The 5 remaining
-  supersede-banner soft warnings are honest cross-repo supersessions the in-repo checker can't model —
-  carried forward unchanged.
-- **Forty-fifth Q-0107 reconciliation pass** (band-#2040, issue #2041 —
-  [pass record](../planning/reconciliation-pass-2026-07-12-band2040.md)): reconciled the ledger
-  (band #2012–#2040 — four grouped entries, **entirely docs/control/tooling**, zero `disbot/` runtime:
-  the **2026-07-12 owner-live fleet-drive** #2032/#2033/#2034/#2035/#2037/#2038/#2039 — the 2nd
-  Anthropic email SENT + gallery-image-link fix + the websites-review + trigger-health owner work-orders
-  + the cross-repo fleet PR drive (mineverse #42, fleet-manager #113/#117, websites 11/14); the
-  **Projects overnight batch review + EAP figure gallery** #2017…#2031 — the trigger-scheduler incident
-  review (`eap/night-review-2026-07-12.md`) + fig-20…fig-32 + the email-attachment set; the
-  **routine-arming doctrine correction + band-#2010 reconcile follow-up** #2013/#2014; and 6 dashboard
-  refreshes #2015/#2016/#2022/#2028/#2036/#2040), trimmed Recently-shipped to 20, **disposed the open-PR
-  set** — **zero open PRs at pass start**, no stale session PR, confirmed **ROUTINE_PAT set / loop
-  self-fires** (issue #2041 authored by `menno420`), carried the forward queue intact (still deep, no
-  THIN flag — the rebuild Phase-B canonical plan + the live SuperBot Project 8-seat program dominate),
-  refreshed the dashboard export (Q-0167), reset the marker #2011 → #2040. The 5 remaining
-  supersede-banner soft warnings are honest cross-repo supersessions the in-repo checker can't model —
-  carried forward unchanged.
-- **Forty-fourth Q-0107 reconciliation pass** (band-#2010, issue #2012 —
-  [pass record](../planning/reconciliation-pass-2026-07-11-band2010.md)): reconciled the ledger
-  (band #1981–#2011 — four grouped entries, **entirely docs/tooling/control**, zero `disbot/` runtime:
-  the **EAP Anthropic-feedback email + fleet-review arc** #1982/#1985/#1986/#1990/#1992/#1993/#1994/#1996/#1997/#2007
-  — the fleet night review, ORDER-002 self-review, the two-part reviewer email, the email-fleet-handoff
-  session; the **8-seat consolidation → next-round founding-prompt arc**
-  #1983/#1998/#2002/#2004/#2005/#2006/#2008/#2011 — external-strategy synthesis + Codex-PR disposal, the
-  consolidation blueprint + founding-prompt kit, the 8-seat fleet structure; the **`check_consistency`
-  Rule-6 guard** #2000 (friction→guard, graduated to error); and 4 dashboard refreshes
-  #1984/#1991/#1999/#2009 — plus the already-carded #1995/#2003), trimmed Recently-shipped to 20
-  (moved the 6 oldest bullets to the archive), **disposed the open-PR set** — **zero open PRs at pass
-  start**, no stale session PR, confirmed **ROUTINE_PAT set / loop self-fires** (issue #2012 authored
-  by `menno420`), carried the forward queue intact (still deep, no THIN flag — the rebuild Phase-B
-  canonical plan + the live SuperBot Project 8-seat program dominate), refreshed the dashboard export
-  (Q-0167), reset the marker #1980 → #2011. The 5 remaining supersede-banner soft warnings are honest
-  cross-repo supersessions (successors live in fleet-manager `projects/superbot-next/`, registry PR #39)
-  the in-repo checker can't model — carried forward unchanged.
-- **Forty-third Q-0107 reconciliation pass** (band-#1980, issue #1981 —
-  [pass record](../planning/reconciliation-pass-2026-07-11-band1980.md)): reconciled the ledger
-  (band #1951–#1980), trimmed Recently-shipped to 20, disposed the open-PR set (zero open at pass
-  start), marker #1950 → #1980.
-- **Forty-second Q-0107 reconciliation pass** (band-#1950, issue #1951 —
-  [pass record](../planning/reconciliation-pass-2026-07-10-band1950.md)): reconciled the ledger
-  (band #1921–#1950 — five grouped entries, **entirely docs/tooling/dashboard**, zero `disbot/`
-  runtime logic: the **gen-1 EAP fleet close-out → gen-2/round-3 program launch** arc
-  #1926/#1931/#1932/#1934/#1935/#1936/#1944/#1945/#1946/#1947/#1949 — cross-fleet overnight review,
-  round-3 launch pack + dispatch runbook + manager founding package v3, gen-1 coordinator close-out +
-  Anthropic email Part 1, and **owner ruling Q-0259** (five round-3 rulings incl. the 3-repo games
-  program + venture profit-mandate); the **cross-agent GPT-5.6 Sol / Codex evaluation thread + owner
-  ruling Q-0258** #1938/#1939/#1940/#1941/#1942/#1943 (@codex the standing reviewer; Codex audits
-  verified against source per Q-0120); the **codex design docs** #1930/#1937 (EventBus wiring inventory,
-  guild quiet-hours); the 41st-pass docs PR #1922; and 4 dashboard refreshes #1925/#1927/#1933/#1950 —
-  plus the already-carded #1923/#1924), trimmed Recently-shipped to 20, **disposed the open-PR set** —
-  **1 open PR (#1948, the owner-attended live round-3 dispatch session) left in flight**, no stale
-  session PR, confirmed **ROUTINE_PAT set / loop self-fires** (issue #1951 authored by `menno420`),
-  carried the forward queue intact (still deep, no THIN flag — the rebuild Phase-B canonical plan + the
-  live SuperBot Project round-3/gen-3 program dominate), refreshed the dashboard export (Q-0167), reset
-  the marker #1920 → #1950.
-- **Forty-first Q-0107 reconciliation pass** (band-#1920, issue #1921 —
-  [pass record](../planning/reconciliation-pass-2026-07-10-band1920.md)): reconciled the ledger
-  (band #1891–#1920 — four grouped entries, **entirely docs/tooling**, zero `disbot/` runtime logic:
-  the **gen-1 EAP fleet wind-down → gen-2 doctrine arc** #1892…#1915 (10-Project fleet manifest kept
-  live as repos armed, evaluation-log findings — fleet-view permission gaps #1896 / GraphQL quota
-  exhaustion #1904 / setup-script failures #1902 — for the owner's Anthropic feedback, the gen-1 grand
-  review #1911 + retro protocol #1901 + external review pack #1903, and the independent gen-1→gen-2
-  doctrine review #1914); the **GPT-5.6 Sol research brief + Codex eval suite** #1916; the
-  **telemetry-append merge gate** #1894 (Q-0194 friction→guard, +9 tests); and 5 dashboard refreshes
-  #1899/#1906/#1907/#1908/#1912 — plus the already-carded #1913/#1917/#1918/#1919/#1920), trimmed
-  Recently-shipped to 20 (moved the 4 oldest bullets to the archive), disposed **0 open PRs**
-  (**zero open at pass start**; no stale session PR), confirmed **ROUTINE_PAT set / loop self-fires**
-  (issue #1921 authored by `menno420`), carried the forward queue intact (still deep, no THIN flag —
-  the rebuild Phase-B canonical plan + the live SuperBot Project program/fleet dominate), refreshed the
-  dashboard export (Q-0167), reset the marker #1890 → #1920.
-- **Fortieth Q-0107 reconciliation pass** (band-#1890, issue #1891 —
-  [pass record](../planning/reconciliation-pass-2026-07-09-band1890.md)): reconciled the ledger
-  (band #1863–#1890 — seven grouped entries, **entirely docs/tooling**, zero `disbot/` runtime:
-  the **EAP Anthropic-feedback email assembled + sent** #1864/#1866/#1867/#1868; the **EAP Project
-  fleet founding → independent cross-repo review** #1873…#1877/#1887/#1889/#1890 (the fleet grew to
-  four repos — `superbot`, `superbot-next`, `substrate-kit`, `websites` — plus the manager-Project
-  brief; headline finding: the substrate-kit's **render/engage half strands in every fresh adoption**,
-  an upstream-kit fix); the **substrate-kit graduation to its own repo**
-  #1878/#1879/#1881/#1882/#1883/#1884 (v1.0.0 pinned via `substrate.config.json`; the in-tree copy
-  removed — 101 files; provenance riders + exporter telemetry + `console.json` contract as kit-lab
-  companions); the **Dependabot PR policy Q-0256** #1886 (+ the #1761–#1766 backlog merge); the
-  39th-pass docs PR #1863; and 8 dashboard refreshes), trimmed Recently-shipped to 20
-  (`trim_recently_shipped.py --apply`, moved the 7 oldest bullets, floor recomputed), disposed
-  **0 open PRs** (**zero open at pass start** — the dependabot backlog cleared under Q-0256; no
-  stale session PR), confirmed **ROUTINE_PAT set / loop self-fires** (issue #1891 authored by
-  `menno420`), carried the forward queue intact (still deep, no THIN flag — the rebuild Phase-B
-  canonical plan + the live SuperBot Project program/fleet dominate), refreshed the dashboard export
-  (Q-0167), reset the marker #1861 → #1890.
-- **Thirty-eighth Q-0107 reconciliation pass** (band-#1830, issue #1832 —
-  [pass record](../planning/reconciliation-pass-2026-07-08-band1830.md)): reconciled the ledger
-  (band #1801–#1830 — five grouped entries, headlined by the **entirely docs-only SuperBot Project
-  coordinator arc**: the Projects-EAP coordinator going live → kickoff/calibration rewrite #1811…#1823,
-  the evaluation guidebook #1820, and the EAP findings for the owner's Friday Anthropic feedback
-  #1821…#1830 (headline: the auto-mode first-publish push wall is likely **un-self-clearable in cloud
-  Projects** — 11-test probe #1830) — plus the **Q-0254 understand-and-reflect kit-doctrine graduation**
-  #1806/#1809, the **website-design + kit-lab program briefs** #1802/#1804, the 37th-pass docs PRs
-  #1801/#1803, and 3 dashboard refreshes), trimmed Recently-shipped to 20
-  (`trim_recently_shipped.py --apply`, floor recomputed), disposed the open-PR set (6 dependabot bumps
-  #1761–#1766 left in flight — runtime, not docs; no stale session PR), confirmed **ROUTINE_PAT set /
-  loop self-fires** (issue #1832 authored by `menno420`), carried the forward queue intact (still deep,
-  no THIN flag — the rebuild Phase-B canonical plan + the live SuperBot Project program dominate),
-  refreshed the dashboard export (Q-0167), reset the marker #1800 → #1830.
-- **Thirty-seventh Q-0107 reconciliation pass** (band-#1800, issue #1801 —
-  [pass record](../planning/reconciliation-pass-2026-07-07-band1800.md)): reconciled the ledger
-  (band #1771–#1800 — seven grouped entries, headlined by the **S3 rebuild final-review → plan-review →
-  idea-consolidation → multi-repo program founding** arc: the FINAL review #1778/#1783 (verdict *plan ready*
-  → the §6.3 runtime fixes #1781/#1782), Phase-2.5 A/B run #1775, **Projects-EAP-as-coordinator + Q-0241
-  never-wait autonomy** #1776/#1777, the plan-review + owner-idea capture session #1784…#1790 (incl. the S1
-  **automod** spam-evasion/duplicate-content runtime fix #1789), and the consolidation → program-founding
-  session #1791…#1798 (owner rulings Q-0243…Q-0252 + the three-program-sessions launch index) — plus the
-  36th-pass docs PR #1772 and 5 dashboard refreshes), trimmed Recently-shipped to 20
-  (`trim_recently_shipped.py --apply`, moved 7 oldest bullets, floor recomputed), **disposed 11 open PRs** —
-  **closed the 5 Codex Gate-V evidence PRs** #1752–#1755/#1758 (evidence-consumed into the merged synthesis
-  #1767; two prior passes left them open — this pass acted per Q-0125 + the disposition-guard idea, flagged
-  for owner veto), left the 6 dependabot bumps in flight (runtime, not docs), confirmed **ROUTINE_PAT set /
-  loop self-fires** (issue #1801 authored by `menno420`), carried the forward queue intact (still deep, no
-  THIN flag — the rebuild Phase-B canonical plan + the four program sessions dominate), refreshed the
-  dashboard export (Q-0167), reset the marker #1770 → #1800.
-- **Thirty-sixth Q-0107 reconciliation pass** (band-#1770, issue #1771 —
-  [pass record](../planning/reconciliation-pass-2026-07-06-band1770.md)): reconciled the ledger
-  (band #1741–#1770 — four grouped entries, headlined by the **S3 rebuild foundational consolidation →
-  ONE canonical plan (Fable 5)** #1768/#1769/#1770 (the Q-0240 decide-and-flag decision model +
-  `rebuild-canonical-plan-2026-07-06.md` with the corrected K-layer taxonomy) — plus the **Gate V
-  verification-fleet pass A–D + synthesis** #1750/#1751/#1756/#1757/#1759/#1767 (verdict *Gate V
-  COMPLETE → Phase-B under Sequence C*), the **CI-followups arc** #1743/#1744/#1745/#1747/#1748 (CodeQL
-  watchdog · `check_audit_seam` + `check_deferred_recovery` AST guards · ruff replaces black+isort), and
-  3 dashboard refreshes), trimmed Recently-shipped to 20 (`trim_recently_shipped.py --apply`, moved 4
-  oldest bullets, floor recomputed), disposed **11 open PRs** (none a stale session PR — 6 dependabot
-  bumps runtime-not-docs; 5 codex Gate V evidence reports #1752–#1755/#1758 evidence-complete, flagged
-  for the owner to merge-or-close), confirmed **ROUTINE_PAT set / loop self-fires** (issue #1771 authored
-  by `menno420`), carried the forward queue intact (still deep, no THIN flag — the rebuild Phase-B
-  canonical plan dominates), refreshed the dashboard export (Q-0167), reset the marker #1740 → #1770.
-- **Thirty-fifth Q-0107 reconciliation pass** (band-#1740, issue #1741 —
-  [pass record](../planning/reconciliation-pass-2026-07-06-band1740.md)): reconciled the ledger
-  (band #1711–#1740 — five grouped entries, headlined by the **S3 rebuild Gate-0 grammar-freeze →
-  Phase-B L0 build-order + Stage-2 subsystem walk** #1713/#1716/#1725/#1735 — the frozen L0
-  manifest-grammar + amendment registry + 16-step build-order (S0–S15) and the 52-row owner-disposition
-  subsystem walk — plus the Stage-2 **save-fixes** 8-bug runtime backport + CodeQL hardening #1728/#1730
-  (the band's only `disbot/` change), the **CI-setup redesign → Phase-A hard merge gates**
-  #1736/#1737/#1739, the 34th-pass + open-PR sweep #1712/#1719, and 16 dashboard refreshes), trimmed
-  Recently-shipped to 20 (`trim_recently_shipped.py --apply`, moved 7 oldest bullets, floor recomputed),
-  disposed **0 open PRs** (none open at pass start), confirmed **ROUTINE_PAT set / loop self-fires**
-  (issue #1741 authored by `menno420`), carried the forward queue intact (still deep, no THIN flag —
-  the rebuild Phase-B build phase dominates), refreshed the dashboard export (Q-0167), reset the marker
-  #1710 → #1740.
-- **Thirty-fourth Q-0107 reconciliation pass** (band-#1710, issue #1711 —
-  [pass record](../planning/reconciliation-pass-2026-07-04-band1710.md)): reconciled the ledger
-  (band #1681–#1710 — three grouped entries, headlined by the **S3 rebuild foundations audit →
-  Fable-5 judgment → design-prep arc** #1689/#1690/#1691/#1693/#1700/#1701/#1703/#1704/#1705 — the
-  engine-room (PROMPT A) + surface/proving (PROMPT B) foundations audits, the **two confirmed prod
-  loss-path fixes** #1693, and the Fable-5 capstone judgment's **7 Tier-1 owner decisions** (Q-0237)
-  — plus the 33rd-pass docs PR #1682 and the per-merge dashboard refreshes
-  #1692/#1694/#1702/#1706/#1707/#1709/#1710), trimmed Recently-shipped to 20
-  (`trim_recently_shipped.py --apply`, floor recomputed), disposed 13 open PRs (**none a stale
-  session PR** — #1708 is the active in-flight foundational-design session; #1509 + five codex review
-  docs #1695–#1699 left for the owner; six dependabot bumps runtime-not-docs), confirmed **ROUTINE_PAT
-  set / loop self-fires** (issue #1711 authored by `menno420`), carried the forward queue intact
-  (still deep, no THIN flag — the rebuild Stage-2/design phase dominates), refreshed the dashboard
-  export (Q-0167), reset the marker #1680 → #1710.
-- **Thirty-third Q-0107 reconciliation pass** (band-#1680, issue #1681 —
-  [pass record](../planning/reconciliation-pass-2026-07-03-band1680.md)): reconciled the ledger
-  (band #1651–#1680 — four grouped entries, headlined by the **S3 rebuild new-bot capability audit →
-  frozen BUILD-PLAN** #1662…#1668/#1674/#1677 (verdict **GO-with-amendments**, measured all-43 fit
-  **85.1%**) and the owner-live **Phase-A conventions freeze** #1679/#1680 — plus the 32nd-pass +
-  Q-0102 review/brainstorm routine sessions #1652/#1653/#1657/#1658/#1659/#1661/#1669/#1672/#1673 and
-  the per-merge dashboard refreshes #1656/#1660/#1670/#1671/#1675/#1676/#1678), trimmed Recently-shipped
-  to 20 (`trim_recently_shipped.py --apply`, moved 5 oldest bullets, floor recomputed), disposed 7 open
-  PRs (none a stale session PR: #1509 owner audit + six dependabot bumps), confirmed **ROUTINE_PAT set /
-  loop self-fires** (issue #1681 authored by `menno420`), carried the forward queue intact (still deep,
-  no THIN flag — the rebuild planning phase dominates), refreshed the dashboard export (Q-0167), reset
-  the marker #1650 → #1680.
-- **Thirty-second Q-0107 reconciliation pass** (band-#1650, issue #1651 —
-  [pass record](../planning/reconciliation-pass-2026-07-02-band1650.md)): reconciled the ledger
-  (band #1621–#1650 — six grouped entries, headlined by the **S3 fresh-rebuild arc** — the Fable 5
-  Phase-2 design spec, fresh-rebuild strategy + Codex map fold #1634/#1642, parallel-execution schedule
-  #1644/#1645, the memory-retention/context-economy plan #1643/#1647/#1648 (Q-0214) and the linchpin
-  validation #1639 — plus **server-logging v2 audit-log** #1624, **fishing Fishery** #1626, **BTD6
-  Layout B** #1621, and the 31st-pass+dashboard docs band), trimmed Recently-shipped to 20
-  (`trim_recently_shipped.py --apply`, floor recomputed — moved 7 oldest bullets), disposed 8 open PRs
-  (none a stale session PR: #1649 memory-substrate in flight, #1509 left for owner, six dependabot
-  bumps), confirmed **ROUTINE_PAT set / loop self-fires** (issue #1651 authored by `menno420`), carried
-  the forward queue intact (still deep, no THIN flag), refreshed the dashboard export (Q-0167), reset
-  the marker #1620 → #1650.
-- **Thirty-first Q-0107 reconciliation pass** (band-#1620, issue #1622 —
-  [pass record](../planning/reconciliation-pass-2026-07-01-band1620.md)): reconciled the ledger
-  (band #1591–#1620 — seven grouped entries, headlined by the **S1 completion-deepening lane** —
-  fishing coral structures #1596…#1605, reaction-roles slim builder #1608…#1615, XP import #1607/#1610,
-  server-logging depth #1594/#1618/#1619 — plus the **bot-owner permission-gate bypass** #1602 and a
-  **boot smoke-test CI guard** #1601), trimmed Recently-shipped to 20
-  (`trim_recently_shipped.py --apply`, floor recomputed), disposed 8 open PRs (none a stale session PR:
-  #1621 in flight, #1509 left for owner per the prior pass, six dependabot bumps), confirmed
-  **ROUTINE_PAT set / loop self-fires** (issue #1622 authored by `menno420`), carried the forward queue
-  intact (still deep, no THIN flag), refreshed the dashboard export (Q-0167), reset the marker
-  #1590 → #1620.
-- **Thirtieth Q-0107 reconciliation pass** (band-#1590, issue #1591 —
-  [pass record](../planning/reconciliation-pass-2026-06-30-band1590.md)): reconciled the ledger
-  (band #1561–#1590 — seven grouped entries, headlined by the **bot-owner platform-admin override**
-  #1573/#1577/#1582, the **S1 certification deepening** #1565/#1566/#1568/#1575/#1588, and the
-  **owner fresh-rebuild vision capture** #1589/#1590), trimmed Recently-shipped to 20
-  (`trim_recently_shipped.py --apply`, floor recomputed), reflected the **owner re-elevation of the
-  AI-memory substrate-kit** to top focus (S3), confirmed **ROUTINE_PAT set / loop self-fires** (issue
-  #1591 authored by `menno420`), carried the forward queue intact (still deep, no THIN flag), reset
-  the marker #1560 → #1590.
-- **Twenty-ninth Q-0107 reconciliation pass** (band-#1560, issue #1563 —
-  [pass record](../planning/reconciliation-pass-2026-06-29-band1560.md)): reconciled the ledger
-  (band #1531–#1560), trimmed Recently-shipped to 20, carried the forward queue intact, reset the
-  marker #1530 → #1560.
-- **Twenty-eighth Q-0107 reconciliation pass** (band-#1530, issue #1531 —
-  [pass record](../planning/reconciliation-pass-2026-06-28-band1530.md)): reconciled the ledger
-  (band #1502–#1530 — six grouped entries, headlined by the **fishing acquisition-depth + gear arc**
-  #1504…#1521 and the **S1 feature-completion certification framework** #1513/#1519/#1523/#1530), trimmed
-  Recently-shipped to 20 (`trim_recently_shipped.py --apply`, floor recomputed), carried the band-#1500
-  forward queue intact (no §4 queue slice executed this band → `mixed` archetype; still deep, no THIN
-  flag), reset the marker #1500 → #1530.
-- **Twenty-seventh Q-0107 reconciliation pass** (band-#1500, issue #1501 —
-  [pass record](../planning/reconciliation-pass-2026-06-27-band1500.md)): reconciled the ledger
-  (band #1472–#1500 — five grouped entries, headlined by the owner-directed **BTD6 QA-accuracy arc**
-  #1487…#1498 and the **self-improving-workflow guard lane** #1476/#1477/#1479/#1482/#1495), trimmed
-  Recently-shipped to 20 (`trim_recently_shipped.py --apply`, floor recomputed), carried the band-#1470
-  forward queue intact (no §4 queue slice executed this band → `mixed` archetype; still deep, no THIN
-  flag), reset the marker #1470 → #1500.
-- **Twenty-sixth Q-0107 reconciliation pass** (band-#1470, issue #1471 —
-  [pass record](../planning/reconciliation-pass-2026-06-26-band1470.md)): reconciled the ledger
-  (band #1442–#1470 — six grouped entries, headlined by the **NEW Project Moon (Limbus) knowledge
-  domain** arc #1453…#1470), trimmed Recently-shipped to 20 (`trim_recently_shipped.py --apply`, floor
-  recomputed), **fixed S3 drift** (the retired `needs-hermes-review` label, Q-0197), carried the
-  band-#1440 forward queue (still deep, no THIN flag), reset the marker #1441 → #1470.
-- **Twenty-fifth Q-0107 reconciliation pass** (band-#1440, issue #1442 —
-  [pass record](../planning/reconciliation-pass-2026-06-24-band1440.md)): reconciled the ledger
-  (band #1413–#1441 — six grouped entries, headlined by the **Essential Setup wizard restructure** arc),
-  trimmed Recently-shipped to 20 (`trim_recently_shipped.py --apply`, floor recomputed), carried the
-  band-#1410 forward queue (still deep, no THIN flag), reset the marker #1410 → #1441.
+- **Forty-eighth … twenty-fifth Q-0107 passes (band-#2130 … band-#1440)** — collapsed to keep this sector list lean; the newest six passes are above, and every older pass is preserved in full in its own `planning/reconciliation-pass-*.md` record + `.sessions/*-reconcile.md` log (and the hub [`../current-state-archive.md`](../current-state-archive.md) Recently-shipped archive). Each was a docs-only ledger reconcile (marker bump + Recently-shipped trim to 20 + open-PR disposition + control-plane ROUTINE_PAT confirm); the band-#2160-and-later passes carried **PLAN BACKLOG THIN** under the oracle-freeze.
 - **Help-reachability CI guard (#1297)** — `check_docs`/the help tree now fails CI when a subsystem
   isn't homed, and a **tool-pin CI guard (#1320)** closes the three-places-pin-drift class at the root.
 - **Ledger / docs in sync** — `check_current_state_ledger.py` and `check_docs.py` green.
@@ -336,7 +118,7 @@
   startable slice. Companion: the still-unexecuted
   [orientation-cost-reduction plan](../planning/orientation-cost-reduction-plan-2026-06-30.md)
   (Q-0210 router archive now 3+ passes overdue — B0–B3 should run soon regardless).
-- **Next reconciliation pass due once merged PRs cross #2190** (every multiple of 30, Q-0134) —
+- **Next reconciliation pass due once merged PRs cross #2340** (every multiple of 30, Q-0134) —
   auto-triggered by `reconciliation-trigger.yml`; run by the docs-reconciliation routine, **not** a
   manual session (Q-0124).
 - **⚠️ `PLAN BACKLOG THIN` (raised band-#2160, 2026-07-19)** — the in-repo product backlog is
