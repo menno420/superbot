@@ -14,7 +14,13 @@ src = ["disbot"]
 # Mirror the `--exclude` flag CI uses so local and CI agree on scope.
 # Tests use pytest assert and ad-hoc imports that the strict ruleset
 # would flag; they have their own conventions enforced by review.
-extend-exclude = [".github", "tests", "venv", "env", "build", "dist"]
+# `*.md` is excluded deliberately, added with the ruff 0.16.1 bump: 0.16 began
+# formatting Python code blocks *inside Markdown*, which rewrites illustrative
+# snippets in `docs/` — including historical rebuild-discovery design records
+# whose compact one-line enum bodies are prose, not runnable code. Reformatting
+# them is pure churn in a repo frozen as the behavioral oracle. Ruff's job here
+# is `disbot/` correctness; doc prose is out of scope.
+extend-exclude = [".github", "tests", "venv", "env", "build", "dist", "*.md"]
 
 [tool.ruff.lint]
 # Rules are split into two tiers:
