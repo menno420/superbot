@@ -61,6 +61,18 @@ ignore = [
     "COM812",  # missing-trailing-comma      — formatter adds it on multiline collections
     "COM819",  # prohibited-trailing-comma   — formatter removes it on single-line
     "ISC001",  # single-line implicit concat — formatter normalizes string layout
+    # ISC004 is new in ruff 0.16 and belongs to the same formatter-owned family.
+    # It exists to catch a MISSING COMMA silently merging two collection items —
+    # a real bug class, so it was checked rather than dismissed. All 42 sites in
+    # `disbot/` were classified 2026-08-05: a missing comma joins two COMPLETE
+    # items, while a deliberate wrap breaks mid-phrase and leaves a trailing
+    # space. 40 wrapped cleanly; the 2 flagged were a hyphenated word split over
+    # two lines (`"tier-6 super-" "upgrades)"`) and a regex artifact from an
+    # f-string using single quotes around an inner double-quoted phrase. **Zero
+    # missing commas.** The rule finds nothing real here and its fix is
+    # ruff-classified unsafe, so applying it would be 42 cosmetic edits in a repo
+    # frozen as the behavioral oracle. Re-run the classifier before re-enabling.
+    "ISC004",  # implicit concat in collection — 42 sites, all verified deliberate
     # ─── Aspirational rules grandfathered for the current codebase ───
     # Tightening these is its own phase; see plan §26.
     "D100",  # missing module docstring               — ~40 sites
