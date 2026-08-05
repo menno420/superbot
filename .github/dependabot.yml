@@ -8,8 +8,20 @@
 # Also closes the gap-analysis §6 "toolchain rot watch" concern by keeping GitHub
 # Actions versions fresh (the same class as the Python-3.13 / Node-20 deprecations
 # that bit unpinned infra). Grouped minor/patch updates keep PR noise low; tune the
-# cadence / open-PR limits here. Dependabot PRs land on `dependabot/*` branches, so
-# the `claude/*` auto-merge-enabler never auto-merges them — they wait for review.
+# cadence / open-PR limits here.
+#
+# HOW THESE LAND (owner directive, 2026-08-05). The previous note here said these
+# PRs "wait for review". Nothing reviews them — playbook R29 is explicit that the
+# owner never reviews PRs — so they waited forever: nine were open on 2026-08-05,
+# seven dating from the day the autonomous program closed.
+#
+# The rule is now: **the first agent that notices an open dependabot PR lands it.**
+# Merge it, and verify the merge changes no feature. If it does change something,
+# fix what it touched (that is normal work, not scope creep). Only if the update
+# genuinely breaks something that cannot be fixed do you pin the dependency at its
+# working version — and then say plainly, in the pin comment, what broke and why.
+# Pinning is the last resort, never the first move, and "leave it open" is not an
+# option at all.
 version: 2
 updates:
   # Bot runtime + dev tooling (root requirements.txt + requirements-dev.txt).
@@ -34,6 +46,20 @@ updates:
     labels: ["dependencies"]
     groups:
       dashboard-minor-patch:
+        update-types: ["minor", "patch"]
+
+  # Public botsite service. It has its own requirements.txt and was, until
+  # 2026-08-05, updated only incidentally by the "/" updater's recursive manifest
+  # discovery — no entry declared it, so nothing owned its cadence or grouping.
+  - package-ecosystem: "pip"
+    directory: "/botsite"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+    open-pull-requests-limit: 5
+    labels: ["dependencies"]
+    groups:
+      botsite-minor-patch:
         update-types: ["minor", "patch"]
 
   # GitHub Actions versions used by the workflows.
