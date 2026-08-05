@@ -7738,7 +7738,7 @@ const CHANGELOG = [
   {
     "version": "2026.06.19",
     "date": "Jun 19, 2026",
-    "build": "d7ba091f",
+    "build": "c9af4fac",
     "title": "New public bot website",
     "changes": [
       {
@@ -7750,7 +7750,7 @@ const CHANGELOG = [
   {
     "version": "2026.06.12",
     "date": "Jun 12, 2026",
-    "build": "d7ba091f",
+    "build": "c9af4fac",
     "title": "Owner review inbox on the dashboard",
     "changes": [
       {
@@ -7762,7 +7762,7 @@ const CHANGELOG = [
   {
     "version": "2026.06.08",
     "date": "Jun 08, 2026",
-    "build": "d7ba091f",
+    "build": "c9af4fac",
     "title": "Command-alias suggestions",
     "changes": [
       {
@@ -9143,9 +9143,9 @@ const FEATURES = [
 ];
 
 const BUILD = {
-  "commit": "d7ba091f",
-  "subject": "Merge pull request #2337 from menno420/claude/deps-python-group-with-ruff-pins",
-  "committed_at": "2026-08-05T22:00:00Z"
+  "commit": "c9af4fac",
+  "subject": "docs: fifty-fifth Q-0107 reconciliation pass (band-#2340)",
+  "committed_at": "2026-08-05T20:12:26Z"
 };
 
 const COUNTS = {
