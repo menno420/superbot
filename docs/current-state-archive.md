@@ -86,6 +86,18 @@
 
 ## Recently shipped — archived (newest first)
 
+- **#2087 · #2090 · #2094 (2026-07-13/14, S5/control — fleet-manager relay ORDERs, control-only)** —
+  three append-only `control/inbox.md` ORDERs relaying fleet-manager coordinator dispatch to the hub seat:
+  **ORDER 003** #2087 (I1b frozen-trigger disposition — two dormant owner-paused pre-fleet dispatch
+  triggers, recommend delete/annotate-and-leave-paused; + a dispatch-console doc-drift rider), **ORDER 004**
+  #2090 (EAP final-night worklist, fm ORDER 045 relay), **ORDER 005** #2094 (supersession pointers on three
+  superseded superbot docs → their living fleet-manager counterparts). Each premise-checked against source
+  per Q-0120. Control-only; no `disbot/` runtime.
+- **#2072 · #2074 · #2088 · #2092 · #2096 (2026-07-13/14, workflow/EAP — dashboard-conflict recipe + reconcile PR + session doc + repo-audit + EAP closeout, docs-only)** —
+  #2072 the **dashboard-conflict merge recipe** (a docs/tooling note for resolving `dashboard/data`
+  conflicts); #2074 the **forty-sixth Q-0107 reconcile PR** (band-#2070); #2088 the **07-13 owner-live
+  review + cross-repo merge sweep** session doc + enders; #2092 the **repo-audit PR cleanup** (dependabot
+  backlog + fleet stale-PR sweep); #2096 the **EAP final-closeout**. Docs/control-only.
 - **#2075 · #2076 · #2085 · #2086 · #2091 · #2093 · #2095 · #2097 · #2098 · #2099 · #2100 (2026-07-13/14, docs — dashboard-data refreshes, Q-0167)**
   and **#2077 · #2078 · #2080 · #2081 · #2082 · #2083 · #2084 (dependabot dep-bumps)** — eleven
   `dashboard/data/dashboard.json` regenerations keeping the committed export fresh, plus seven grouped
