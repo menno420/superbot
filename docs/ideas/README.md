@@ -39,7 +39,7 @@ Current broad captures:
   `⚑ Routine-debt: N items, carried P passes` run-report line (convention now, warn-only `check_*` later)
   — the *drain mechanism* for the collector, distinct from the four debts inside it. Subsystem: S4/S5.
 - [`reconcile-tooling-idea-cluster-consolidation-2026-08-10.md`](./reconcile-tooling-idea-cluster-consolidation-2026-08-10.md) —
-  **session ender (2026-08-10, 56th Q-0107 reconciliation pass, band-#2393):** the *producer-side* half of
+  **session ender (2026-08-10, 56th Q-0107 reconciliation pass, band-#2370):** the *producer-side* half of
   the routine-backlog problem — `docs/ideas/` now holds ~40 `reconcile-*`/`ledger-*` tooling fragments, all
   blocked on the same no-executor gate, and a frozen-repo pass with the mechanical surface fully ideated
   keeps minting same-shaped, provably-undeliverable ideas (backlog drift grooming exists to prevent). Two

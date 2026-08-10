@@ -1,10 +1,10 @@
 {
   "meta": {
-    "generated_at": "2026-08-10T15:28:18Z",
+    "generated_at": "2026-08-10T15:36:37Z",
     "build": {
-      "commit": "aa763c6a",
-      "subject": "docs: born-red session card — 56th Q-0107 reconciliation pass (band-#2393)",
-      "committed_at": "2026-08-10T15:28:18Z"
+      "commit": "3385cc04",
+      "subject": "docs: 56th Q-0107 reconciliation pass (band-#2393)",
+      "committed_at": "2026-08-10T15:36:37Z"
     },
     "schema_version": 1
   },
@@ -12,7 +12,7 @@
     {
       "file": "2026-08-10-reconcile.md",
       "date": "2026-08-10",
-      "title": "2026-08-10 — fifty-sixth Q-0107 docs reconciliation pass (band-#2393)",
+      "title": "2026-08-10 — fifty-sixth Q-0107 docs reconciliation pass (band-#2370)",
       "status": "complete",
       "run_type": "routine",
       "self_initiated": true

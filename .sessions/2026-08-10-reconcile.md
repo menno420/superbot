@@ -1,4 +1,4 @@
-# 2026-08-10 — fifty-sixth Q-0107 docs reconciliation pass (band-#2393)
+# 2026-08-10 — fifty-sixth Q-0107 docs reconciliation pass (band-#2370)
 
 > **Status:** `complete`
 > **Run type:** routine · reconciliation
@@ -16,6 +16,10 @@ touched), matching the oracle-freeze posture:
   (`claude/botsite-uvicorn-remainder`, uvicorn bump in `botsite/requirements.txt`).
 - **47 dashboard-refresh PRs** #2346…#2370/#2372…#2393 — `dashboard/data/dashboard.json` regenerations
   under the Q-0167 refresh loop.
+- **Two late-merged Dependabot squash-merges captured this pass (Q-0120, Codex-surfaced on #2395):**
+  #2316 (`dashboard-minor-patch` — fastapi/uvicorn in `/dashboard`) + #2336 (`github-actions-all`, 4
+  Actions bumps), both merged 2026-08-05 with numbers **below** the #2341 marker → missed by the 55th
+  pass's number-list and by this pass's #2342–#2393 numeric range; recorded now in the grouped entry.
 - (#2340 uvicorn/botsite + #2343 python-minor-patch closed **unmerged** — superseded by #2345/#2339;
   not shipped.)
 
@@ -86,14 +90,34 @@ no-executor problem — captured as this pass's Q-0089 idea (cap + consolidate t
 cluster), because "add another caveated tooling idea every pass" is itself the drift, and naming it is
 more useful than a 41st fragment.
 
+## 🔎 Codex review round (post-open, #2395)
+
+Codex posted two P2 comments on the born-red→complete diff; **both verified against source (Q-0120) and
+both correct** — fixed in-PR before merge:
+1. **Band label** — `check_reconcile_marker.py --strict` failed: the band label must be the cadence
+   boundary `(2393 // 30) * 30 = 2370`, not the marker itself. The marker *reset target* stays **PR #2393**
+   (latest merged) and the next threshold **#2400**; only the pass **label** is `band-#2370`. Fixed all
+   `band-#2393` → `band-#2370` across current-state.md, S4-docs.md, the idea file, ideas/README, the
+   ROUTINE_PAT row, and this log. (This was also the real `code-quality` CI red.)
+2. **Two dropped late-merges** — #2316 (`dashboard-minor-patch` deps) + #2336 (`github-actions-all` deps)
+   are genuinely `merged: true` (verified via GitHub PR read), squash-merged 2026-08-05 with numbers below
+   the #2341 marker, so neither the 55th pass's number-list nor this pass's numeric range covered them.
+   Added to the non-dashboard grouped entry + marker line + Last-updated narrative + S4-docs.
+   *(Codex's own "no substantive findings" top-level review landed first; the two line comments followed —
+   verifying rather than trusting the summary was the right call, cutting both ways: the checker confirmed
+   #1 and the GitHub source confirmed #2.)*
+
 ## 📤 Run report
 
-- **Did:** 56th Q-0107 reconciliation pass — band #2342–#2393 reconciled (all docs/CI/tooling + generated
-  artifact + botsite deps, zero `disbot/` runtime), marker #2341 → #2393, Recently-shipped trimmed to 20
-  (two arcs archived), open-PR set dispositioned (**zero open PRs — the ~9-PR Dependabot backlog fully
-  drained** this band), control-plane ROUTINE_PAT marker advanced to #2394, `PLAN BACKLOG THIN` carried,
-  dashboard export refreshed as the final step, S4-docs sector list kept at newest-six, one new idea. ·
-  **Outcome:** shipped
+- **Did:** 56th Q-0107 reconciliation pass (**band-#2370** — the cadence boundary for marker #2393) —
+  band #2342–#2393 reconciled (all docs/CI/tooling + generated artifact + botsite deps, zero `disbot/`
+  runtime), marker #2341 → #2393, Recently-shipped trimmed to 20 (two arcs archived), open-PR set
+  dispositioned (**zero open PRs — the ~9-PR Dependabot backlog fully drained** this band), control-plane
+  ROUTINE_PAT marker advanced to #2394, `PLAN BACKLOG THIN` carried, dashboard export refreshed as the
+  final step, S4-docs sector list kept at newest-six, one new idea. **Then addressed two verified Codex P2
+  findings on #2395 (Q-0120):** corrected the band label to the cadence boundary (`band-#2370`, was
+  mislabeled `band-#2393` → `check_reconcile_marker` red) and captured two dropped late-merges #2316 +
+  #2336 (merged below the #2341 marker). · **Outcome:** shipped
 - **Shipped:** this docs-only `claude/jolly-johnson-oj9oae` PR #2395 (ledger + docs de-stale + archive
   move + S4-docs sector update + control-plane marker advance + new idea + README index + log).
 - **Run type:** `routine · reconciliation`

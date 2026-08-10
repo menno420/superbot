@@ -1,7 +1,7 @@
 # Idea — cap & consolidate the reconcile-tooling idea *cluster* (producer-side backlog hygiene)
 
 > **Status:** `ideas` — session idea (Q-0089), captured 2026-08-10 (fifty-sixth Q-0107 reconciliation
-> pass, band-#2393). Not approved for implementation. · **Class:** friction→guard · **Subsystem:**
+> pass, band-#2370). Not approved for implementation. · **Class:** friction→guard · **Subsystem:**
 > S4/S5 (docs-system / the reconcile routine's own idea backlog).
 
 ## The observation (what this pass actually surfaced)

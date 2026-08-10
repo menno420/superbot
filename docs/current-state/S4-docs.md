@@ -9,14 +9,17 @@
 > S3; the docs it produces are S4.*
 
 **Recently shipped (this sector):**
-- **Fifty-sixth Q-0107 reconciliation pass** (band-#2393, issues #2394 + #2371 —
+- **Fifty-sixth Q-0107 reconciliation pass** (band-#2370, issues #2394 + #2371 —
   record in [`.sessions/2026-08-10-reconcile.md`](../../.sessions/2026-08-10-reconcile.md)): reconciled
   the ledger (band #2342–#2393 — **entirely docs/CI/tooling + generated artifact + botsite deps, zero
   `disbot/` runtime**, matching oracle-freeze: the **55th-pass reconcile PR** #2344, one **Dependabot bump**
   #2339 (fastapi/botsite), one **botsite dep PR** #2345 (uvicorn remainder), and **47 dashboard refreshes**
-  #2346…#2370/#2372…#2393), trimmed Recently-shipped to 20, **disposed the open-PR set** — **zero open PRs**:
-  the long-standing Dependabot dep-bump backlog is now **fully drained** (#2340 + #2343 closed **unmerged**
-  as superseded by #2345/#2339; the rest merged), no external drive-by and no stale session PR to dispose
+  #2346…#2370/#2372…#2393; **plus two Codex-surfaced late-merges captured this pass (Q-0120)** — #2316
+  (`dashboard-minor-patch` deps) + #2336 (`github-actions-all` deps), merged 2026-08-05 below the #2341
+  marker and missed by the 55th pass's number-list), trimmed Recently-shipped to 20, **disposed the open-PR
+  set** — **zero open PRs**: the long-standing Dependabot dep-bump backlog is now **fully drained** (#2316/
+  #2336/#2339 merged; #2340 + #2343 closed **unmerged** as superseded by #2345/#2339), no external drive-by
+  and no stale session PR to dispose
   this band, confirmed **ROUTINE_PAT set / loop self-fires** (issues #2394 + #2371 authored by `menno420`),
   **⚠️ carried PLAN BACKLOG THIN** (the in-repo product backlog is intentionally frozen — no 30-PR feature
   band to plan; forward queue is `NEXT-TASKS.md`: superbot-next rebuild cutover + docs curation + owner-gated
