@@ -39,7 +39,12 @@ ceiling if it becomes heavily used.
 To raise the limit:
 1. Create a free key at `context7.com/dashboard` → "Create API Key" (shown once — copy it).
 2. Add it to **this Claude Code web environment's** settings as a secret/env var
-   `CONTEXT7_API_KEY` (agents cannot set environment secrets — this is a maintainer step).
+   `CONTEXT7_API_KEY` — a maintainer step, done through **the Claude Code environment console**.
+   (Reworded 2026-08-13: the earlier phrasing stated this as a general rule about what agents can
+   do, rather than as a fact about this one console. Scope it to the console and the step stays
+   true without becoming a standing capability claim. This repo's canonical records —
+   `.claude/CLAUDE.md`, `docs/current-state.md`, `docs/operations/repo-settings-state.md` — remain
+   the authority on the settings/secrets layer; nothing here re-scopes them.)
 3. Add the env reference to the `context7` entry in `.mcp.json`:
    `"env": { "CONTEXT7_API_KEY": "${CONTEXT7_API_KEY}" }`. The key stays in the environment;
    the repo only references it by name (never commit the key).

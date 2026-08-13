@@ -21,8 +21,14 @@ _REPO = Path(__file__).resolve().parents[3]
 _SCRIPT = _REPO / "scripts" / "check_quality.py"
 _WORKFLOW = _REPO / ".github" / "workflows" / "code-quality.yml"
 
-#: The directories CI excludes from ruff (the single canonical set).
-_EXPECTED_DIRS = {".github", "tests", "venv", "env", "build", "dist"}
+#: The paths CI excludes from ruff (the single canonical set).
+#: `bootstrap.py` is not a directory: it is the vendored substrate-kit
+#: distribution, a GENERATED / DO-NOT-EDIT single file whose sha256 must stay
+#: byte-identical to the published release asset. Reformatting it would fork
+#: this adopter from the kit and break the digest the adoption rests on, so it
+#: is excluded from formatting and lint rather than reformatted.
+#: (Added 2026-08-13 with the substrate-kit v1.21.0 adoption.)
+_EXPECTED_DIRS = {".github", "tests", "venv", "env", "build", "dist", "bootstrap.py"}
 
 
 def _load_check_quality():
