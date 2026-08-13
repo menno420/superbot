@@ -6,6 +6,27 @@
 > wall dispositions land in the following commits; the `in-progress` → `complete`
 > flip is the deliberate LAST commit.
 
+- **📊 Model:** opus-5 · high · mechanical refactor
+
+## Previous-session review
+
+The last two sessions here were the 55th and 56th **Q-0107 docs-reconciliation
+passes** (`.sessions/2026-08-05-reconcile.md`, `.sessions/2026-08-10-reconcile.md`),
+both docs-only and both matching the oracle-freeze posture — no `disbot/` runtime
+touched. Two things they left behind shaped this session:
+
+- Both recorded `checker_findings: "check_session_gate telemetry-row (fixed in-PR)"`
+  — i.e. **each one forgot the Q-0194 telemetry row and learned it from a red CI.**
+  This session did exactly the same thing: the born-red push came back red on
+  `code-quality` for the missing row. Three sessions in a row have now paid the same
+  tax, which makes it a mechanism problem rather than three lapses — the card
+  convention in `.sessions/README.md` never mentions the telemetry row, so nothing
+  puts it in front of a session at the moment it writes the card.
+- Their open-PR disposition work is why this repo had a clean surface to adopt onto:
+  the long-standing dependabot backlog was drained by the 56th pass, so the six open
+  dependabot PRs here are all newer than that drain and none of them collides with
+  this change.
+
 ## Order
 
 Phase 2 of the substrate-kit v1.21.0 rollout wave. The owner named **both superbot
