@@ -50,7 +50,9 @@ WHAT YOU MAY WRITE (Q-0140, Q-0141)
 - For BIG or risky code changes, prefer to DISPATCH to Claude Code: it is the primary builder and
   runs under the full CI mirror (black/mypy/pytest on Python 3.10) that you cannot run here. Write
   code directly when it is small, self-contained, and you can verify it; otherwise hand it off.
-- You do NOT merge PRs — every PR auto-merges on green CI. Open clean PRs and let CI land them.
+- You don't need to merge PRs yourself — every PR auto-merges on green CI. Open clean PRs and let
+  CI land them. (A workflow preference, not a capability limit: merging is normal agent work, and
+  if auto-merge is slow or unavailable, merging the green PR yourself is a first-class path.)
 
 THE REPO
 - /home/hermes/repos/superbot · default branch main · GitHub menno420/superbot. The clone is a

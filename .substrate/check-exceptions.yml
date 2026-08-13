@@ -1,0 +1,101 @@
+# superbot — false-wall allowlist (kit seam: engine.checks.allowlist)
+#
+# Schema: {path, kind, reason REQUIRED, triaged, by, verdict}. Matching is EXACT
+# on path + kind; a reason-less entry suppresses nothing and is itself reported
+# (fail-closed). Verdicts: false_positive | accepted_risk.
+# Format note: the parser accepts a FLAT list of FLAT mappings only — one line
+# per key, no folded (>-) or block (|) scalars. Reasons are therefore long
+# single lines by necessity, not by preference.
+#
+# Written 2026-08-13 during the substrate-kit v1.21.0 adoption. The kit's
+# false-wall checker reported 14 findings on this tree. Three were genuinely
+# wrong and were CORRECTED IN PLACE rather than allowlisted:
+#   · docs/operations/hermes-operating-prompt.md — merging reframed as a workflow
+#     preference rather than a limit
+#   · docs/operations/mcp-servers.md — one owner-only console no longer generalised
+#     into a standing capability wall
+#   · docs/owner/product-catalog.md — the release-creation claim repudiated and dated
+# The remaining eleven findings are covered by the nine entries below. Every one
+# is the checker matching a QUOTED or RECORDED wall rather than a live claim —
+# and in four cases the sentence's own purpose is to REFUTE the wall it quotes.
+#
+# superbot is frozen as the behavioural oracle, so its records are evidence.
+# Rewriting a verbatim classifier quote or a superseded decision to please a
+# scanner would destroy the thing the record exists to preserve.
+#
+# KNOWN COST, stated rather than hidden: matching is path+kind, so each entry
+# also suppresses any FUTURE finding of that same kind on that same file. The
+# kit chose that granularity deliberately (a glob would silence a whole class).
+# For docs/owner/maintainer-question-router.md — a ~10k-line router — that is
+# the widest exposure here; accepted because the file is an append-only Q&A
+# record whose historical entries are never rewritten in place.
+
+- path: docs/current-state.md
+  kind: false-wall:agent-negated-capability
+  reason: Both hits (lines 233 and 748) are the ledger RECORDING PR #2145, the dewall that REMOVED the false merge wall from .claude/CLAUDE.md. The quoted phrase is the thing that was deleted, named so the history stays legible. Rewording would erase the record of the fix and leave the ledger unable to say what #2145 did.
+  verdict: false_positive
+  triaged: 2026-08-13
+  by: substrate-kit v1.21.0 adoption
+
+- path: docs/eap/gen1-wrapup-email-final-candidate.md
+  kind: false-wall:classifier-denied-standing
+  reason: Verbatim quotation of the auto-mode classifier's own denial text inside an owner-facing EAP wrap-up email drafted for Anthropic. The sentence is evidence submitted to the vendor about the classifier's behaviour; altering the quote would falsify the evidence. The surrounding prose already frames it as one observed denial, not a standing rule.
+  verdict: false_positive
+  triaged: 2026-08-13
+  by: substrate-kit v1.21.0 adoption
+
+- path: docs/eap/screenshots-2026-07-11/index.md
+  kind: false-wall:review-label-prohibition
+  reason: A caption table for EAP screenshots. The flagged text is the verbatim on-screen wording of a captured denial, describing what the image shows. The caption must match the screenshot or the index is wrong about its own figures.
+  verdict: false_positive
+  triaged: 2026-08-13
+  by: substrate-kit v1.21.0 adoption
+
+- path: docs/operations/hermes-dispatch-bridge.md
+  kind: false-wall:never-agent-side
+  reason: The flagged clause is the deliberate Q-0114 feature carve-out, a POLICY choice about what the unattended Hermes routine may land, adopted alongside the Q-0113 grant that lets it self-merge everything else. It is a scope boundary the owner chose, not a claim about what agents are able to do.
+  verdict: accepted_risk
+  triaged: 2026-08-13
+  by: substrate-kit v1.21.0 adoption
+
+- path: docs/owner/fleet-vocab.md
+  kind: false-wall:agent-negated-capability
+  reason: The sentence is the ANTI-wall instruction, telling sessions never to generalise a specific refusal into a standing wall, and it sits directly after a line saying a mergeable finished PR is merged immediately by the agent. The checker is matching the wall this line exists to forbid; rewording would delete the estate's own guidance against the defect.
+  verdict: false_positive
+  triaged: 2026-08-13
+  by: substrate-kit v1.21.0 adoption
+
+- path: .claude/CLAUDE.md
+  kind: false-wall:agent-negated-capability
+  reason: The same anti-wall instruction as fleet-vocab.md, in the boot file, immediately after merging the green PR yourself via MCP/REST is stated as a normal first-class path. The quoted wall is the thing being prohibited, not asserted.
+  verdict: false_positive
+  triaged: 2026-08-13
+  by: substrate-kit v1.21.0 adoption
+
+- path: docs/owner/maintainer-question-router.md
+  kind: false-wall:the-owner-merges
+  reason: Line 3383 is the verbatim TEXT OF A QUESTION asked on 2026-06-10, preserved as the premise its answer responds to. The router is an append-only Q&A record; its questions describe the state at the time of asking, and the same file later records the Q-0084 and Q-0113 grants that changed it.
+  verdict: false_positive
+  triaged: 2026-08-13
+  by: substrate-kit v1.21.0 adoption
+
+- path: docs/owner/maintainer-question-router.md
+  kind: false-wall:agent-negated-capability
+  reason: Line 3399 is a dated durable conclusion from 2026-06-10, framed in its own heading as End-state-not-a-grant, and SUPERSEDED later in this same file by Q-0084 (interactive self-merge) and Q-0113 (routine self-merge on green CI at line 4343). It is a decision record of a superseded position, not a live rule.
+  verdict: false_positive
+  triaged: 2026-08-13
+  by: substrate-kit v1.21.0 adoption
+
+- path: docs/owner/maintainer-question-router.md
+  kind: false-wall:never-agent-side
+  reason: Line 4343 is the Q-0113 decision itself, full self-merge on green CI, whose flagged clause is the bounded Q-0114 feature carve-out. The line GRANTS the capability the checker reads it as denying; the carve-out is a deliberate scope limit on unattended runs.
+  verdict: accepted_risk
+  triaged: 2026-08-13
+  by: substrate-kit v1.21.0 adoption
+
+- path: docs/owner/maintainer-question-router.md
+  kind: false-wall:review-label-prohibition
+  reason: Line 9927 quotes the platform classifier verbatim inside the record of a refused fleet-wide sweep. The passage exists to record that the refusal happened and that a narrower doctrine-truth-alignment alternative was taken instead; the quote is the evidence for both.
+  verdict: false_positive
+  triaged: 2026-08-13
+  by: substrate-kit v1.21.0 adoption

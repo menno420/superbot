@@ -55,9 +55,13 @@
   complete game.
 - **Play it:** download `dist/lumen-drift.gba` (~160 KB) from the repo → open in
   mGBA (desktop/Android) or Delta (iOS). No build step. Controls in `docs/PLAYING.md`.
-- **You:** one click to create the GitHub Release `lumen-drift-v1.3` (agents get 403
-  on releases); optional itch.io publish decision; and the "graze feel" playtest —
-  the machine proves it works, only you can say it feels right.
+- **You:** the optional itch.io publish decision, and the "graze feel" playtest — the
+  machine proves it works, only you can say it feels right. (The GitHub Release
+  `lumen-drift-v1.3` used to be listed here as yours too, on the grounds that release
+  creation was blocked agent-side. **Repudiated 2026-08-13:** that generalised a
+  *proxied-route* refusal into a standing wall. Release creation works agent-side — via
+  `workflow_dispatch` on the release workflow, and over the direct-credential path. Ask
+  for the release; don't click it.)
 
 ### 5. Pokémon Emerald QoL+ mod (pokemon-mod-lab — PRIVATE, never distributed)
 - **What:** your personal modded Emerald: 16 toggleable quality-of-life patches

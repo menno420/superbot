@@ -39,7 +39,11 @@ ceiling if it becomes heavily used.
 To raise the limit:
 1. Create a free key at `context7.com/dashboard` → "Create API Key" (shown once — copy it).
 2. Add it to **this Claude Code web environment's** settings as a secret/env var
-   `CONTEXT7_API_KEY` (agents cannot set environment secrets — this is a maintainer step).
+   `CONTEXT7_API_KEY` — historically done by the maintainer through **the Claude Code environment
+   console**. This is not a general capability limit: GitHub repo secrets and Railway variables
+   *are* agent-settable through the documented paths. Whether this particular console is reachable
+   agent-side has not been tested here — try it before assuming it is not. (Reworded 2026-08-13:
+   the earlier phrasing generalised this one console into a standing capability wall.)
 3. Add the env reference to the `context7` entry in `.mcp.json`:
    `"env": { "CONTEXT7_API_KEY": "${CONTEXT7_API_KEY}" }`. The key stays in the environment;
    the repo only references it by name (never commit the key).
