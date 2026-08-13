@@ -58,10 +58,11 @@
 - **You:** the optional itch.io publish decision, and the "graze feel" playtest — the
   machine proves it works, only you can say it feels right. (The GitHub Release
   `lumen-drift-v1.3` used to be listed here as yours too, on the grounds that release
-  creation was blocked agent-side. **Repudiated 2026-08-13:** that generalised a
-  *proxied-route* refusal into a standing wall. Release creation works agent-side — via
-  `workflow_dispatch` on the release workflow, and over the direct-credential path. Ask
-  for the release; don't click it.)
+  creation was blocked agent-side. **Corrected 2026-08-13:** an agent can cut this release
+  through the `workflow_dispatch` route on the release workflow — the path this repo's own
+  docs already direct agents to (`docs/owner/dispatch-prompts-2026-07-11.md`). Ask for the
+  release; don't click it. Whether the *direct* credential route also works has not been
+  verified in this repo, so the canonical wall records are left as they stand.)
 
 ### 5. Pokémon Emerald QoL+ mod (pokemon-mod-lab — PRIVATE, never distributed)
 - **What:** your personal modded Emerald: 16 toggleable quality-of-life patches

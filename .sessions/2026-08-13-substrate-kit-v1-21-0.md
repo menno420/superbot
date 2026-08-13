@@ -121,8 +121,10 @@ there was no prior vendored dist to bank. The rollback here is `git revert`.
 | `docs/operations/mcp-servers.md` | one owner-only console generalised into a standing wall on setting environment secrets | scoped to that console, notes GitHub/Railway *are* agent-settable, and says plainly that this console is **untested** rather than blocked |
 | `docs/owner/product-catalog.md` | release creation listed as an owner click because agents were said to be refused | repudiated and dated — that generalised a *proxied-route* refusal; release creation works via `workflow_dispatch` and the direct-credential path |
 
-**Allowlisted** — nine reasoned entries in `.substrate/check-exceptions.yml` covering
-eleven findings, each with a required non-empty reason (the seam is fail-closed: a
+**Allowlisted** — **ten** reasoned entries in `.substrate/check-exceptions.yml` covering
+eleven findings (six files with one entry each, plus four distinct kinds on the router;
+the `docs/current-state.md` entry is the one covering two findings). Each carries a
+required non-empty reason (the seam is fail-closed: a
 reason-less entry suppresses nothing and reports itself). Every one is the checker
 matching a **quoted or recorded** wall rather than a live claim, and in four cases the
 sentence's own purpose is to **refute** the wall it quotes:
