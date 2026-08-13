@@ -187,13 +187,17 @@ jobs:
       # ruff replaced black + isort (A3, 2026-07-06): `ruff format` owns formatting
       # (Black-compatible) and `ruff check` owns import sorting (the `I` rule) + lint.
       # 5 python-gate tools → 3. Same --exclude scope as before (mirrored in check_quality.py).
+      # `bootstrap.py` is the vendored substrate-kit distribution — GENERATED,
+      # DO NOT EDIT, and its sha256 must stay byte-identical to the published
+      # release asset. Reformatting it would fork this adopter and break that
+      # proof, so it is excluded rather than reformatted.
       - name: Run Ruff format (check only)
         if: steps.changes.outputs.code == 'true'
-        run: ruff format --check . --exclude .github,tests,venv,env,build,dist
+        run: ruff format --check . --exclude .github,tests,venv,env,build,dist,bootstrap.py
 
       - name: Run Ruff (lint + import sort)
         if: steps.changes.outputs.code == 'true'
-        run: ruff check . --exclude .github,tests,venv,env,build,dist
+        run: ruff check . --exclude .github,tests,venv,env,build,dist,bootstrap.py
 
       # UX/interaction consistency linter (Q-0170). Only the GRADUATED rules are
       # CI-enforced: `--mode strict` exits 1 on an *error*-severity finding

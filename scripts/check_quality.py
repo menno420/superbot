@@ -49,7 +49,12 @@ def _tool(name: str, *args: str) -> list[str]:
 # `ruff check` (with the `I` rule) owns import sorting + lint. Both take the same
 # comma-list --exclude. Kept aligned with the workflow;
 # tests/unit/scripts/test_check_quality_ci_parity.py guards against re-drift.
-_RUFF_EXCLUDE = ".github,tests,venv,env,build,dist"
+# `bootstrap.py` is the vendored substrate-kit distribution — a GENERATED,
+# DO-NOT-EDIT single file whose sha256 must stay byte-identical to the published
+# release asset (that identity is the whole adoption proof). Reformatting it
+# would fork this adopter from the kit and break the digest, so it is excluded
+# from formatting and lint rather than reformatted.
+_RUFF_EXCLUDE = ".github,tests,venv,env,build,dist,bootstrap.py"
 
 
 def _run(label: str, cmd: list[str], *, check: bool = False) -> int:

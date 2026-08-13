@@ -52,8 +52,37 @@ verified clean before any of it was committed.
 
 Landed on PR #2436. Vendored `bootstrap.py` at **v1.21.0**, `substrate.config.json`
 pin `1.0.0` → `1.21.0`, and all **14 false-wall findings dispositioned**. Zero
-`disbot/` runtime, zero migrations, zero tests, no dependency change, **no workflow
-added or regenerated**.
+`disbot/` runtime, zero migrations, no dependency change, **no workflow added or
+regenerated**.
+
+### One lint-scope change, and why it was unavoidable
+
+Vendoring the dist turned `code-quality` red: `ruff format --check` reported
+**"1 file would be reformatted, 1040 files already formatted"** — the new
+`bootstrap.py`. The kit's generated dist is not ruff-formatted, and **reformatting
+it is the one thing that must never happen**: its sha256 is the adoption proof, and
+rewriting a byte forks this adopter from the published asset (the fm #833 doctrine
+against patching a vendored dist).
+
+So `bootstrap.py` joins the ruff exclude list. superbot deliberately mirrors that
+list in **four** places, and a parity test pins them together:
+
+- `.github/workflows/code-quality.yml` — both the `ruff format` and `ruff check` lines
+- `scripts/check_quality.py` — `_RUFF_EXCLUDE`
+- `pyproject.toml` — `[tool.ruff] extend-exclude`
+- `tests/unit/scripts/test_check_quality_ci_parity.py` — `_EXPECTED_DIRS`, the
+  hard-coded canonical set the other three are checked against
+
+All four updated together. `ruff format --check` with the new scope: **1040 files
+already formatted, exit 0**. The parity test cannot run in this container
+(`ModuleNotFoundError: No module named 'discord'` — pre-existing, identical on
+`main`), so its five assertions were re-implemented and run directly against the
+three files: **all pass**.
+
+This is a **lint-scope** change, not a behaviour change: `code-quality` remains the
+required check, runs on the same events, and gates merges exactly as before. The
+only difference is that it no longer tries to reformat a file it must not touch.
+mypy needed no change — CI runs it only against `disbot/`.
 
 **sha256:** `8807a00e0e7f14f61f37f2afb48bcb38e4b7247b10741761ff99630bf9cc7356` —
 agreeing across the released asset, the `sha256` field in `release.json`, the sidecar,

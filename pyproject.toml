@@ -20,7 +20,10 @@ src = ["disbot"]
 # whose compact one-line enum bodies are prose, not runnable code. Reformatting
 # them is pure churn in a repo frozen as the behavioral oracle. Ruff's job here
 # is `disbot/` correctness; doc prose is out of scope.
-extend-exclude = [".github", "tests", "venv", "env", "build", "dist", "*.md"]
+# `bootstrap.py` is the vendored substrate-kit distribution: GENERATED, DO NOT
+# EDIT, and sha256-pinned to the published release asset. Reformatting it would
+# fork this adopter from the kit and break the digest the adoption rests on.
+extend-exclude = [".github", "tests", "venv", "env", "build", "dist", "*.md", "bootstrap.py"]
 
 [tool.ruff.lint]
 # Rules are split into two tiers:
