@@ -1,10 +1,10 @@
 {
   "meta": {
-    "generated_at": "2026-08-13T15:50:34Z",
+    "generated_at": "2026-08-13T17:51:42Z",
     "build": {
-      "commit": "b41db421",
-      "subject": "Merge pull request #2434 from menno420/bot/dashboard-refresh",
-      "committed_at": "2026-08-13T15:50:34Z"
+      "commit": "6067b2d2",
+      "subject": "Merge pull request #2436 from menno420/claude/substrate-kit-v1-21-0",
+      "committed_at": "2026-08-13T17:51:42Z"
     },
     "schema_version": 1,
     "counts": {
@@ -3485,6 +3485,14 @@
   "reviews": [],
   "updates": [
     {
+      "file": "2026-08-13-substrate-kit-v1-21-0.md",
+      "date": "2026-08-13",
+      "title": "2026-08-13 — adopt substrate-kit v1.21.0 + disposition the 14 false-wall findings",
+      "status": "complete",
+      "run_type": "",
+      "self_initiated": false
+    },
+    {
       "file": "2026-08-10-reconcile.md",
       "date": "2026-08-10",
       "title": "2026-08-10 — fifty-sixth Q-0107 docs reconciliation pass (band-#2370)",
@@ -3954,14 +3962,6 @@
       "title": "2026-07-11 — fleet merge continuation (post-compact): superbot-games #52/#54/#55 landed + handoff reconciled",
       "status": "complete",
       "run_type": "",
-      "self_initiated": false
-    },
-    {
-      "file": "2026-07-11-fleet-inbox-and-model-line.md",
-      "date": "2026-07-11",
-      "title": "2026-07-11 — fleet inbox for the hub + 📊 Model attribution line",
-      "status": "complete",
-      "run_type": "routine",
       "self_initiated": false
     }
   ],
@@ -5481,6 +5481,20 @@
         "ci_green_first_push": false,
         "checker_findings": "check_session_gate telemetry-row (fixed in-PR)",
         "merged_pr": 2395,
+        "reverted_within_window": null
+      }
+    },
+    {
+      "session": "2026-08-13-substrate-kit-v1-21-0",
+      "date": "2026-08-13",
+      "model": "opus-5",
+      "effort": "high",
+      "task_class": "mechanical refactor",
+      "tokens_out": null,
+      "outcome": {
+        "ci_green_first_push": false,
+        "checker_findings": "check_session_gate born-red hold + telemetry-row (fixed in-PR); kit check --strict 16 findings -> 2 (14 false-wall dispositioned; orientation-budget + enforcement-unwired flagged out-of-scope under the oracle freeze)",
+        "merged_pr": 2436,
         "reverted_within_window": null
       }
     }
