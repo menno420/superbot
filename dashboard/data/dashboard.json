@@ -1,10 +1,10 @@
 {
   "meta": {
-    "generated_at": "2026-08-13T17:51:42Z",
+    "generated_at": "2026-08-13T19:17:19Z",
     "build": {
-      "commit": "6067b2d2",
-      "subject": "Merge pull request #2436 from menno420/claude/substrate-kit-v1-21-0",
-      "committed_at": "2026-08-13T17:51:42Z"
+      "commit": "666ef2cd",
+      "subject": "Merge pull request #2437 from menno420/bot/dashboard-refresh",
+      "committed_at": "2026-08-13T19:17:19Z"
     },
     "schema_version": 1,
     "counts": {
