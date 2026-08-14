@@ -39,8 +39,13 @@ name: dashboard-data-refresh
 # `python3.10 scripts/export_dashboard_data.py` is always runnable by hand.
 
 on:
-  schedule:
-    - cron: '17 */2 * * *'   # every 2 hours (offset off the hour to dodge load spikes)
+  # Schedule RETIRED 2026-08-14 (owner go; fleet-manager #861 audit + #863 execution):
+  # the refresh fed the OLD Railway dashboard site, retired the same day under the
+  # site-consolidation cutover (W1) — and every push it landed also rebuilt and
+  # restarted the production `worker` service (~293 restarts in the Jul→Aug billing
+  # cycle; worker had no Railway watch filter). workflow_dispatch kept per OD-3 for
+  # on-demand refreshes; `python3.10 scripts/export_dashboard_data.py` remains
+  # runnable by hand, per the kill-switch note above.
   workflow_dispatch:
 
 permissions:
