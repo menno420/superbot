@@ -1,8 +1,11 @@
-# Postgres backup — daily pg_dump uploaded as a GitHub Actions artifact.
+# Postgres backup — scheduled pg_dump uploaded as a GitHub Actions artifact.
 #
-# Trigger policy: scheduled daily (02:00 UTC, between the two executor runs)
-# plus workflow_dispatch for manual / ad-hoc runs. The schedule means the
-# most-recent artifact is ≤24 h old at any point.
+# Trigger policy: scheduled WEEKLY (Sun 02:00 UTC; daily → weekly 2026-08-14,
+# owner go via fleet-manager #861/#863 — each dump moved ~1.9 GB uncompressed
+# over Railway's public proxy ≈ $2.9/mo of egress; artifacts measured
+# 171–180 MB gzipped) plus the monthly long-retention tier and
+# workflow_dispatch for manual / ad-hoc runs. The schedule means the
+# most-recent artifact is ≤7 days old at any point.
 #
 # What it does: pg_dump --no-owner --no-acl against DATABASE_PUBLIC_URL
 # (Railway's external proxy URL — not the private internal URL), pipes
@@ -29,7 +32,7 @@ name: Postgres backup (daily)
 
 on:
   schedule:
-    - cron: '0 2 * * *'  # daily 02:00 UTC — between the two executor runs (90-day artifact)
+    - cron: '0 2 * * 0'  # weekly, Sun 02:00 UTC (was daily; reduced 2026-08-14 — see header) (90-day artifact)
     - cron: '0 3 1 * *'  # monthly, 1st 03:00 UTC — long-retention tier (400-day artifact).
                          # Added 2026-07-02 (Q-0213 session): Railway-native volume backups are
                          # plan-gated on Hobby (API returns Not Authorized for schedule + manual
