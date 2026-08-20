@@ -30,8 +30,12 @@ name: ci-rerun-watchdog
 # (`gh workflow run code-quality.yml --ref <branch>` / an empty commit / the "Re-run" button).
 
 on:
-  schedule:
-    - cron: "*/12 * * * *"   # every 12 min — covers the dropped-event gap without churn
+  # Schedule RETIRED 2026-08-20 (owner keep-bot-only direction; fleet-manager
+  # docs/planning/2026-08-20-railway-keep-bot-only-worklist.md slice 4, the
+  # sb #2446 pattern): this repo froze as the behavioral oracle 2026-07-17 —
+  # no development, so a 12-minute sweep for dropped claude/* PR events was
+  # ~120 no-op runs/day against a repo with no PRs to rescue. workflow_dispatch
+  # kept per OD-3: the sweep remains runnable on demand if a PR ever stalls.
   workflow_dispatch:
 
 permissions:
