@@ -129,7 +129,7 @@ jobs:
           echo "- **Tables:** $TABLE_COUNT (CREATE TABLE statements)" >> "$GITHUB_STEP_SUMMARY"
 
       - name: Upload artifact
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           # The monthly schedule (1st, 03:00 UTC) uploads a long-retention artifact under a
           # distinct name; the daily keeps its 90-day rolling window. 400 days is GitHub's
